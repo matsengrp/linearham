@@ -1,0 +1,10 @@
+box: matsengrp/cpp
+
+build:
+    steps:
+        - script:
+            name: build
+            code: scons
+        - script:
+            name: test
+            code: ./test
