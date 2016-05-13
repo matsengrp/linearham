@@ -3,6 +3,10 @@ box: matsengrp/cpp
 build:
     steps:
         - script:
+            name: initialize git submodules
+            code: |
+                git submodule update --init --recursive
+        - script:
             name: build
             code: scons
         - script:
