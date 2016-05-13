@@ -41,10 +41,11 @@ TEST_CASE("rowVecMatCwise", "[linalg]") {
 TEST_CASE("subProductMatrix", "[linalg]") {
   Eigen::MatrixXd A(3,3), correct_A(3,3);
   Eigen::VectorXd e(3);
-  correct_A <<  0, -2, 2,
-                0, -1, 1,
-                0,  1, 1;
-  e << 0, -1, 2;
+  correct_A <<  -5,   -2, 2,
+                -2.5, -1, 1,
+                2.5,   1, 1;
+  e << 2.5, -1, 2;
+  A.setConstant(999);
 
   subProductMatrix(A, e);
 

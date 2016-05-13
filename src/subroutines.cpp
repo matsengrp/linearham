@@ -40,19 +40,26 @@ void rowVecMatCwise(
 /// @param[out] A Output matrix.
 /// @param[in]  e Input vector.
 ///
-/// If e is of length \f$\ell\f$, then
+/// If e is of length \f$\ell\f$, then (zero-indexed)
 ///  \f[
-///  A_{i,j} := \prod_{k=i}^{\ell_g -j} e_{k}
+///  A_{i,j} := \prod_{k=i}^{\ell-j-1} e_k
 ///  \f]
 void subProductMatrix(
     Eigen::MatrixXd& A,
     Eigen::VectorXd& e) {
   assert(e.size() == A.rows());
   assert(e.size() == A.cols());
-  int last = e.size()-1;
+  int ell = e.size();
   A.setOnes();
-  A(0, last) = e(last);
-  for(int i=last-1; i >=0 ; i--) {
-    A.block(0,i,last-i+1,1) = e(i) * A.block(0,i+1,last-i+1,1);
+  // Upper right gets the correct value.
+  A(0, ell-1) = e(ell-1);
+  // Iterate over columns from right to left.
+  for(int k=ell-2; k>=0 ; k--) {
+    // Each subcolumn of length ell-k is the previous subcolumn of the same
+    // length times e_k. The first one of these copying operations is of length
+    // ell-(ell-2) = 2 and happens in the ell-2th column. Thus it hits the
+    // diagonal, which is when i = ell-j-1 <-> i+j = ell-1.
+    // A.block syntax is which_row, which_col, height, width.
+    A.block(0,k,ell-k,1) = e(k) * A.block(0,k+1,ell-k,1);
   }
 }
