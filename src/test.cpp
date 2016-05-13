@@ -4,7 +4,7 @@
 #include "subroutines.hpp"
 
 
-TEST_CASE("colVecMatCwise", "[colVecMatCwise]") {
+TEST_CASE("colVecMatCwise", "[linalg]") {
   Eigen::VectorXd b(3);
   Eigen::MatrixXd A(3,4), B(3,4), correct_B(3,4);
   A << 1, 2.9, 3,  4,
@@ -21,7 +21,7 @@ TEST_CASE("colVecMatCwise", "[colVecMatCwise]") {
 }
 
 
-TEST_CASE("rowVecMatCwise", "[rowVecMatCwise]") {
+TEST_CASE("rowVecMatCwise", "[linalg]") {
   Eigen::RowVectorXd b(4);
   Eigen::MatrixXd A(3,4), B(3,4), correct_B(3,4);
   A << 1, 2.9, 3,  4,
@@ -35,4 +35,18 @@ TEST_CASE("rowVecMatCwise", "[rowVecMatCwise]") {
   rowVecMatCwise(B, b, A);
 
   REQUIRE(B == correct_B);
+}
+
+
+TEST_CASE("subProductMatrix", "[linalg]") {
+  Eigen::MatrixXd A(3,3), correct_A(3,3);
+  Eigen::VectorXd e(3);
+  correct_A <<  0, -2, 2,
+                0, -1, 1,
+                0,  1, 1;
+  e << 0, -1, 2;
+
+  subProductMatrix(A, e);
+
+  REQUIRE(A == correct_A);
 }

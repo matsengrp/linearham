@@ -10,4 +10,6 @@ void rowVecMatCwise(
     Eigen::RowVectorXd& b,
     Eigen::MatrixXd& A);
 
-
+void subProductMatrix(
+    Eigen::MatrixXd& A,
+    Eigen::VectorXd& e);
