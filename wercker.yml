@@ -12,3 +12,9 @@ build:
         - script:
             name: test
             code: ./test
+
+    after-steps:
+        - slack-notifier:
+            url: $SLACK_URL
+            channel: bcell
+            username: linearham build
