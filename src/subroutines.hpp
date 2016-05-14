@@ -13,3 +13,4 @@ void rowVecMatCwise(
 void subProductMatrix(
     Eigen::MatrixXd& A,
     Eigen::VectorXd& e);
+
