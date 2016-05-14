@@ -60,42 +60,42 @@ TEST_CASE("SubProductMatrix", "[linalg]") {
 // Core tests
 
 TEST_CASE("TransitionMatchPair", "[core]") {
-  Eigen::VectorXd nextTransitionProbs(2);
-  nextTransitionProbs << 0.2, 0.3;
-  Eigen::MatrixXd correct_matchProbs(3,3);
-  correct_matchProbs <<    1, 0.2, 0.06,
+  Eigen::VectorXd nextTransition(2);
+  nextTransition << 0.2, 0.3;
+  Eigen::MatrixXd correct_match(3,3);
+  correct_match <<    1, 0.2, 0.06,
                            1,   1,  0.3,
                            1,   1,    1;
-  Eigen::VectorXd correct_fallOffProbs(3);
-  correct_fallOffProbs << 0.8, 0.7, 1.;
+  Eigen::VectorXd correct_fallOff(3);
+  correct_fallOff << 0.8, 0.7, 1.;
 
   std::pair<Eigen::MatrixXd, Eigen::VectorXd> mvPair;
-  mvPair = TransitionMatchPair(nextTransitionProbs);
+  mvPair = TransitionMatchPair(nextTransition);
 
-  REQUIRE(mvPair.first == correct_matchProbs);
-  REQUIRE(mvPair.second == correct_fallOffProbs);
+  REQUIRE(mvPair.first == correct_match);
+  REQUIRE(mvPair.second == correct_fallOff);
 }
 
 
 TEST_CASE("MatchMatrix", "[core]") {
-  Eigen::VectorXd landingProbs(3);
-  landingProbs << 0.13, 0.17, 0.19;
-  Eigen::VectorXd emissionProbs(3);
-  emissionProbs << 0.5, 0.71, 0.11;
-  Eigen::VectorXd nextTransitionProbs(2);
-  nextTransitionProbs << 0.2, 0.3;
-  Eigen::MatrixXd correct_matchProbs(3,3);
-  correct_matchProbs <<
+  Eigen::VectorXd landing(3);
+  landing << 0.13, 0.17, 0.19;
+  Eigen::VectorXd emission(3);
+  emission << 0.5, 0.71, 0.11;
+  Eigen::VectorXd nextTransition(2);
+  nextTransition << 0.2, 0.3;
+  Eigen::MatrixXd correct_match(3,3);
+  correct_match <<
   // Format is landing * emission * transition * ... * fallOff
   0.13*0.5*0.8 , 0.13*0.5*0.2*0.71*0.7 , 0.13*0.5*0.2*0.71*0.3*0.11 ,
   0            , 0.17*0.71*0.7         , 0.17*0.71*0.3*0.11         ,
   0            , 0                     , 0.19*0.11                  ;
-  Eigen::MatrixXd matchProbs;
+  Eigen::MatrixXd match;
 
     /*
-  matchProbs = MatchMatrix(
-    landingProbs, emissionProbs, TransitionMatchPair(nextTransitionProbs));
-  REQUIRE(matchProbs == correct_matchProbs);
+  match = MatchMatrix(
+    landing, emission, TransitionMatchPair(nextTransition));
+  REQUIRE(match == correct_match);
   */
 }
 
@@ -103,17 +103,17 @@ TEST_CASE("MatchMatrix", "[core]") {
 // GermlineGene tests
 
 TEST_CASE("GermlineGene", "[germlinegene]") {
-  Eigen::VectorXd landingProbs(3);
-  landingProbs << 0.13, 0.17, 0.19;
-  Eigen::MatrixXd emissionProbs(2,3);
-  emissionProbs <<
+  Eigen::VectorXd landing(3);
+  landing << 0.13, 0.17, 0.19;
+  Eigen::MatrixXd emission(2,3);
+  emission <<
   0.5, 0.71, 0.11,
   0.29, 0.31, 0.37;
-  Eigen::VectorXd nextTransitionProbs(2);
-  nextTransitionProbs << 0.2, 0.3;
+  Eigen::VectorXd nextTransition(2);
+  nextTransition << 0.2, 0.3;
 
-  GermlineGene gene(landingProbs, emissionProbs, nextTransitionProbs);
-  REQUIRE(gene.transition_fall_off_probs_.size() == gene.transition_match_probs_.cols());
+  GermlineGene gene(landing, emission, nextTransition);
+  REQUIRE(gene.transition_fall_off_.size() == gene.transition_match_.cols());
 }
 
 
