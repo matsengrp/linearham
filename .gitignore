@@ -5,3 +5,4 @@ test
 doxygen_sqlite3.db
 html/
 latex/
+.ycm_extra_conf.py*
