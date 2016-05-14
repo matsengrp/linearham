@@ -2,6 +2,7 @@
 #define CATCH_CONFIG_MAIN
 
 #include "catch.hpp"
+#include "core.hpp"
 #include "linalg.hpp"
 
 
@@ -55,3 +56,22 @@ TEST_CASE("SubProductMatrix", "[linalg]") {
   REQUIRE(A == correct_A);
 }
 
+
+// Core tests
+
+TEST_CASE("TransitionMatchPair", "[core]") {
+  Eigen::VectorXd nextTransitionProbs(2);
+  nextTransitionProbs << 0.2, 0.3;
+  Eigen::MatrixXd correct_matchProbs(3,3);
+  correct_matchProbs <<    1, 0.2, 0.06,
+                           1,   1,  0.3,
+                           1,   1,    1;
+  Eigen::VectorXd correct_fallOffProbs(3);
+  correct_fallOffProbs << 0.8, 0.7, 1.;
+
+  std::pair<Eigen::MatrixXd, Eigen::VectorXd> mvPair;
+  mvPair = TransitionMatchPair(nextTransitionProbs);
+
+  REQUIRE(mvPair.first == correct_matchProbs);
+  REQUIRE(mvPair.second == correct_fallOffProbs);
+}

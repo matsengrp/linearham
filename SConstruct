@@ -6,5 +6,5 @@ env = Environment(
 
 env.Program(
     target='test',
-    source=Split('src/linalg.cpp src/test.cpp'))
+    source=Split(' src/core.cpp src/linalg.cpp src/test.cpp'))
 

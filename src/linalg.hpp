@@ -11,6 +11,6 @@ void RowVecMatCwise(
     Eigen::MatrixXd& A);
 
 void SubProductMatrix(
-    Eigen::MatrixXd& A,
+    Eigen::Ref<Eigen::MatrixXd> A,
     Eigen::VectorXd& e);
 

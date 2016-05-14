@@ -46,7 +46,7 @@ void RowVecMatCwise(
 ///  \f]
 /// Empty products are taken to be one.
 void SubProductMatrix(
-    Eigen::MatrixXd& A,
+    Eigen::Ref<Eigen::MatrixXd> A,
     Eigen::VectorXd& e) {
   int ell = e.size();
   assert(ell == A.rows());
