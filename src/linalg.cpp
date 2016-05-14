@@ -1,5 +1,11 @@
 #include "linalg.hpp"
 
+/// @file linalg.cpp
+/// @brief Some simple linear algebra routines.
+///
+/// Note that we universally use Eigen::Ref<X> here, which means that we can
+/// pass in an X or a Block of an X. See the section on Ref in
+/// https://eigen.tuxfamily.org/dox/TopicFunctionTakingEigenTypes.html
 
 /// @brief This function takes the coefficient-wise product of b and every column of A.
 /// @param[out] B Output matrix.
@@ -9,9 +15,9 @@
 ///  B_{i,j} = b_i A_{i,j}
 ///  \f]
 void ColVecMatCwise(
-    Eigen::MatrixXd& B,
-    Eigen::VectorXd& b,
-    Eigen::MatrixXd& A) {
+    Eigen::Ref<Eigen::MatrixXd> B,
+    const Eigen::Ref<const Eigen::VectorXd> b,
+    const Eigen::Ref<const Eigen::MatrixXd> A) {
   for(int i=0; i < B.cols(); i++) {
     B.col(i) = b.cwiseProduct(A.col(i));
   }
@@ -26,9 +32,9 @@ void ColVecMatCwise(
 ///  B_{i,j} = b_j A_{i,j}
 ///  \f]
 void RowVecMatCwise(
-    Eigen::MatrixXd& B,
-    Eigen::RowVectorXd& b,
-    Eigen::MatrixXd& A) {
+    Eigen::Ref<Eigen::MatrixXd> B,
+    const Eigen::Ref<const Eigen::RowVectorXd> b,
+    const Eigen::Ref<const Eigen::MatrixXd> A) {
   for(int i=0; i < B.rows(); i++) {
     B.row(i) = b.cwiseProduct(A.row(i));
   }
@@ -47,7 +53,7 @@ void RowVecMatCwise(
 /// Empty products are taken to be one.
 void SubProductMatrix(
     Eigen::Ref<Eigen::MatrixXd> A,
-    Eigen::VectorXd& e) {
+    const Eigen::Ref<const Eigen::VectorXd> e) {
   int ell = e.size();
   assert(ell == A.rows());
   assert(ell == A.cols());

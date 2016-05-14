@@ -2,7 +2,8 @@
 #include "core.hpp"
 
 /// @brief Prepares match transition probability helper objects.
-/// @param[in]  a Vector of probabilities of transitioning to the next match
+/// @param[in]  nextTransitionProbs
+///             Vector of probabilities of transitioning to the next match
 ///             state.
 /// @return     M, V, where M is a matrix of cumulative match probabilities,
 ///             and V is a vector of falling off probabilities.
