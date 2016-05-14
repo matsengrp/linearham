@@ -75,3 +75,45 @@ TEST_CASE("TransitionMatchPair", "[core]") {
   REQUIRE(mvPair.first == correct_matchProbs);
   REQUIRE(mvPair.second == correct_fallOffProbs);
 }
+
+
+TEST_CASE("MatchMatrix", "[core]") {
+  Eigen::VectorXd landingProbs(3);
+  landingProbs << 0.13, 0.17, 0.19;
+  Eigen::VectorXd emissionProbs(3);
+  emissionProbs << 0.5, 0.71, 0.11;
+  Eigen::VectorXd nextTransitionProbs(2);
+  nextTransitionProbs << 0.2, 0.3;
+  Eigen::MatrixXd correct_matchProbs(3,3);
+  correct_matchProbs <<
+  // Format is landing * emission * transition * ... * fallOff
+  0.13*0.5*0.8 , 0.13*0.5*0.2*0.71*0.7 , 0.13*0.5*0.2*0.71*0.3*0.11 ,
+  0            , 0.17*0.71*0.7         , 0.17*0.71*0.3*0.11         ,
+  0            , 0                     , 0.19*0.11                  ;
+  Eigen::MatrixXd matchProbs;
+
+    /*
+  matchProbs = MatchMatrix(
+    landingProbs, emissionProbs, TransitionMatchPair(nextTransitionProbs));
+  REQUIRE(matchProbs == correct_matchProbs);
+  */
+}
+
+
+// GermlineGene tests
+
+TEST_CASE("GermlineGene", "[germlinegene]") {
+  Eigen::VectorXd landingProbs(3);
+  landingProbs << 0.13, 0.17, 0.19;
+  Eigen::MatrixXd emissionProbs(2,3);
+  emissionProbs <<
+  0.5, 0.71, 0.11,
+  0.29, 0.31, 0.37;
+  Eigen::VectorXd nextTransitionProbs(2);
+  nextTransitionProbs << 0.2, 0.3;
+
+  GermlineGene gene(landingProbs, emissionProbs, nextTransitionProbs);
+  REQUIRE(gene.transition_fall_off_probs_.size() == gene.transition_match_probs_.cols());
+}
+
+
