@@ -1,5 +1,4 @@
-#include "subroutines.hpp"
-
+#include "linalg.hpp"
 
 
 /// @brief This function takes the coefficient-wise product of b and every column of A.
