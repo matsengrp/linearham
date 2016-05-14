@@ -8,7 +8,7 @@
 ///  \f[
 ///  B_{i,j} = b_i A_{i,j}
 ///  \f]
-void colVecMatCwise(
+void ColVecMatCwise(
     Eigen::MatrixXd& B,
     Eigen::VectorXd& b,
     Eigen::MatrixXd& A) {
@@ -25,7 +25,7 @@ void colVecMatCwise(
 ///  \f[
 ///  B_{i,j} = b_j A_{i,j}
 ///  \f]
-void rowVecMatCwise(
+void RowVecMatCwise(
     Eigen::MatrixXd& B,
     Eigen::RowVectorXd& b,
     Eigen::MatrixXd& A) {
@@ -45,7 +45,7 @@ void rowVecMatCwise(
 ///  A_{i,j} := \prod_{k=i}^{j} e_k
 ///  \f]
 /// Empty products are taken to be one.
-void subProductMatrix(
+void SubProductMatrix(
     Eigen::MatrixXd& A,
     Eigen::VectorXd& e) {
   int ell = e.size();

@@ -1,16 +1,16 @@
 #include <Eigen/Dense>
 
-void colVecMatCwise(
+void ColVecMatCwise(
     Eigen::MatrixXd& B,
     Eigen::VectorXd& b,
     Eigen::MatrixXd& A);
 
-void rowVecMatCwise(
+void RowVecMatCwise(
     Eigen::MatrixXd& B,
     Eigen::RowVectorXd& b,
     Eigen::MatrixXd& A);
 
-void subProductMatrix(
+void SubProductMatrix(
     Eigen::MatrixXd& A,
     Eigen::VectorXd& e);
 

@@ -7,7 +7,7 @@
 
 // Linear algebra tests
 
-TEST_CASE("colVecMatCwise", "[linalg]") {
+TEST_CASE("ColVecMatCwise", "[linalg]") {
   Eigen::VectorXd b(3);
   Eigen::MatrixXd A(3,4), B(3,4), correct_B(3,4);
   A << 1, 2.9, 3,  4,
@@ -18,13 +18,13 @@ TEST_CASE("colVecMatCwise", "[linalg]") {
                 20, 24, 28, 32,
                 9, 10,  11, 12;
 
-  colVecMatCwise(B, b, A);
+  ColVecMatCwise(B, b, A);
 
   REQUIRE(B == correct_B);
 }
 
 
-TEST_CASE("rowVecMatCwise", "[linalg]") {
+TEST_CASE("RowVecMatCwise", "[linalg]") {
   Eigen::RowVectorXd b(4);
   Eigen::MatrixXd A(3,4), B(3,4), correct_B(3,4);
   A << 1, 2.9, 3,  4,
@@ -35,13 +35,13 @@ TEST_CASE("rowVecMatCwise", "[linalg]") {
                 0, 24,   7, 80,
                 0, 40,  11, 120;
 
-  rowVecMatCwise(B, b, A);
+  RowVecMatCwise(B, b, A);
 
   REQUIRE(B == correct_B);
 }
 
 
-TEST_CASE("subProductMatrix", "[linalg]") {
+TEST_CASE("SubProductMatrix", "[linalg]") {
   Eigen::MatrixXd A(3,3), correct_A(3,3);
   Eigen::VectorXd e(3);
   correct_A <<  2.5, -2.5, -5,
@@ -50,7 +50,7 @@ TEST_CASE("subProductMatrix", "[linalg]") {
   e << 2.5, -1, 2;
   A.setConstant(999);
 
-  subProductMatrix(A, e);
+  SubProductMatrix(A, e);
 
   REQUIRE(A == correct_A);
 }
