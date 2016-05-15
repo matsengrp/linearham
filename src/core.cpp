@@ -3,20 +3,21 @@
 
 
 /// @brief Prepares match transition probability helper objects.
-/// @param[in]  nextTransition
+/// @param[in]  landing
+/// Vector of probabilities of landing somewhere to begin the match.
+/// @param[in]  next_transition
 /// Vector of probabilities of transitioning to the next match state.
 /// @return
-/// M, V, where M is a matrix of cumulative match probabilities,
-/// and V is a vector of falling off probabilities.
+/// Matrix of match probabilities just in terms of the transitions.
 ///
-/// If e is of length \f$\ell-1\f$, then make an \f$\ell \times \ell\f$
+/// If next_transition is of length \f$\ell-1\f$, then make an \f$\ell \times \ell\f$
 /// matrix M with the part of the match probability coming from the
-/// transitions. That is,
+/// transitions. If \f$a\f$ is next_transition and \f$b\f$ is landing,
 /// \f[
-/// M_{i,j} := \prod_{k=i+1}^{j} a_k
+/// M_{i,j} := b_i (1-a_j) \prod_{k=i}^{j-1} a_k
 /// \f]
 /// is the cumulative transition probability of having a match start at i and
-/// end at j. V is \f$1-a\f$ with 1 appended to the end.
+/// end at j.
 Eigen::MatrixXd BuildTransition(
     Eigen::VectorXd& landing,
     Eigen::VectorXd& next_transition) {
@@ -41,43 +42,19 @@ Eigen::MatrixXd BuildTransition(
 }
 
 
-/*
 /// @brief Builds a matrix with the probabilities of linear matches.
 ///
-/// @param[in]  landing
-/// Vector of probabilities of landing in various positions in the linear
-/// segment. Length \f$\ell\f$.
+/// @param[in]  transition
+/// Transition matrix from BuildTransition.
 /// @param[in]  emission
-/// Emission probabilities
-/// @param[in]  nextTransition
-///             Vector of probabilities of transitioning to the next match
-///             state.
-/// @return     M, V, where M is a matrix of cumulative match probabilities,
-///             and V is a vector of falling off probabilities.
+/// Vector of emission probabilities for a given read.
+/// @param[out] match
+/// Matrix of matches of various length.
 ///
-/// If e is of length \f$\ell-1\f$, then make an \f$\ell \times \ell\f$
-/// matrix M with the part of the match probability coming from the
-/// transitions. That is,
-/// \f[
-/// M_{i,j} := \prod_{k=i+1}^{j} a_k
-/// \f]
-/// is the cumulative transition probability of having a match start at i and
-/// end at j. V is \f$1-a\f$ with 1 appended to the end.
-Eigen::MatrixXd MatchMatrix(
-    Eigen::VectorXd& landing,
-    Eigen::VectorXd& emission,
-    Eigen::VectorXd& transitionMatchPair) {
-  int ell = nextTransition.size()+1;
-  Eigen::MatrixXd match(ell,ell);
-  Eigen::VectorXd fallOff(ell);
-
-  match.setOnes();
-  SubProductMatrix(match.block(0,1,ell-1,ell-1), nextTransition);
-
-  // Changing to array here allows for component-wise operations.
-  fallOff.head(ell-1).array() = 1.-nextTransition.array();
-  fallOff(ell-1) = 1.;
-
-  return(std::make_pair(match, fallOff));
+void BuildMatch(
+    Eigen::MatrixXd& match,
+    const Eigen::Ref<const Eigen::MatrixXd> transition,
+    Eigen::VectorXd& emission) {
+  SubProductMatrix(match, emission);
+  match.array() *= transition.array();
 }
-*/

@@ -91,8 +91,12 @@ TEST_CASE("BuildMatch", "[core]") {
   0.13*0.5*0.8 , 0.13*0.5*0.2*0.71*0.7 , 0.13*0.5*0.2*0.71*0.3*0.11 ,
   0            , 0.17*0.71*0.7         , 0.17*0.71*0.3*0.11         ,
   0            , 0                     , 0.19*0.11                  ;
-  Eigen::MatrixXd match;
+  Eigen::MatrixXd match(3,3);
+  Eigen::MatrixXd transition;
 
+  transition = BuildTransition(landing, next_transition);
+  BuildMatch(match, transition, emission);
+  REQUIRE(match.isApprox(correct_match));
 }
 
 

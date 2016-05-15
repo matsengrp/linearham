@@ -6,10 +6,11 @@ Eigen::MatrixXd BuildTransition(
     Eigen::VectorXd& landing,
     Eigen::VectorXd& next_transition);
 
-// Eigen::MatrixXd MatchMatrix(
-//     Eigen::VectorXd& landing,
-//     Eigen::VectorXd& emission,
-//     Eigen::VectorXd& nextTransition);
+
+void BuildMatch(
+    Eigen::MatrixXd& match,
+    const Eigen::Ref<const Eigen::MatrixXd> transition,
+    Eigen::VectorXd& emission);
 
 
 class GermlineGene {
