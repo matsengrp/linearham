@@ -78,6 +78,9 @@ TEST_CASE("BuildTransition", "[core]") {
 }
 
 
+// I think that if we want to allow zero length matches, then we are going to have to double the
+// diagonal from buildtransition so that we can have a no-match diagonal.
+
 TEST_CASE("BuildMatch", "[core]") {
   Eigen::VectorXd landing(3);
   landing << 0.13, 0.17, 0.19;
