@@ -2,8 +2,9 @@
 #include <Eigen/Dense>
 
 
-std::pair<Eigen::MatrixXd, Eigen::VectorXd> TransitionMatchPair(
-    Eigen::VectorXd& nextTransition);
+Eigen::MatrixXd BuildTransition(
+    Eigen::VectorXd& landing,
+    Eigen::VectorXd& next_transition);
 
 // Eigen::MatrixXd MatchMatrix(
 //     Eigen::VectorXd& landing,
@@ -14,25 +15,21 @@ std::pair<Eigen::MatrixXd, Eigen::VectorXd> TransitionMatchPair(
 class GermlineGene {
   public:
     Eigen::VectorXd& landing_;
-    Eigen::MatrixXd& emission_;
+    Eigen::MatrixXd& emission_matrix_;
     Eigen::VectorXd& next_transition_;
-    Eigen::MatrixXd transition_match_;
-    Eigen::VectorXd transition_fall_off_;
+    Eigen::MatrixXd transition_;
 
     GermlineGene(
       Eigen::VectorXd& landing,
-      Eigen::MatrixXd& emission,
+      Eigen::MatrixXd& emission_matrix,
       Eigen::VectorXd& next_transition) :
           landing_(landing),
-          emission_(emission),
+          emission_matrix_(emission_matrix),
           next_transition_(next_transition) {
-        assert(this->landing_.size() == this->emission_.cols());
+        assert(this->landing_.size() == this->emission_matrix_.cols());
         assert(
           this->landing_.size() == this->next_transition_.size()+1);
-        std::pair<Eigen::MatrixXd, Eigen::VectorXd> mvPair;
-        mvPair = TransitionMatchPair(this->next_transition_);
-        transition_match_ = mvPair.first;
-        transition_fall_off_ = mvPair.second;
+        transition_ = BuildTransition(this->landing_, this->next_transition_);
       };
 
 };
