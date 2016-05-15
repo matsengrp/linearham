@@ -34,3 +34,37 @@ class GermlineGene {
       };
 
 };
+
+
+class Smooshable {
+  public:
+    Eigen::MatrixXd marginal_;
+
+    Smooshable(int left_flex, int right_flex) {
+      marginal_.resize(left_flex, right_flex);
+      };
+
+    Smooshable(
+      Eigen::MatrixXd& marginal) :
+          marginal_(marginal) {
+      };
+
+    int left_flex() { return this->marginal_.rows(); };
+    int right_flex() { return this->marginal_.cols(); };
+
+    Smooshable smoosh(Smooshable right) {
+      Smooshable s(this->left_flex(), right.right_flex());
+      s.marginal_ = this->marginal_.rowwise().reverse()*right.marginal_;
+      return s;
+    };
+};
+
+
+class GermlineMatch : public Smooshable {
+  public:
+    GermlineMatch(
+      Eigen::MatrixXd& marginal) :
+      Smooshable(marginal) {
+    };
+
+};

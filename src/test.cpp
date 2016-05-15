@@ -114,3 +114,28 @@ TEST_CASE("GermlineGene", "[germlinegene]") {
 
   GermlineGene gene(landing, emission_matrix, next_transition);
 }
+
+
+// Smooshable tests
+
+TEST_CASE("Smooshable", "[smooshable]") {
+  Eigen::MatrixXd left_matrix(2,3);
+  left_matrix <<
+  0.5, 0.71, 0.11,
+  0.29, 0.31, 0.37;
+  Eigen::MatrixXd right_matrix(3,1);
+  right_matrix <<
+  0.3,
+  0.29,
+  0.11;
+  Eigen::MatrixXd correct_marginal(2,1);
+  correct_marginal <<
+  0.11*0.3+0.71*0.29+0.5*0.11,
+  0.37*0.3+0.31*0.29+0.29*0.11;
+
+  Smooshable left_smooshable = Smooshable(left_matrix);
+  Smooshable right_smooshable = Smooshable(right_matrix);
+  Smooshable smooshed = left_smooshable.smoosh(right_smooshable);
+
+  REQUIRE(smooshed.marginal_ == correct_marginal);
+}
