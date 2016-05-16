@@ -139,6 +139,16 @@ TEST_CASE("GermlineGene", "[germlinegene]") {
   correct_emission << 0.31, 0.11;
   germline.EmissionVector(emission, emission_indices, 1);
   REQUIRE(emission == correct_emission);
+
+  Eigen::MatrixXd correct_match(2,2);
+  correct_match <<
+  // Format is landing * emission * transition * ... * fall_off
+  0.17*0.31*0.7         , 0.17*0.31*0.3*0.11         ,
+  0                     , 0.19*0.11                  ;
+  Eigen::MatrixXd match(2,2);
+  Eigen::MatrixXd transition;
+  germline.MatchMatrix(match, emission_indices, 1, 2, 2);
+  REQUIRE(match.isApprox(correct_match));
 }
 
 
