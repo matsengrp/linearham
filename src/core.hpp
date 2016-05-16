@@ -1,4 +1,3 @@
-#include <iostream>
 #include <utility>
 #include <Eigen/Dense>
 
@@ -10,7 +9,7 @@ Eigen::MatrixXd BuildTransition(
 
 
 void BuildMatch(
-    Eigen::MatrixXd& match,
+    Eigen::Ref<Eigen::MatrixXd> match,
     const Eigen::Ref<const Eigen::MatrixXd> transition,
     Eigen::VectorXd& emission);
 
@@ -36,6 +35,7 @@ class GermlineGene {
 
     int length() { return emission_matrix_.cols(); };
 
+
     void EmissionVector(
         Eigen::Ref<Eigen::VectorXd> emission,
         const Eigen::Ref<const Eigen::VectorXi> emission_indices,
@@ -47,6 +47,24 @@ class GermlineGene {
         emission_matrix_.block(0, start, emission_matrix_.rows(), length),
         emission_indices);
     };
+
+
+    void MatchMatrix(
+        Eigen::Ref<Eigen::MatrixXd> match,
+        const Eigen::Ref<const Eigen::VectorXi> emission_indices,
+        int start,
+        int left_flex,
+        int right_flex) {
+      int length = emission_indices.size();
+      assert(this->length() <= start+length);
+      Eigen::VectorXd emission(length);
+      // TODO: Inefficient. Shouldn't calculate fullMatch then cut it down.
+      Eigen::MatrixXd fullMatch(length,length);
+      EmissionVector(emission, emission_indices, start);
+      BuildMatch(fullMatch, transition_.block(start, start, length, length), emission);
+      match = fullMatch.block(0, length - right_flex, left_flex, right_flex);
+    };
+
 
 };
 
@@ -91,6 +109,7 @@ class Smooshable {
 };
 
 
+/*
 class GermlineMatch : public Smooshable {
   public:
     GermlineMatch(
@@ -103,9 +122,7 @@ class GermlineMatch : public Smooshable {
       int length = emission_indices.size();
       assert(left_flex <= length);
       assert(right_flex <= length);
-      Eigen::VectorXd emission(length);
-      // Build the emission vector.
-      germline.EmissionVector(emission, emission_indices, start);
     };
 
 };
+*/

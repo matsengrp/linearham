@@ -52,7 +52,7 @@ Eigen::MatrixXd BuildTransition(
 /// Matrix of matches of various length.
 ///
 void BuildMatch(
-    Eigen::MatrixXd& match,
+    Eigen::Ref<Eigen::MatrixXd> match,
     const Eigen::Ref<const Eigen::MatrixXd> transition,
     Eigen::VectorXd& emission) {
   SubProductMatrix(match, emission);
