@@ -2,7 +2,7 @@
 #include "core.hpp"
 
 
-/// @brief Prepares match transition probability helper objects.
+/// @brief Makes a transition probability matrix.
 /// @param[in]  landing
 /// Vector of probabilities of landing somewhere to begin the match.
 /// @param[in]  next_transition
@@ -44,14 +44,14 @@ Eigen::MatrixXd BuildTransition(
 
 /// @brief Builds a matrix with the probabilities of linear matches.
 ///
+/// @param[out] match
+/// Matrix of matches of various length.
 /// @param[in]  transition
 /// Transition matrix from BuildTransition.
 /// @param[in]  emission
 /// Vector of emission probabilities for a given read.
-/// @param[out] match
-/// Matrix of matches of various length.
 ///
-void BuildMatch(
+void BuildMatchMatrix(
     Eigen::Ref<Eigen::MatrixXd> match,
     const Eigen::Ref<const Eigen::MatrixXd> transition,
     Eigen::VectorXd& emission) {

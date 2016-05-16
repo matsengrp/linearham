@@ -3,25 +3,32 @@
 
 #include "linalg.hpp"
 
+
+/// @file core.hpp
+/// @brief The core of the implementation.
+///
+/// Here a "match" is a specific path through the linear HMM.
+
+
 Eigen::MatrixXd BuildTransition(
     Eigen::VectorXd& landing,
     Eigen::VectorXd& next_transition);
 
 
-void BuildMatch(
+void BuildMatchMatrix(
     Eigen::Ref<Eigen::MatrixXd> match,
     const Eigen::Ref<const Eigen::MatrixXd> transition,
     Eigen::VectorXd& emission);
 
 
-class GermlineGene {
+class Germline {
   public:
     Eigen::VectorXd& landing_;
     Eigen::MatrixXd& emission_matrix_;
     Eigen::VectorXd& next_transition_;
     Eigen::MatrixXd transition_;
 
-    GermlineGene(
+    Germline(
       Eigen::VectorXd& landing,
       Eigen::MatrixXd& emission_matrix,
       Eigen::VectorXd& next_transition) :
@@ -35,7 +42,17 @@ class GermlineGene {
 
     int length() { return emission_matrix_.cols(); };
 
-
+    /// @brief Prepares a vector with per-site emission probabilities.
+    /// @param[out] emission
+    /// Storage for the vector of per-site emission probabilities.
+    /// @param[in]  emission_indices
+    /// Vector of indices giving the emitted states.
+    /// @param[in]  start
+    /// What does the first read position correspond to in the germline gene?
+    ///
+    /// The ith entry of the resulting vector is the probability of emitting
+    /// the state corresponding to the ith entry of `emission_indices` from the
+    /// `i+start` entry of the germline sequence.
     void EmissionVector(
         Eigen::Ref<Eigen::VectorXd> emission,
         const Eigen::Ref<const Eigen::VectorXi> emission_indices,
@@ -48,7 +65,24 @@ class GermlineGene {
         emission_indices);
     };
 
-
+    /// @brief Prepares a matrix with the probabilities of various linear matches.
+    /// @param[out] match
+    /// Storage for the matrix of match probabilities.
+    /// @param[in]  emission_indices
+    /// Vector of indices giving the emitted states.
+    /// @param[in]  start
+    /// What does the first read position correspond to in the germline gene?
+    /// @param[in]  left_flex
+    /// How much variation should we allow in the left hand side of the match?
+    /// @param[in]  right_flex
+    /// How much variation should we allow in the right hand side of the match?
+    ///
+    /// The match matrix has (zero-indexed) f$i,j\f$th entry equal to the
+    /// probability of a linear match starting at `start+i` and ending
+    /// `right_flex-j` before the end.
+    /// Note that we don't need a "stop" parameter because we can give
+    /// `emission_indices` a vector of any length (given the constraints
+    /// on maximal length).
     void MatchMatrix(
         Eigen::Ref<Eigen::MatrixXd> match,
         const Eigen::Ref<const Eigen::VectorXi> emission_indices,
@@ -61,7 +95,7 @@ class GermlineGene {
       // TODO: Inefficient. Shouldn't calculate fullMatch then cut it down.
       Eigen::MatrixXd fullMatch(length,length);
       EmissionVector(emission, emission_indices, start);
-      BuildMatch(fullMatch, transition_.block(start, start, length, length), emission);
+      BuildMatchMatrix(fullMatch, transition_.block(start, start, length, length), emission);
       match = fullMatch.block(0, length - right_flex, left_flex, right_flex);
     };
 
@@ -70,8 +104,7 @@ class GermlineGene {
 
 
 /// The Smooshable class abstracts something that has probabilities associated
-/// with sequence start and stop points. The mental image is that the sequence
-/// ends just before the end point.
+/// with sequence start and stop points.
 ///
 /// Smooshables have left_flex and right_flex, which is basically the amount of
 /// movement allowed in the start and stop points.
@@ -109,11 +142,10 @@ class Smooshable {
 };
 
 
-/*
-class GermlineMatch : public Smooshable {
+class SmooshableGermline : public Smooshable {
   public:
-    GermlineMatch(
-        GermlineGene germline,
+    SmooshableGermline(
+        Germline germline,
         int start,
         int left_flex,
         int right_flex,
@@ -122,7 +154,7 @@ class GermlineMatch : public Smooshable {
       int length = emission_indices.size();
       assert(left_flex <= length);
       assert(right_flex <= length);
+      germline.MatchMatrix(marginal_, emission_indices, start, left_flex, right_flex);
     };
 
 };
-*/

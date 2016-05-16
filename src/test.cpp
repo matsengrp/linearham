@@ -113,14 +113,14 @@ TEST_CASE("BuildMatch", "[core]") {
   Eigen::MatrixXd transition;
 
   transition = BuildTransition(landing, next_transition);
-  BuildMatch(match, transition, emission);
+  BuildMatchMatrix(match, transition, emission);
   REQUIRE(match.isApprox(correct_match));
 }
 
 
-// GermlineGene tests
+// Germline tests
 
-TEST_CASE("GermlineGene", "[germlinegene]") {
+TEST_CASE("Germline", "[germlinegene]") {
   Eigen::VectorXd landing(3);
   landing << 0.13, 0.17, 0.19;
   Eigen::MatrixXd emission_matrix(2,3);
@@ -130,7 +130,7 @@ TEST_CASE("GermlineGene", "[germlinegene]") {
   Eigen::VectorXd next_transition(2);
   next_transition << 0.2, 0.3;
 
-  GermlineGene germline(landing, emission_matrix, next_transition);
+  Germline germline(landing, emission_matrix, next_transition);
 
   Eigen::VectorXi emission_indices(2);
   emission_indices << 1, 0;
