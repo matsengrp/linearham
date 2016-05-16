@@ -1,6 +1,8 @@
+#include <iostream>
 #include <utility>
 #include <Eigen/Dense>
 
+#include "linalg.hpp"
 
 Eigen::MatrixXd BuildTransition(
     Eigen::VectorXd& landing,
@@ -27,11 +29,24 @@ class GermlineGene {
           landing_(landing),
           emission_matrix_(emission_matrix),
           next_transition_(next_transition) {
-        assert(this->landing_.size() == this->emission_matrix_.cols());
-        assert(
-          this->landing_.size() == this->next_transition_.size()+1);
-        transition_ = BuildTransition(this->landing_, this->next_transition_);
+        assert(landing_.size() == emission_matrix_.cols());
+        assert(landing_.size() == next_transition_.size()+1);
+        transition_ = BuildTransition(landing_, next_transition_);
       };
+
+    int length() { return emission_matrix_.cols(); };
+
+    void EmissionVector(
+        Eigen::Ref<Eigen::VectorXd> emission,
+        const Eigen::Ref<const Eigen::VectorXi> emission_indices,
+        int start) {
+      int length = emission_indices.size();
+      assert(this->length() <= start+length);
+      VectorByIndices(
+        emission,
+        emission_matrix_.block(0, start, emission_matrix_.rows(), length),
+        emission_indices);
+    };
 
 };
 
@@ -50,6 +65,8 @@ class Smooshable {
   public:
     Eigen::MatrixXd marginal_;
 
+    Smooshable() {};
+
     Smooshable(int left_flex, int right_flex) {
       marginal_.resize(left_flex, right_flex);
       };
@@ -61,14 +78,14 @@ class Smooshable {
       };
 
 
-    int left_flex() { return this->marginal_.rows(); };
-    int right_flex() { return this->marginal_.cols(); };
+    int left_flex() { return marginal_.rows(); };
+    int right_flex() { return marginal_.cols(); };
 
 
     Smooshable smoosh(Smooshable right) {
-      Smooshable s(this->left_flex(), right.right_flex());
-      assert(this->right_flex() == right.left_flex());
-      s.marginal_ = this->marginal_.rowwise().reverse()*right.marginal_;
+      Smooshable s(left_flex(), right.right_flex());
+      assert(right_flex() == right.left_flex());
+      s.marginal_ = marginal_.rowwise().reverse()*right.marginal_;
       return s;
     };
 };
@@ -77,8 +94,18 @@ class Smooshable {
 class GermlineMatch : public Smooshable {
   public:
     GermlineMatch(
-      Eigen::MatrixXd& marginal) :
-      Smooshable(marginal) {
+        GermlineGene germline,
+        int start,
+        int left_flex,
+        int right_flex,
+        const Eigen::Ref<const Eigen::VectorXi> emission_indices) :
+      Smooshable(left_flex, right_flex) {
+      int length = emission_indices.size();
+      assert(left_flex <= length);
+      assert(right_flex <= length);
+      Eigen::VectorXd emission(length);
+      // Build the emission vector.
+      germline.EmissionVector(emission, emission_indices, start);
     };
 
 };

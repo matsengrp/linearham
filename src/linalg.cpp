@@ -69,3 +69,26 @@ void SubProductMatrix(
     A.block(0,k,k+1,1) = e(k) * A.block(0,k-1,k+1,1);
   }
 }
+
+
+/// @brief This function extracts a vector of entries of a matrix by row index.
+/// @param[out] b Output vector.
+/// @param[in]  A Input matrix.
+/// @param[in]  a Input vector of indices.
+///
+/// Assume \f$A\f$ is \f$m \times n\f$ and that \f$a\f$ is a length-n vector
+/// of indices with entries from 0 to m-1. Then
+///  \f[
+///  b_i := A_{a_i, i}.
+///  \f]
+void VectorByIndices(
+    Eigen::Ref<Eigen::VectorXd> b,
+    const Eigen::Ref<const Eigen::MatrixXd> A,
+    const Eigen::Ref<const Eigen::VectorXi> a) {
+  int ell = b.size();
+  assert(ell == A.cols());
+  assert(ell == a.size());
+  for(int i=0; i<ell; i++) {
+    b(i) = A(a(i), i);
+  }
+}

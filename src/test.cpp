@@ -58,6 +58,21 @@ TEST_CASE("SubProductMatrix", "[linalg]") {
 }
 
 
+TEST_CASE("VectorByIndices", "[linalg]") {
+  Eigen::VectorXd b(4), correct_b(4);
+  Eigen::MatrixXd A(3,4);
+  Eigen::VectorXi a(4);
+  correct_b <<  9,  2.9,  7,  4;
+  A << 1, 2.9, 3,  4,
+       5, 6,   7,  8,
+       9, 10,  11, 12;
+  a << 2, 0, 1, 0;
+
+  VectorByIndices(b, A, a);
+  REQUIRE(b == correct_b);
+}
+
+
 // Core tests
 
 TEST_CASE("BuildTransition", "[core]") {
@@ -115,7 +130,15 @@ TEST_CASE("GermlineGene", "[germlinegene]") {
   Eigen::VectorXd next_transition(2);
   next_transition << 0.2, 0.3;
 
-  GermlineGene gene(landing, emission_matrix, next_transition);
+  GermlineGene germline(landing, emission_matrix, next_transition);
+
+  Eigen::VectorXi emission_indices(2);
+  emission_indices << 1, 0;
+  Eigen::VectorXd emission(2);
+  Eigen::VectorXd correct_emission(2);
+  correct_emission << 0.31, 0.11;
+  germline.EmissionVector(emission, emission_indices, 1);
+  REQUIRE(emission == correct_emission);
 }
 
 

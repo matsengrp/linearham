@@ -1,3 +1,4 @@
+#include <iostream>
 #include <Eigen/Dense>
 
 void ColVecMatCwise(
@@ -14,3 +15,7 @@ void SubProductMatrix(
     Eigen::Ref<Eigen::MatrixXd> A,
     const Eigen::Ref<const Eigen::VectorXd> e);
 
+void VectorByIndices(
+    Eigen::Ref<Eigen::VectorXd> b,
+    const Eigen::Ref<const Eigen::MatrixXd> A,
+    const Eigen::Ref<const Eigen::VectorXi> a);
