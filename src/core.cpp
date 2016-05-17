@@ -46,17 +46,17 @@ Eigen::MatrixXd BuildTransition(
 
 /// @brief Builds a matrix with the probabilities of linear matches.
 ///
-/// @param[out] match
-/// Matrix of matches of various length.
 /// @param[in]  transition
 /// Transition matrix from BuildTransition.
 /// @param[in]  emission
 /// Vector of emission probabilities for a given read.
+/// @param[out] match
+/// Matrix of matches of various length.
 ///
 void BuildMatchMatrix(
-    Eigen::Ref<Eigen::MatrixXd> match,
     const Eigen::Ref<const Eigen::MatrixXd> transition,
-    Eigen::VectorXd& emission) {
+    Eigen::VectorXd& emission,
+    Eigen::Ref<Eigen::MatrixXd> match) {
   SubProductMatrix(emission, match);
   match.array() *= transition.array();
 }
@@ -65,20 +65,20 @@ void BuildMatchMatrix(
 // Germline Methods
 
 /// @brief Prepares a vector with per-site emission probabilities.
-/// @param[out] emission
-/// Storage for the vector of per-site emission probabilities.
 /// @param[in]  emission_indices
 /// Vector of indices giving the emitted states.
 /// @param[in]  start
 /// What does the first read position correspond to in the germline gene?
+/// @param[out] emission
+/// Storage for the vector of per-site emission probabilities.
 ///
 /// The ith entry of the resulting vector is the probability of emitting
 /// the state corresponding to the ith entry of `emission_indices` from the
 /// `i+start` entry of the germline sequence.
 void Germline::EmissionVector(
-    Eigen::Ref<Eigen::VectorXd> emission,
     const Eigen::Ref<const Eigen::VectorXi> emission_indices,
-    int start) {
+    int start,
+    Eigen::Ref<Eigen::VectorXd> emission) {
   int length = emission_indices.size();
   assert(this->length() <= start+length);
   VectorByIndices(
@@ -89,8 +89,6 @@ void Germline::EmissionVector(
 
 
 /// @brief Prepares a matrix with the probabilities of various linear matches.
-/// @param[out] match
-/// Storage for the matrix of match probabilities.
 /// @param[in]  emission_indices
 /// Vector of indices giving the emitted states.
 /// @param[in]  start
@@ -99,6 +97,8 @@ void Germline::EmissionVector(
 /// How much variation should we allow in the left hand side of the match?
 /// @param[in]  right_flex
 /// How much variation should we allow in the right hand side of the match?
+/// @param[out] match
+/// Storage for the matrix of match probabilities.
 ///
 /// The match matrix has (zero-indexed) f$i,j\f$th entry equal to the
 /// probability of a linear match starting at `start+i` and ending
@@ -107,18 +107,18 @@ void Germline::EmissionVector(
 /// `emission_indices` a vector of any length (given the constraints
 /// on maximal length).
 void Germline::MatchMatrix(
-    Eigen::Ref<Eigen::MatrixXd> match,
     const Eigen::Ref<const Eigen::VectorXi> emission_indices,
     int start,
     int left_flex,
-    int right_flex) {
+    int right_flex,
+    Eigen::Ref<Eigen::MatrixXd> match) {
   int length = emission_indices.size();
   assert(this->length() <= start+length);
   Eigen::VectorXd emission(length);
   // TODO: Inefficient. Shouldn't calculate fullMatch then cut it down.
   Eigen::MatrixXd fullMatch(length,length);
-  EmissionVector(emission, emission_indices, start);
-  BuildMatchMatrix(fullMatch, transition_.block(start, start, length, length), emission);
+  EmissionVector(emission_indices, start, emission);
+  BuildMatchMatrix(transition_.block(start, start, length, length), emission, fullMatch);
   match = fullMatch.block(0, length - right_flex, left_flex, right_flex);
 };
 

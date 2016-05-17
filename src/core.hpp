@@ -16,9 +16,9 @@ Eigen::MatrixXd BuildTransition(
 
 
 void BuildMatchMatrix(
-    Eigen::Ref<Eigen::MatrixXd> match,
     const Eigen::Ref<const Eigen::MatrixXd> transition,
-    Eigen::VectorXd& emission);
+    Eigen::VectorXd& emission,
+    Eigen::Ref<Eigen::MatrixXd> match);
 
 
 class Germline {
@@ -41,16 +41,16 @@ class Germline {
     int length() { return transition_.cols(); };
 
     void EmissionVector(
-        Eigen::Ref<Eigen::VectorXd> emission,
         const Eigen::Ref<const Eigen::VectorXi> emission_indices,
-        int start);
+        int start,
+        Eigen::Ref<Eigen::VectorXd> emission);
 
     void MatchMatrix(
-        Eigen::Ref<Eigen::MatrixXd> match,
         const Eigen::Ref<const Eigen::VectorXi> emission_indices,
         int start,
         int left_flex,
-        int right_flex);
+        int right_flex,
+        Eigen::Ref<Eigen::MatrixXd> match);
 };
 
 
@@ -93,7 +93,6 @@ class SmooshableGermline : public Smooshable {
       Smooshable(left_flex, right_flex) {
       assert(left_flex <= emission_indices.size());
       assert(right_flex <= emission_indices.size());
-      germline.MatchMatrix(marginal_, emission_indices, start, left_flex, right_flex);
+      germline.MatchMatrix(emission_indices, start, left_flex, right_flex, marginal_);
     };
-
 };
