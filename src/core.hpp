@@ -6,8 +6,6 @@
 
 /// @file core.hpp
 /// @brief The core of the implementation.
-///
-/// Here a "match" is a specific path through the linear HMM.
 
 
 Eigen::MatrixXd BuildTransition(
@@ -30,13 +28,7 @@ class Germline {
     Germline(
       Eigen::VectorXd& landing,
       Eigen::MatrixXd& emission_matrix,
-      Eigen::VectorXd& next_transition) :
-          emission_matrix_(emission_matrix) {
-        assert(landing.size() == emission_matrix_.cols());
-        assert(landing.size() == next_transition.size()+1);
-        transition_ = BuildTransition(landing, next_transition);
-        assert(transition_.cols() == emission_matrix_.cols());
-      };
+      Eigen::VectorXd& next_transition);
 
     int length() { return transition_.cols(); };
 

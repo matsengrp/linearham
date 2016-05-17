@@ -1,6 +1,11 @@
 #include "linalg.hpp"
 #include "core.hpp"
 
+/// @file core.cpp
+/// @brief The core of the implementation.
+///
+/// Here a "match" is a specific path through the linear HMM.
+
 
 // Functions
 
@@ -63,6 +68,26 @@ void BuildMatchMatrix(
 
 
 // Germline Methods
+
+
+/// @brief Prepares a vector with per-site emission probabilities.
+/// @param[in]  landing
+/// Vector of probabilities of landing somewhere to begin the match.
+/// @param[in]  emission_matrix
+/// Matrix of emission probabilities, with rows as the states and columns as the sites.
+/// @param[out] next_transition
+/// Vector of probabilities of transitioning to the next match state.
+Germline::Germline(
+  Eigen::VectorXd& landing,
+  Eigen::MatrixXd& emission_matrix,
+  Eigen::VectorXd& next_transition) :
+      emission_matrix_(emission_matrix) {
+    assert(landing.size() == emission_matrix_.cols());
+    assert(landing.size() == next_transition.size()+1);
+    transition_ = BuildTransition(landing, next_transition);
+    assert(transition_.cols() == emission_matrix_.cols());
+  };
+
 
 /// @brief Prepares a vector with per-site emission probabilities.
 /// @param[in]  emission_indices
