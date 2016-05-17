@@ -8,16 +8,16 @@
 /// https://eigen.tuxfamily.org/dox/TopicFunctionTakingEigenTypes.html
 
 /// @brief This function takes the coefficient-wise product of b and every column of A.
-/// @param[out] B Output matrix.
 /// @param[in]  b Input vector.
 /// @param[in]  A Input matrix.
+/// @param[out] B Output matrix.
 ///  \f[
 ///  B_{i,j} = b_i A_{i,j}
 ///  \f]
 void ColVecMatCwise(
-    Eigen::Ref<Eigen::MatrixXd> B,
     const Eigen::Ref<const Eigen::VectorXd> b,
-    const Eigen::Ref<const Eigen::MatrixXd> A) {
+    const Eigen::Ref<const Eigen::MatrixXd> A,
+    Eigen::Ref<Eigen::MatrixXd> B) {
   for(int i=0; i < B.cols(); i++) {
     B.col(i) = b.cwiseProduct(A.col(i));
   }
@@ -25,16 +25,16 @@ void ColVecMatCwise(
 
 
 /// @brief This function takes the coefficient-wise product of b and every row of A.
-/// @param[out] B Output matrix.
 /// @param[in]  b Input vector.
 /// @param[in]  A Input matrix.
+/// @param[out] B Output matrix.
 ///  \f[
 ///  B_{i,j} = b_j A_{i,j}
 ///  \f]
 void RowVecMatCwise(
-    Eigen::Ref<Eigen::MatrixXd> B,
     const Eigen::Ref<const Eigen::RowVectorXd> b,
-    const Eigen::Ref<const Eigen::MatrixXd> A) {
+    const Eigen::Ref<const Eigen::MatrixXd> A,
+    Eigen::Ref<Eigen::MatrixXd> B) {
   for(int i=0; i < B.rows(); i++) {
     B.row(i) = b.cwiseProduct(A.row(i));
   }
@@ -42,8 +42,8 @@ void RowVecMatCwise(
 
 
 /// @brief This function builds an matrix of sub-products.
-/// @param[out] A Output matrix.
 /// @param[in]  e Input vector.
+/// @param[out] A Output matrix.
 ///
 /// If e is of length \f$\ell\f$, then fill a \f$\ell \times \ell\f$
 /// matrix with the entries
@@ -52,8 +52,8 @@ void RowVecMatCwise(
 ///  \f]
 /// Empty products are taken to be one.
 void SubProductMatrix(
-    Eigen::Ref<Eigen::MatrixXd> A,
-    const Eigen::Ref<const Eigen::VectorXd> e) {
+    const Eigen::Ref<const Eigen::VectorXd> e,
+    Eigen::Ref<Eigen::MatrixXd> A) {
   int ell = e.size();
   assert(ell == A.rows());
   assert(ell == A.cols());
@@ -72,9 +72,9 @@ void SubProductMatrix(
 
 
 /// @brief This function extracts a vector of entries of a matrix by row index.
-/// @param[out] b Output vector.
 /// @param[in]  A Input matrix.
 /// @param[in]  a Input vector of indices.
+/// @param[out] b Output vector.
 ///
 /// Assume \f$A\f$ is \f$m \times n\f$ and that \f$a\f$ is a length-n vector
 /// of indices with entries from 0 to m-1. Then
@@ -82,9 +82,9 @@ void SubProductMatrix(
 /// b_i := A_{a_i, i}.
 /// \f]
 void VectorByIndices(
-    Eigen::Ref<Eigen::VectorXd> b,
     const Eigen::Ref<const Eigen::MatrixXd> A,
-    const Eigen::Ref<const Eigen::VectorXi> a) {
+    const Eigen::Ref<const Eigen::VectorXi> a,
+    Eigen::Ref<Eigen::VectorXd> b) {
   int ell = b.size();
   assert(ell == A.cols());
   assert(ell == a.size());

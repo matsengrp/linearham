@@ -19,11 +19,11 @@ TEST_CASE("ColVecMatCwise", "[linalg]") {
                 20, 24, 28, 32,
                 9, 10,  11, 12;
 
-  ColVecMatCwise(B, b, A);
+  ColVecMatCwise(b, A, B);
   REQUIRE(B == correct_B);
 
   // Check that we can use matrices as lvalues and rvalues in the same expression.
-  ColVecMatCwise(A, b, A);
+  ColVecMatCwise(b, A, A);
   REQUIRE(A == correct_B);
 }
 
@@ -39,7 +39,7 @@ TEST_CASE("RowVecMatCwise", "[linalg]") {
                 0, 24,   7, 80,
                 0, 40,  11, 120;
 
-  RowVecMatCwise(B, b, A);
+  RowVecMatCwise(b, A, B);
   REQUIRE(B == correct_B);
 }
 
@@ -53,7 +53,7 @@ TEST_CASE("SubProductMatrix", "[linalg]") {
   e << 2.5, -1, 2;
   A.setConstant(999);
 
-  SubProductMatrix(A, e);
+  SubProductMatrix(e, A);
   REQUIRE(A == correct_A);
 }
 
@@ -68,7 +68,7 @@ TEST_CASE("VectorByIndices", "[linalg]") {
        9, 10,  11, 12;
   a << 2, 0, 1, 0;
 
-  VectorByIndices(b, A, a);
+  VectorByIndices(A, a, b);
   REQUIRE(b == correct_b);
 }
 

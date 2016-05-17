@@ -2,23 +2,23 @@
 #include <Eigen/Dense>
 
 void ColVecMatCwise(
-    Eigen::Ref<Eigen::MatrixXd> B,
     const Eigen::Ref<const Eigen::VectorXd> b,
-    const Eigen::Ref<const Eigen::MatrixXd> A);
+    const Eigen::Ref<const Eigen::MatrixXd> A,
+    Eigen::Ref<Eigen::MatrixXd> B);
 
 void RowVecMatCwise(
-    Eigen::Ref<Eigen::MatrixXd> B,
     const Eigen::Ref<const Eigen::RowVectorXd> b,
-    const Eigen::Ref<const Eigen::MatrixXd> A);
+    const Eigen::Ref<const Eigen::MatrixXd> A,
+    Eigen::Ref<Eigen::MatrixXd> B);
 
 void SubProductMatrix(
-    Eigen::Ref<Eigen::MatrixXd> A,
-    const Eigen::Ref<const Eigen::VectorXd> e);
+    const Eigen::Ref<const Eigen::VectorXd> e,
+    Eigen::Ref<Eigen::MatrixXd> A);
 
 void VectorByIndices(
-    Eigen::Ref<Eigen::VectorXd> b,
     const Eigen::Ref<const Eigen::MatrixXd> A,
-    const Eigen::Ref<const Eigen::VectorXi> a);
+    const Eigen::Ref<const Eigen::VectorXi> a,
+    Eigen::Ref<Eigen::VectorXd> b);
 
 void FlippedBinaryMax(
     const Eigen::Ref<const Eigen::MatrixXd> A,

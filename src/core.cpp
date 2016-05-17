@@ -27,14 +27,14 @@ Eigen::MatrixXd BuildTransition(
   Eigen::VectorXd fall_off(ell);
 
   transition.setOnes();
-  SubProductMatrix(transition.block(0,1,ell-1,ell-1), next_transition);
+  SubProductMatrix(next_transition, transition.block(0,1,ell-1,ell-1));
 
   // Changing to array here allows for component-wise operations.
   fall_off.head(ell-1).array() = 1.-next_transition.array();
   fall_off(ell-1) = 1.;
 
-  ColVecMatCwise(transition, landing, transition);
-  RowVecMatCwise(transition, fall_off, transition);
+  ColVecMatCwise(landing, transition, transition);
+  RowVecMatCwise(fall_off, transition, transition);
 
   transition.triangularView<Eigen::StrictlyLower>().setZero();
 
@@ -55,6 +55,6 @@ void BuildMatchMatrix(
     Eigen::Ref<Eigen::MatrixXd> match,
     const Eigen::Ref<const Eigen::MatrixXd> transition,
     Eigen::VectorXd& emission) {
-  SubProductMatrix(match, emission);
+  SubProductMatrix(emission, match);
   match.array() *= transition.array();
 }

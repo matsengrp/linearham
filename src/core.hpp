@@ -57,9 +57,9 @@ class Germline {
       int length = emission_indices.size();
       assert(this->length() <= start+length);
       VectorByIndices(
-        emission,
         emission_matrix_.block(0, start, emission_matrix_.rows(), length),
-        emission_indices);
+        emission_indices,
+        emission);
     };
 
     /// @brief Prepares a matrix with the probabilities of various linear matches.
