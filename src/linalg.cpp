@@ -7,6 +7,7 @@
 /// pass in an X or a Block of an X. See the section on Ref in
 /// https://eigen.tuxfamily.org/dox/TopicFunctionTakingEigenTypes.html
 
+
 /// @brief This function takes the coefficient-wise product of b and every column of A.
 /// @param[in]  b Input vector.
 /// @param[in]  A Input matrix.
