@@ -78,9 +78,9 @@ void SubProductMatrix(
 ///
 /// Assume \f$A\f$ is \f$m \times n\f$ and that \f$a\f$ is a length-n vector
 /// of indices with entries from 0 to m-1. Then
-///  \f[
-///  b_i := A_{a_i, i}.
-///  \f]
+/// \f[
+/// b_i := A_{a_i, i}.
+/// \f]
 void VectorByIndices(
     Eigen::Ref<Eigen::VectorXd> b,
     const Eigen::Ref<const Eigen::MatrixXd> A,
@@ -90,5 +90,39 @@ void VectorByIndices(
   assert(ell == a.size());
   for(int i=0; i<ell; i++) {
     b(i) = A(a(i), i);
+  }
+}
+
+
+/// @brief This function extracts a vector of entries of a matrix by row index.
+/// @param[in]  A Input matrix.
+/// @param[in]  B Input matrix.
+/// @param[out] C Output matrix containing the matrix product maximum.
+/// @param[out] C_idx Output matrix containing the matrix product argmax.
+///
+/// Assume \f$A\f$ is \f$m \times n\f$ and that \f$a\f$ is a length-n vector
+/// of indices with entries from 0 to m-1. Then
+/// \f[
+/// C_{i,k} := \max_j A_{i,n-j} B_{j,k}
+/// \f]
+/// and `C_idx` is the corresponding argmax.
+void FlippedBinaryMax(
+    const Eigen::Ref<const Eigen::MatrixXd> A,
+    const Eigen::Ref<const Eigen::VectorXd> B,
+    Eigen::Ref<Eigen::MatrixXd> C,
+    Eigen::Ref<Eigen::MatrixXi> C_idx) {
+  assert(A.cols() == B.rows());
+  assert(C.rows() == A.rows());
+  assert(C.cols() == B.cols());
+  int idx;
+  Eigen::VectorXd util(A.cols());
+  // TODO: Make faster by doing matrix-wise rather than vector-wise product.
+  for(int i=0; i<A.rows(); i++) {
+    for(int k=0; k<B.cols(); k++) {
+      util = A.row(i).reverse().transpose().array().cwiseProduct(B.col(k).array());
+      util.maxCoeff(&idx);
+      C_idx(i, k) = idx;
+      C(i,k) = util(idx);
+    }
   }
 }

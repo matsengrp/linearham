@@ -73,6 +73,33 @@ TEST_CASE("VectorByIndices", "[linalg]") {
 }
 
 
+TEST_CASE("FlippedBinaryMax", "[linalg]") {
+  Eigen::MatrixXd left_matrix(2,3);
+  left_matrix <<
+  0.5, 0.71, 0.13,
+  0.29, 0.31, 0.37;
+  Eigen::MatrixXd right_matrix(3,1);
+  right_matrix <<
+  0.3,
+  0.29,
+  0.11;
+  Eigen::MatrixXd C(2,1);
+  Eigen::MatrixXd correct_C(2,1);
+  // See Smooshable test below for more details.
+  correct_C <<
+  0.71*0.29,
+  0.37*0.3;
+  Eigen::MatrixXi C_idx(2,1);
+  Eigen::MatrixXi correct_C_idx(2,1);
+  correct_C_idx <<
+  1,
+  0;
+  FlippedBinaryMax(left_matrix, right_matrix, C, C_idx);
+  REQUIRE(C == correct_C);
+  REQUIRE(C_idx == correct_C_idx);
+}
+
+
 // Core tests
 
 TEST_CASE("BuildTransition", "[core]") {
@@ -157,7 +184,7 @@ TEST_CASE("Germline", "[germlinegene]") {
 TEST_CASE("Smooshable", "[smooshable]") {
   Eigen::MatrixXd left_matrix(2,3);
   left_matrix <<
-  0.5, 0.71, 0.11,
+  0.5, 0.71, 0.13,
   0.29, 0.31, 0.37;
   Eigen::MatrixXd right_matrix(3,1);
   right_matrix <<
@@ -166,7 +193,7 @@ TEST_CASE("Smooshable", "[smooshable]") {
   0.11;
   Eigen::MatrixXd correct_marginal(2,1);
   correct_marginal <<
-  0.11*0.3+0.71*0.29+0.5*0.11,
+  0.13*0.3+0.71*0.29+0.5*0.11,
   0.37*0.3+0.31*0.29+0.29*0.11;
 
   Smooshable left_smooshable = Smooshable(left_matrix);

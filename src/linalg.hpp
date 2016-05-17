@@ -19,3 +19,9 @@ void VectorByIndices(
     Eigen::Ref<Eigen::VectorXd> b,
     const Eigen::Ref<const Eigen::MatrixXd> A,
     const Eigen::Ref<const Eigen::VectorXi> a);
+
+void FlippedBinaryMax(
+    const Eigen::Ref<const Eigen::MatrixXd> A,
+    const Eigen::Ref<const Eigen::VectorXd> B,
+    Eigen::Ref<Eigen::MatrixXd> C,
+    Eigen::Ref<Eigen::MatrixXi> C_idx);
