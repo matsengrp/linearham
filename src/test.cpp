@@ -200,5 +200,5 @@ TEST_CASE("Smooshable", "[smooshable]") {
   Smooshable right_smooshable = Smooshable(right_matrix);
   Smooshable smooshed = left_smooshable.smoosh(right_smooshable);
 
-  REQUIRE(smooshed.marginal_ == correct_marginal);
+  REQUIRE(smooshed.marginal() == correct_marginal);
 }

@@ -22,10 +22,11 @@ void BuildMatchMatrix(
 
 
 class Germline {
-  public:
+  protected:
     Eigen::MatrixXd emission_matrix_;
     Eigen::MatrixXd transition_;
 
+  public:
     Germline(
       Eigen::VectorXd& landing,
       Eigen::MatrixXd& emission_matrix,
@@ -59,9 +60,10 @@ class Germline {
 /// Smooshables have left_flex and right_flex, which is basically the amount of
 /// movement allowed in the start and stop points.
 class Smooshable {
-  public:
+  protected:
     Eigen::MatrixXd marginal_;
 
+  public:
     Smooshable() {};
 
     Smooshable(int left_flex, int right_flex) {
@@ -74,7 +76,7 @@ class Smooshable {
 
     int left_flex() { return marginal_.rows(); };
     int right_flex() { return marginal_.cols(); };
-
+    const Eigen::Ref<const Eigen::MatrixXd> marginal() const { return marginal_; };
 
     Smooshable smoosh(Smooshable right);
 };
