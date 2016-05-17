@@ -23,24 +23,21 @@ void BuildMatchMatrix(
 
 class Germline {
   public:
-    Eigen::VectorXd& landing_;
-    Eigen::MatrixXd& emission_matrix_;
-    Eigen::VectorXd& next_transition_;
+    Eigen::MatrixXd emission_matrix_;
     Eigen::MatrixXd transition_;
 
     Germline(
       Eigen::VectorXd& landing,
       Eigen::MatrixXd& emission_matrix,
       Eigen::VectorXd& next_transition) :
-          landing_(landing),
-          emission_matrix_(emission_matrix),
-          next_transition_(next_transition) {
-        assert(landing_.size() == emission_matrix_.cols());
-        assert(landing_.size() == next_transition_.size()+1);
-        transition_ = BuildTransition(landing_, next_transition_);
+          emission_matrix_(emission_matrix) {
+        assert(landing.size() == emission_matrix_.cols());
+        assert(landing.size() == next_transition.size()+1);
+        transition_ = BuildTransition(landing, next_transition);
+        assert(transition_.cols() == emission_matrix_.cols());
       };
 
-    int length() { return emission_matrix_.cols(); };
+    int length() { return transition_.cols(); };
 
     /// @brief Prepares a vector with per-site emission probabilities.
     /// @param[out] emission
@@ -109,9 +106,14 @@ class Germline {
 /// Smooshables have left_flex and right_flex, which is basically the amount of
 /// movement allowed in the start and stop points.
 /// When we smoosh two smooshables, they must have the same right and left flexes.
+/// Say this common value is n.
+/// The marginal probability is just a column-flipped matrix product:
 /// \f[
 /// C_{i,k} := \sum_j A_{i,n-j} B_{j,k}
 /// \f]
+/// because we are summing over the various ways to divide up the common segment
+/// of length n between the left and right smooshable. The equivalent entry for
+/// the Viterbi sequence just has sum replaced with argmax.
 class Smooshable {
   public:
     Eigen::MatrixXd marginal_;
@@ -122,11 +124,9 @@ class Smooshable {
       marginal_.resize(left_flex, right_flex);
       };
 
-
-    Smooshable(
-      Eigen::MatrixXd& marginal) :
-          marginal_(marginal) {
-      };
+    // Note: this is going to call a MatrixXd copy constructor because we are
+    // initializing a MatrixXd object with a reference to another.
+    Smooshable( Eigen::MatrixXd& marginal) : marginal_(marginal) { };
 
 
     int left_flex() { return marginal_.rows(); };
