@@ -201,4 +201,7 @@ TEST_CASE("Smooshable", "[smooshable]") {
   Smooshable smooshed = left_smooshable.smoosh(right_smooshable);
 
   REQUIRE(smooshed.marginal() == correct_marginal);
+
+  SmooshableVector sv = {left_smooshable, right_smooshable};
+  SmooshableChain chain = SmooshableChain(sv);
 }

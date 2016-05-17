@@ -36,6 +36,7 @@ class Smooshable {
 };
 
 
+/// A smooshable derived from a germline gene.
 class SmooshableGermline : public Smooshable {
   public:
     SmooshableGermline(
@@ -50,6 +51,24 @@ class SmooshableGermline : public Smooshable {
       germline.MatchMatrix(emission_indices, start, left_flex, right_flex, marginal_);
     };
 };
+
+
+/// An ordered list of smooshables.
+///
+/// The idea is that you put a collection of smooshables together in a chain
+/// then smoosh them all together. It's nice to have a class for such a chain
+/// so that you can unwind the result in the end.
+typedef std::vector<Smooshable> SmooshableVector;
+
+class SmooshableChain {
+  protected:
+    SmooshableVector v_;
+
+  public:
+    SmooshableChain(SmooshableVector v) : v_(v) {};
+};
+
+
 
 
 #endif  // LINEARHAM_SMOOSHABLE_

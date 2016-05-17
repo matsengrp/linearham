@@ -1,5 +1,6 @@
 env = Environment(
-    CPPPATH = ['eigen', 'src'])
+    CPPPATH = ['eigen', 'src'],
+    CCFLAGS='-std=c++11')
 
 # Doubles compilation time.
 #env.Append(CCFLAGS='-O3 -msse2')
