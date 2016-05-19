@@ -85,7 +85,9 @@ TEST_CASE("FlippedBinaryMax", "[linalg]") {
   0.11;
   Eigen::MatrixXd C(2,1);
   Eigen::MatrixXd correct_C(2,1);
-  // See Smooshable test below for more details.
+  // The options for max are:
+  // 0.13*0.3, 0.71*0.29, 0.5*0.11
+  // 0.37*0.3, 0.31*0.29, 0.29*0.11
   correct_C <<
   0.71*0.29,
   0.37*0.3;
@@ -195,13 +197,23 @@ TEST_CASE("Smooshable", "[smooshable]") {
   correct_marginal <<
   0.13*0.3+0.71*0.29+0.5*0.11,
   0.37*0.3+0.31*0.29+0.29*0.11;
+  Eigen::MatrixXd correct_viterbi(2,1);
+  correct_viterbi <<
+  0.71*0.29,
+  0.37*0.3;
+  Eigen::MatrixXi correct_viterbi_idx(2,1);
+  correct_viterbi_idx <<
+  1,
+  0;
 
   Smooshable left_smooshable = Smooshable(left_matrix);
   Smooshable right_smooshable = Smooshable(right_matrix);
-  Smooshable smooshed = left_smooshable.smoosh(right_smooshable);
+  Smooshable smooshed = left_smooshable.Smoosh(right_smooshable);
 
   REQUIRE(smooshed.marginal() == correct_marginal);
+  REQUIRE(smooshed.viterbi() == correct_viterbi);
+  REQUIRE(smooshed.viterbi_idx() == correct_viterbi_idx);
 
-  SmooshableVector sv = {left_smooshable, right_smooshable};
-  SmooshableChain chain = SmooshableChain(sv);
+  //SmooshableVector sv = {left_smooshable, right_smooshable};
+  //SmooshableChain chain = SmooshableChain(sv);
 }

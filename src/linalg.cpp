@@ -100,6 +100,7 @@ void VectorByIndices(
 /// @param[in]  B Input matrix.
 /// @param[out] C Output matrix containing the matrix product maximum.
 /// @param[out] C_idx Output matrix containing the matrix product argmax.
+/// `idx` is short for "index".
 ///
 /// Assume \f$A\f$ is \f$m \times n\f$ and that \f$a\f$ is a length-n vector
 /// of indices with entries from 0 to m-1. Then

@@ -16,12 +16,14 @@
 class Smooshable {
   protected:
     Eigen::MatrixXd marginal_;
+    Eigen::MatrixXd viterbi_;
+    Eigen::MatrixXi viterbi_idx_;
 
   public:
-    Smooshable() {};
-
     Smooshable(int left_flex, int right_flex) {
       marginal_.resize(left_flex, right_flex);
+      viterbi_.resize(left_flex, right_flex);
+      viterbi_idx_.resize(left_flex, right_flex);
       };
 
     // Note: this is going to call a MatrixXd copy constructor because we are
@@ -31,8 +33,10 @@ class Smooshable {
     int left_flex() { return marginal_.rows(); };
     int right_flex() { return marginal_.cols(); };
     const Eigen::Ref<const Eigen::MatrixXd> marginal() const { return marginal_; };
+    const Eigen::Ref<const Eigen::MatrixXd> viterbi() const { return viterbi_; };
+    const Eigen::Ref<const Eigen::MatrixXi> viterbi_idx() const { return viterbi_idx_; };
 
-    Smooshable smoosh(Smooshable right);
+    Smooshable Smoosh(Smooshable right);
 };
 
 
@@ -59,13 +63,16 @@ class SmooshableGermline : public Smooshable {
 /// then smoosh them all together. It's nice to have a class for such a chain
 /// so that you can unwind the result in the end.
 typedef std::vector<Smooshable> SmooshableVector;
+typedef std::vector<std::vector<int>> IntListList;
 
 class SmooshableChain {
   protected:
-    SmooshableVector v_;
+    SmooshableVector originals_;
+    SmooshableVector smooshed_;
+    IntListList viterbi_;
 
   public:
-    SmooshableChain(SmooshableVector v) : v_(v) {};
+    SmooshableChain(SmooshableVector originals);
 };
 
 
