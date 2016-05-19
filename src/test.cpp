@@ -208,11 +208,13 @@ TEST_CASE("Smooshable", "[smooshable]") {
 
   Smooshable left_smooshable = Smooshable(left_matrix);
   Smooshable right_smooshable = Smooshable(right_matrix);
-  Smooshable smooshed = left_smooshable.Smoosh(right_smooshable);
+  Smooshable smooshed;
+  Eigen::MatrixXi viterbi_idx;
+  Smoosh(left_smooshable, right_smooshable, smooshed, viterbi_idx);
 
   REQUIRE(smooshed.marginal() == correct_marginal);
   REQUIRE(smooshed.viterbi() == correct_viterbi);
-  REQUIRE(smooshed.viterbi_idx() == correct_viterbi_idx);
+  REQUIRE(viterbi_idx == correct_viterbi_idx);
 
   //SmooshableVector sv = {left_smooshable, right_smooshable};
   //SmooshableChain chain = SmooshableChain(sv);

@@ -17,14 +17,10 @@ class Smooshable {
   protected:
     Eigen::MatrixXd marginal_;
     Eigen::MatrixXd viterbi_;
-    Eigen::MatrixXi viterbi_idx_;
 
   public:
-    Smooshable(int left_flex, int right_flex) {
-      marginal_.resize(left_flex, right_flex);
-      viterbi_.resize(left_flex, right_flex);
-      viterbi_idx_.resize(left_flex, right_flex);
-      };
+    Smooshable() {};
+    Smooshable(int left_flex, int right_flex);
 
     // Note: this is going to call a MatrixXd copy constructor because we are
     // initializing a MatrixXd object with a reference to another.
@@ -32,12 +28,12 @@ class Smooshable {
 
     int left_flex() { return marginal_.rows(); };
     int right_flex() { return marginal_.cols(); };
-    const Eigen::Ref<const Eigen::MatrixXd> marginal() const { return marginal_; };
-    const Eigen::Ref<const Eigen::MatrixXd> viterbi() const { return viterbi_; };
-    const Eigen::Ref<const Eigen::MatrixXi> viterbi_idx() const { return viterbi_idx_; };
-
-    Smooshable Smoosh(Smooshable right);
+    Eigen::Ref<Eigen::MatrixXd> marginal() { return marginal_; };
+    Eigen::Ref<Eigen::MatrixXd> viterbi() { return viterbi_; };
+    void Resize(int left_flex, int right_flex);
 };
+
+void Smoosh(Smooshable& s_a, Smooshable& s_b, Smooshable& s_out, Eigen::MatrixXi& viterbi_idx);
 
 
 /// A smooshable derived from a germline gene.
@@ -53,6 +49,7 @@ class SmooshableGermline : public Smooshable {
       assert(left_flex <= emission_indices.size());
       assert(right_flex <= emission_indices.size());
       germline.MatchMatrix(emission_indices, start, left_flex, right_flex, marginal_);
+      viterbi_ = marginal_;
     };
 };
 

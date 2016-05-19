@@ -4,11 +4,28 @@
 /// @brief Implementation of Smooshable class and descendants.
 
 
+/// @brief "Boring" constructor, which just sets up memory.
+Smooshable::Smooshable(int left_flex, int right_flex) {
+  Resize(left_flex, right_flex);
+  };
+
+
+/// @brief Resizes the matrices.
+void Smooshable::Resize(int left_flex, int right_flex) {
+  marginal_.resize(left_flex, right_flex);
+  viterbi_.resize(left_flex, right_flex);
+}
+
+
 /// @brief Smoosh two smooshables!
-/// @param[in] right
-/// The other smooshable to smoosh on the right of this one.
-/// @return
-/// The resulting smooshableo
+/// @param[in] s_a
+/// Smooshable on the left.
+/// @param[in] s_b
+/// Smooshable on the right.
+/// @param[out] s_out
+/// The smooshable resulting from smooshing s_a and s_b.
+/// @param[out] viterbi_idx
+/// The corresponding viterbi index.
 ///
 /// When we smoosh two smooshables, they must have the same right and left flexes.
 /// Say this common value is n.
@@ -19,20 +36,20 @@
 /// because we are summing over the various ways to divide up the common segment
 /// of length n between the left and right smooshable. The equivalent entry for
 /// the Viterbi sequence just has sum replaced with argmax.
-Smooshable Smooshable::Smoosh(Smooshable right) {
-  Smooshable s(left_flex(), right.right_flex());
-  assert(right_flex() == right.left_flex());
-  s.marginal_ = marginal_.rowwise().reverse()*right.marginal_;
-  FlippedBinaryMax(marginal_, right.marginal_, s.viterbi_, s.viterbi_idx_);
-  return s;
+void Smoosh(Smooshable& s_a, Smooshable& s_b, Smooshable& s_out, Eigen::MatrixXi& viterbi_idx) {
+  s_out.Resize(s_a.left_flex(), s_b.right_flex());
+  viterbi_idx.resize(s_a.left_flex(), s_b.right_flex());
+  assert(s_a.right_flex() == s_b.left_flex());
+  s_out.marginal() = s_a.marginal().rowwise().reverse()*s_b.marginal();
+  FlippedBinaryMax(s_a.marginal(), s_b.marginal(), s_out.viterbi(), viterbi_idx);
 };
-
 
 
 
 SmooshableChain::SmooshableChain(
     SmooshableVector originals) : originals_(originals) {
 
+/*
   // Say we are given smooshes a, b, c, and denote smoosh by *.
   // First make a list a, a*b, a*b*c.
   smooshed_.push_back(originals_[0]);
@@ -67,5 +84,6 @@ SmooshableChain::SmooshableChain(
       viterbi_.push_back(path);
     }
   }
+  */
 };
 
