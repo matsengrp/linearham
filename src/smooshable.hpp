@@ -24,15 +24,17 @@ class Smooshable {
 
     // Note: this is going to call a MatrixXd copy constructor because we are
     // initializing a MatrixXd object with a reference to another.
-    Smooshable( Eigen::MatrixXd& marginal) : marginal_(marginal) { };
+    Smooshable(Eigen::MatrixXd& marginal) : marginal_(marginal) { };
 
     int left_flex() { return marginal_.rows(); };
     int right_flex() { return marginal_.cols(); };
+    const Eigen::Ref<const Eigen::MatrixXd> marginal() const { return marginal_; };
+    const Eigen::Ref<const Eigen::MatrixXd> viterbi() const { return viterbi_; };
     Eigen::Ref<Eigen::MatrixXd> marginal() { return marginal_; };
     Eigen::Ref<Eigen::MatrixXd> viterbi() { return viterbi_; };
-    void Resize(int left_flex, int right_flex);
 };
 
+// Functions
 std::pair<Smooshable, Eigen::MatrixXi> Smoosh(Smooshable& s_a, Smooshable& s_b);
 
 

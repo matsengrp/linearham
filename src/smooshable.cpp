@@ -6,15 +6,9 @@
 
 /// @brief "Boring" constructor, which just sets up memory.
 Smooshable::Smooshable(int left_flex, int right_flex) {
-  Resize(left_flex, right_flex);
-  };
-
-
-/// @brief Resizes the matrices.
-void Smooshable::Resize(int left_flex, int right_flex) {
   marginal_.resize(left_flex, right_flex);
   viterbi_.resize(left_flex, right_flex);
-}
+  };
 
 
 /// @brief Smoosh two smooshables!
@@ -36,10 +30,8 @@ void Smooshable::Resize(int left_flex, int right_flex) {
 /// of length n between the left and right smooshable. The equivalent entry for
 /// the Viterbi sequence just has sum replaced with max.
 std::pair<Smooshable, Eigen::MatrixXi> Smoosh(Smooshable& s_a, Smooshable& s_b) {
-  Smooshable s_out;
-  Eigen::MatrixXi viterbi_idx;
-  s_out.Resize(s_a.left_flex(), s_b.right_flex());
-  viterbi_idx.resize(s_a.left_flex(), s_b.right_flex());
+  Smooshable s_out(s_a.left_flex(), s_b.right_flex());
+  Eigen::MatrixXi viterbi_idx(s_a.left_flex(), s_b.right_flex());
   assert(s_a.right_flex() == s_b.left_flex());
   s_out.marginal() = s_a.marginal().rowwise().reverse()*s_b.marginal();
   FlippedBinaryMax(s_a.marginal(), s_b.marginal(), s_out.viterbi(), viterbi_idx);
@@ -51,7 +43,6 @@ std::pair<Smooshable, Eigen::MatrixXi> Smoosh(Smooshable& s_a, Smooshable& s_b) 
 /*
 SmooshableChain::SmooshableChain(
     SmooshableVector originals) : originals_(originals) {
-
 
   // Say we are given smooshes a, b, c, and denote smoosh by *.
   // First make a list a, a*b, a*b*c.
