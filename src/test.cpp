@@ -90,7 +90,7 @@ TEST_CASE("FlippedBinaryMax", "[linalg]") {
   // 0.37*0.3 0.31*0.29 0.29*0.11, 0.37*0.37 0.31*0.41 0.29*0.97
   correct_C <<
   0.71*0.29, 0.5 *0.97,
-  0.37*0.3,  0.37*0.3;
+  0.37*0.3,  0.29*0.97;
   Eigen::MatrixXi C_idx(2,2);
   Eigen::MatrixXi correct_C_idx(2,2);
   correct_C_idx <<
