@@ -16,8 +16,8 @@
 ///  B_{i,j} = b_i A_{i,j}
 ///  \f]
 void ColVecMatCwise(
-    const Eigen::Ref<const Eigen::VectorXd> b,
-    const Eigen::Ref<const Eigen::MatrixXd> A,
+    const Eigen::Ref<const Eigen::VectorXd>& b,
+    const Eigen::Ref<const Eigen::MatrixXd>& A,
     Eigen::Ref<Eigen::MatrixXd> B) {
   for(int i=0; i < B.cols(); i++) {
     B.col(i) = b.cwiseProduct(A.col(i));
@@ -33,8 +33,8 @@ void ColVecMatCwise(
 ///  B_{i,j} = b_j A_{i,j}
 ///  \f]
 void RowVecMatCwise(
-    const Eigen::Ref<const Eigen::RowVectorXd> b,
-    const Eigen::Ref<const Eigen::MatrixXd> A,
+    const Eigen::Ref<const Eigen::RowVectorXd>& b,
+    const Eigen::Ref<const Eigen::MatrixXd>& A,
     Eigen::Ref<Eigen::MatrixXd> B) {
   for(int i=0; i < B.rows(); i++) {
     B.row(i) = b.cwiseProduct(A.row(i));
@@ -53,7 +53,7 @@ void RowVecMatCwise(
 ///  \f]
 /// Empty products are taken to be one.
 void SubProductMatrix(
-    const Eigen::Ref<const Eigen::VectorXd> e,
+    const Eigen::Ref<const Eigen::VectorXd>& e,
     Eigen::Ref<Eigen::MatrixXd> A) {
   int ell = e.size();
   assert(ell == A.rows());
@@ -83,8 +83,8 @@ void SubProductMatrix(
 /// b_i := A_{a_i, i}.
 /// \f]
 void VectorByIndices(
-    const Eigen::Ref<const Eigen::MatrixXd> A,
-    const Eigen::Ref<const Eigen::VectorXi> a,
+    const Eigen::Ref<const Eigen::MatrixXd>& A,
+    const Eigen::Ref<const Eigen::VectorXi>& a,
     Eigen::Ref<Eigen::VectorXd> b) {
   int ell = b.size();
   assert(ell == A.cols());
@@ -109,18 +109,20 @@ void VectorByIndices(
 /// \f]
 /// and `C_idx` is the corresponding argmax.
 void FlippedBinaryMax(
-    const Eigen::Ref<const Eigen::MatrixXd> A,
-    const Eigen::Ref<const Eigen::VectorXd> B,
+    const Eigen::Ref<const Eigen::MatrixXd>& A,
+    const Eigen::Ref<const Eigen::MatrixXd>& B,
     Eigen::Ref<Eigen::MatrixXd> C,
     Eigen::Ref<Eigen::MatrixXi> C_idx) {
   assert(A.cols() == B.rows());
   assert(C.rows() == A.rows());
   assert(C.cols() == B.cols());
+  assert(C.rows() == C_idx.rows());
+  assert(C.cols() == C_idx.cols());
   int idx;
   Eigen::VectorXd util(A.cols());
   /// @todo Make faster by doing matrix-wise rather than vector-wise product.
-  for(int i=0; i<A.rows(); i++) {
-    for(int k=0; k<B.cols(); k++) {
+  for(int i=0; i<C.rows(); i++) {
+    for(int k=0; k<C.cols(); k++) {
       util = A.row(i).reverse().transpose().array().cwiseProduct(B.col(k).array());
       util.maxCoeff(&idx);
       C_idx(i, k) = idx;

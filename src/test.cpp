@@ -78,24 +78,24 @@ TEST_CASE("FlippedBinaryMax", "[linalg]") {
   left_matrix <<
   0.5, 0.71, 0.13,
   0.29, 0.31, 0.37;
-  Eigen::MatrixXd right_matrix(3,1);
+  Eigen::MatrixXd right_matrix(3,2);
   right_matrix <<
-  0.3,
-  0.29,
-  0.11;
-  Eigen::MatrixXd C(2,1);
-  Eigen::MatrixXd correct_C(2,1);
+  0.3,  0.37,
+  0.29, 0.41,
+  0.11, 0.97;
+  Eigen::MatrixXd C(2,2);
+  Eigen::MatrixXd correct_C(2,2);
   // The options for max are:
-  // 0.13*0.3, 0.71*0.29, 0.5*0.11
-  // 0.37*0.3, 0.31*0.29, 0.29*0.11
+  // 0.13*0.3 0.71*0.29 0.5*0.11 , 0.13*0.37 0.71*0.41  0.5*0.97
+  // 0.37*0.3 0.31*0.29 0.29*0.11, 0.37*0.37 0.31*0.41 0.29*0.97
   correct_C <<
-  0.71*0.29,
-  0.37*0.3;
-  Eigen::MatrixXi C_idx(2,1);
-  Eigen::MatrixXi correct_C_idx(2,1);
+  0.71*0.29, 0.5 *0.97,
+  0.37*0.3,  0.37*0.3;
+  Eigen::MatrixXi C_idx(2,2);
+  Eigen::MatrixXi correct_C_idx(2,2);
   correct_C_idx <<
-  1,
-  0;
+  1,2,
+  0,2;
   FlippedBinaryMax(left_matrix, right_matrix, C, C_idx);
   REQUIRE(C == correct_C);
   REQUIRE(C_idx == correct_C_idx);
