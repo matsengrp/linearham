@@ -61,9 +61,9 @@ SmooshableChain::SmooshableChain(
     Smooshable smooshed;
     Eigen::MatrixXi viterbi_idx;
     std::tie(smooshed, viterbi_idx) = Smoosh(s_a, s_b);
-    /// @todo move semantics.
-    smooshed_.push_back(smooshed);
-    viterbi_idxs.push_back(viterbi_idx);
+    /// Move semantics: smooshed is dead after this call.
+    smooshed_.push_back(std::move(smooshed));
+    viterbi_idxs.push_back(std::move(viterbi_idx));
   };
 
   // Say we are given smooshes a, b, c, d,  and denote smoosh by *.
@@ -93,8 +93,7 @@ SmooshableChain::SmooshableChain(
         std::cout << path.front() << std::cout;
       }
 
-      // Todo: move semantics.
-      viterbi_paths_.push_back(path);
+      viterbi_paths_.push_back(std::move(path));
     }
   }
 };
