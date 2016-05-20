@@ -4,6 +4,8 @@
 /// @brief Implementation of Smooshable class and descendants.
 
 
+// Smooshable
+
 /// @brief "Boring" constructor, which just sets up memory.
 Smooshable::Smooshable(int left_flex, int right_flex) {
   marginal_.resize(left_flex, right_flex);
@@ -39,44 +41,60 @@ std::pair<Smooshable, Eigen::MatrixXi> Smoosh(Smooshable& s_a, Smooshable& s_b) 
 };
 
 
+// SmooshableChain
 
-/*
 SmooshableChain::SmooshableChain(
     SmooshableVector originals) : originals_(originals) {
+  IntMatrixVector viterbi_idxs;
 
-  // Say we are given smooshes a, b, c, and denote smoosh by *.
-  // First make a list a, a*b, a*b*c.
-  smooshed_.push_back(originals_[0]);
-  for(unsigned int i=1; i<originals_.size(); i++) {
-    smooshed_.push_back(
-      smooshed_[i-1].Smoosh(originals_[i]));
+  if( originals.size() == 0){ return; }
+  if( originals.size() == 1){
+    smooshed_.push_back(originals[0]);
+    return;
+  }
+
+  // Smoosh the supplied Smooshables and add the results onto the back of the
+  // corresponding vectors.
+  // Warning: side effects!
+  // The `&` below says pass the current scope in by reference.
+  auto SmooshAndAdd = [&](Smooshable s_a, Smooshable s_b) {
+    Smooshable smooshed;
+    Eigen::MatrixXi viterbi_idx;
+    std::tie(smooshed, viterbi_idx) = Smoosh(s_a, s_b);
+    // TODO: move semantics.
+    smooshed_.push_back(smooshed);
+    viterbi_idxs.push_back(viterbi_idx);
   };
 
-  // a*b*c
-  Smooshable fully_smooshed = smooshed_.back();
+  // Say we are given smooshes a, b, c, d,  and denote smoosh by *.
+  // First make a list a*b, a*b*c, a*b*c*d.
+  SmooshAndAdd(originals_[0], originals_[1]);
+  for(unsigned int i=2; i<originals_.size(); i++) {
+    SmooshAndAdd(smooshed_.back(), originals_[i]);
+  };
 
-  for(int left=0; left<fully_smooshed.left_flex(); left++) {
-    for(int right=0; right<fully_smooshed.right_flex(); right++) {
+  // a*b*c*d
+  Eigen::MatrixXi vidx_fully_smooshed = viterbi_idxs.back();
+
+  for(int i=0; i<vidx_fully_smooshed.rows(); i++) {
+    for(int j=0; j<vidx_fully_smooshed.cols(); j++) {
       std::vector<int> path;
 
       // We will unwind the path moving from right to left, starting with the
-      // fully-smooshed entry.
-      path.push_back(fully_smooshed.viterbi_idx()(left, right));
+      // fully-smooshed entry a*b*c*d.
+      path.push_back(vidx_fully_smooshed(i, j));
 
-      for(int smoosh_level=smooshed_.size()-2; smoosh_level>=0; smoosh_level--) {
-        std::cout << left << ',' << right << ',' << smoosh_level << ':';
-        Smooshable current_smoosh = smooshed_[smoosh_level];
+      // Loop through a*b*c then a*b.
+      for(int k=viterbi_idxs.size()-2; k>=0; k--) {
+        std::cout << i << ',' << j << ',' << k << ':';
 
-        std::cout << left << ',' << path.front() << std::endl;
-        std::cout << current_smoosh.marginal() << std::endl;
-        std::cout << current_smoosh.viterbi() << std::endl;
-        std::cout << current_smoosh.viterbi_idx() << std::endl;
-        assert(path.front() < current_smoosh.right_flex());
-        current_smoosh.viterbi_idx()(left, path.front());
+        assert(path.front() < viterbi_idxs[k].rows());
+        path.insert(path.begin(), viterbi_idxs[k](i, path.front()));
+        std::cout << path.front() << std::cout;
       }
 
-      viterbi_.push_back(path);
+      // Todo: move semantics.
+      viterbi_paths_.push_back(path);
     }
   }
 };
-*/

@@ -29,8 +29,8 @@ class Smooshable {
     int left_flex() { return marginal_.rows(); };
     int right_flex() { return marginal_.cols(); };
     const Eigen::Ref<const Eigen::MatrixXd> marginal() const { return marginal_; };
-    const Eigen::Ref<const Eigen::MatrixXd> viterbi() const { return viterbi_; };
     Eigen::Ref<Eigen::MatrixXd> marginal() { return marginal_; };
+    const Eigen::Ref<const Eigen::MatrixXd> viterbi() const { return viterbi_; };
     Eigen::Ref<Eigen::MatrixXd> viterbi() { return viterbi_; };
 };
 
@@ -63,19 +63,24 @@ class SmooshableGermline : public Smooshable {
 /// so that you can unwind the result in the end.
 typedef std::vector<Smooshable> SmooshableVector;
 typedef std::vector<Eigen::MatrixXi> IntMatrixVector;
-typedef std::vector<std::vector<int>> IntListList;
+typedef std::vector<std::vector<int>> IntVectorVector;
 
 class SmooshableChain {
   protected:
     SmooshableVector originals_;
     SmooshableVector smooshed_;
-    IntMatrixVector viterbi_idxs_;
-    IntListList viterbi_path_;
+    IntVectorVector viterbi_paths_;
 
   public:
     SmooshableChain(SmooshableVector originals);
-};
 
+    const SmooshableVector& originals() const { return originals_; };
+    SmooshableVector& originals() { return originals_; };
+    const SmooshableVector& smooshed() const { return smooshed_; };
+    SmooshableVector& smooshed() { return smooshed_; };
+    const IntVectorVector& viterbi_paths() const { return viterbi_paths_; };
+    IntVectorVector& viterbi_paths() { return viterbi_paths_; };
+};
 
 
 

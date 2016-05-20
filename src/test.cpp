@@ -216,6 +216,10 @@ TEST_CASE("Smooshable", "[smooshable]") {
   REQUIRE(smooshed.viterbi() == correct_viterbi);
   REQUIRE(viterbi_idx == correct_viterbi_idx);
 
-  //SmooshableVector sv = {left_smooshable, right_smooshable};
-  //SmooshableChain chain = SmooshableChain(sv);
+  SmooshableVector sv = {left_smooshable, right_smooshable};
+  SmooshableChain chain = SmooshableChain(sv);
+  std::vector<int> p1 = {1};
+  std::vector<int> p2 = {0};
+  IntVectorVector correct_viterbi_paths = {p1, p2};
+  REQUIRE(chain.viterbi_paths() == correct_viterbi_paths);
 }
