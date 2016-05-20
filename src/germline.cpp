@@ -60,7 +60,7 @@ void Germline::EmissionVector(
 /// @param[out] match
 /// Storage for the matrix of match probabilities.
 ///
-/// The match matrix has (zero-indexed) f$i,j\f$th entry equal to the
+/// The match matrix has (zero-indexed) \f$i,j\f$th entry equal to the
 /// probability of a linear match starting at `start+i` and ending
 /// `right_flex-j` before the end.
 /// Note that we don't need a "stop" parameter because we can give
@@ -75,7 +75,7 @@ void Germline::MatchMatrix(
   int length = emission_indices.size();
   assert(this->length() <= start+length);
   Eigen::VectorXd emission(length);
-  // TODO: Inefficient. Shouldn't calculate fullMatch then cut it down.
+/// @todo Inefficient. Shouldn't calculate fullMatch then cut it down.
   Eigen::MatrixXd fullMatch(length,length);
   EmissionVector(emission_indices, start, emission);
   BuildMatchMatrix(transition_.block(start, start, length, length), emission, fullMatch);

@@ -61,7 +61,7 @@ SmooshableChain::SmooshableChain(
     Smooshable smooshed;
     Eigen::MatrixXi viterbi_idx;
     std::tie(smooshed, viterbi_idx) = Smoosh(s_a, s_b);
-    // TODO: move semantics.
+    /// @todo move semantics.
     smooshed_.push_back(smooshed);
     viterbi_idxs.push_back(viterbi_idx);
   };

@@ -118,7 +118,7 @@ void FlippedBinaryMax(
   assert(C.cols() == B.cols());
   int idx;
   Eigen::VectorXd util(A.cols());
-  // TODO: Make faster by doing matrix-wise rather than vector-wise product.
+  /// @todo Make faster by doing matrix-wise rather than vector-wise product.
   for(int i=0; i<A.rows(); i++) {
     for(int k=0; k<B.cols(); k++) {
       util = A.row(i).reverse().transpose().array().cwiseProduct(B.col(k).array());
