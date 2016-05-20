@@ -22,10 +22,9 @@ void Smooshable::Resize(int left_flex, int right_flex) {
 /// Smooshable on the left.
 /// @param[in] s_b
 /// Smooshable on the right.
-/// @param[out] s_out
-/// The smooshable resulting from smooshing s_a and s_b.
-/// @param[out] viterbi_idx
-/// The corresponding viterbi index.
+/// @return (s_out, viterbi_idx)
+/// `s_out` is the smooshable resulting from smooshing s_a and s_b.
+/// `viterbi_idx` is the corresponding viterbi index.
 ///
 /// When we smoosh two smooshables, they must have the same right and left flexes.
 /// Say this common value is n.
@@ -35,21 +34,25 @@ void Smooshable::Resize(int left_flex, int right_flex) {
 /// \f]
 /// because we are summing over the various ways to divide up the common segment
 /// of length n between the left and right smooshable. The equivalent entry for
-/// the Viterbi sequence just has sum replaced with argmax.
-void Smoosh(Smooshable& s_a, Smooshable& s_b, Smooshable& s_out, Eigen::MatrixXi& viterbi_idx) {
+/// the Viterbi sequence just has sum replaced with max.
+std::pair<Smooshable, Eigen::MatrixXi> Smoosh(Smooshable& s_a, Smooshable& s_b) {
+  Smooshable s_out;
+  Eigen::MatrixXi viterbi_idx;
   s_out.Resize(s_a.left_flex(), s_b.right_flex());
   viterbi_idx.resize(s_a.left_flex(), s_b.right_flex());
   assert(s_a.right_flex() == s_b.left_flex());
   s_out.marginal() = s_a.marginal().rowwise().reverse()*s_b.marginal();
   FlippedBinaryMax(s_a.marginal(), s_b.marginal(), s_out.viterbi(), viterbi_idx);
+  return std::make_pair(s_out, viterbi_idx);
 };
 
 
 
+/*
 SmooshableChain::SmooshableChain(
     SmooshableVector originals) : originals_(originals) {
 
-/*
+
   // Say we are given smooshes a, b, c, and denote smoosh by *.
   // First make a list a, a*b, a*b*c.
   smooshed_.push_back(originals_[0]);
@@ -84,6 +87,5 @@ SmooshableChain::SmooshableChain(
       viterbi_.push_back(path);
     }
   }
-  */
 };
-
+*/

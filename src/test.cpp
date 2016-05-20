@@ -210,7 +210,7 @@ TEST_CASE("Smooshable", "[smooshable]") {
   Smooshable right_smooshable = Smooshable(right_matrix);
   Smooshable smooshed;
   Eigen::MatrixXi viterbi_idx;
-  Smoosh(left_smooshable, right_smooshable, smooshed, viterbi_idx);
+  std::tie(smooshed, viterbi_idx) = Smoosh(left_smooshable, right_smooshable);
 
   REQUIRE(smooshed.marginal() == correct_marginal);
   REQUIRE(smooshed.viterbi() == correct_viterbi);

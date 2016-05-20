@@ -33,7 +33,7 @@ class Smooshable {
     void Resize(int left_flex, int right_flex);
 };
 
-void Smoosh(Smooshable& s_a, Smooshable& s_b, Smooshable& s_out, Eigen::MatrixXi& viterbi_idx);
+std::pair<Smooshable, Eigen::MatrixXi> Smoosh(Smooshable& s_a, Smooshable& s_b);
 
 
 /// A smooshable derived from a germline gene.
@@ -60,13 +60,15 @@ class SmooshableGermline : public Smooshable {
 /// then smoosh them all together. It's nice to have a class for such a chain
 /// so that you can unwind the result in the end.
 typedef std::vector<Smooshable> SmooshableVector;
+typedef std::vector<Eigen::MatrixXi> IntMatrixVector;
 typedef std::vector<std::vector<int>> IntListList;
 
 class SmooshableChain {
   protected:
     SmooshableVector originals_;
     SmooshableVector smooshed_;
-    IntListList viterbi_;
+    IntMatrixVector viterbi_idxs_;
+    IntListList viterbi_path_;
 
   public:
     SmooshableChain(SmooshableVector originals);
