@@ -82,6 +82,7 @@ SmooshableChain::SmooshableChain(
   // a*b*c*d
   Eigen::MatrixXi vidx_fully_smooshed = viterbi_idxs.back();
 
+  // Unwind the viterbi paths.
   for(int fs_i=0; fs_i<vidx_fully_smooshed.rows(); fs_i++) {
     for(int fs_j=0; fs_j<vidx_fully_smooshed.cols(); fs_j++) {
       std::vector<int> path;
@@ -94,16 +95,19 @@ SmooshableChain::SmooshableChain(
       // point for the V path in d.
       path.push_back(vidx_fully_smooshed(fs_i, fs_j));
 
-      // Loop through a*b*c then a*b.
-      for(int k=viterbi_idxs.size()-2; k>=0; k--) {
+      // Loop through the entries of viterbi_idxs corresponding to a*b*c then a*b.
+      // Each one of these is a viterbi_idx matrix (not a single index).
+      for(auto viterbi_idx = std::next(viterbi_idxs.rbegin()); // Start at pentiultimate.
+          viterbi_idx != viterbi_idxs.rend(); // Iterate to the start.
+          ++viterbi_idx) {
         // Say this is our first trip through the loop in our a*b*c*d example.
         // As stated above, path.front() has the start point j in d. Now we need
         // to get the column index for the viterbi_idx matrix for a*b*c, namely
         // n-1-j, where n is the number of columns in the viterbi_idx matrix for a*b*c.
         // (Note -1 for zero-indexing.)
-        int col_idx = viterbi_idxs[k].cols() - 1 - path.front();
-        assert(0 <= col_idx && col_idx < viterbi_idxs[k].cols());
-        path.insert(path.begin(), viterbi_idxs[k](fs_i, col_idx));
+        int col_idx = viterbi_idx->cols() - 1 - path.front();
+        assert(0 <= col_idx && col_idx < viterbi_idx->cols());
+        path.insert(path.begin(), (*viterbi_idx)(fs_i, col_idx));
       }
 
       viterbi_paths_.push_back(std::move(path));
