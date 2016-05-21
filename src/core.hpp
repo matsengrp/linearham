@@ -6,6 +6,8 @@
 /// @file core.hpp
 /// @brief Core implementation routines.
 
+namespace linearham {
+
 
 Eigen::MatrixXd BuildTransition(
     Eigen::VectorXd& landing,
@@ -17,5 +19,7 @@ void BuildMatchMatrix(
     Eigen::VectorXd& emission,
     Eigen::Ref<Eigen::MatrixXd> match);
 
+
+}
 
 #endif  // LINEARHAM_CORE_

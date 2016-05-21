@@ -6,6 +6,8 @@
 ///
 /// Here a "match" is a specific path through the linear HMM.
 
+namespace linearham {
+
 
 /// @brief Makes a transition probability matrix.
 /// @param[in]  landing
@@ -62,4 +64,6 @@ void BuildMatchMatrix(
     Eigen::Ref<Eigen::MatrixXd> match) {
   SubProductMatrix(emission, match);
   match.array() *= transition.array();
+}
+
 }

@@ -5,6 +5,8 @@
 #include "core.hpp"
 #include "smooshable_chain.hpp"
 
+namespace linearham {
+
 
 // Linear algebra tests
 
@@ -239,4 +241,6 @@ TEST_CASE("Smooshable", "[smooshable]") {
   REQUIRE(chain.smooshed()[0].viterbi() == correct_AB_viterbi);
   REQUIRE(chain.smooshed().back().viterbi() == correct_ABC_viterbi);
   REQUIRE(chain.viterbi_paths() == correct_viterbi_paths);
+}
+
 }

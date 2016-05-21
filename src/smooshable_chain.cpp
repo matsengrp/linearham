@@ -5,6 +5,8 @@
 /// @file smooshable_chain.cpp
 /// @brief Implementation of SmooshableChain class.
 
+namespace linearham {
+
 
 /// @brief Constructor for a SmooshableChain.
 /// @param[in] originals
@@ -77,3 +79,5 @@ SmooshableChain::SmooshableChain(
     }
   }
 };
+
+}

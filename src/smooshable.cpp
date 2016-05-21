@@ -3,6 +3,8 @@
 /// @file smooshable.cpp
 /// @brief Implementation of Smooshable class and descendants.
 
+namespace linearham {
+
 
 // Smooshable
 
@@ -48,4 +50,4 @@ std::pair<Smooshable, Eigen::MatrixXi> Smoosh(const Smooshable& s_a, const Smoos
   return std::make_pair(s_out, viterbi_idx);
 };
 
-
+}

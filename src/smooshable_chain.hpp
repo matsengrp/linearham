@@ -6,6 +6,8 @@
 /// @file smooshable_chain.hpp
 /// @brief Headers for SmooshableChain class.
 
+namespace linearham {
+
 
 typedef std::vector<Smooshable> SmooshableVector;
 typedef std::vector<Eigen::MatrixXi> IntMatrixVector;
@@ -34,5 +36,6 @@ class SmooshableChain {
     IntVectorVector& viterbi_paths() { return viterbi_paths_; };
 };
 
+}
 
 #endif  // LINEARHAM_SMOOSHABLE_CHAIN_

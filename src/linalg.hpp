@@ -7,6 +7,8 @@
 /// @file linalg.hpp
 /// @brief Linear algebra routines.
 
+namespace linearham {
+
 
 void ColVecMatCwise(
     const Eigen::Ref<const Eigen::VectorXd>& b,
@@ -33,5 +35,6 @@ void FlippedBinaryMax(
     Eigen::Ref<Eigen::MatrixXd> C,
     Eigen::Ref<Eigen::MatrixXi> C_idx);
 
+}
 
 #endif  // LINEARHAM_LINALG_

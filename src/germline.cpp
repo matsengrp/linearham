@@ -4,6 +4,8 @@
 /// @file germline.cpp
 /// @brief The core of the implementation.
 
+namespace linearham {
+
 
 /// @brief Prepares a vector with per-site emission probabilities.
 /// @param[in]  landing
@@ -81,3 +83,5 @@ void Germline::MatchMatrix(
   BuildMatchMatrix(transition_.block(start, start, length, length), emission, fullMatch);
   match = fullMatch.block(0, length - right_flex, left_flex, right_flex);
 };
+
+}

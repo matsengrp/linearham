@@ -6,6 +6,8 @@
 /// @file germline.hpp
 /// @brief The core of the implementation.
 
+namespace linearham {
+
 
 class Germline {
   protected:
@@ -33,5 +35,6 @@ class Germline {
         Eigen::Ref<Eigen::MatrixXd> match);
 };
 
+}
 
 #endif  // LINEARHAM_GERMLINE_

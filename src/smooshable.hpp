@@ -7,6 +7,8 @@
 /// @file smooshable.hpp
 /// @brief Headers for Smooshable class and descendants.
 
+namespace linearham {
+
 
 /// The Smooshable class abstracts something that has probabilities associated
 /// with sequence start and stop points.
@@ -53,6 +55,6 @@ class SmooshableGermline : public Smooshable {
     };
 };
 
-
+}
 
 #endif  // LINEARHAM_SMOOSHABLE_
