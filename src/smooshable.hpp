@@ -21,13 +21,10 @@ class Smooshable {
   public:
     Smooshable() {};
     Smooshable(int left_flex, int right_flex);
+    Smooshable(Eigen::MatrixXd& marginal);
 
-    // Note: this is going to call a MatrixXd copy constructor because we are
-    // initializing a MatrixXd object with a reference to another.
-    Smooshable(Eigen::MatrixXd& marginal) : marginal_(marginal) { };
-
-    int left_flex() { return marginal_.rows(); };
-    int right_flex() { return marginal_.cols(); };
+    int left_flex() const { return marginal_.rows(); };
+    int right_flex() const { return marginal_.cols(); };
     const Eigen::Ref<const Eigen::MatrixXd> marginal() const { return marginal_; };
     Eigen::Ref<Eigen::MatrixXd> marginal() { return marginal_; };
     const Eigen::Ref<const Eigen::MatrixXd> viterbi() const { return viterbi_; };
@@ -35,7 +32,8 @@ class Smooshable {
 };
 
 // Functions
-std::pair<Smooshable, Eigen::MatrixXi> Smoosh(Smooshable& s_a, Smooshable& s_b);
+std::pair<Smooshable, Eigen::MatrixXi> Smoosh(
+    const Smooshable& s_a, const Smooshable& s_b);
 
 
 /// A smooshable derived from a germline gene.

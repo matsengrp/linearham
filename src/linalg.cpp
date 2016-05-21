@@ -126,7 +126,7 @@ void FlippedBinaryMax(
       util = A.row(i).reverse().transpose().array().cwiseProduct(B.col(k).array());
       util.maxCoeff(&idx);
       C_idx(i, k) = idx;
-      C(i,k) = util(idx);
+      C(i, k) = util(idx);
     }
   }
 }

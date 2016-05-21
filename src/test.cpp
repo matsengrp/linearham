@@ -85,7 +85,8 @@ TEST_CASE("FlippedBinaryMax", "[linalg]") {
   0.11, 0.97;
   Eigen::MatrixXd C(2,2);
   Eigen::MatrixXd correct_C(2,2);
-  // The options for max are:
+  // The options for max are (note we flip left_matrix because
+  // the max uses n-j to index the left argument):
   // 0.13*0.3 0.71*0.29 0.5*0.11 , 0.13*0.37 0.71*0.41  0.5*0.97
   // 0.37*0.3 0.31*0.29 0.29*0.11, 0.37*0.37 0.31*0.41 0.29*0.97
   correct_C <<
@@ -184,42 +185,58 @@ TEST_CASE("Germline", "[germlinegene]") {
 // Smooshable tests
 
 TEST_CASE("Smooshable", "[smooshable]") {
-  Eigen::MatrixXd left_matrix(2,3);
-  left_matrix <<
+  Eigen::MatrixXd A(2,3);
+  A <<
   0.5, 0.71, 0.13,
   0.29, 0.31, 0.37;
-  Eigen::MatrixXd right_matrix(3,1);
-  right_matrix <<
-  0.3,
-  0.29,
-  0.11;
-  Eigen::MatrixXd correct_marginal(2,1);
-  correct_marginal <<
-  0.13*0.3+0.71*0.29+0.5*0.11,
-  0.37*0.3+0.31*0.29+0.29*0.11;
-  Eigen::MatrixXd correct_viterbi(2,1);
-  correct_viterbi <<
-  0.71*0.29,
-  0.37*0.3;
-  Eigen::MatrixXi correct_viterbi_idx(2,1);
-  correct_viterbi_idx <<
-  1,
-  0;
+  Eigen::MatrixXd B(3,2);
+  B <<
+  0.3,  0.37,
+  0.29, 0.41,
+  0.11, 0.97;
+  Eigen::MatrixXd correct_AB_marginal(2,2);
+  correct_AB_marginal <<
+  0.13*0.3+0.71*0.29+0.50*0.11, 0.13*0.37+0.71*0.41+0.50*0.97,
+  0.37*0.3+0.31*0.29+0.29*0.11, 0.37*0.37+0.31*0.41+0.29*0.97;
+  Eigen::MatrixXd correct_AB_viterbi(2,2);
+  correct_AB_viterbi <<
+  0.71*0.29, 0.50*0.97,
+  0.37*0.3,  0.29*0.97;
+  Eigen::MatrixXi correct_AB_viterbi_idx(2,2);
+  correct_AB_viterbi_idx <<
+  1,2,
+  0,2;
 
-  Smooshable left_smooshable = Smooshable(left_matrix);
-  Smooshable right_smooshable = Smooshable(right_matrix);
-  Smooshable smooshed;
-  Eigen::MatrixXi viterbi_idx;
-  std::tie(smooshed, viterbi_idx) = Smoosh(left_smooshable, right_smooshable);
+  Smooshable s_A = Smooshable(A);
+  Smooshable s_B = Smooshable(B);
+  Smooshable s_AB;
+  Eigen::MatrixXi AB_viterbi_idx;
+  std::tie(s_AB, AB_viterbi_idx) = Smoosh(s_A, s_B);
 
-  REQUIRE(smooshed.marginal() == correct_marginal);
-  REQUIRE(smooshed.viterbi() == correct_viterbi);
-  REQUIRE(viterbi_idx == correct_viterbi_idx);
+  REQUIRE(s_AB.marginal() == correct_AB_marginal);
+  REQUIRE(s_AB.viterbi() == correct_AB_viterbi);
+  REQUIRE(AB_viterbi_idx == correct_AB_viterbi_idx);
 
-  SmooshableVector sv = {left_smooshable, right_smooshable};
+  Eigen::MatrixXd C(2,1);
+  C <<
+  0.89,
+  0.43;
+  Smooshable s_C = Smooshable(C);
+  Eigen::MatrixXd correct_ABC_viterbi(2,1);
+  correct_ABC_viterbi <<
+  // 0.50*0.97*0.89 > 0.71*0.29*0.43
+  // 0.29*0.97*0.89 > 0.37*0.30*0.43
+  0.50*0.97*0.89,
+  0.29*0.97*0.89;
+  // We pick the left hand one, which is going to have index 0.
+  // This corresponds to the right hand column of correct_AB_viterbi_idx.
+
+  SmooshableVector sv = {s_A, s_B, s_C};
   SmooshableChain chain = SmooshableChain(sv);
-  std::vector<int> p1 = {1};
-  std::vector<int> p2 = {0};
+  std::vector<int> p1 = {2,0};
+  std::vector<int> p2 = {2,0};
   IntVectorVector correct_viterbi_paths = {p1, p2};
+  REQUIRE(chain.smooshed()[0].viterbi() == correct_AB_viterbi);
+  REQUIRE(chain.smooshed().back().viterbi() == correct_ABC_viterbi);
   REQUIRE(chain.viterbi_paths() == correct_viterbi_paths);
 }
