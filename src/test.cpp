@@ -3,7 +3,7 @@
 
 #include "catch.hpp"
 #include "core.hpp"
-#include "smooshable.hpp"
+#include "smooshable_chain.hpp"
 
 
 // Linear algebra tests
