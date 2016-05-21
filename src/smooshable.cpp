@@ -55,18 +55,20 @@ SmooshableChain::SmooshableChain(
     SmooshableVector originals) : originals_(originals) {
   IntMatrixVector viterbi_idxs;
 
+  // If there's only one smooshable there is nothing to smoosh.
   if(originals.size() <= 1){ return; }
 
   // Smoosh the supplied Smooshables and add the results onto the back of the
   // corresponding vectors.
-  // Warning: side effects!
-  // The `&` below says pass the current scope in by reference.
-  auto SmooshAndAdd = [&](const Smooshable& s_a, const Smooshable& s_b) {
+  // The [] expression below describes how we are going to be modifying
+  // `this` and viterbi_idxs.
+  auto SmooshAndAdd = [this, &viterbi_idxs](
+      const Smooshable& s_a, const Smooshable& s_b) {
     Smooshable smooshed;
     Eigen::MatrixXi viterbi_idx;
     std::tie(smooshed, viterbi_idx) = Smoosh(s_a, s_b);
     /// Move semantics: smooshed is dead after this call.
-    smooshed_.push_back(std::move(smooshed));
+    smoosheds_.push_back(std::move(smooshed));
     viterbi_idxs.push_back(std::move(viterbi_idx));
   };
 
@@ -74,7 +76,7 @@ SmooshableChain::SmooshableChain(
   // First make a list a*b, a*b*c, a*b*c*d.
   SmooshAndAdd(originals_[0], originals_[1]);
   for(unsigned int i=2; i<originals_.size(); i++) {
-    SmooshAndAdd(smooshed_.back(), originals_[i]);
+    SmooshAndAdd(smoosheds_.back(), originals_[i]);
   };
 
   // a*b*c*d

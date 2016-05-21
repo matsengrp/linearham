@@ -66,7 +66,7 @@ typedef std::vector<std::vector<int>> IntVectorVector;
 class SmooshableChain {
   protected:
     SmooshableVector originals_;
-    SmooshableVector smooshed_;
+    SmooshableVector smoosheds_;
     IntVectorVector viterbi_paths_;
 
   public:
@@ -74,8 +74,8 @@ class SmooshableChain {
 
     const SmooshableVector& originals() const { return originals_; };
     SmooshableVector& originals() { return originals_; };
-    const SmooshableVector& smooshed() const { return smooshed_; };
-    SmooshableVector& smooshed() { return smooshed_; };
+    const SmooshableVector& smooshed() const { return smoosheds_; };
+    SmooshableVector& smooshed() { return smoosheds_; };
     const IntVectorVector& viterbi_paths() const { return viterbi_paths_; };
     IntVectorVector& viterbi_paths() { return viterbi_paths_; };
 };
