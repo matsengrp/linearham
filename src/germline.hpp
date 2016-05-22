@@ -23,12 +23,12 @@ class Germline {
     int length() { return transition_.cols(); };
 
     void EmissionVector(
-        const Eigen::Ref<const Eigen::VectorXi> emission_indices,
+        const Eigen::Ref<const Eigen::VectorXi>& emission_indices,
         int start,
         Eigen::Ref<Eigen::VectorXd> emission);
 
     void MatchMatrix(
-        const Eigen::Ref<const Eigen::VectorXi> emission_indices,
+        const Eigen::Ref<const Eigen::VectorXi>& emission_indices,
         int start,
         int left_flex,
         int right_flex,

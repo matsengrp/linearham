@@ -38,7 +38,7 @@ std::pair<Smooshable, Eigen::MatrixXi> Smoosh(
     const Smooshable& s_a, const Smooshable& s_b);
 
 
-/// A smooshable derived from a germline gene.
+/// A smooshable derived from a read aligned to a segment of germline gene .
 class SmooshableGermline : public Smooshable {
   public:
     SmooshableGermline(
@@ -46,13 +46,7 @@ class SmooshableGermline : public Smooshable {
         int start,
         int left_flex,
         int right_flex,
-        const Eigen::Ref<const Eigen::VectorXi> emission_indices) :
-      Smooshable(left_flex, right_flex) {
-      assert(left_flex <= emission_indices.size());
-      assert(right_flex <= emission_indices.size());
-      germline.MatchMatrix(emission_indices, start, left_flex, right_flex, marginal_);
-      viterbi_ = marginal_;
-    };
+        const Eigen::Ref<const Eigen::VectorXi>& emission_indices);
 };
 
 }

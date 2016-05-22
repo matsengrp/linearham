@@ -38,7 +38,7 @@ Germline::Germline(
 /// the state corresponding to the ith entry of `emission_indices` from the
 /// `i+start` entry of the germline sequence.
 void Germline::EmissionVector(
-    const Eigen::Ref<const Eigen::VectorXi> emission_indices,
+    const Eigen::Ref<const Eigen::VectorXi>& emission_indices,
     int start,
     Eigen::Ref<Eigen::VectorXd> emission) {
   int length = emission_indices.size();
@@ -69,7 +69,7 @@ void Germline::EmissionVector(
 /// `emission_indices` a vector of any length (given the constraints
 /// on maximal length).
 void Germline::MatchMatrix(
-    const Eigen::Ref<const Eigen::VectorXi> emission_indices,
+    const Eigen::Ref<const Eigen::VectorXi>& emission_indices,
     int start,
     int left_flex,
     int right_flex,
