@@ -288,6 +288,9 @@ TEST_CASE("Ham Comparison 1", "[ham]") {
   Eigen::MatrixXd correct_viterbi_ab(1, 1);
   correct_viterbi_ab << 0.1*0.8*0.77*0.89*0.13*0.17;
   REQUIRE(s_ab.viterbi().isApprox(correct_viterbi_ab));
+
+  std::cout << "Ham test 1 marginal: " << correct_marginal_ab << std::endl;
+  std::cout << "Ham test 1 viterbi: " << correct_viterbi_ab << std::endl;
 }
 
 }
