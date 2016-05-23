@@ -7,7 +7,7 @@
 namespace linearham {
 
 
-/// @brief Prepares a vector with per-site emission probabilities.
+/// @brief Constructor for Germline.
 /// @param[in]  landing
 /// Vector of probabilities of landing somewhere to begin the match.
 /// @param[in]  emission_matrix
@@ -56,9 +56,9 @@ void Germline::EmissionVector(
 /// @param[in]  start
 /// What does the first read position correspond to in the germline gene?
 /// @param[in]  left_flex
-/// How much variation should we allow in the left hand side of the match?
+/// How many (contiguous) start points should we allow on the left side?
 /// @param[in]  right_flex
-/// How much variation should we allow in the right hand side of the match?
+/// How many (contiguous) end points should we allow on the right side?
 /// @param[out] match
 /// Storage for the matrix of match probabilities.
 ///
@@ -75,6 +75,8 @@ void Germline::MatchMatrix(
     int right_flex,
     Eigen::Ref<Eigen::MatrixXd> match) {
   int length = emission_indices.size();
+  assert(0 <= left_flex && left_flex <= length);
+  assert(0 <= right_flex && right_flex <= length);
   assert(this->length() <= start+length);
   Eigen::VectorXd emission(length);
 /// @todo Inefficient. Shouldn't calculate fullMatch then cut it down.

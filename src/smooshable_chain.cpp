@@ -14,7 +14,7 @@ namespace linearham {
 ///
 /// Does marginal and Viterbi calculation smooshing together a list of Smooshables.
 ///
-/// @image html http://i.imgur.com/FI6eVZp.png "Unwinding Viterbi: see comments in SmooshableChain constructor."
+/// @image html http://i.imgur.com/FI6eVZp.png "Unwinding Viterbi: see code comments in SmooshableChain constructor."
 SmooshableChain::SmooshableChain(
     SmooshableVector originals) : originals_(originals) {
   IntMatrixVector viterbi_idxs;
@@ -59,20 +59,17 @@ SmooshableChain::SmooshableChain(
       // point for the Viterbi path in c.
       path.push_back(vidx_fully_smooshed(fs_i, fs_j));
 
-      // Loop through the entries of viterbi_idxs corresponding to a*b*c then a*b.
+      // Loop through the entries of viterbi_idxs.
       // Each one of these is a viterbi_idx matrix (not a single index).
       for(auto viterbi_idx = std::next(viterbi_idxs.rbegin()); // Start at pentiultimate.
           viterbi_idx != viterbi_idxs.rend(); // Iterate to the start.
           ++viterbi_idx) {
         // Say this is our first trip through the loop in our a*b*c example
         // (in fact, with only 3 originals we will only have one pass total).
-        // As stated above, path.front() has the start point j in c. Now we need
-        // to get the column index for the viterbi_idx matrix for a*b, namely
-        // n-1-j, where n is the number of columns in the viterbi_idx matrix for a*b.
-        // (Note -1 for zero-indexing.)
-        int col_idx = viterbi_idx->cols() - 1 - path.front();
-        assert(0 <= col_idx && col_idx < viterbi_idx->cols());
-        path.insert(path.begin(), (*viterbi_idx)(fs_i, col_idx));
+        // As stated above, path.front() has the start point j in c. The
+        // corresponding matrix entry is the previous step in the Viterbi path.
+        assert(path.front() < viterbi_idx->cols());
+        path.insert(path.begin(), (*viterbi_idx)(fs_i, path.front()));
       }
 
       viterbi_paths_.push_back(std::move(path));

@@ -63,6 +63,7 @@ void BuildMatchMatrix(
     Eigen::VectorXd& emission,
     Eigen::Ref<Eigen::MatrixXd> match) {
   SubProductMatrix(emission, match);
+  // Component-wise product:
   match.array() *= transition.array();
 }
 

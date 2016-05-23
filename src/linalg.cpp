@@ -6,6 +6,9 @@
 /// Note that we universally use Eigen::Ref<X> here, which means that we can
 /// pass in an X or a Block of an X. See the section on Ref in
 /// https://eigen.tuxfamily.org/dox/TopicFunctionTakingEigenTypes.html
+/// If you want it to be const, it's essential to use
+/// const Eigen::Ref<const X>&
+/// (don't forget the ampersand!)
 
 namespace linearham {
 
@@ -104,13 +107,13 @@ void VectorByIndices(
 /// @param[out] C_idx Output matrix containing the matrix product argmax.
 /// `idx` is short for "index".
 ///
-/// Assume \f$A\f$ is \f$m \times n\f$ and that \f$a\f$ is a length-n vector
-/// of indices with entries from 0 to m-1. Then
+/// Assume \f$A\f$ and \f$B\f$ are matrices with compatible dimensions to form
+/// the product \f$AB\f$. Then
 /// \f[
-/// C_{i,k} := \max_j A_{i,n-j} B_{j,k}
+/// C_{i,k} := \max_j A_{i,j} B_{j,k}
 /// \f]
 /// and `C_idx` is the corresponding argmax.
-void FlippedBinaryMax(
+void BinaryMax(
     const Eigen::Ref<const Eigen::MatrixXd>& A,
     const Eigen::Ref<const Eigen::MatrixXd>& B,
     Eigen::Ref<Eigen::MatrixXd> C,
@@ -125,7 +128,7 @@ void FlippedBinaryMax(
   /// @todo Make faster by doing matrix-wise rather than vector-wise product.
   for(int i=0; i<C.rows(); i++) {
     for(int k=0; k<C.cols(); k++) {
-      util = A.row(i).reverse().transpose().array().cwiseProduct(B.col(k).array());
+      util = A.row(i).transpose().array().cwiseProduct(B.col(k).array());
       util.maxCoeff(&idx);
       C_idx(i, k) = idx;
       C(i, k) = util(idx);

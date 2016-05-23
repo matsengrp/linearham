@@ -13,8 +13,8 @@ namespace linearham {
 /// The Smooshable class abstracts something that has probabilities associated
 /// with sequence start and stop points.
 ///
-/// Smooshables have left_flex and right_flex, which is basically the amount of
-/// movement allowed in the start and stop points.
+/// Smooshables have left_flex and right_flex, which is the number of states that
+/// can serve as start (resp. end) states on the left (resp. right) sides.
 class Smooshable {
   protected:
     Eigen::MatrixXd marginal_;
@@ -38,7 +38,7 @@ std::pair<Smooshable, Eigen::MatrixXi> Smoosh(
     const Smooshable& s_a, const Smooshable& s_b);
 
 
-/// A smooshable derived from a read aligned to a segment of germline gene .
+/// A smooshable derived from a read aligned to a segment of germline gene.
 class SmooshableGermline : public Smooshable {
   public:
     SmooshableGermline(

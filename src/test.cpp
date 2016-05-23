@@ -75,31 +75,29 @@ TEST_CASE("VectorByIndices", "[linalg]") {
 }
 
 
-TEST_CASE("FlippedBinaryMax", "[linalg]") {
+TEST_CASE("BinaryMax", "[linalg]") {
   Eigen::MatrixXd left_matrix(2,3);
   left_matrix <<
-  0.5, 0.71, 0.13,
+  0.50, 0.71, 0.13,
   0.29, 0.31, 0.37;
   Eigen::MatrixXd right_matrix(3,2);
   right_matrix <<
-  0.3,  0.37,
+  0.30, 0.37,
   0.29, 0.41,
   0.11, 0.97;
   Eigen::MatrixXd C(2,2);
   Eigen::MatrixXd correct_C(2,2);
-  // The options for max are (note we flip left_matrix because
-  // the max uses n-j to index the left argument):
-  // 0.13*0.3 0.71*0.29 0.5*0.11 , 0.13*0.37 0.71*0.41  0.5*0.97
-  // 0.37*0.3 0.31*0.29 0.29*0.11, 0.37*0.37 0.31*0.41 0.29*0.97
+  // 0.50*0.30 0.71*0.29 0.13*0.11, 0.50*0.37 0.71*0.41 0.13*0.97
+  // 0.29*0.30 0.31*0.29 0.37*0.11, 0.29*0.37 0.31*0.41 0.37*0.97
   correct_C <<
-  0.71*0.29, 0.5 *0.97,
-  0.37*0.3,  0.29*0.97;
+  0.71*0.29, 0.71*0.41,
+  0.31*0.29, 0.37*0.97;
   Eigen::MatrixXi C_idx(2,2);
   Eigen::MatrixXi correct_C_idx(2,2);
   correct_C_idx <<
-  1,2,
-  0,2;
-  FlippedBinaryMax(left_matrix, right_matrix, C, C_idx);
+  1,1,
+  1,2;
+  BinaryMax(left_matrix, right_matrix, C, C_idx);
   REQUIRE(C == correct_C);
   REQUIRE(C_idx == correct_C_idx);
 }
@@ -124,9 +122,6 @@ TEST_CASE("BuildTransition", "[core]") {
   REQUIRE(transition.isApprox(correct_transition));
 }
 
-
-// I think that if we want to allow zero length matches, then we are going to have to double the
-// diagonal from buildtransition so that we can have a no-match diagonal.
 
 TEST_CASE("BuildMatch", "[core]") {
   Eigen::VectorXd landing(3);
@@ -198,16 +193,16 @@ TEST_CASE("Smooshable", "[smooshable]") {
   0.11, 0.97;
   Eigen::MatrixXd correct_AB_marginal(2,2);
   correct_AB_marginal <<
-  0.13*0.3+0.71*0.29+0.50*0.11, 0.13*0.37+0.71*0.41+0.50*0.97,
-  0.37*0.3+0.31*0.29+0.29*0.11, 0.37*0.37+0.31*0.41+0.29*0.97;
+  0.50*0.3+0.71*0.29+0.13*0.11, 0.50*0.37+0.71*0.41+0.13*0.97,
+  0.29*0.3+0.31*0.29+0.37*0.11, 0.29*0.37+0.31*0.41+0.37*0.97;
   Eigen::MatrixXd correct_AB_viterbi(2,2);
   correct_AB_viterbi <<
-  0.71*0.29, 0.50*0.97,
-  0.37*0.3,  0.29*0.97;
+  0.71*0.29, 0.71*0.41,
+  0.31*0.29, 0.37*0.97;
   Eigen::MatrixXi correct_AB_viterbi_idx(2,2);
   correct_AB_viterbi_idx <<
-  1,2,
-  0,2;
+  1,1,
+  1,2;
 
   Smooshable s_A = Smooshable(A);
   Smooshable s_B = Smooshable(B);
@@ -226,18 +221,20 @@ TEST_CASE("Smooshable", "[smooshable]") {
   Smooshable s_C = Smooshable(C);
   Eigen::MatrixXd correct_ABC_viterbi(2,1);
   correct_ABC_viterbi <<
-  // 0.50*0.97*0.89 > 0.71*0.29*0.43
-  // 0.29*0.97*0.89 > 0.37*0.30*0.43
-  0.50*0.97*0.89,
-  0.29*0.97*0.89;
-  // We pick the left hand one, which is going to have index 0.
-  // This corresponds to the right hand column of correct_AB_viterbi_idx.
+  // 0.71*0.29*0.89 > 0.71*0.41*0.43
+  // 0.31*0.29*0.89 < 0.37*0.97*0.43
+  0.71*0.29*0.89,
+  0.37*0.97*0.43;
+  // So the Viterbi indices are
+  // 0
+  // 1
+  //
+  // This 1 in the second row then gives us the corresponding column index,
+  // which contains a 2. So the second path is {2,1}.
 
   SmooshableVector sv = {s_A, s_B, s_C};
   SmooshableChain chain = SmooshableChain(sv);
-  std::vector<int> p1 = {2,0};
-  std::vector<int> p2 = {2,0};
-  IntVectorVector correct_viterbi_paths = {p1, p2};
+  IntVectorVector correct_viterbi_paths = {{1,0}, {2,1}};
   REQUIRE(chain.smooshed()[0].viterbi() == correct_AB_viterbi);
   REQUIRE(chain.smooshed().back().viterbi() == correct_ABC_viterbi);
   REQUIRE(chain.viterbi_paths() == correct_viterbi_paths);
@@ -285,10 +282,12 @@ TEST_CASE("Ham Comparison 1", "[ham]") {
   Eigen::MatrixXi viterbi_idx_ab;
   std::tie(s_ab, viterbi_idx_ab) = Smoosh(s_a, s_b);
   Eigen::MatrixXd correct_marginal_ab(1, 1);
-  // This test passes, but is wrong: I have the indices messed up.
   correct_marginal_ab <<
-  0.1*0.8*0.77*0.13*0.17 + 0.1*0.8*0.23*0.7*0.89*0.13*0.17;
-  REQUIRE(s_ab.marginal() == correct_marginal_ab);
+  0.1*0.8*0.77*0.89*0.13*0.17 + 0.1*0.8*0.23*0.7*0.13*0.17;
+  REQUIRE(s_ab.marginal().isApprox(correct_marginal_ab));
+  Eigen::MatrixXd correct_viterbi_ab(1, 1);
+  correct_viterbi_ab << 0.1*0.8*0.77*0.89*0.13*0.17;
+  REQUIRE(s_ab.viterbi().isApprox(correct_viterbi_ab));
 }
 
 }
