@@ -174,7 +174,7 @@ TEST_CASE("Germline", "[germlinegene]") {
   0                     , 0.19*0.11                  ;
   Eigen::MatrixXd match(2,2);
   Eigen::MatrixXd transition;
-  germline.MatchMatrix(emission_indices, 1, 2, 2, match);
+  germline.MatchMatrix(1, emission_indices, 2, 2, match);
   REQUIRE(match.isApprox(correct_match));
 }
 
@@ -255,7 +255,7 @@ TEST_CASE("Ham Comparison 1", "[ham]") {
   Germline germline_a(landing_a, emission_matrix_a, next_transition_a);
   Eigen::VectorXi emission_indices_a(3);
   emission_indices_a << 0, 1, 1;
-  Smooshable s_a = SmooshableGermline(germline_a, 0, 1, 2, emission_indices_a);
+  Smooshable s_a = SmooshableGermline(germline_a, 0, emission_indices_a,  1, 2);
   Eigen::MatrixXd correct_marginal_a(1, 2);
   correct_marginal_a << 0.1*0.8*0.77, 0.1*0.8*0.23*0.7;
   REQUIRE(s_a.marginal().isApprox(correct_marginal_a));
@@ -271,7 +271,7 @@ TEST_CASE("Ham Comparison 1", "[ham]") {
   Germline germline_b(landing_b, emission_matrix_b, next_transition_b);
   Eigen::VectorXi emission_indices_b(3);
   emission_indices_b << 1, 0, 0;
-  Smooshable s_b = SmooshableGermline(germline_b, 0, 2, 1, emission_indices_b);
+  Smooshable s_b = SmooshableGermline(germline_b, 0, emission_indices_b, 2, 1);
   Eigen::MatrixXd correct_marginal_b(2, 1);
   correct_marginal_b <<
   0.89*0.13*0.17,

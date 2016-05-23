@@ -51,10 +51,10 @@ void Germline::EmissionVector(
 
 
 /// @brief Prepares a matrix with the probabilities of various linear matches.
-/// @param[in]  emission_indices
-/// Vector of indices giving the emitted states.
 /// @param[in]  start
 /// What does the first read position correspond to in the germline gene?
+/// @param[in]  emission_indices
+/// Vector of indices giving the emitted states.
 /// @param[in]  left_flex
 /// How many (contiguous) start points should we allow on the left side?
 /// @param[in]  right_flex
@@ -69,8 +69,8 @@ void Germline::EmissionVector(
 /// `emission_indices` a vector of any length (given the constraints
 /// on maximal length).
 void Germline::MatchMatrix(
-    const Eigen::Ref<const Eigen::VectorXi>& emission_indices,
     int start,
+    const Eigen::Ref<const Eigen::VectorXi>& emission_indices,
     int left_flex,
     int right_flex,
     Eigen::Ref<Eigen::MatrixXd> match) {

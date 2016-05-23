@@ -44,9 +44,9 @@ class SmooshableGermline : public Smooshable {
     SmooshableGermline(
         Germline germline,
         int start,
+        const Eigen::Ref<const Eigen::VectorXi>& emission_indices,
         int left_flex,
-        int right_flex,
-        const Eigen::Ref<const Eigen::VectorXi>& emission_indices);
+        int right_flex);
 };
 
 }

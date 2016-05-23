@@ -28,8 +28,8 @@ class Germline {
         Eigen::Ref<Eigen::VectorXd> emission);
 
     void MatchMatrix(
-        const Eigen::Ref<const Eigen::VectorXi>& emission_indices,
         int start,
+        const Eigen::Ref<const Eigen::VectorXi>& emission_indices,
         int left_flex,
         int right_flex,
         Eigen::Ref<Eigen::MatrixXd> match);
