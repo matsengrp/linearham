@@ -54,6 +54,7 @@ std::pair<Smooshable, Eigen::MatrixXi> Smoosh(const Smooshable& s_a, const Smoos
 /// @brief Build a smooshable coming from a germline gene and a read.
 /// @param[in] germline
 /// Input Germline object.
+/// @param[in] start
 /// Where the smooshable starts (any left flex is to the right of the start point).
 /// @param[in] emission_indices
 /// The indices corresponding to the entries of the read.
