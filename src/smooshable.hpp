@@ -10,8 +10,7 @@
 namespace linearham {
 
 
-/// The Smooshable class abstracts something that has probabilities associated
-/// with sequence start and stop points.
+/// @brief Abstracts something that has probabilities associated with sequence start and stop points.
 ///
 /// Smooshables have left_flex and right_flex, which is the number of states that
 /// can serve as start (resp. end) states on the left (resp. right) sides.

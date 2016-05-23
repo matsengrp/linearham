@@ -14,7 +14,7 @@ typedef std::vector<Eigen::MatrixXi> IntMatrixVector;
 typedef std::vector<std::vector<int>> IntVectorVector;
 
 
-/// @brief A SmooshableChain is an ordered list of smooshables, with associated information.
+/// @brief An ordered list of smooshables that have been smooshed together, with associated information.
 ///
 /// The idea is that you put a collection of smooshables together in a chain
 /// then smoosh them all together. It's nice to have a class for such a chain
