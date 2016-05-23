@@ -273,21 +273,22 @@ TEST_CASE("Ham Comparison 1", "[ham]") {
   next_transition_b << 1, 1;
   Germline germline_b(landing_b, emission_matrix_b, next_transition_b);
   Eigen::VectorXi emission_indices_b(3);
-  emission_indices_b << 1, 0, 1;
+  emission_indices_b << 1, 0, 0;
   Smooshable s_b = SmooshableGermline(germline_b, 0, 2, 1, emission_indices_b);
   Eigen::MatrixXd correct_marginal_b(2, 1);
   correct_marginal_b <<
-  0.89*0.13*0.83,
-  0.13*0.83;
+  0.89*0.13*0.17,
+  0.13*0.17;
   REQUIRE(s_b.marginal().isApprox(correct_marginal_b));
 
   Smooshable s_ab;
   Eigen::MatrixXi viterbi_idx_ab;
   std::tie(s_ab, viterbi_idx_ab) = Smoosh(s_a, s_b);
-  s_ab.marginal();
   Eigen::MatrixXd correct_marginal_ab(1, 1);
+  // This test passes, but is wrong: I have the indices messed up.
   correct_marginal_ab <<
-  0.1*0.8*0.77*0.13*0.83 + 0.1*0.8*0.23*0.7*0.89*0.13*0.83;
+  0.1*0.8*0.77*0.13*0.17 + 0.1*0.8*0.23*0.7*0.89*0.13*0.17;
+  REQUIRE(s_ab.marginal() == correct_marginal_ab);
 }
 
 }
