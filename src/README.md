@@ -1,5 +1,14 @@
 # linearham                         {#mainpage}
 
+## Handy links
+
+* [Eigen docs](http://eigen.tuxfamily.org/dox/group__QuickRefPage.html)
+* [Catch tutorial](https://github.com/philsquared/Catch/blob/master/docs/tutorial.md)
+* [Google C++ style guide](https://google.github.io/styleguide/cppguide.html)
+
+
+## Smooshables
+
 The fundamental abstraction in linearham is a *smooshable*.
 A smooshable is a linear segment of sequence that has a probability associated with each pair of begin and end points.
 For example, a smooshable coming from a read aligned to a given germline sequence would have probability for a given pair of begin and end points equal to the probability of emitting the corresponding segment of read from that germline gene.
