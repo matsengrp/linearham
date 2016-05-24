@@ -3,7 +3,7 @@
 ## Handy links
 
 * [Eigen docs](http://eigen.tuxfamily.org/dox/group__QuickRefPage.html)
-* [Catch tutorial](https://github.com/philsquared/Catch/blob/master/docs/tutorial.md)
+* [Catch tutorial](https://github.com/philsquared/Catch)
 * [Google C++ style guide](https://google.github.io/styleguide/cppguide.html)
 
 
