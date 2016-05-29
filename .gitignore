@@ -1,4 +1,5 @@
 test
+*.a
 *.o
 .sconsign.dblite
 

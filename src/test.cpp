@@ -2,8 +2,12 @@
 #define CATCH_CONFIG_MAIN
 
 #include "catch.hpp"
+#include "../yaml-cpp/include/yaml-cpp/yaml.h"
+
 #include "core.hpp"
 #include "smooshable_chain.hpp"
+
+
 
 namespace linearham {
 
@@ -310,5 +314,15 @@ TEST_CASE("Ham Comparison 1", "[ham]") {
   std::cout << "Ham test 1 marginal: " << correct_marginal_ab << std::endl;
   std::cout << "Ham test 1 viterbi: " << correct_viterbi_ab << std::endl;
 }
+
+
+// IO tests
+TEST_CASE("YAML", "[io]") {
+   YAML::Emitter out;
+   out << "Hello, World!";
+
+   std::cout << "Here's the output YAML:\n" << out.c_str() << std::endl;
+}
+
 
 }
