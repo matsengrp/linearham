@@ -12,7 +12,7 @@ namespace linearham {
 /// Vector of probabilities of landing somewhere to begin the match.
 /// @param[in]  emission_matrix
 /// Matrix of emission probabilities, with rows as the states and columns as the sites.
-/// @param[out] next_transition
+/// @param[in] next_transition
 /// Vector of probabilities of transitioning to the next match state.
 Germline::Germline(
   Eigen::VectorXd& landing,

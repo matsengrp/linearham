@@ -7,6 +7,12 @@
 * [Google C++ style guide](https://google.github.io/styleguide/cppguide.html)
 
 
+## Glossary
+
+* *segment:* a contiguous sequence of bases that come from one type of state, e.g. V, N, D, etc.
+* *symbol:* what gets emitted. Here nucleotide bases.
+
+
 ## Smooshables
 
 The fundamental abstraction in linearham is a *smooshable*.

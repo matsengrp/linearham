@@ -4,7 +4,7 @@
 #include "linalg.hpp"
 
 /// @file germline.hpp
-/// @brief The core of the implementation.
+/// @brief Headers for the Germline class and descendants.
 
 namespace linearham {
 

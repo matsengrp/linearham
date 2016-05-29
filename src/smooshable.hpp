@@ -3,6 +3,7 @@
 
 #include "linalg.hpp"
 #include "germline.hpp"
+#include "insertion.hpp"
 
 /// @file smooshable.hpp
 /// @brief Headers for Smooshable class and descendants.
