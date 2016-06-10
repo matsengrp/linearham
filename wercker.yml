@@ -11,7 +11,7 @@ build:
             code: scons
         - script:
             name: test
-            code: ./test
+            code: _build/test/test
 
     after-steps:
         - slack-notifier:
