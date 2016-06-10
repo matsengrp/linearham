@@ -1,9 +1,10 @@
-# linearham                         {#mainpage}
+# linearham                          {#mainpage}
 
 ## Handy links
 
-* [Eigen docs](http://eigen.tuxfamily.org/dox/group__QuickRefPage.html)
+* [linearham GitHub repository](https://github.com/matsengrp/linearham)
 * [Catch tutorial](https://github.com/philsquared/Catch)
+* [Eigen docs](http://eigen.tuxfamily.org/dox/group__QuickRefPage.html)
 * [Google C++ style guide](https://google.github.io/styleguide/cppguide.html)
 
 
