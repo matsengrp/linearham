@@ -1,8 +1,7 @@
-test
 *.a
 *.o
 .sconsign.dblite
-
+_build/
 doxygen_sqlite3.db
 html/
 latex/
