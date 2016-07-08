@@ -1,5 +1,5 @@
-#include "linalg.hpp"
 #include "core.hpp"
+#include "linalg.hpp"
 
 /// @file core.cpp
 /// @brief Core implementation routines.
@@ -17,7 +17,8 @@ namespace linearham {
 /// @return
 /// Matrix of match probabilities just in terms of the transitions.
 ///
-/// If next_transition is of length \f$\ell-1\f$, then make an \f$\ell \times \ell\f$
+/// If next_transition is of length \f$\ell-1\f$, then make an \f$\ell \times
+/// \ell\f$
 /// matrix M with the part of the match probability coming from the
 /// transitions. If \f$a\f$ is next_transition and \f$b\f$ is landing,
 /// \f[
@@ -25,20 +26,19 @@ namespace linearham {
 /// \f]
 /// is the cumulative transition probability of having a match start at i and
 /// end at j.
-Eigen::MatrixXd BuildTransition(
-    Eigen::VectorXd& landing,
-    Eigen::VectorXd& next_transition) {
-  int ell = next_transition.size()+1;
+Eigen::MatrixXd BuildTransition(Eigen::VectorXd& landing,
+                                Eigen::VectorXd& next_transition) {
+  int ell = next_transition.size() + 1;
   assert(landing.size() == ell);
-  Eigen::MatrixXd transition(ell,ell);
+  Eigen::MatrixXd transition(ell, ell);
   Eigen::VectorXd fall_off(ell);
 
   transition.setOnes();
-  SubProductMatrix(next_transition, transition.block(0,1,ell-1,ell-1));
+  SubProductMatrix(next_transition, transition.block(0, 1, ell - 1, ell - 1));
 
   // Changing to array here allows for component-wise operations.
-  fall_off.head(ell-1).array() = 1.-next_transition.array();
-  fall_off(ell-1) = 1.;
+  fall_off.head(ell - 1).array() = 1. - next_transition.array();
+  fall_off(ell - 1) = 1.;
 
   ColVecMatCwise(landing, transition, transition);
   RowVecMatCwise(fall_off, transition, transition);
@@ -58,13 +58,11 @@ Eigen::MatrixXd BuildTransition(
 /// @param[out] match
 /// Matrix of matches of various length.
 ///
-void BuildMatchMatrix(
-    const Eigen::Ref<const Eigen::MatrixXd> transition,
-    Eigen::VectorXd& emission,
-    Eigen::Ref<Eigen::MatrixXd> match) {
+void BuildMatchMatrix(const Eigen::Ref<const Eigen::MatrixXd> transition,
+                      Eigen::VectorXd& emission,
+                      Eigen::Ref<Eigen::MatrixXd> match) {
   SubProductMatrix(emission, match);
   // Component-wise product:
   match.array() *= transition.array();
 }
-
 }

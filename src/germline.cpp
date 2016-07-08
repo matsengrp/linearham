@@ -11,19 +11,18 @@ namespace linearham {
 /// @param[in]  landing
 /// Vector of probabilities of landing somewhere to begin the match.
 /// @param[in]  emission_matrix
-/// Matrix of emission probabilities, with rows as the states and columns as the sites.
+/// Matrix of emission probabilities, with rows as the states and columns as the
+/// sites.
 /// @param[in] next_transition
 /// Vector of probabilities of transitioning to the next match state.
-Germline::Germline(
-  Eigen::VectorXd& landing,
-  Eigen::MatrixXd& emission_matrix,
-  Eigen::VectorXd& next_transition) :
-      emission_matrix_(emission_matrix) {
-    assert(landing.size() == emission_matrix_.cols());
-    assert(landing.size() == next_transition.size()+1);
-    transition_ = BuildTransition(landing, next_transition);
-    assert(transition_.cols() == emission_matrix_.cols());
-  };
+Germline::Germline(Eigen::VectorXd& landing, Eigen::MatrixXd& emission_matrix,
+                   Eigen::VectorXd& next_transition)
+    : emission_matrix_(emission_matrix) {
+  assert(landing.size() == emission_matrix_.cols());
+  assert(landing.size() == next_transition.size() + 1);
+  transition_ = BuildTransition(landing, next_transition);
+  assert(transition_.cols() == emission_matrix_.cols());
+};
 
 
 /// @brief Prepares a vector with per-site emission probabilities.
@@ -38,15 +37,13 @@ Germline::Germline(
 /// the state corresponding to the ith entry of `emission_indices` from the
 /// `i+start` entry of the germline sequence.
 void Germline::EmissionVector(
-    const Eigen::Ref<const Eigen::VectorXi>& emission_indices,
-    int start,
+    const Eigen::Ref<const Eigen::VectorXi>& emission_indices, int start,
     Eigen::Ref<Eigen::VectorXd> emission) {
   int length = emission_indices.size();
-  assert(this->length() <= start+length);
+  assert(this->length() <= start + length);
   VectorByIndices(
-    emission_matrix_.block(0, start, emission_matrix_.rows(), length),
-    emission_indices,
-    emission);
+      emission_matrix_.block(0, start, emission_matrix_.rows(), length),
+      emission_indices, emission);
 };
 
 
@@ -69,21 +66,18 @@ void Germline::EmissionVector(
 /// `emission_indices` a vector of any length (given the constraints
 /// on maximal length).
 void Germline::MatchMatrix(
-    int start,
-    const Eigen::Ref<const Eigen::VectorXi>& emission_indices,
-    int left_flex,
-    int right_flex,
-    Eigen::Ref<Eigen::MatrixXd> match) {
+    int start, const Eigen::Ref<const Eigen::VectorXi>& emission_indices,
+    int left_flex, int right_flex, Eigen::Ref<Eigen::MatrixXd> match) {
   int length = emission_indices.size();
   assert(0 <= left_flex && left_flex <= length);
   assert(0 <= right_flex && right_flex <= length);
-  assert(this->length() <= start+length);
+  assert(this->length() <= start + length);
   Eigen::VectorXd emission(length);
-/// @todo Inefficient. Shouldn't calculate fullMatch then cut it down.
-  Eigen::MatrixXd fullMatch(length,length);
+  /// @todo Inefficient. Shouldn't calculate fullMatch then cut it down.
+  Eigen::MatrixXd fullMatch(length, length);
   EmissionVector(emission_indices, start, emission);
-  BuildMatchMatrix(transition_.block(start, start, length, length), emission, fullMatch);
+  BuildMatchMatrix(transition_.block(start, start, length, length), emission,
+                   fullMatch);
   match = fullMatch.block(0, length - right_flex, left_flex, right_flex);
 };
-
 }

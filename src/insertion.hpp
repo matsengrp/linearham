@@ -9,22 +9,19 @@
 namespace linearham {
 
 
-/// @brief The HMM representation of a collection of states representing an insertion.
+/// @brief The HMM representation of a collection of states representing an
+/// insertion.
 ///
 class Insertion {
-  protected:
-    Eigen::VectorXd insertion_vector_;
-    Eigen::MatrixXd emission_matrix_;
-    Eigen::MatrixXd transition_;
+ protected:
+  Eigen::VectorXd insertion_vector_;
+  Eigen::MatrixXd emission_matrix_;
+  Eigen::MatrixXd transition_;
 
-  public:
-    Insertion(
-      Eigen::VectorXd& insertion_vector,
-      Eigen::MatrixXd& emission_matrix,
-      Eigen::MatrixXd& transition);
-
+ public:
+  Insertion(Eigen::VectorXd& insertion_vector, Eigen::MatrixXd& emission_matrix,
+            Eigen::MatrixXd& transition);
 };
-
 }
 
 #endif  // LINEARHAM_INSERTION_

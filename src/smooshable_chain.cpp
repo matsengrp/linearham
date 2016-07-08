@@ -12,22 +12,26 @@ namespace linearham {
 /// @param[in] originals
 /// A vector of the input smooshables.
 ///
-/// Does marginal and Viterbi calculation smooshing together a list of Smooshables.
+/// Does marginal and Viterbi calculation smooshing together a list of
+/// Smooshables.
 ///
-/// @image html http://i.imgur.com/FI6eVZp.png "Unwinding Viterbi: see code comments in SmooshableChain constructor."
-SmooshableChain::SmooshableChain(
-    SmooshableVector originals) : originals_(originals) {
+/// @image html http://i.imgur.com/FI6eVZp.png "Unwinding Viterbi: see code
+/// comments in SmooshableChain constructor."
+SmooshableChain::SmooshableChain(SmooshableVector originals)
+    : originals_(originals) {
   IntMatrixVector viterbi_idxs;
 
   // If there's only one smooshable there is nothing to smoosh.
-  if(originals.size() <= 1){ return; }
+  if (originals.size() <= 1) {
+    return;
+  }
 
   // Smoosh the supplied Smooshables and add the results onto the back of the
   // corresponding vectors.
   // The [] expression below describes how we are going to be modifying
   // `this` and viterbi_idxs.
-  auto SmooshAndAdd = [this, &viterbi_idxs](
-      const Smooshable& s_a, const Smooshable& s_b) {
+  auto SmooshAndAdd = [this, &viterbi_idxs](const Smooshable& s_a,
+                                            const Smooshable& s_b) {
     Smooshable smooshed;
     Eigen::MatrixXi viterbi_idx;
     std::tie(smooshed, viterbi_idx) = Smoosh(s_a, s_b);
@@ -39,7 +43,7 @@ SmooshableChain::SmooshableChain(
   // Say we are given smooshes a, b, c,  and denote smoosh by *.
   // First make a list a*b, a*b*c.
   SmooshAndAdd(originals_[0], originals_[1]);
-  for(unsigned int i=2; i<originals_.size(); i++) {
+  for (unsigned int i = 2; i < originals_.size(); i++) {
     SmooshAndAdd(smoosheds_.back(), originals_[i]);
   };
 
@@ -47,8 +51,8 @@ SmooshableChain::SmooshableChain(
   Eigen::MatrixXi vidx_fully_smooshed = viterbi_idxs.back();
 
   // Unwind the viterbi paths.
-  for(int fs_i=0; fs_i<vidx_fully_smooshed.rows(); fs_i++) {
-    for(int fs_j=0; fs_j<vidx_fully_smooshed.cols(); fs_j++) {
+  for (int fs_i = 0; fs_i < vidx_fully_smooshed.rows(); fs_i++) {
+    for (int fs_j = 0; fs_j < vidx_fully_smooshed.cols(); fs_j++) {
       std::vector<int> path;
 
       // Before reading this, take a look at the documentation for Smoosh and
@@ -61,9 +65,10 @@ SmooshableChain::SmooshableChain(
 
       // Loop through the entries of viterbi_idxs.
       // Each one of these is a viterbi_idx matrix (not a single index).
-      for(auto viterbi_idx = std::next(viterbi_idxs.rbegin()); // Start at pentiultimate.
-          viterbi_idx != viterbi_idxs.rend(); // Iterate to the start.
-          ++viterbi_idx) {
+      for (auto viterbi_idx =
+               std::next(viterbi_idxs.rbegin());  // Start at pentiultimate.
+           viterbi_idx != viterbi_idxs.rend();    // Iterate to the start.
+           ++viterbi_idx) {
         // Say this is our first trip through the loop in our a*b*c example
         // (in fact, with only 3 originals we will only have one pass total).
         // As stated above, path.front() has the start point j in c. The
@@ -76,5 +81,4 @@ SmooshableChain::SmooshableChain(
     }
   }
 };
-
 }
