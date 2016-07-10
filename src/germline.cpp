@@ -25,13 +25,19 @@ Germline::Germline(Eigen::VectorXd& landing, Eigen::MatrixXd& emission_matrix,
 };
 
 
-/// @brief Prepares a vector with per-site emission probabilities.
+/// @brief Prepares a vector with per-site emission probabilities for a trimmed
+/// read.
 /// @param[in]  emission_indices
-/// Vector of indices giving the emitted states.
+/// Vector of indices giving the emitted states of a trimmed read.
 /// @param[in]  start
-/// What does the first read position correspond to in the germline gene?
+/// What does the first trimmed read position correspond to in the germline
+/// gene?
 /// @param[out] emission
 /// Storage for the vector of per-site emission probabilities.
+///
+/// First, note that this is for a "trimmed" read, meaning the part of the read
+/// that could potentially align to this germline gene. This is typically
+/// obtained by the Smith-Waterman alignment step.
 ///
 /// The ith entry of the resulting vector is the probability of emitting
 /// the state corresponding to the ith entry of `emission_indices` from the
