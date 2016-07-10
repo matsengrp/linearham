@@ -8,9 +8,9 @@ namespace linearham {
 
 
 /// @brief Constructor for Insertion.
-/// @param[in]  insertion_vector
+/// @param[in] insertion_vector
 /// Vector of insertion probabilities, indexed by symbols.
-/// @param[in]  emission_matrix
+/// @param[in] emission_matrix
 /// Matrix of emission probabilities, indexed by symbols.
 /// @param[in] transition
 /// Matrix of transition probabilities, indexed by symbols.

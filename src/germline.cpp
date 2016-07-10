@@ -8,9 +8,9 @@ namespace linearham {
 
 
 /// @brief Constructor for Germline.
-/// @param[in]  landing
+/// @param[in] landing
 /// Vector of probabilities of landing somewhere to begin the match.
-/// @param[in]  emission_matrix
+/// @param[in] emission_matrix
 /// Matrix of emission probabilities, with rows as the states and columns as the
 /// sites.
 /// @param[in] next_transition
@@ -27,9 +27,9 @@ Germline::Germline(Eigen::VectorXd& landing, Eigen::MatrixXd& emission_matrix,
 
 /// @brief Prepares a vector with per-site emission probabilities for a trimmed
 /// read.
-/// @param[in]  emission_indices
+/// @param[in] emission_indices
 /// Vector of indices giving the emitted states of a trimmed read.
-/// @param[in]  start
+/// @param[in] start
 /// What does the first trimmed read position correspond to in the germline
 /// gene?
 /// @param[out] emission
@@ -54,13 +54,13 @@ void Germline::EmissionVector(
 
 
 /// @brief Prepares a matrix with the probabilities of various linear matches.
-/// @param[in]  start
+/// @param[in] start
 /// What does the first read position correspond to in the germline gene?
-/// @param[in]  emission_indices
+/// @param[in] emission_indices
 /// Vector of indices giving the emitted states.
-/// @param[in]  left_flex
+/// @param[in] left_flex
 /// How many (contiguous) start points should we allow on the left side?
-/// @param[in]  right_flex
+/// @param[in] right_flex
 /// How many (contiguous) end points should we allow on the right side?
 /// @param[out] match
 /// Storage for the matrix of match probabilities.

@@ -15,8 +15,8 @@ namespace linearham {
 
 /// @brief This function takes the coefficient-wise product of b and every
 /// column of A.
-/// @param[in]  b Input vector.
-/// @param[in]  A Input matrix.
+/// @param[in] b Input vector.
+/// @param[in] A Input matrix.
 /// @param[out] B Output matrix.
 ///  \f[
 ///  B_{i,j} = b_i A_{i,j}
@@ -32,8 +32,8 @@ void ColVecMatCwise(const Eigen::Ref<const Eigen::VectorXd>& b,
 
 /// @brief This function takes the coefficient-wise product of b and every row
 /// of A.
-/// @param[in]  b Input vector.
-/// @param[in]  A Input matrix.
+/// @param[in] b Input vector.
+/// @param[in] A Input matrix.
 /// @param[out] B Output matrix.
 ///  \f[
 ///  B_{i,j} = b_j A_{i,j}
@@ -48,7 +48,7 @@ void RowVecMatCwise(const Eigen::Ref<const Eigen::RowVectorXd>& b,
 
 
 /// @brief This function builds an matrix of sub-products.
-/// @param[in]  e Input vector.
+/// @param[in] e Input vector.
 /// @param[out] A Output matrix.
 ///
 /// If e is of length \f$\ell\f$, then fill a \f$\ell \times \ell\f$
@@ -77,8 +77,8 @@ void SubProductMatrix(const Eigen::Ref<const Eigen::VectorXd>& e,
 
 
 /// @brief This function extracts a vector of entries of a matrix by row index.
-/// @param[in]  A Input matrix.
-/// @param[in]  a Input vector of indices.
+/// @param[in] A Input matrix.
+/// @param[in] a Input vector of indices.
 /// @param[out] b Output vector.
 ///
 /// Assume \f$A\f$ is \f$m \times n\f$ and that \f$a\f$ is a length-n vector
@@ -99,8 +99,8 @@ void VectorByIndices(const Eigen::Ref<const Eigen::MatrixXd>& A,
 
 
 /// @brief This function extracts a vector of entries of a matrix by row index.
-/// @param[in]  A Input matrix.
-/// @param[in]  B Input matrix.
+/// @param[in] A Input matrix.
+/// @param[in] B Input matrix.
 /// @param[out] C Output matrix containing the matrix product maximum.
 /// @param[out] C_idx Output matrix containing the matrix product argmax.
 /// `idx` is short for "index".

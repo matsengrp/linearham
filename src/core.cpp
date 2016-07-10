@@ -10,9 +10,9 @@ namespace linearham {
 
 
 /// @brief Makes a transition probability matrix.
-/// @param[in]  landing
+/// @param[in] landing
 /// Vector of probabilities of landing somewhere to begin the match.
-/// @param[in]  next_transition
+/// @param[in] next_transition
 /// Vector of probabilities of transitioning to the next match state.
 /// @return
 /// Matrix of match probabilities just in terms of the transitions.
@@ -51,9 +51,9 @@ Eigen::MatrixXd BuildTransition(Eigen::VectorXd& landing,
 
 /// @brief Builds a matrix with the probabilities of linear matches.
 ///
-/// @param[in]  transition
+/// @param[in] transition
 /// Transition matrix from BuildTransition.
-/// @param[in]  emission
+/// @param[in] emission
 /// Vector of emission probabilities for a given read.
 /// @param[out] match
 /// Matrix of matches of various length.
