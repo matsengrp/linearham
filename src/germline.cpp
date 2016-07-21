@@ -16,11 +16,11 @@ namespace linearham {
 /// @param[in] next_transition
 /// Vector of probabilities of transitioning to the next match state.
 Germline::Germline(Eigen::VectorXd& landing, Eigen::MatrixXd& emission_matrix,
-                   Eigen::VectorXd& next_transition)
-    : emission_matrix_(emission_matrix) {
+                   Eigen::VectorXd& next_transition, double& scaler)
+    : emission_matrix_(emission_matrix), scaler_(scaler) {
   assert(landing.size() == emission_matrix_.cols());
   assert(landing.size() == next_transition.size() + 1);
-  transition_ = BuildTransition(landing, next_transition);
+  transition_ = BuildTransition(landing, next_transition, scaler_);
   assert(transition_.cols() == emission_matrix_.cols());
 };
 

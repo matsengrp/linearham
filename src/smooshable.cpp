@@ -16,8 +16,10 @@ Smooshable::Smooshable(int left_flex, int right_flex) {
 
 
 /// @brief Constructor starting from marginal probabilities.
-Smooshable::Smooshable(Eigen::MatrixXd& marginal) : marginal_(marginal) {
-  viterbi_ = marginal;
+Smooshable::Smooshable(Eigen::MatrixXd& marginal, double& scaler) {
+	marginal_ = scaler * marginal;
+  viterbi_ = scaler * marginal;
+  scaler_ = scaler;
 };
 
 
@@ -41,13 +43,14 @@ Smooshable::Smooshable(Eigen::MatrixXd& marginal) : marginal_(marginal) {
 /// between the left and right smooshable.
 /// The equivalent entry for the Viterbi sequence just has sum replaced with
 /// max.
-std::pair<Smooshable, Eigen::MatrixXi> Smoosh(const Smooshable& s_a,
-                                              const Smooshable& s_b) {
+std::pair<Smooshable, Eigen::MatrixXi> Smoosh(Smooshable& s_a,
+                                              Smooshable& s_b) {
   Smooshable s_out(s_a.left_flex(), s_b.right_flex());
   Eigen::MatrixXi viterbi_idx(s_a.left_flex(), s_b.right_flex());
   assert(s_a.right_flex() == s_b.left_flex());
   s_out.marginal() = s_a.marginal() * s_b.marginal();
   BinaryMax(s_a.viterbi(), s_b.viterbi(), s_out.viterbi(), viterbi_idx);
+  s_out.setScaler(s_a.scaler() * s_b.scaler());
   return std::make_pair(s_out, viterbi_idx);
 };
 
@@ -76,5 +79,6 @@ SmooshableGermline::SmooshableGermline(
   germline.MatchMatrix(start, emission_indices, left_flex, right_flex,
                        marginal_);
   viterbi_ = marginal_;
+  scaler_ = germline.scaler();
 };
 }

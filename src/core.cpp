@@ -27,13 +27,14 @@ namespace linearham {
 /// is the cumulative transition probability of having a match start at i and
 /// end at j.
 Eigen::MatrixXd BuildTransition(Eigen::VectorXd& landing,
-                                Eigen::VectorXd& next_transition) {
+                                Eigen::VectorXd& next_transition,
+                                double& scaler) {
   int ell = next_transition.size() + 1;
   assert(landing.size() == ell);
   Eigen::MatrixXd transition(ell, ell);
   Eigen::VectorXd fall_off(ell);
 
-  transition.setOnes();
+  transition.setConstant(scaler);
   SubProductMatrix(next_transition, transition.block(0, 1, ell - 1, ell - 1));
 
   // Changing to array here allows for component-wise operations.
@@ -61,6 +62,7 @@ Eigen::MatrixXd BuildTransition(Eigen::VectorXd& landing,
 void BuildMatchMatrix(const Eigen::Ref<const Eigen::MatrixXd> transition,
                       Eigen::VectorXd& emission,
                       Eigen::Ref<Eigen::MatrixXd> match) {
+  match.setOnes();
   SubProductMatrix(emission, match);
   // Component-wise product:
   match.array() *= transition.array();

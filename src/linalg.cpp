@@ -58,13 +58,12 @@ void RowVecMatCwise(const Eigen::Ref<const Eigen::RowVectorXd>& b,
 ///  \f]
 /// Empty products are taken to be one.
 void SubProductMatrix(const Eigen::Ref<const Eigen::VectorXd>& e,
-                      Eigen::Ref<Eigen::MatrixXd> A) {
+											Eigen::Ref<Eigen::MatrixXd> A) {
   int ell = e.size();
   assert(ell == A.rows());
   assert(ell == A.cols());
-  A.setOnes();
   // Upper left gets the correct value.
-  A(0, 0) = e(0);
+  A(0, 0) *= e(0);
   // Iterate over columns from left to right.
   for (int k = 1; k < ell; k++) {
     // Each subcolumn of length k is the previous subcolumn of the same
