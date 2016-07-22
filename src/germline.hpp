@@ -24,7 +24,7 @@ class Germline {
 
   int length() { return transition_.cols(); };
   
-  double scaler() { return scaler_; };
+  double scaler() const { return scaler_; };
 
   void EmissionVector(const Eigen::Ref<const Eigen::VectorXi>& emission_indices,
                       int start, Eigen::Ref<Eigen::VectorXd> emission);

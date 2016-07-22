@@ -15,9 +15,9 @@ Smooshable::Smooshable(int left_flex, int right_flex) {
 };
 
 
-/// @brief Constructor starting from marginal probabilities.
+/// @brief Constructor starting from marginal probabilities and underflow scaler.
 Smooshable::Smooshable(Eigen::MatrixXd& marginal, double& scaler) {
-	marginal_ = scaler * marginal;
+  marginal_ = scaler * marginal;
   viterbi_ = scaler * marginal;
   scaler_ = scaler;
 };
@@ -43,8 +43,8 @@ Smooshable::Smooshable(Eigen::MatrixXd& marginal, double& scaler) {
 /// between the left and right smooshable.
 /// The equivalent entry for the Viterbi sequence just has sum replaced with
 /// max.
-std::pair<Smooshable, Eigen::MatrixXi> Smoosh(Smooshable& s_a,
-                                              Smooshable& s_b) {
+std::pair<Smooshable, Eigen::MatrixXi> Smoosh(const Smooshable& s_a,
+                                              const Smooshable& s_b) {
   Smooshable s_out(s_a.left_flex(), s_b.right_flex());
   Eigen::MatrixXi viterbi_idx(s_a.left_flex(), s_b.right_flex());
   assert(s_a.right_flex() == s_b.left_flex());

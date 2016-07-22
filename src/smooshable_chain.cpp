@@ -30,8 +30,8 @@ SmooshableChain::SmooshableChain(SmooshableVector originals)
   // corresponding vectors.
   // The [] expression below describes how we are going to be modifying
   // `this` and viterbi_idxs.
-  auto SmooshAndAdd = [this, &viterbi_idxs](Smooshable& s_a,
-                                            Smooshable& s_b) {
+  auto SmooshAndAdd = [this, &viterbi_idxs](const Smooshable& s_a,
+                                            const Smooshable& s_b) {
     Smooshable smooshed;
     Eigen::MatrixXi viterbi_idx;
     std::tie(smooshed, viterbi_idx) = Smoosh(s_a, s_b);
