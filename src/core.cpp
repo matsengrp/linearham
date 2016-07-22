@@ -35,7 +35,8 @@ Eigen::MatrixXd BuildTransition(Eigen::VectorXd& landing,
   Eigen::VectorXd fall_off(ell);
 
   transition.setConstant(scaler);
-  SubProductMatrix(next_transition, transition.block(0, 1, ell - 1, ell - 1));
+  SubProductMatrix(next_transition, transition.block(0, 1, ell - 1, ell - 1),
+                   transition.block(0, 1, ell - 1, ell - 1));
 
   // Changing to array here allows for component-wise operations.
   fall_off.head(ell - 1).array() = 1. - next_transition.array();
@@ -63,7 +64,7 @@ void BuildMatchMatrix(const Eigen::Ref<const Eigen::MatrixXd> transition,
                       Eigen::VectorXd& emission,
                       Eigen::Ref<Eigen::MatrixXd> match) {
   match.setOnes();
-  SubProductMatrix(emission, match);
+  SubProductMatrix(emission, match, match);
   // Component-wise product:
   match.array() *= transition.array();
 }

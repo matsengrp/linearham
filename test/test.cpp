@@ -57,9 +57,9 @@ TEST_CASE("SubProductMatrix", "[linalg]") {
                   1,   -1, -2,
                   1,    1,  2;
   e << 2.5, -1, 2;
-  A.setConstant(1);
+  A.setOnes();
 
-  SubProductMatrix(e, A);
+  SubProductMatrix(e, A, A);
   REQUIRE(A == correct_A);
 }
 
