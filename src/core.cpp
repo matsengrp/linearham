@@ -14,17 +14,19 @@ namespace linearham {
 /// Vector of probabilities of landing somewhere to begin the match.
 /// @param[in] next_transition
 /// Vector of probabilities of transitioning to the next match state.
+/// @param[in] scaler
+/// An underflow scaler.
 /// @return
-/// Matrix of match probabilities just in terms of the transitions.
+/// (Scaled) Matrix of match probabilities just in terms of the transitions.
 ///
-/// If next_transition is of length \f$\ell-1\f$, then make an \f$\ell \times
-/// \ell\f$
-/// matrix M with the part of the match probability coming from the
-/// transitions. If \f$a\f$ is next_transition and \f$b\f$ is landing,
+/// If next_transition is of length \f$\ell-1\f$, then make an
+/// \f$\ell \times \ell\f$ matrix \f$M\f$ with the part of the match
+/// probability coming from the transitions. If \f$a\f$ is next_transition,
+/// \f$b\f$ is landing, and \f$K\f$ is the underflow scaler,
 /// \f[
-/// M_{i,j} := b_i (1-a_j) \prod_{k=i}^{j-1} a_k
+/// M_{i,j} := K b_i (1-a_j) \prod_{k=i}^{j-1} a_k
 /// \f]
-/// is the cumulative transition probability of having a match start at i and
+/// is the cumulative (scaled) transition probability of having a match start at i and
 /// end at j.
 Eigen::MatrixXd BuildTransition(Eigen::VectorXd& landing,
                                 Eigen::VectorXd& next_transition,
