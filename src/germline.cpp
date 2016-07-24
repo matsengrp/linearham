@@ -15,6 +15,8 @@ namespace linearham {
 /// sites.
 /// @param[in] next_transition
 /// Vector of probabilities of transitioning to the next match state.
+/// @param[in] scaler
+/// An underflow scaler.
 Germline::Germline(Eigen::VectorXd& landing, Eigen::MatrixXd& emission_matrix,
                    Eigen::VectorXd& next_transition, double& scaler)
     : emission_matrix_(emission_matrix), scaler_(scaler) {
