@@ -50,7 +50,7 @@ std::pair<Smooshable, Eigen::MatrixXi> Smoosh(const Smooshable& s_a,
   assert(s_a.right_flex() == s_b.left_flex());
   s_out.marginal() = s_a.marginal() * s_b.marginal();
   BinaryMax(s_a.viterbi(), s_b.viterbi(), s_out.viterbi(), viterbi_idx);
-  s_out.setScaler(s_a.scaler() * s_b.scaler());
+  s_out.scaler() = s_a.scaler() * s_b.scaler();
   return std::make_pair(s_out, viterbi_idx);
 };
 
