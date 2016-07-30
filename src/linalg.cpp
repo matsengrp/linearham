@@ -53,11 +53,11 @@ void RowVecMatCwise(const Eigen::Ref<const Eigen::RowVectorXd>& b,
 /// @param[out] A Output matrix.
 ///
 /// If e is of length \f$\ell\f$ and B is \f$\ell \times \ell\f$, then
-/// fill a \f$\ell \times \ell\f$ matrix (A) with the entries
+/// fill an \f$\ell \times \ell\f$ matrix \f$A\f$ with the entries
 ///  \f[
 ///  A_{i,j} := B_{i,j} \prod_{k=i}^{j} e_k
 ///  \f]
-/// When \f$i > j\f$, \f$A_{i,j} := B_{i,j}\f$.
+/// When \f$i > j\f$, the product is empty so \f$A_{i,j} := B_{i,j}\f$.
 void SubProductMatrix(const Eigen::Ref<const Eigen::VectorXd>& e,
                       const Eigen::Ref<const Eigen::MatrixXd>& B,
                       Eigen::Ref<Eigen::MatrixXd> A) {
@@ -66,9 +66,9 @@ void SubProductMatrix(const Eigen::Ref<const Eigen::VectorXd>& e,
   assert(ell == A.cols());
   assert(A.rows() == B.rows());
   assert(A.cols() == B.cols());
-  
+
   A = B;
-  
+
   // Upper left gets the correct value.
   A(0, 0) *= e(0);
   // Iterate over columns from left to right.
