@@ -19,9 +19,8 @@ void RowVecMatCwise(const Eigen::Ref<const Eigen::RowVectorXd>& b,
                     Eigen::Ref<Eigen::MatrixXd> B);
 
 void SubProductMatrix(const Eigen::Ref<const Eigen::VectorXd>& e,
-                      const Eigen::Ref<const Eigen::MatrixXd>& B,
                       Eigen::Ref<Eigen::MatrixXd> A);
-
+                      
 void VectorByIndices(const Eigen::Ref<const Eigen::MatrixXd>& A,
                      const Eigen::Ref<const Eigen::VectorXi>& a,
                      Eigen::Ref<Eigen::VectorXd> b);

@@ -14,31 +14,27 @@ namespace linearham {
 /// Vector of probabilities of landing somewhere to begin the match.
 /// @param[in] next_transition
 /// Vector of probabilities of transitioning to the next match state.
-/// @param[in] scaler
-/// An underflow scaler.
 /// @return
-/// (Scaled) Matrix of match probabilities just in terms of the transitions.
+/// Matrix of match probabilities just in terms of the transitions.
 ///
-/// If next_transition is of length \f$\ell-1\f$, then make an
-/// \f$\ell \times \ell\f$ matrix \f$M\f$ with the part of the match
-/// probability coming from the transitions. If \f$a\f$ is next_transition,
-/// \f$b\f$ is landing, and \f$K\f$ is the underflow scaler,
+/// If next_transition is of length \f$\ell-1\f$, then make an \f$\ell \times
+/// \ell\f$
+/// matrix M with the part of the match probability coming from the
+/// transitions. If \f$a\f$ is next_transition and \f$b\f$ is landing,
 /// \f[
-/// M_{i,j} := K b_i (1-a_j) \prod_{k=i}^{j-1} a_k
+/// M_{i,j} := b_i (1-a_j) \prod_{k=i}^{j-1} a_k
 /// \f]
-/// is the cumulative (scaled) transition probability of having a match start at i and
+/// is the cumulative transition probability of having a match start at i and
 /// end at j.
 Eigen::MatrixXd BuildTransition(Eigen::VectorXd& landing,
-                                Eigen::VectorXd& next_transition,
-                                double& scaler) {
+                                Eigen::VectorXd& next_transition) {
   int ell = next_transition.size() + 1;
   assert(landing.size() == ell);
   Eigen::MatrixXd transition(ell, ell);
   Eigen::VectorXd fall_off(ell);
 
-  transition.setConstant(scaler);
-  SubProductMatrix(next_transition, transition.block(0, 1, ell - 1, ell - 1),
-                   transition.block(0, 1, ell - 1, ell - 1));
+  transition.setOnes();
+  SubProductMatrix(next_transition, transition.block(0, 1, ell - 1, ell - 1));
 
   // Changing to array here allows for component-wise operations.
   fall_off.head(ell - 1).array() = 1. - next_transition.array();
@@ -65,8 +61,7 @@ Eigen::MatrixXd BuildTransition(Eigen::VectorXd& landing,
 void BuildMatchMatrix(const Eigen::Ref<const Eigen::MatrixXd> transition,
                       Eigen::VectorXd& emission,
                       Eigen::Ref<Eigen::MatrixXd> match) {
-  match.setOnes();
-  SubProductMatrix(emission, match, match);
+  SubProductMatrix(emission, match);
   // Component-wise product:
   match.array() *= transition.array();
 }

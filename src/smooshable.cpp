@@ -16,10 +16,10 @@ Smooshable::Smooshable(int left_flex, int right_flex) {
 
 
 /// @brief Constructor starting from marginal probabilities and underflow scaler.
-Smooshable::Smooshable(Eigen::MatrixXd& marginal, double& scaler) {
+Smooshable::Smooshable(Eigen::MatrixXd& marginal, double scaler) {
   marginal_ = scaler * marginal;
   viterbi_ = scaler * marginal;
-  scaler_ = scaler;
+  log_scaler_ = log(scaler);
 };
 
 
@@ -50,7 +50,7 @@ std::pair<Smooshable, Eigen::MatrixXi> Smoosh(const Smooshable& s_a,
   assert(s_a.right_flex() == s_b.left_flex());
   s_out.marginal() = s_a.marginal() * s_b.marginal();
   BinaryMax(s_a.viterbi(), s_b.viterbi(), s_out.viterbi(), viterbi_idx);
-  s_out.scaler() = s_a.scaler() * s_b.scaler();
+  s_out.log_scaler() = s_a.log_scaler() + s_b.log_scaler();
   return std::make_pair(s_out, viterbi_idx);
 };
 
@@ -78,7 +78,20 @@ SmooshableGermline::SmooshableGermline(
   assert(right_flex <= emission_indices.size());
   germline.MatchMatrix(start, emission_indices, left_flex, right_flex,
                        marginal_);
-  viterbi_ = marginal_;
-  scaler_ = germline.scaler();
+  
+  // if all entries of 'marginal_' are less than SCALE_THRESHOLD, multiply
+  // all elements by SCALE_FACTOR. If not, do nothing.
+  if((marginal_.array() < SCALE_THRESHOLD).all()) {
+  
+    marginal_ *= SCALE_FACTOR;
+    viterbi_ = marginal_;
+    log_scaler_ = log(SCALE_FACTOR);
+  
+  } else {
+  
+    viterbi_ = marginal_;
+    log_scaler_ = 0;
+  
+  }
 };
 }

@@ -5,6 +5,9 @@
 #include "insertion.hpp"
 #include "linalg.hpp"
 
+#define SCALE_FACTOR pow(2, 256)
+#define SCALE_THRESHOLD (1.0/SCALE_FACTOR)
+
 /// @file smooshable.hpp
 /// @brief Headers for Smooshable class and descendants.
 
@@ -21,18 +24,18 @@ class Smooshable {
   protected:
     Eigen::MatrixXd marginal_;
     Eigen::MatrixXd viterbi_;
-    double scaler_;
+    double log_scaler_;
 
   public:
     Smooshable(){};
     Smooshable(int left_flex, int right_flex);
-    Smooshable(Eigen::MatrixXd& marginal, double& scaler);
+    Smooshable(Eigen::MatrixXd& marginal, double scaler);
 
     int left_flex() const { return marginal_.rows(); };
     int right_flex() const { return marginal_.cols(); };
     
-    double scaler() const { return scaler_; };
-    double& scaler() { return scaler_; };
+    double log_scaler() const { return log_scaler_; };
+    double& log_scaler() { return log_scaler_; };
     
     const Eigen::Ref<const Eigen::MatrixXd> marginal() const { return marginal_; };
     Eigen::Ref<Eigen::MatrixXd> marginal() { return marginal_; };

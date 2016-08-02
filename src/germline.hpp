@@ -16,16 +16,13 @@ class Germline {
   protected:
     Eigen::MatrixXd emission_matrix_;
     Eigen::MatrixXd transition_;
-    double scaler_;
-
+    
   public:
     Germline(Eigen::VectorXd& landing, Eigen::MatrixXd& emission_matrix,
-             Eigen::VectorXd& next_transition, double& scaler);
+             Eigen::VectorXd& next_transition);
 
     int length() const { return transition_.cols(); };
-  
-    double scaler() const { return scaler_; };
-
+    
     void EmissionVector(const Eigen::Ref<const Eigen::VectorXi>& emission_indices,
                         int start, Eigen::Ref<Eigen::VectorXd> emission);
 

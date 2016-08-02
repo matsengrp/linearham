@@ -57,9 +57,9 @@ TEST_CASE("SubProductMatrix", "[linalg]") {
                   1,   -1, -2,
                   1,    1,  2;
   e << 2.5, -1, 2;
-  A.setOnes();
+  A.setConstant(999);
 
-  SubProductMatrix(e, A, A);
+  SubProductMatrix(e, A);
   REQUIRE(A == correct_A);
 }
 
@@ -114,16 +114,15 @@ TEST_CASE("BuildTransition", "[core]") {
   landing << 0.13, 0.17, 0.19;
   Eigen::VectorXd next_transition(2);
   next_transition << 0.2, 0.3;
-  double scaler = 50;
   Eigen::MatrixXd correct_transition(3,3);
   correct_transition <<
-  // Format is landing * transition * ... * fall_off * scaler
-  0.13*0.8*50 , 0.13*0.2*0.7*50 , 0.13*0.2*0.3*50  ,
-  0           , 0.17*0.7*50     , 0.17*0.3*50      ,
-  0           , 0               , 0.19*50          ;
+  // Format is landing * transition * ... * fall_off
+  0.13*0.8 , 0.13*0.2*0.7 , 0.13*0.2*0.3  ,
+  0        , 0.17*0.7     , 0.17*0.3      ,
+  0        , 0            , 0.19          ;
 
   Eigen::MatrixXd transition;
-  transition = BuildTransition(landing, next_transition, scaler);
+  transition = BuildTransition(landing, next_transition);
   REQUIRE(transition.isApprox(correct_transition));
 }
 
@@ -135,17 +134,16 @@ TEST_CASE("BuildMatch", "[core]") {
   emission << 0.5, 0.71, 0.11;
   Eigen::VectorXd next_transition(2);
   next_transition << 0.2, 0.3;
-  double scaler = 50;
   Eigen::MatrixXd correct_match(3,3);
   correct_match <<
-  // Format is landing * emission * transition * ... * fall_off * scaler
-  0.13*0.5*0.8*50 , 0.13*0.5*0.2*0.71*0.7*50 , 0.13*0.5*0.2*0.71*0.3*0.11*50 ,
-  0               , 0.17*0.71*0.7*50         , 0.17*0.71*0.3*0.11*50         ,
-  0               , 0                        , 0.19*0.11*50                  ;
+  // Format is landing * emission * transition * ... * fall_off
+  0.13*0.5*0.8    , 0.13*0.5*0.2*0.71*0.7 , 0.13*0.5*0.2*0.71*0.3*0.11 ,
+  0               , 0.17*0.71*0.7         , 0.17*0.71*0.3*0.11         ,
+  0               , 0                     , 0.19*0.11                  ;
   Eigen::MatrixXd match(3,3);
   Eigen::MatrixXd transition;
 
-  transition = BuildTransition(landing, next_transition, scaler);
+  transition = BuildTransition(landing, next_transition);
   BuildMatchMatrix(transition, emission, match);
   REQUIRE(match.isApprox(correct_match));
 }
@@ -162,10 +160,9 @@ TEST_CASE("Germline", "[germline]") {
   0.29, 0.31, 0.37;
   Eigen::VectorXd next_transition(2);
   next_transition << 0.2, 0.3;
-  double scaler = 50;
-
-  Germline germline(landing, emission_matrix, next_transition, scaler);
-
+  
+  Germline germline(landing, emission_matrix, next_transition);
+  
   Eigen::VectorXi emission_indices(2);
   emission_indices << 1, 0;
   Eigen::VectorXd emission(2);
@@ -176,9 +173,9 @@ TEST_CASE("Germline", "[germline]") {
 
   Eigen::MatrixXd correct_match(2,2);
   correct_match <<
-  // Format is landing * emission * transition * ... * fall_off * scaler
-  0.17*0.31*0.7*50         , 0.17*0.31*0.3*0.11*50         ,
-  0                        , 0.19*0.11*50                  ;
+  // Format is landing * emission * transition * ... * fall_off
+  0.17*0.31*0.7         , 0.17*0.31*0.3*0.11         ,
+  0                     , 0.19*0.11                  ;
   Eigen::MatrixXd match(2,2);
   Eigen::MatrixXd transition;
   germline.MatchMatrix(1, emission_indices, 2, 2, match);
@@ -216,44 +213,42 @@ TEST_CASE("Smooshable", "[smooshable]") {
   0.3,  0.37,
   0.29, 0.41,
   0.11, 0.97;
-  double scaler_a = 50;
-  double scaler_b = 50;
+  
   Eigen::MatrixXd correct_AB_marginal(2,2);
   correct_AB_marginal <<
-  (0.50*0.3+0.71*0.29+0.13*0.11)*50*50, (0.50*0.37+0.71*0.41+0.13*0.97)*50*50,
-  (0.29*0.3+0.31*0.29+0.37*0.11)*50*50, (0.29*0.37+0.31*0.41+0.37*0.97)*50*50;
+  (0.50*0.3+0.71*0.29+0.13*0.11), (0.50*0.37+0.71*0.41+0.13*0.97),
+  (0.29*0.3+0.31*0.29+0.37*0.11), (0.29*0.37+0.31*0.41+0.37*0.97);
   Eigen::MatrixXd correct_AB_viterbi(2,2);
   correct_AB_viterbi <<
-  0.71*0.29*50*50, 0.71*0.41*50*50,
-  0.31*0.29*50*50, 0.37*0.97*50*50;
+  0.71*0.29, 0.71*0.41,
+  0.31*0.29, 0.37*0.97;
   Eigen::MatrixXi correct_AB_viterbi_idx(2,2);
   correct_AB_viterbi_idx <<
   1,1,
   1,2;
 
-  Smooshable s_A = Smooshable(A, scaler_a);
-  Smooshable s_B = Smooshable(B, scaler_b);
+  Smooshable s_A = Smooshable(A, 1);
+  Smooshable s_B = Smooshable(B, 1);
   Smooshable s_AB;
   Eigen::MatrixXi AB_viterbi_idx;
   std::tie(s_AB, AB_viterbi_idx) = Smoosh(s_A, s_B);
 
-  REQUIRE(s_AB.marginal().isApprox(correct_AB_marginal));
-  REQUIRE(s_AB.viterbi().isApprox(correct_AB_viterbi));
+  REQUIRE(s_AB.marginal() == correct_AB_marginal);
+  REQUIRE(s_AB.viterbi() == correct_AB_viterbi);
   REQUIRE(AB_viterbi_idx == correct_AB_viterbi_idx);
-  REQUIRE(s_AB.scaler() == 50*50);
+  REQUIRE(s_AB.log_scaler() == 0);
 
   Eigen::MatrixXd C(2,1);
   C <<
   0.89,
   0.43;
-  double scaler_c = 50;
-  Smooshable s_C = Smooshable(C, scaler_c);
+  Smooshable s_C = Smooshable(C, 1);
   Eigen::MatrixXd correct_ABC_viterbi(2,1);
   correct_ABC_viterbi <<
-  // 0.71*0.29*0.89*50*50*50 > 0.71*0.41*0.43*50*50*50
-  // 0.31*0.29*0.89*50*50*50 < 0.37*0.97*0.43*50*50*50
-  0.71*0.29*0.89*50*50*50,
-  0.37*0.97*0.43*50*50*50;
+  // 0.71*0.29*0.89 > 0.71*0.41*0.43
+  // 0.31*0.29*0.89 < 0.37*0.97*0.43
+  0.71*0.29*0.89,
+  0.37*0.97*0.43;
   // So the Viterbi indices are
   // 0
   // 1
@@ -264,8 +259,8 @@ TEST_CASE("Smooshable", "[smooshable]") {
   SmooshableVector sv = {s_A, s_B, s_C};
   SmooshableChain chain = SmooshableChain(sv);
   IntVectorVector correct_viterbi_paths = {{1,0}, {2,1}};
-  REQUIRE(chain.smooshed()[0].viterbi().isApprox(correct_AB_viterbi));
-  REQUIRE(chain.smooshed().back().viterbi().isApprox(correct_ABC_viterbi));
+  REQUIRE(chain.smooshed()[0].viterbi() == correct_AB_viterbi);
+  REQUIRE(chain.smooshed().back().viterbi() == correct_ABC_viterbi);
   REQUIRE(chain.viterbi_paths() == correct_viterbi_paths);
 }
 
@@ -281,13 +276,12 @@ TEST_CASE("Ham Comparison 1", "[ham]") {
   0.9, 0.8, 0.7;
   Eigen::VectorXd next_transition_a(2);
   next_transition_a << 1, 0.23;
-  double scaler = 50;
-  Germline germline_a(landing_a, emission_matrix_a, next_transition_a, scaler);
+  Germline germline_a(landing_a, emission_matrix_a, next_transition_a);
   Eigen::VectorXi emission_indices_a(3);
   emission_indices_a << 0, 1, 1;
   Smooshable s_a = SmooshableGermline(germline_a, 0, emission_indices_a,  1, 2);
   Eigen::MatrixXd correct_marginal_a(1, 2);
-  correct_marginal_a << 0.1*0.8*0.77*50, 0.1*0.8*0.23*0.7*50;
+  correct_marginal_a << 0.1*0.8*0.77, 0.1*0.8*0.23*0.7;
   REQUIRE(s_a.marginal().isApprox(correct_marginal_a));
 
   Eigen::VectorXd landing_b(3);
@@ -298,14 +292,14 @@ TEST_CASE("Ham Comparison 1", "[ham]") {
   0.89, 0.87, 0.83;
   Eigen::VectorXd next_transition_b(2);
   next_transition_b << 1, 1;
-  Germline germline_b(landing_b, emission_matrix_b, next_transition_b, scaler);
+  Germline germline_b(landing_b, emission_matrix_b, next_transition_b);
   Eigen::VectorXi emission_indices_b(3);
   emission_indices_b << 1, 0, 0;
   Smooshable s_b = SmooshableGermline(germline_b, 0, emission_indices_b, 2, 1);
   Eigen::MatrixXd correct_marginal_b(2, 1);
   correct_marginal_b <<
-  0.89*0.13*0.17*50,
-  0.13*0.17*50;
+  0.89*0.13*0.17,
+  0.13*0.17;
   REQUIRE(s_b.marginal().isApprox(correct_marginal_b));
 
   Smooshable s_ab;
@@ -313,12 +307,20 @@ TEST_CASE("Ham Comparison 1", "[ham]") {
   std::tie(s_ab, viterbi_idx_ab) = Smoosh(s_a, s_b);
   Eigen::MatrixXd correct_marginal_ab(1, 1);
   correct_marginal_ab <<
-  (0.1*0.8*0.77*0.89*0.13*0.17 + 0.1*0.8*0.23*0.7*0.13*0.17)*50*50;
+  (0.1*0.8*0.77*0.89*0.13*0.17 + 0.1*0.8*0.23*0.7*0.13*0.17);
   REQUIRE(s_ab.marginal().isApprox(correct_marginal_ab));
   Eigen::MatrixXd correct_viterbi_ab(1, 1);
-  correct_viterbi_ab << 0.1*0.8*0.77*0.89*0.13*0.17*50*50;
+  correct_viterbi_ab << 0.1*0.8*0.77*0.89*0.13*0.17;
   REQUIRE(s_ab.viterbi().isApprox(correct_viterbi_ab));
-
+  REQUIRE(s_ab.log_scaler() == 0);
+  
+  // now let's test for underflow
+  landing_b.array() *= SCALE_THRESHOLD;
+  germline_b = Germline(landing_b, emission_matrix_b, next_transition_b);
+  s_b = SmooshableGermline(germline_b, 0, emission_indices_b, 2, 1);
+  REQUIRE(s_b.marginal().isApprox(correct_marginal_b));
+  REQUIRE(s_b.log_scaler() == log(SCALE_FACTOR));
+  
   std::cout << "Ham test 1 marginal: " << correct_marginal_ab << std::endl;
   std::cout << "Ham test 1 viterbi: " << correct_viterbi_ab << std::endl;
 }
