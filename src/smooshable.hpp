@@ -24,18 +24,18 @@ class Smooshable {
   protected:
     Eigen::MatrixXd marginal_;
     Eigen::MatrixXd viterbi_;
-    double log_scaler_;
+    int scaler_count_;
 
   public:
     Smooshable(){};
     Smooshable(int left_flex, int right_flex);
-    Smooshable(Eigen::MatrixXd& marginal, double scaler);
+    Smooshable(Eigen::Ref<Eigen::MatrixXd> marginal);
 
     int left_flex() const { return marginal_.rows(); };
     int right_flex() const { return marginal_.cols(); };
 
-    double log_scaler() const { return log_scaler_; };
-    double& log_scaler() { return log_scaler_; };
+    int scaler_count() const { return scaler_count_; };
+    int& scaler_count() { return scaler_count_; };
 
     const Eigen::Ref<const Eigen::MatrixXd> marginal() const { return marginal_; };
     Eigen::Ref<Eigen::MatrixXd> marginal() { return marginal_; };
@@ -47,6 +47,8 @@ class Smooshable {
 // Functions
 std::pair<Smooshable, Eigen::MatrixXi> Smoosh(const Smooshable& s_a,
                                               const Smooshable& s_b);
+                                              
+int ScaleMatchMatrix(Eigen::Ref<Eigen::MatrixXd> match);
 
 
 /// A smooshable derived from a read aligned to a segment of germline gene.

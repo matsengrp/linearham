@@ -227,8 +227,8 @@ TEST_CASE("Smooshable", "[smooshable]") {
   1,1,
   1,2;
 
-  Smooshable s_A = Smooshable(A, 1);
-  Smooshable s_B = Smooshable(B, 1);
+  Smooshable s_A = Smooshable(A);
+  Smooshable s_B = Smooshable(B);
   Smooshable s_AB;
   Eigen::MatrixXi AB_viterbi_idx;
   std::tie(s_AB, AB_viterbi_idx) = Smoosh(s_A, s_B);
@@ -236,13 +236,13 @@ TEST_CASE("Smooshable", "[smooshable]") {
   REQUIRE(s_AB.marginal() == correct_AB_marginal);
   REQUIRE(s_AB.viterbi() == correct_AB_viterbi);
   REQUIRE(AB_viterbi_idx == correct_AB_viterbi_idx);
-  REQUIRE(s_AB.log_scaler() == 0);
+  REQUIRE(s_AB.scaler_count() == 0);
 
   Eigen::MatrixXd C(2,1);
   C <<
   0.89,
   0.43;
-  Smooshable s_C = Smooshable(C, 1);
+  Smooshable s_C = Smooshable(C);
   Eigen::MatrixXd correct_ABC_viterbi(2,1);
   correct_ABC_viterbi <<
   // 0.71*0.29*0.89 > 0.71*0.41*0.43
@@ -283,6 +283,7 @@ TEST_CASE("Ham Comparison 1", "[ham]") {
   Eigen::MatrixXd correct_marginal_a(1, 2);
   correct_marginal_a << 0.1*0.8*0.77, 0.1*0.8*0.23*0.7;
   REQUIRE(s_a.marginal().isApprox(correct_marginal_a));
+  REQUIRE(s_a.scaler_count() == 0);
 
   Eigen::VectorXd landing_b(3);
   landing_b << 1, 1, 1;
@@ -301,6 +302,7 @@ TEST_CASE("Ham Comparison 1", "[ham]") {
   0.89*0.13*0.17,
   0.13*0.17;
   REQUIRE(s_b.marginal().isApprox(correct_marginal_b));
+  REQUIRE(s_b.scaler_count() == 0);
 
   Smooshable s_ab;
   Eigen::MatrixXi viterbi_idx_ab;
@@ -312,14 +314,14 @@ TEST_CASE("Ham Comparison 1", "[ham]") {
   Eigen::MatrixXd correct_viterbi_ab(1, 1);
   correct_viterbi_ab << 0.1*0.8*0.77*0.89*0.13*0.17;
   REQUIRE(s_ab.viterbi().isApprox(correct_viterbi_ab));
-  REQUIRE(s_ab.log_scaler() == 0);
+  REQUIRE(s_ab.scaler_count() == 0);
 
   // now let's test for underflow
   landing_b.array() *= SCALE_THRESHOLD;
   germline_b = Germline(landing_b, emission_matrix_b, next_transition_b);
   s_b = SmooshableGermline(germline_b, 0, emission_indices_b, 2, 1);
   REQUIRE(s_b.marginal().isApprox(correct_marginal_b));
-  REQUIRE(s_b.log_scaler() == log(SCALE_FACTOR));
+  REQUIRE(s_b.scaler_count() == 1);
 
   std::cout << "Ham test 1 marginal: " << correct_marginal_ab << std::endl;
   std::cout << "Ham test 1 viterbi: " << correct_viterbi_ab << std::endl;
