@@ -5,14 +5,14 @@
 #include "insertion.hpp"
 #include "linalg.hpp"
 
-#define SCALE_FACTOR pow(2, 256)
-#define SCALE_THRESHOLD (1.0/SCALE_FACTOR)
-
 /// @file smooshable.hpp
 /// @brief Headers for Smooshable class and descendants.
 
 namespace linearham {
 
+
+const double SCALE_FACTOR = pow(2, 256);
+const double SCALE_THRESHOLD = (1.0/SCALE_FACTOR);
 
 /// @brief Abstracts something that has probabilities associated with sequence
 /// start and stop points.
@@ -33,13 +33,13 @@ class Smooshable {
 
     int left_flex() const { return marginal_.rows(); };
     int right_flex() const { return marginal_.cols(); };
-    
+
     double log_scaler() const { return log_scaler_; };
     double& log_scaler() { return log_scaler_; };
-    
+
     const Eigen::Ref<const Eigen::MatrixXd> marginal() const { return marginal_; };
     Eigen::Ref<Eigen::MatrixXd> marginal() { return marginal_; };
-    
+
     const Eigen::Ref<const Eigen::MatrixXd> viterbi() const { return viterbi_; };
     Eigen::Ref<Eigen::MatrixXd> viterbi() { return viterbi_; };
 };

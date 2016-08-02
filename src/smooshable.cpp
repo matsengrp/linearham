@@ -78,20 +78,16 @@ SmooshableGermline::SmooshableGermline(
   assert(right_flex <= emission_indices.size());
   germline.MatchMatrix(start, emission_indices, left_flex, right_flex,
                        marginal_);
-  
+
   // if all entries of 'marginal_' are less than SCALE_THRESHOLD, multiply
   // all elements by SCALE_FACTOR. If not, do nothing.
   if((marginal_.array() < SCALE_THRESHOLD).all()) {
-  
     marginal_ *= SCALE_FACTOR;
     viterbi_ = marginal_;
     log_scaler_ = log(SCALE_FACTOR);
-  
   } else {
-  
     viterbi_ = marginal_;
     log_scaler_ = 0;
-  
   }
 };
 }
