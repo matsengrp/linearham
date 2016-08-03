@@ -13,23 +13,23 @@ namespace linearham {
 /// reads.
 ///
 class Germline {
-  protected:
-    Eigen::MatrixXd emission_matrix_;
-    Eigen::MatrixXd transition_;
-    
-  public:
-    Germline(Eigen::VectorXd& landing, Eigen::MatrixXd& emission_matrix,
-             Eigen::VectorXd& next_transition);
+ protected:
+  Eigen::MatrixXd emission_matrix_;
+  Eigen::MatrixXd transition_;
 
-    int length() const { return transition_.cols(); };
-    
-    void EmissionVector(const Eigen::Ref<const Eigen::VectorXi>& emission_indices,
-                        int start, Eigen::Ref<Eigen::VectorXd> emission);
+ public:
+  Germline(Eigen::VectorXd& landing, Eigen::MatrixXd& emission_matrix,
+           Eigen::VectorXd& next_transition);
 
-    void MatchMatrix(int start,
-                     const Eigen::Ref<const Eigen::VectorXi>& emission_indices,
-                     int left_flex, int right_flex,
-                     Eigen::Ref<Eigen::MatrixXd> match);
+  int length() const { return transition_.cols(); };
+
+  void EmissionVector(const Eigen::Ref<const Eigen::VectorXi>& emission_indices,
+                      int start, Eigen::Ref<Eigen::VectorXd> emission);
+
+  void MatchMatrix(int start,
+                   const Eigen::Ref<const Eigen::VectorXi>& emission_indices,
+                   int left_flex, int right_flex,
+                   Eigen::Ref<Eigen::MatrixXd> match);
 };
 }
 

@@ -54,14 +54,15 @@ SmooshableGermline::SmooshableGermline(
 
 // Functions
 
-/// @brief Scales a matrix by SCALE_FACTOR as many times as needed to bring at least one entry of the matrix above SCALE_THRESHOLD.
+/// @brief Scales a matrix by SCALE_FACTOR as many times as needed to bring at
+/// least one entry of the matrix above SCALE_THRESHOLD.
 ///
 /// @param[in] m
 /// Matrix.
 /// @return Number of times we multiplied by SCALE_FACTOR.
 int ScaleMatrix(Eigen::Ref<Eigen::MatrixXd> m) {
   int n = 0;
-  while((m.array() < SCALE_THRESHOLD).all()) {
+  while ((m.array() < SCALE_THRESHOLD).all()) {
     m *= SCALE_FACTOR;
     n++;
   }
