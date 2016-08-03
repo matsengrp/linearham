@@ -23,6 +23,37 @@ Smooshable::Smooshable(Eigen::Ref<Eigen::MatrixXd> marginal) {
 };
 
 
+// SmooshableGermline implementation
+
+/// @brief Build a smooshable coming from a germline gene and a read.
+/// @param[in] germline
+/// Input Germline object.
+/// @param[in] start
+/// Where the smooshable starts (any left flex is to the right of the start
+/// point).
+/// @param[in] emission_indices
+/// The indices corresponding to the entries of the read.
+/// @param[in] left_flex
+/// The amount of left flex in the smooshable.
+/// @param[in] right_flex
+/// The amount of right flex in the smooshable.
+SmooshableGermline::SmooshableGermline(
+    Germline germline, int start,
+    const Eigen::Ref<const Eigen::VectorXi>& emission_indices, int left_flex,
+    int right_flex)
+    : Smooshable(left_flex, right_flex) {
+  assert(left_flex <= emission_indices.size());
+  assert(right_flex <= emission_indices.size());
+  germline.MatchMatrix(start, emission_indices, left_flex, right_flex,
+                       marginal_);
+  // scale match matrices if necessary.
+  scaler_count_ = ScaleMatrix(marginal_);
+  viterbi_ = marginal_;
+};
+
+
+// Functions
+
 /// @brief Scales a matrix by SCALE_FACTOR as many times as needed to bring at least one entry of the matrix above SCALE_THRESHOLD.
 ///
 /// @param[in] m
@@ -37,8 +68,6 @@ int ScaleMatrix(Eigen::Ref<Eigen::MatrixXd> m) {
   return n;
 }
 
-
-// Functions
 
 /// @brief Smoosh two smooshables!
 /// @param[in] s_a
@@ -73,34 +102,5 @@ std::pair<Smooshable, Eigen::MatrixXi> Smoosh(const Smooshable& s_a,
   s_out.viterbi() *= pow(SCALE_FACTOR, k);
   s_out.scaler_count() += k;
   return std::make_pair(s_out, viterbi_idx);
-};
-
-
-// SmooshableGermline implementation
-
-/// @brief Build a smooshable coming from a germline gene and a read.
-/// @param[in] germline
-/// Input Germline object.
-/// @param[in] start
-/// Where the smooshable starts (any left flex is to the right of the start
-/// point).
-/// @param[in] emission_indices
-/// The indices corresponding to the entries of the read.
-/// @param[in] left_flex
-/// The amount of left flex in the smooshable.
-/// @param[in] right_flex
-/// The amount of right flex in the smooshable.
-SmooshableGermline::SmooshableGermline(
-    Germline germline, int start,
-    const Eigen::Ref<const Eigen::VectorXi>& emission_indices, int left_flex,
-    int right_flex)
-    : Smooshable(left_flex, right_flex) {
-  assert(left_flex <= emission_indices.size());
-  assert(right_flex <= emission_indices.size());
-  germline.MatchMatrix(start, emission_indices, left_flex, right_flex,
-                       marginal_);
-  // scale match matrices if necessary.
-  scaler_count_ = ScaleMatrix(marginal_);
-  viterbi_ = marginal_;
 };
 }

@@ -44,12 +44,6 @@ class Smooshable {
     Eigen::Ref<Eigen::MatrixXd> viterbi() { return viterbi_; };
 };
 
-// Functions
-std::pair<Smooshable, Eigen::MatrixXi> Smoosh(const Smooshable& s_a,
-                                              const Smooshable& s_b);
-
-int ScaleMatrix(Eigen::Ref<Eigen::MatrixXd> match);
-
 
 /// A smooshable derived from a read aligned to a segment of germline gene.
 class SmooshableGermline : public Smooshable {
@@ -58,6 +52,13 @@ class SmooshableGermline : public Smooshable {
                        const Eigen::Ref<const Eigen::VectorXi>& emission_indices,
                        int left_flex, int right_flex);
 };
+
+
+// Functions
+std::pair<Smooshable, Eigen::MatrixXi> Smoosh(const Smooshable& s_a,
+                                              const Smooshable& s_b);
+
+int ScaleMatrix(Eigen::Ref<Eigen::MatrixXd> m);
 }
 
 #endif  // LINEARHAM_SMOOSHABLE_
