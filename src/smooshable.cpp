@@ -18,25 +18,27 @@ Smooshable::Smooshable(int left_flex, int right_flex) {
 /// @brief Constructor starting from marginal probabilities.
 Smooshable::Smooshable(Eigen::Ref<Eigen::MatrixXd> marginal) {
   marginal_ = marginal;
-  scaler_count_ = ScaleMatchMatrix(marginal_);
+  scaler_count_ = ScaleMatrix(marginal_);
   viterbi_ = marginal_;
 };
 
 
-/// @brief Scales a match matrix if necessary.
+/// @brief Scales a matrix by SCALE_FACTOR as many times as needed to bring at least one entry of the matrix above SCALE_THRESHOLD.
 ///
-/// @param[in] match
-/// Matrix of matches of various length.
-///
-int ScaleMatchMatrix(Eigen::Ref<Eigen::MatrixXd> match) {
+/// @param[in] m
+/// Matrix.
+/// @return Number of times we multiplied by SCALE_FACTOR.
+int ScaleMatrix(Eigen::Ref<Eigen::MatrixXd> m) {
   int n = 0;
-  while((match.array() < SCALE_THRESHOLD).all()) {
-    match *= SCALE_FACTOR;
+  while((m.array() < SCALE_THRESHOLD).all()) {
+    m *= SCALE_FACTOR;
     n++;
   }
   return n;
 }
 
+
+// Functions
 
 /// @brief Smoosh two smooshables!
 /// @param[in] s_a
@@ -67,7 +69,7 @@ std::pair<Smooshable, Eigen::MatrixXi> Smoosh(const Smooshable& s_a,
   BinaryMax(s_a.viterbi(), s_b.viterbi(), s_out.viterbi(), viterbi_idx);
   s_out.scaler_count() = s_a.scaler_count() + s_b.scaler_count();
   // check for underflow
-  int k = ScaleMatchMatrix(s_out.marginal());
+  int k = ScaleMatrix(s_out.marginal());
   s_out.viterbi() *= pow(SCALE_FACTOR, k);
   s_out.scaler_count() += k;
   return std::make_pair(s_out, viterbi_idx);
@@ -98,7 +100,7 @@ SmooshableGermline::SmooshableGermline(
   germline.MatchMatrix(start, emission_indices, left_flex, right_flex,
                        marginal_);
   // scale match matrices if necessary.
-  scaler_count_ = ScaleMatchMatrix(marginal_);
+  scaler_count_ = ScaleMatrix(marginal_);
   viterbi_ = marginal_;
 };
 }

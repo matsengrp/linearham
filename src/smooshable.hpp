@@ -47,8 +47,8 @@ class Smooshable {
 // Functions
 std::pair<Smooshable, Eigen::MatrixXi> Smoosh(const Smooshable& s_a,
                                               const Smooshable& s_b);
-                                              
-int ScaleMatchMatrix(Eigen::Ref<Eigen::MatrixXd> match);
+
+int ScaleMatrix(Eigen::Ref<Eigen::MatrixXd> match);
 
 
 /// A smooshable derived from a read aligned to a segment of germline gene.
