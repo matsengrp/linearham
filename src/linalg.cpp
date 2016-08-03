@@ -47,7 +47,7 @@ void RowVecMatCwise(const Eigen::Ref<const Eigen::RowVectorXd>& b,
 }
 
 
-/// @brief This function builds an matrix of sub-products.
+/// @brief This function builds a matrix of sub-products.
 /// @param[in] e Input vector.
 /// @param[out] A Output matrix.
 ///

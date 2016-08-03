@@ -21,7 +21,7 @@ class Germline {
   Germline(Eigen::VectorXd& landing, Eigen::MatrixXd& emission_matrix,
            Eigen::VectorXd& next_transition);
 
-  int length() { return transition_.cols(); };
+  int length() const { return transition_.cols(); };
 
   void EmissionVector(const Eigen::Ref<const Eigen::VectorXi>& emission_indices,
                       int start, Eigen::Ref<Eigen::VectorXd> emission);
