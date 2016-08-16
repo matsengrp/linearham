@@ -59,9 +59,9 @@ void Germline::EmissionVector(
 /// @param[in] emission_indices
 /// Vector of indices giving the emitted states.
 /// @param[in] left_flex
-/// How many (contiguous) start points should we allow on the left side?
+/// How many alternative start points should we allow on the left side?
 /// @param[in] right_flex
-/// How many (contiguous) end points should we allow on the right side?
+/// How many alternative end points should we allow on the right side?
 /// @param[out] match
 /// Storage for the matrix of match probabilities.
 ///
@@ -75,8 +75,8 @@ void Germline::MatchMatrix(
     int start, const Eigen::Ref<const Eigen::VectorXi>& emission_indices,
     int left_flex, int right_flex, Eigen::Ref<Eigen::MatrixXd> match) {
   int length = emission_indices.size();
-  assert(0 <= left_flex && left_flex <= length);
-  assert(0 <= right_flex && right_flex <= length);
+  assert(0 <= left_flex && left_flex <= length - 1);
+  assert(0 <= right_flex && right_flex <= length - 1);
   assert(this->length() <= start + length);
   Eigen::VectorXd emission(length);
   /// @todo Inefficient. Shouldn't calculate fullMatch then cut it down.
@@ -84,6 +84,6 @@ void Germline::MatchMatrix(
   EmissionVector(emission_indices, start, emission);
   BuildMatchMatrix(transition_.block(start, start, length, length), emission,
                    fullMatch);
-  match = fullMatch.block(0, length - right_flex, left_flex, right_flex);
+  match = fullMatch.block(0, length - right_flex - 1, left_flex + 1, right_flex + 1);
 };
 }
