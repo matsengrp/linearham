@@ -17,8 +17,9 @@ const double SCALE_THRESHOLD = (1.0 / SCALE_FACTOR);
 /// @brief Abstracts something that has probabilities associated with sequence
 /// start and stop points.
 ///
-/// Smooshables have left_flex and right_flex, which is the number of alternative states
-/// that can serve as start (resp. end) states on the left (resp. right) sides.
+/// Smooshables have left_flex and right_flex, which is the number of
+/// alternative states that can serve as start (resp. end) states on the left
+/// (resp. right) sides.
 class Smooshable {
  protected:
   Eigen::MatrixXd marginal_;

@@ -84,6 +84,7 @@ void Germline::MatchMatrix(
   EmissionVector(emission_indices, start, emission);
   BuildMatchMatrix(transition_.block(start, start, length, length), emission,
                    fullMatch);
-  match = fullMatch.block(0, length - right_flex - 1, left_flex + 1, right_flex + 1);
+  match = fullMatch.block(0, length - right_flex - 1, left_flex + 1,
+                          right_flex + 1);
 };
 }
