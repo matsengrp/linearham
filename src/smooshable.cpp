@@ -10,8 +10,8 @@ namespace linearham {
 
 /// @brief "Boring" constructor, which just sets up memory.
 Smooshable::Smooshable(int left_flex, int right_flex) {
-  marginal_.resize(left_flex, right_flex);
-  viterbi_.resize(left_flex, right_flex);
+  marginal_.resize(left_flex + 1, right_flex + 1);
+  viterbi_.resize(left_flex + 1, right_flex + 1);
 };
 
 
@@ -34,16 +34,16 @@ Smooshable::Smooshable(Eigen::Ref<Eigen::MatrixXd> marginal) {
 /// @param[in] emission_indices
 /// The indices corresponding to the entries of the read.
 /// @param[in] left_flex
-/// The amount of left flex in the smooshable.
+/// The number of alternative start points allowed on the 5' (left) side.
 /// @param[in] right_flex
-/// The amount of right flex in the smooshable.
+/// The number of alternative end points allowed on the 3' (right) side.
 SmooshableGermline::SmooshableGermline(
     Germline germline, int start,
     const Eigen::Ref<const Eigen::VectorXi>& emission_indices, int left_flex,
     int right_flex)
     : Smooshable(left_flex, right_flex) {
-  assert(left_flex <= emission_indices.size());
-  assert(right_flex <= emission_indices.size());
+  assert(left_flex <= emission_indices.size() - 1);
+  assert(right_flex <= emission_indices.size() - 1);
   germline.MatchMatrix(start, emission_indices, left_flex, right_flex,
                        marginal_);
   // scale match matrices if necessary.
@@ -93,7 +93,7 @@ int ScaleMatrix(Eigen::Ref<Eigen::MatrixXd> m) {
 std::pair<Smooshable, Eigen::MatrixXi> Smoosh(const Smooshable& s_a,
                                               const Smooshable& s_b) {
   Smooshable s_out(s_a.left_flex(), s_b.right_flex());
-  Eigen::MatrixXi viterbi_idx(s_a.left_flex(), s_b.right_flex());
+  Eigen::MatrixXi viterbi_idx(s_a.left_flex() + 1, s_b.right_flex() + 1);
   assert(s_a.right_flex() == s_b.left_flex());
   s_out.marginal() = s_a.marginal() * s_b.marginal();
   BinaryMax(s_a.viterbi(), s_b.viterbi(), s_out.viterbi(), viterbi_idx);
