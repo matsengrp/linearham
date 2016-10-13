@@ -1,9 +1,7 @@
 #ifndef LINEARHAM_SMOOSHABLE_
 #define LINEARHAM_SMOOSHABLE_
 
-#include "germline.hpp"
-#include "insertion.hpp"
-#include "linalg.hpp"
+#include "VDJgermline.hpp"
 
 /// @file smooshable.hpp
 /// @brief Headers for Smooshable class and descendants.

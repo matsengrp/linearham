@@ -1,5 +1,4 @@
 #include "core.hpp"
-#include "linalg.hpp"
 
 /// @file core.cpp
 /// @brief Core implementation routines.

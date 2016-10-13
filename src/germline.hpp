@@ -1,7 +1,7 @@
 #ifndef LINEARHAM_GERMLINE_
 #define LINEARHAM_GERMLINE_
 
-#include "linalg.hpp"
+#include "yaml_utils.hpp"
 
 /// @file germline.hpp
 /// @brief Headers for the Germline class and descendants.
@@ -11,16 +11,21 @@ namespace linearham {
 
 /// @brief The HMM representation of a germline gene, without reference to any
 /// reads.
-///
 class Germline {
  protected:
   Eigen::MatrixXd emission_matrix_;
   Eigen::MatrixXd transition_;
+  double gene_prob_;
 
  public:
+  Germline(){};
   Germline(Eigen::VectorXd& landing, Eigen::MatrixXd& emission_matrix,
            Eigen::VectorXd& next_transition);
+  Germline(YAML::Node root);
 
+  Eigen::MatrixXd emission_matrix() const { return emission_matrix_; };
+  Eigen::MatrixXd transition() const { return transition_; };
+  double gene_prob() const { return gene_prob_; };
   int length() const { return transition_.cols(); };
 
   void EmissionVector(const Eigen::Ref<const Eigen::VectorXi>& emission_indices,
