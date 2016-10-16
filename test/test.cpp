@@ -2,7 +2,7 @@
 #define CATCH_CONFIG_MAIN
 
 #include "catch.hpp"
-#include "../yaml-cpp/include/yaml-cpp/yaml.h"
+#include "yaml.hpp"
 
 #include "core.hpp"
 #include "smooshable_chain.hpp"
@@ -334,6 +334,9 @@ TEST_CASE("YAML", "[io]") {
    out << "Hello, World!";
 
    std::cout << "Here's the output YAML:\n" << out.c_str() << std::endl;
+   
+   Eigen::MatrixXd tmp = parse_germline_yaml("data/IGHD7-27_star_01.yaml");
+   std::cout << tmp << std::endl;
 }
 
 
