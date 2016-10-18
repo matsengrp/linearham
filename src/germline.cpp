@@ -26,17 +26,17 @@ Germline::Germline(Eigen::VectorXd& landing, Eigen::MatrixXd& emission_matrix,
 
 
 NGermline::NGermline(Eigen::VectorXd& landing, Eigen::MatrixXd& emission_matrix,
-                     Eigen::VectorXd& next_transition, Eigen::VectorXd& nlandingin,
-                     Eigen::MatrixXd& nlandingout, Eigen::MatrixXd& nemission_matrix,
-                     Eigen::MatrixXd& ntransition)
+                     Eigen::VectorXd& next_transition, Eigen::VectorXd& n_landing_in,
+                     Eigen::MatrixXd& n_landing_out, Eigen::MatrixXd& n_emission_matrix,
+                     Eigen::MatrixXd& n_transition)
                      : Germline(landing, emission_matrix, next_transition),
-                     nlandingin_(nlandingin), nlandingout_(nlandingout),
-                     nemission_matrix_(nemission_matrix), ntransition_(ntransition) {
-  assert(nlandingin_.size() == nlandingout_.rows());
-  assert(nlandingin_.size() == ntransition_.rows());
-  assert(nlandingin_.size() == ntransition_.cols());
-  assert(ntransition_.rows() == nemission_matrix_.rows());
-  assert(ntransition_.cols() == nemission_matrix_.cols());
+                     n_landing_in_(n_landing_in), n_landing_out_(n_landing_out),
+                     n_emission_matrix_(n_emission_matrix), n_transition_(n_transition) {
+  assert(n_landing_in_.size() == n_landing_out_.rows());
+  assert(n_landing_in_.size() == n_transition_.rows());
+  assert(n_landing_in_.size() == n_transition_.cols());
+  assert(n_transition_.rows() == n_emission_matrix_.rows());
+  assert(n_transition_.cols() == n_emission_matrix_.cols());
 }
 
 

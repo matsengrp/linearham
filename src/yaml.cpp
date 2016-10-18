@@ -19,7 +19,7 @@ std::pair<std::vector<std::string>, Eigen::VectorXd> parse_transitions(YAML::Nod
   Eigen::VectorXd transition_probs(node["transitions"].size());
   int i = 0;
   
-  for (YAML::const_iterator it = node["transitions"].begin(); it != node["transitions"].end(); ++it) {
+  for (YAML::const_iterator it = node["transitions"].begin(); it != node["transitions"].end(); it++) {
     states[i] = it->first.as<std::string>();
     transition_probs[i] = it->second.as<double>();
     i++;
@@ -38,7 +38,7 @@ std::pair<std::vector<std::string>, Eigen::VectorXd> parse_emissions(YAML::Node 
   Eigen::VectorXd emission_probs(node["emissions"]["probs"].size());
   int i = 0;
   
-  for (YAML::const_iterator it = node["emissions"]["probs"].begin(); it != node["emissions"]["probs"].end(); ++it) {
+  for (YAML::const_iterator it = node["emissions"]["probs"].begin(); it != node["emissions"]["probs"].end(); it++) {
     states[i] = it->first.as<std::string>();
     emission_probs[i] = it->second.as<double>();
     i++;
@@ -80,16 +80,16 @@ std::unique_ptr<Germline> parse_germline_yaml(std::string yaml_file) {
   Eigen::MatrixXd emission_matrix = Eigen::MatrixXd::Zero(alphabet.size(), gcount);
   Eigen::VectorXd next_transition = Eigen::VectorXd::Zero(gcount - 1);
   
-  Eigen::VectorXd nlandingin;
-  Eigen::MatrixXd nlandingout;
-  Eigen::MatrixXd nemission_matrix;
-  Eigen::MatrixXd ntransition;
+  Eigen::VectorXd n_landing_in;
+  Eigen::MatrixXd n_landing_out;
+  Eigen::MatrixXd n_emission_matrix;
+  Eigen::MatrixXd n_transition;
   
   if(has_n) {
-    nlandingin = Eigen::VectorXd::Zero(alphabet.size());
-    nlandingout = Eigen::MatrixXd::Zero(alphabet.size(), gcount);
-    nemission_matrix = Eigen::MatrixXd::Zero(alphabet.size(), alphabet.size());
-    ntransition = Eigen::MatrixXd::Zero(alphabet.size(), alphabet.size());
+    n_landing_in = Eigen::VectorXd::Zero(alphabet.size());
+    n_landing_out = Eigen::MatrixXd::Zero(alphabet.size(), gcount);
+    n_emission_matrix = Eigen::MatrixXd::Zero(alphabet.size(), alphabet.size());
+    n_transition = Eigen::MatrixXd::Zero(alphabet.size(), alphabet.size());
   } else {
     assert(gstart == 2);
   }
@@ -107,7 +107,9 @@ std::unique_ptr<Germline> parse_germline_yaml(std::string yaml_file) {
       landing[std::stoi(sm[1])] = probs[i];
     } else if(std::regex_match(states[i].cbegin(), states[i].cend(), sm, nrgx)) {
       assert(has_n);
-      nlandingin[alphabet_map[sm[1]]] = probs[i];
+      n_landing_in[alphabet_map[sm[1]]] = probs[i];
+    } else {
+      assert(0);
     }
   }
   
@@ -124,9 +126,11 @@ std::unique_ptr<Germline> parse_germline_yaml(std::string yaml_file) {
       
       for (int j = 0; j < states.size(); j++) {
         if(std::regex_match(states[j].cbegin(), states[j].cend(), sm, grgx)) {
-          nlandingout(alphabet_ind, std::stoi(sm[1])) = probs[j];
+          n_landing_out(alphabet_ind, std::stoi(sm[1])) = probs[j];
         } else if(std::regex_match(states[j].cbegin(), states[j].cend(), sm, nrgx)) {
-          ntransition(alphabet_ind, alphabet_map[sm[1]]) = probs[j];
+          n_transition(alphabet_ind, alphabet_map[sm[1]]) = probs[j];
+        } else {
+          assert(0);
         }
       }
       
@@ -134,7 +138,7 @@ std::unique_ptr<Germline> parse_germline_yaml(std::string yaml_file) {
       assert(is_subset_alphabet(states, alphabet));
       
       for (int j = 0; j < states.size(); j++) {
-        nemission_matrix(alphabet_map[states[j]], alphabet_ind) = probs[j];
+        n_emission_matrix(alphabet_map[states[j]], alphabet_ind) = probs[j];
       }
       
     }
@@ -153,6 +157,8 @@ std::unique_ptr<Germline> parse_germline_yaml(std::string yaml_file) {
     for (int j = 0; j < states.size(); j++) {
       if(std::regex_match(states[j].cbegin(), states[j].cend(), sm, grgx)) {
         next_transition[gindex] = probs[j];
+      } else {
+        assert(states[j] == "end");
       }
     }
     
@@ -169,7 +175,7 @@ std::unique_ptr<Germline> parse_germline_yaml(std::string yaml_file) {
   std::unique_ptr<Germline> outp;
   if(has_n) {
     outp.reset(new NGermline(landing, emission_matrix, next_transition,
-                             nlandingin, nlandingout, nemission_matrix, ntransition));
+                             n_landing_in, n_landing_out, n_emission_matrix, n_transition));
   } else {
     outp.reset(new Germline(landing, emission_matrix, next_transition));
   }

@@ -330,7 +330,8 @@ TEST_CASE("Ham Comparison 1", "[ham]") {
 
 // IO tests
 TEST_CASE("YAML", "[io]") {
-
+  std::unique_ptr<Germline> tmp = parse_germline_yaml("data/IGHD7-27_star_01.yaml");
+  std::cout << tmp->n_landing_in() << std::endl;
 }
 
 
