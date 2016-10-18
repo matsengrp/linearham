@@ -25,6 +25,22 @@ Germline::Germline(Eigen::VectorXd& landing, Eigen::MatrixXd& emission_matrix,
 };
 
 
+NGermline::NGermline(Eigen::VectorXd& landing, Eigen::MatrixXd& emission_matrix,
+                     Eigen::VectorXd& next_transition, Eigen::VectorXd& nlandingin,
+                     Eigen::MatrixXd& nlandingout, Eigen::MatrixXd& nemission_matrix,
+                     Eigen::MatrixXd& ntransition)
+                     : Germline(landing, emission_matrix, next_transition),
+                     nlandingin_(nlandingin), nlandingout_(nlandingout),
+                     nemission_matrix_(nemission_matrix), ntransition_(ntransition) {
+  assert(nlandingin_.size() == nlandingout_.rows());
+  assert(nlandingin_.size() == ntransition_.rows());
+  assert(nlandingin_.size() == ntransition_.cols());
+  assert(ntransition_.rows() == nemission_matrix_.rows());
+  assert(ntransition_.cols() == nemission_matrix_.cols());
+}
+
+
+
 /// @brief Prepares a vector with per-site emission probabilities for a trimmed
 /// read.
 /// @param[in] emission_indices

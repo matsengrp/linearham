@@ -330,13 +330,7 @@ TEST_CASE("Ham Comparison 1", "[ham]") {
 
 // IO tests
 TEST_CASE("YAML", "[io]") {
-   YAML::Emitter out;
-   out << "Hello, World!";
 
-   std::cout << "Here's the output YAML:\n" << out.c_str() << std::endl;
-   
-   Eigen::MatrixXd tmp = parse_germline_yaml("data/IGHD7-27_star_01.yaml");
-   std::cout << tmp << std::endl;
 }
 
 
