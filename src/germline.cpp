@@ -2,7 +2,7 @@
 #include "core.hpp"
 
 /// @file germline.cpp
-/// @brief The core of the implementation.
+/// @brief The germline object.
 
 namespace linearham {
 
