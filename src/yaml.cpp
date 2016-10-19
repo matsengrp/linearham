@@ -1,10 +1,19 @@
-
 #include "yaml.hpp"
 
+/// @file yaml.cpp
+/// @brief Utilities and constructors for parsing YAML.
 
 namespace linearham {
 
+// "Zero" for parsing YAML files.
+const double EPS_PARSE = 1e-5;
 
+
+/// @brief Is one alphabet a subset of another?
+/// @param[in] vec
+/// The alphabet to be tested for being a subset.
+/// @param[in] alphabet
+/// The potential parent alphabet.
 bool is_subset_alphabet(std::vector<std::string> vec,
                         std::vector<std::string> alphabet) {
   std::sort(vec.begin(), vec.end());
@@ -13,41 +22,24 @@ bool is_subset_alphabet(std::vector<std::string> vec,
 };
 
 
-std::pair<std::vector<std::string>, Eigen::VectorXd> parse_transitions(
+/// @brief Parse a YAML map from strings to probabilities.
+/// @param[in] node
+/// A YAML map node.
+std::pair<std::vector<std::string>, Eigen::VectorXd> parse_string_prob_map(
     YAML::Node node) {
-  assert(node["transitions"]);
-  std::vector<std::string> states(node["transitions"].size());
-  Eigen::VectorXd transition_probs(node["transitions"].size());
+  assert(node.IsMap());
+  std::vector<std::string> states(node.size());
+  Eigen::VectorXd transition_probs(node.size());
   int i = 0;
 
-  for (YAML::const_iterator it = node["transitions"].begin();
-       it != node["transitions"].end(); it++) {
+  for (YAML::const_iterator it = node.begin(); it != node.end(); it++) {
     states[i] = it->first.as<std::string>();
     transition_probs[i] = it->second.as<double>();
     i++;
   }
-  assert(fabs(transition_probs.sum() - 1) <= 1e-5);
 
+  assert(fabs(transition_probs.sum() - 1) <= EPS_PARSE);
   return std::make_pair(states, transition_probs);
-};
-
-
-std::pair<std::vector<std::string>, Eigen::VectorXd> parse_emissions(
-    YAML::Node node) {
-  assert(node["emissions"]["probs"]);
-  std::vector<std::string> states(node["emissions"]["probs"].size());
-  Eigen::VectorXd emission_probs(node["emissions"]["probs"].size());
-  int i = 0;
-
-  for (YAML::const_iterator it = node["emissions"]["probs"].begin();
-       it != node["emissions"]["probs"].end(); it++) {
-    states[i] = it->first.as<std::string>();
-    emission_probs[i] = it->second.as<double>();
-    i++;
-  }
-  assert(fabs(emission_probs.sum() - 1) <= 1e-5);
-
-  return std::make_pair(states, emission_probs);
 };
 
 
@@ -105,7 +97,7 @@ std::unique_ptr<Germline> parse_germline_yaml(std::string yaml_file) {
 
   std::vector<std::string> states;
   Eigen::VectorXd probs;
-  std::tie(states, probs) = parse_transitions(init_state);
+  std::tie(states, probs) = parse_string_prob_map(init_state["transitions"]);
 
   for (int i = 0; i < states.size(); i++) {
     if (std::regex_match(states[i].cbegin(), states[i].cend(), sm, grgx)) {
@@ -127,7 +119,7 @@ std::unique_ptr<Germline> parse_germline_yaml(std::string yaml_file) {
       assert(std::regex_match(nname.cbegin(), nname.cend(), sm, nrgx));
       int alphabet_ind = alphabet_map[sm[1]];
 
-      std::tie(states, probs) = parse_transitions(nstate);
+      std::tie(states, probs) = parse_string_prob_map(nstate["transitions"]);
 
       for (int j = 0; j < states.size(); j++) {
         if (std::regex_match(states[j].cbegin(), states[j].cend(), sm, grgx)) {
@@ -140,7 +132,7 @@ std::unique_ptr<Germline> parse_germline_yaml(std::string yaml_file) {
         }
       }
 
-      std::tie(states, probs) = parse_emissions(nstate);
+      std::tie(states, probs) = parse_string_prob_map(nstate["emissions"]["probs"]);
       assert(is_subset_alphabet(states, alphabet));
 
       for (int j = 0; j < states.size(); j++) {
@@ -156,7 +148,7 @@ std::unique_ptr<Germline> parse_germline_yaml(std::string yaml_file) {
     assert(std::regex_match(gsname.cbegin(), gsname.cend(), sm, grgx));
     int gindex = std::stoi(sm[1]);
 
-    std::tie(states, probs) = parse_transitions(gstate);
+    std::tie(states, probs) = parse_string_prob_map(gstate["transitions"]);
 
     for (int j = 0; j < states.size(); j++) {
       if (std::regex_match(states[j].cbegin(), states[j].cend(), sm, grgx)) {
@@ -166,7 +158,7 @@ std::unique_ptr<Germline> parse_germline_yaml(std::string yaml_file) {
       }
     }
 
-    std::tie(states, probs) = parse_emissions(gstate);
+    std::tie(states, probs) = parse_string_prob_map(gstate["emissions"]["probs"]);
     assert(is_subset_alphabet(states, alphabet));
 
     for (int j = 0; j < states.size(); j++) {
