@@ -108,7 +108,7 @@ std::unique_ptr<Germline> parse_germline_yaml(std::string yaml_file) {
     } else if(std::regex_match(states[i].cbegin(), states[i].cend(), sm, nrgx)) {
       assert(has_n);
       n_landing_in[alphabet_map[sm[1]]] = probs[i];
-    } else {
+    } else if(has_n) {
       assert(0);
     }
   }

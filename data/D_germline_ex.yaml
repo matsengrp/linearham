@@ -1,0 +1,63 @@
+extras: {gene_prob: 0.035}
+name: dummy_D
+states:
+- emissions: null
+  extras: {}
+  name: init
+  transitions: {dummy_D_0: 0.4, dummy_D_1: 0.1, dummy_D_2: 0.05, insert_left_A: 0.1, insert_left_C: 0.2, insert_left_G: 0.1, insert_left_T: 0.05}
+- emissions:
+    probs: {A: 0.7, C: 0.1, G: 0.1, T: 0.1}
+    track: nukes
+  extras: {germline: A}
+  name: insert_left_A
+  transitions: {dummy_D_0: 0.45, dummy_D_1: 0.125, dummy_D_2: 0.1, insert_left_A: 0.075, insert_left_C: 0.175, insert_left_G: 0.05, insert_left_T: 0.025}
+- emissions:
+    probs: {A: 0.1, C: 0.7, G: 0.1, T: 0.1}
+    track: nukes
+  extras: {germline: C}
+  name: insert_left_C
+  transitions: {dummy_D_0: 0.45, dummy_D_1: 0.125, dummy_D_2: 0.1, insert_left_A: 0.075, insert_left_C: 0.175, insert_left_G: 0.05, insert_left_T: 0.025}
+- emissions:
+    probs: {A: 0.1, C: 0.1, G: 0.7, T: 0.1}
+    track: nukes
+  extras: {germline: G}
+  name: insert_left_G
+  transitions: {dummy_D_0: 0.45, dummy_D_1: 0.125, dummy_D_2: 0.1, insert_left_A: 0.075, insert_left_C: 0.175, insert_left_G: 0.05, insert_left_T: 0.025}
+- emissions:
+    probs: {A: 0.1, C: 0.1, G: 0.1, T: 0.7}
+    track: nukes
+  extras: {germline: T}
+  name: insert_left_T
+  transitions: {dummy_D_0: 0.45, dummy_D_1: 0.125, dummy_D_2: 0.1, insert_left_A: 0.075, insert_left_C: 0.175, insert_left_G: 0.05, insert_left_T: 0.025}
+- emissions:
+    probs: {A: 0.12, C: 0.12, G: 0.64, T: 0.12}
+    track: nukes
+  extras: {germline: G}
+  name: dummy_D_0
+  transitions: {dummy_D_1: 0.98, end: 0.02}
+- emissions:
+    probs: {A: 0.07, C: 0.07, G: 0.79, T: 0.07}
+    track: nukes
+  extras: {germline: G}
+  name: dummy_D_1
+  transitions: {dummy_D_2: 0.95, end: 0.05}
+- emissions:
+    probs: {A: 0.05, C: 0.05, G: 0.05, T: 0.85}
+    track: nukes
+  extras: {germline: T}
+  name: dummy_D_2
+  transitions: {dummy_D_3: 0.6, end: 0.4}
+- emissions:
+    probs: {A: 0.55, C: 0.15, G: 0.15, T: 0.15}
+    track: nukes
+  extras: {germline: A}
+  name: dummy_D_3
+  transitions: {dummy_D_4: 0.35, end: 0.65}
+- emissions:
+    probs: {A: 0.01, C: 0.97, G: 0.01, T: 0.01}
+    track: nukes
+  extras: {germline: C}
+  name: dummy_D_4
+  transitions: {end: 1.0}
+tracks:
+  nukes: [A, C, G, T]

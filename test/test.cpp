@@ -329,9 +329,70 @@ TEST_CASE("Ham Comparison 1", "[ham]") {
 
 
 // IO tests
+
 TEST_CASE("YAML", "[io]") {
-  std::unique_ptr<Germline> tmp = parse_germline_yaml("data/IGHD7-27_star_01.yaml");
-  std::cout << tmp->n_landing_in() << std::endl;
+  Eigen::VectorXd V_landing(5);
+  V_landing << 0.75, 0, 0, 0, 0;
+  Eigen::MatrixXd V_emission_matrix(4,5);
+  V_emission_matrix <<
+  0.79, 0.1, 0.01, 0.55, 0.125,
+  0.07, 0.1, 0.01, 0.15, 0.625,
+  0.07, 0.1, 0.97, 0.15, 0.125,
+  0.07, 0.7, 0.01, 0.15, 0.125;
+  Eigen::VectorXd V_next_transition(4);
+  V_next_transition << 1, 1, 0.8, 0.5;
+  
+  Germline correct_V_germline(V_landing, V_emission_matrix, V_next_transition);
+  std::unique_ptr<Germline> V_germline = parse_germline_yaml("data/V_germline_ex.yaml");
+  
+  REQUIRE(V_germline->emission_matrix() == correct_V_germline.emission_matrix());
+  REQUIRE(V_germline->transition() == correct_V_germline.transition());
+  REQUIRE(V_germline->n_landing_in().isZero());
+  REQUIRE(V_germline->n_landing_out().isZero());
+  REQUIRE(V_germline->n_emission_matrix().isZero());
+  REQUIRE(V_germline->n_transition().isZero());
+  
+  Eigen::VectorXd D_landing(5);
+  D_landing << 0.4, 0.1, 0.05, 0, 0;
+  Eigen::MatrixXd D_emission_matrix(4,5);
+  D_emission_matrix <<
+  0.12, 0.07, 0.05, 0.55, 0.01,
+  0.12, 0.07, 0.05, 0.15, 0.97,
+  0.64, 0.79, 0.05, 0.15, 0.01,
+  0.12, 0.07, 0.85, 0.15, 0.01;
+  Eigen::VectorXd D_next_transition(4);
+  D_next_transition << 0.98, 0.95, 0.6, 0.35;
+  Eigen::VectorXd D_n_landing_in(4);
+  D_n_landing_in << 0.1, 0.2, 0.1, 0.05;
+  Eigen::MatrixXd D_n_landing_out(4,5);
+  D_n_landing_out <<
+  0.45, 0.125, 0.1, 0, 0,
+  0.45, 0.125, 0.1, 0, 0,
+  0.45, 0.125, 0.1, 0, 0,
+  0.45, 0.125, 0.1, 0, 0;
+  Eigen::MatrixXd D_n_emission_matrix(4,4);
+  D_n_emission_matrix <<
+  0.7, 0.1, 0.1, 0.1,
+  0.1, 0.7, 0.1, 0.1,
+  0.1, 0.1, 0.7, 0.1,
+  0.1, 0.1, 0.1, 0.7;
+  Eigen::MatrixXd D_n_transition(4,4);
+  D_n_transition <<
+  0.075, 0.175, 0.05, 0.025,
+  0.075, 0.175, 0.05, 0.025,
+  0.075, 0.175, 0.05, 0.025,
+  0.075, 0.175, 0.05, 0.025;
+  
+  NGermline correct_D_germline(D_landing, D_emission_matrix, D_next_transition,
+                               D_n_landing_in, D_n_landing_out, D_n_emission_matrix, D_n_transition);
+  std::unique_ptr<Germline> D_germline = parse_germline_yaml("data/D_germline_ex.yaml");
+  
+  REQUIRE(D_germline->emission_matrix() == correct_D_germline.emission_matrix());
+  REQUIRE(D_germline->transition() == correct_D_germline.transition());
+  REQUIRE(D_germline->n_landing_in() == correct_D_germline.n_landing_in());
+  REQUIRE(D_germline->n_landing_out() == correct_D_germline.n_landing_out());
+  REQUIRE(D_germline->n_emission_matrix() == correct_D_germline.n_emission_matrix());
+  REQUIRE(D_germline->n_transition() == correct_D_germline.n_transition());
 }
 
 
