@@ -9,18 +9,17 @@ namespace linearham {
 const double EPS_PARSE = 1e-5;
 
 
-/// @brief Is one alphabet a subset of another?
+/// @brief Is one alphabet equal to another?
 /// @param[in] vec
-/// The alphabet to be tested for being a subset.
+/// The alphabet to be tested for equality.
 /// @param[in] alphabet
-/// The potential parent alphabet.
+/// The parent alphabet to be tested against for equality.
 /// @return
 /// If it is.
-bool is_subset_alphabet(std::vector<std::string> vec,
-                        std::vector<std::string> alphabet) {
+bool is_equal_alphabet(std::vector<std::string> vec,
+                       std::vector<std::string> alphabet) {
   std::sort(vec.begin(), vec.end());
-  return std::includes(alphabet.begin(), alphabet.end(), vec.begin(),
-                       vec.end());
+  return vec == alphabet;
 };
 
 
@@ -159,7 +158,7 @@ std::unique_ptr<Germline> parse_germline_yaml(std::string yaml_path) {
           parse_string_prob_map(nstate["emissions"]["probs"]);
       // NOTE why just a subset? It seems like we need to make sure that the
       // alphabet is coming in the same order as that in the state_names.
-      assert(is_subset_alphabet(state_names, alphabet));
+      assert(is_equal_alphabet(state_names, alphabet));
 
       for (unsigned int j = 0; j < state_names.size(); j++) {
         n_emission_matrix(alphabet_map[state_names[j]], alphabet_ind) =
@@ -192,7 +191,7 @@ std::unique_ptr<Germline> parse_germline_yaml(std::string yaml_path) {
 
     std::tie(state_names, probs) =
         parse_string_prob_map(gstate["emissions"]["probs"]);
-    assert(is_subset_alphabet(state_names, alphabet));
+    assert(is_equal_alphabet(state_names, alphabet));
 
     for (unsigned int j = 0; j < state_names.size(); j++) {
       emission_matrix(alphabet_map[state_names[j]], gindex) = probs[j];
