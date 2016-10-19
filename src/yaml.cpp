@@ -62,14 +62,15 @@ std::unique_ptr<Germline> parse_germline_yaml(std::string yaml_path) {
       root["tracks"]["nukes"].as<std::vector<std::string>>();
   std::sort(alphabet.begin(), alphabet.end());
   std::unordered_map<std::string, int> alphabet_map;
-  for (unsigned int i = 0; i < alphabet.size(); i++) alphabet_map[alphabet[i]] = i;
+  for (unsigned int i = 0; i < alphabet.size(); i++)
+    alphabet_map[alphabet[i]] = i;
   std::string gname = root["name"].as<std::string>();
 
   // In the YAML file, states of the germline gene are denoted
   // [germline name]_[position]. This regex extracts that position.
   std::regex grgx("^" + gname + "_([0-9]+)$");
-  // The vector of probabilities of various insertions on the left of this germline
-  // gene are denoted insert_left_[base]. This regex extracts that base.
+  // The vector of probabilities of various insertions on the left of this
+  // germline gene are denoted insert_left_[base]. This regex extracts that base.
   std::regex nrgx(
       "^insert_left_([" +
       std::accumulate(alphabet.begin(), alphabet.end(), std::string()) + "])$");
@@ -84,7 +85,7 @@ std::unique_ptr<Germline> parse_germline_yaml(std::string yaml_path) {
   }
   int gcount = root["states"].size() - gstart;
   // If has_n then we have actual NTI insertion states to the left of this gene.
-  bool has_n = (gstart == (int) (alphabet.size() + 1));
+  bool has_n = (gstart == (int)(alphabet.size() + 1));
 
   // Create Germline/NGermline constructor inputs.
   Eigen::VectorXd landing = Eigen::VectorXd::Zero(gcount);
@@ -102,8 +103,8 @@ std::unique_ptr<Germline> parse_germline_yaml(std::string yaml_path) {
     n_emission_matrix = Eigen::MatrixXd::Zero(alphabet.size(), alphabet.size());
     n_transition = Eigen::MatrixXd::Zero(alphabet.size(), alphabet.size());
   } else {
-    // If there aren't insert_left_[base] states, there's an insert_left_N state to
-    // allow missing query sequence on the LHS of the germline gene.
+    // If there aren't insert_left_[base] states, there's an insert_left_N state
+    // to allow missing query sequence on the LHS of the germline gene.
     // That's why we have a 2 here rather than a 1.
     assert(gstart == 2);
   }
@@ -114,10 +115,11 @@ std::unique_ptr<Germline> parse_germline_yaml(std::string yaml_path) {
 
   std::vector<std::string> state_names;
   Eigen::VectorXd probs;
-  std::tie(state_names, probs) = parse_string_prob_map(init_state["transitions"]);
+  std::tie(state_names, probs) =
+      parse_string_prob_map(init_state["transitions"]);
 
-  // The init state has landing probabilities in each of the germline gene positions
-  // in the absence of NTI insertions.
+  // The init state has landing probabilities in each of the germline gene
+  // positions in the absence of NTI insertions.
   for (unsigned int i = 0; i < state_names.size(); i++) {
     if (std::regex_match(state_names[i], match, grgx)) {
       landing[std::stoi(match[1])] = probs[i];
@@ -138,7 +140,8 @@ std::unique_ptr<Germline> parse_germline_yaml(std::string yaml_path) {
       assert(std::regex_match(nname, match, nrgx));
       int alphabet_ind = alphabet_map[match[1]];
 
-      std::tie(state_names, probs) = parse_string_prob_map(nstate["transitions"]);
+      std::tie(state_names, probs) =
+          parse_string_prob_map(nstate["transitions"]);
 
       for (unsigned int j = 0; j < state_names.size(); j++) {
         if (std::regex_match(state_names[j], match, grgx)) {
@@ -152,13 +155,15 @@ std::unique_ptr<Germline> parse_germline_yaml(std::string yaml_path) {
         }
       }
 
-      std::tie(state_names, probs) = parse_string_prob_map(nstate["emissions"]["probs"]);
-      // NOTE why just a subset? It seems like we need to make sure that the alphabet is coming in the same order as
-      // that in the state_names.
+      std::tie(state_names, probs) =
+          parse_string_prob_map(nstate["emissions"]["probs"]);
+      // NOTE why just a subset? It seems like we need to make sure that the
+      // alphabet is coming in the same order as that in the state_names.
       assert(is_subset_alphabet(state_names, alphabet));
 
       for (unsigned int j = 0; j < state_names.size(); j++) {
-        n_emission_matrix(alphabet_map[state_names[j]], alphabet_ind) = probs[j];
+        n_emission_matrix(alphabet_map[state_names[j]], alphabet_ind) =
+            probs[j];
       }
     }
   }
@@ -177,7 +182,7 @@ std::unique_ptr<Germline> parse_germline_yaml(std::string yaml_path) {
     for (unsigned int j = 0; j < state_names.size(); j++) {
       if (std::regex_match(state_names[j], match, grgx)) {
         // We can only transition to the next germline base...
-        assert(std::stoi(match[1]) == gindex+1);
+        assert(std::stoi(match[1]) == gindex + 1);
         next_transition[gindex] = probs[j];
       } else {
         // ... or we can transition to the end.
@@ -185,7 +190,8 @@ std::unique_ptr<Germline> parse_germline_yaml(std::string yaml_path) {
       }
     }
 
-    std::tie(state_names, probs) = parse_string_prob_map(gstate["emissions"]["probs"]);
+    std::tie(state_names, probs) =
+        parse_string_prob_map(gstate["emissions"]["probs"]);
     assert(is_subset_alphabet(state_names, alphabet));
 
     for (unsigned int j = 0; j < state_names.size(); j++) {
