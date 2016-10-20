@@ -3,6 +3,7 @@
 
 #include "germline.hpp"
 #include "insertion.hpp"
+#include "NTInsertion.hpp"
 #include "linalg.hpp"
 
 /// @file smooshable.hpp
