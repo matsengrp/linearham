@@ -94,7 +94,7 @@ Germline::Germline(YAML::Node root) {
         next_transition[gindex] = probs[j];
       } else {
         // ... or we can transition to the end (or "insert_right_N" for J genes).
-        assert(state_names[j] == "end");
+        assert((state_names[j] == "end") ^ (state_names[j] == "insert_right_N"));
       }
     }
 

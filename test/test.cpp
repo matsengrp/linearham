@@ -347,7 +347,7 @@ TEST_CASE("YAML", "[io]") {
   Germline V_Germline = Germline(V_root);
   NPadding V_NPadding = NPadding(V_root);
   // V genes can't initialize NTInsertion objects.
-  // NTInsertion V_NTInsertion(V_root);
+  // NTInsertion V_NTInsertion = NTInsertion(V_root);
 
   REQUIRE(V_Germline.emission_matrix() == correct_V_Germline.emission_matrix());
   REQUIRE(V_Germline.transition() == correct_V_Germline.transition());
@@ -389,6 +389,8 @@ TEST_CASE("YAML", "[io]") {
   YAML::Node D_root = YAML::LoadFile("data/D_germline_ex.yaml");
   Germline D_Germline = Germline(D_root);
   NTInsertion D_NTInsertion = NTInsertion(D_root);
+  // D genes can't initialize NPadding objects.
+  // NPadding D_NPadding = NPadding(D_root);
 
   REQUIRE(D_Germline.emission_matrix() == correct_D_Germline.emission_matrix());
   REQUIRE(D_Germline.transition() == correct_D_Germline.transition());
@@ -396,6 +398,55 @@ TEST_CASE("YAML", "[io]") {
   REQUIRE(D_NTInsertion.n_landing_out() == D_n_landing_out);
   REQUIRE(D_NTInsertion.n_emission_matrix() == D_n_emission_matrix);
   REQUIRE(D_NTInsertion.n_transition() == D_n_transition);
+
+  Eigen::VectorXd J_landing(5);
+  J_landing << 0.25, 0.05, 0, 0, 0;
+  Eigen::MatrixXd J_emission_matrix(4,5);
+  J_emission_matrix <<
+  0.91, 0.1, 0.06, 0.01, 0.08,
+  0.03, 0.1, 0.06, 0.97, 0.08,
+  0.03, 0.1, 0.82, 0.01, 0.76,
+  0.03, 0.7, 0.06, 0.01, 0.08;
+  Eigen::VectorXd J_next_transition(4);
+  J_next_transition << 1, 1, 1, 1;
+  Eigen::VectorXd J_n_landing_in(4);
+  J_n_landing_in << 0.1, 0.2, 0.2, 0.2;
+  Eigen::MatrixXd J_n_landing_out(4,5);
+  J_n_landing_out <<
+  0.4, 0.25, 0, 0, 0,
+  0.4, 0.25, 0, 0, 0,
+  0.4, 0.25, 0, 0, 0,
+  0.4, 0.25, 0, 0, 0;
+  Eigen::MatrixXd J_n_emission_matrix(4,4);
+  J_n_emission_matrix <<
+  0.94, 0.02, 0.02, 0.02,
+  0.02, 0.94, 0.02, 0.02,
+  0.02, 0.02, 0.94, 0.02,
+  0.02, 0.02, 0.02, 0.94;
+  Eigen::MatrixXd J_n_transition(4,4);
+  J_n_transition <<
+  0.05, 0.15, 0.075, 0.075,
+  0.05, 0.15, 0.075, 0.075,
+  0.05, 0.15, 0.075, 0.075,
+  0.05, 0.15, 0.075, 0.075;
+  double J_n_self_transition_prob = 0.96;
+  Eigen::VectorXd J_n_emission_vector(4);
+  J_n_emission_vector << 0.25, 0.25, 0.25, 0.25;
+
+  Germline correct_J_Germline(J_landing, J_emission_matrix, J_next_transition);
+  YAML::Node J_root = YAML::LoadFile("data/J_germline_ex.yaml");
+  Germline J_Germline = Germline(J_root);
+  NTInsertion J_NTInsertion = NTInsertion(J_root);
+  NPadding J_NPadding = NPadding(J_root);
+
+  REQUIRE(J_Germline.emission_matrix() == correct_J_Germline.emission_matrix());
+  REQUIRE(J_Germline.transition() == correct_J_Germline.transition());
+  REQUIRE(J_NTInsertion.n_landing_in() == J_n_landing_in);
+  REQUIRE(J_NTInsertion.n_landing_out() == J_n_landing_out);
+  REQUIRE(J_NTInsertion.n_emission_matrix() == J_n_emission_matrix);
+  REQUIRE(J_NTInsertion.n_transition() == J_n_transition);
+  REQUIRE(J_NPadding.n_self_transition_prob() == J_n_self_transition_prob);
+  REQUIRE(J_NPadding.n_emission_vector() == J_n_emission_vector);
 }
 
 
