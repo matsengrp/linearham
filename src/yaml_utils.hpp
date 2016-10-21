@@ -11,12 +11,9 @@ namespace linearham {
 bool is_equal_string_vecs(std::vector<std::string> vec1,
                           std::vector<std::string> vec2);
 
-bool is_equal_double_vecs(Eigen::VectorXd vec1,
-                          Eigen::VectorXd vec2);
-
 std::pair<std::vector<std::string>, Eigen::VectorXd> parse_string_prob_map(
     YAML::Node node);
-    
+
 std::pair<std::vector<std::string>, std::unordered_map<std::string, int>>
     get_alphabet(YAML::Node root);
 

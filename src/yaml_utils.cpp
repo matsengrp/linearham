@@ -24,21 +24,6 @@ bool is_equal_string_vecs(std::vector<std::string> vec1,
 };
 
 
-/// @brief Do two double vectors contain the same elements?
-/// @param[in] vec1
-/// The vector to be tested for set equality.
-/// @param[in] vec2
-/// The (sorted) vector to be tested against for set equality.
-/// @return
-/// If it is.
-bool is_equal_double_vecs(Eigen::VectorXd vec1,
-                          Eigen::VectorXd vec2) {
-  assert(std::is_sorted(vec2.data(), vec2.data() + vec2.size()));
-  std::sort(vec1.data(), vec1.data() + vec1.size());
-  return vec1 == vec2;
-};
-
-
 /// @brief Parse a YAML map from strings to probabilities.
 /// @param[in] node
 /// A YAML map node.

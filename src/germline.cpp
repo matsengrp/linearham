@@ -42,7 +42,8 @@ Germline::Germline(YAML::Node root) {
   std::tie(grgx, nrgx) = get_regex(gname, alphabet);
   std::smatch match;
 
-  // The HMM YAML has insert_left states then germline-encoded states.
+  // The HMM YAML has insert_left states (perhaps), germline-encoded states,
+  // then insert_right states (perhaps).
   // Here we step through the insert states to get to the germline states.
   int gstart, gend;
   std::tie(gstart, gend) = find_germline_start_end(root, gname);

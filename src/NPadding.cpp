@@ -17,7 +17,8 @@ NPadding::NPadding(YAML::Node root) {
   std::tie(alphabet, alphabet_map) = get_alphabet(root);
   std::string gname = root["name"].as<std::string>();
 
-  // The HMM YAML has insert_left states then germline-encoded states.
+  // The HMM YAML has insert_left states (perhaps), germline-encoded states,
+  // then insert_right states (perhaps).
   // Here we step through the insert states to get to the germline states.
   int gstart, gend;
   std::tie(gstart, gend) = find_germline_start_end(root, gname);
@@ -32,6 +33,11 @@ NPadding::NPadding(YAML::Node root) {
   int n_index, n_check_ind;
   std::string nname, next_name;
   double correct_trans_prob;
+
+  // For "insert_[left|right]_N" states, the transition probabilities should
+  // be identical to the transition probabilities at the "[init|last germline]"
+  // state.
+  // The local variable `n_check_ind` is used to check the above statement.
 
   // Case 1: "insert_left_N" state
   if (gstart == 2) {
@@ -54,16 +60,16 @@ NPadding::NPadding(YAML::Node root) {
   YAML::Node check_state = root["states"][n_check_ind];
   assert(nstate["name"].as<std::string>() == nname);
 
-  std::vector<std::string> state_names, check_names;
-  Eigen::VectorXd probs, check_probs;
+  std::map<std::string, double> nmap =
+      nstate["transitions"].as<std::map<std::string, double>>();
+  std::map<std::string, double> check_map =
+      check_state["transitions"].as<std::map<std::string, double>>();
+  assert(nmap == check_map);
+
+  std::vector<std::string> state_names;
+  Eigen::VectorXd probs;
   std::tie(state_names, probs) =
       parse_string_prob_map(nstate["transitions"]);
-  std::tie(check_names, check_probs) =
-      parse_string_prob_map(check_state["transitions"]);
-  std::sort(check_names.begin(), check_names.end());
-  std::sort(check_probs.data(), check_probs.data() + check_probs.size());
-  assert(is_equal_string_vecs(state_names, check_names));
-  assert(is_equal_double_vecs(probs, check_probs));
 
   // The "insert_[left|right]_N" state either transitions back to itself
   // or enters the [first germline|end] state.
