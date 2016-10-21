@@ -46,8 +46,8 @@ Germline::Germline(YAML::Node root) {
   // Here we step through the insert states to get to the germline states.
   int gstart, gend;
   std::tie(gstart, gend) = find_germline_start_end(root, gname);
-  assert((gstart == 2) || (gstart == (alphabet.size() + 1)));
-  assert((gend == (root["states"].size() - 1)) || (gend ==
+  assert((gstart == 2) ^ (gstart == (alphabet.size() + 1)));
+  assert((gend == (root["states"].size() - 1)) ^ (gend ==
       (root["states"].size() - 2)));
   int gcount = gend - gstart + 1;
 

@@ -30,7 +30,7 @@ NTInsertion::NTInsertion(YAML::Node root) {
   int gstart, gend;
   std::tie(gstart, gend) = find_germline_start_end(root, gname);
   assert(gstart == (alphabet.size() + 1));
-  assert((gend == (root["states"].size() - 1)) || (gend ==
+  assert((gend == (root["states"].size() - 1)) ^ (gend ==
       (root["states"].size() - 2)));
   int gcount = gend - gstart + 1;
 
