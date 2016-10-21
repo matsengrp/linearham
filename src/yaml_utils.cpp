@@ -9,17 +9,33 @@ namespace linearham {
 const double EPS_PARSE = 1e-5;
 
 
-/// @brief Is one alphabet equal to another?
-/// @param[in] vec
-/// The alphabet to be tested for equality.
-/// @param[in] alphabet
-/// The parent alphabet to be tested against for equality.
+/// @brief Do two string vectors contain the same elements?
+/// @param[in] vec1
+/// The vector to be tested for set equality.
+/// @param[in] vec2
+/// The (sorted) vector to be tested against for set equality.
 /// @return
 /// If it is.
-bool is_equal_alphabet(std::vector<std::string> vec,
-                       std::vector<std::string> alphabet) {
-  std::sort(vec.begin(), vec.end());
-  return vec == alphabet;
+bool is_equal_string_vecs(std::vector<std::string> vec1,
+                          std::vector<std::string> vec2) {
+  assert(std::is_sorted(vec2.begin(), vec2.end()));
+  std::sort(vec1.begin(), vec1.end());
+  return vec1 == vec2;
+};
+
+
+/// @brief Do two double vectors contain the same elements?
+/// @param[in] vec1
+/// The vector to be tested for set equality.
+/// @param[in] vec2
+/// The (sorted) vector to be tested against for set equality.
+/// @return
+/// If it is.
+bool is_equal_double_vecs(Eigen::VectorXd vec1,
+                          Eigen::VectorXd vec2) {
+  assert(std::is_sorted(vec2.data(), vec2.data() + vec2.size()));
+  std::sort(vec1.data(), vec1.data() + vec1.size());
+  return vec1 == vec2;
 };
 
 
@@ -43,5 +59,64 @@ std::pair<std::vector<std::string>, Eigen::VectorXd> parse_string_prob_map(
 
   assert(fabs(transition_probs.sum() - 1) <= EPS_PARSE);
   return std::make_pair(state_names, transition_probs);
+};
+
+/// @brief Extract the alphabet and alphabet-map from a YAML file.
+/// @param[in] root
+/// A YAML root node.
+/// @return
+/// A 2-tuple containing the alphabet and alphabet-map.
+std::pair<std::vector<std::string>, std::unordered_map<std::string, int>>
+    get_alphabet(YAML::Node root) {
+  assert(root.IsMap());
+  std::vector<std::string> alphabet =
+      root["tracks"]["nukes"].as<std::vector<std::string>>();
+  std::sort(alphabet.begin(), alphabet.end());
+  std::unordered_map<std::string, int> alphabet_map;
+  for (unsigned int i = 0; i < alphabet.size(); i++)
+    alphabet_map[alphabet[i]] = i;
+
+  return std::make_pair(alphabet, alphabet_map);
+};
+
+/// @brief Create the regex's that extract germline and insertion state
+/// labels.
+/// @param[in] gname
+/// The germline name.
+/// @param[in] alphabet
+/// The alphabet.
+/// @return
+/// A 2-tuple containing the regex's.
+std::pair<std::regex, std::regex> get_regex(std::string gname,
+    std::vector<std::string> alphabet) {
+  std::regex grgx("^" + gname + "_([0-9]+)$");
+  std::regex nrgx(
+      "^insert_left_([" +
+      std::accumulate(alphabet.begin(), alphabet.end(), std::string()) + "])$");
+
+  return std::make_pair(grgx, nrgx);
+};
+
+/// @brief Find the indices corresponding to the start and end of the germline
+/// gene.
+/// @param[in] root
+/// A YAML root node.
+/// @param[in] gname
+/// The germline name.
+/// @return
+/// A 2-tuple containing the germline start and end indices.
+std::pair<int, int> find_germline_start_end(YAML::Node root, std::string gname) {
+  assert(root.IsMap());
+  int gstart = 0, gend = root["states"].size() - 1;
+  while (root["states"][gstart]["name"].as<std::string>().find(gname) ==
+         std::string::npos) {
+    gstart++;
+  }
+  while (root["states"][gend]["name"].as<std::string>().find(gname) ==
+         std::string::npos) {
+    gend--;
+  }
+
+  return std::make_pair(gstart, gend);
 };
 }

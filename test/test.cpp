@@ -2,9 +2,6 @@
 #define CATCH_CONFIG_MAIN
 
 #include "catch.hpp"
-#include "yaml.hpp"
-
-#include "core.hpp"
 #include "smooshable_chain.hpp"
 
 
@@ -332,7 +329,7 @@ TEST_CASE("Ham Comparison 1", "[ham]") {
 
 TEST_CASE("YAML", "[io]") {
   Eigen::VectorXd V_landing(5);
-  V_landing << 0.75, 0, 0, 0, 0;
+  V_landing << 0.6666666666666666, 0, 0, 0, 0;
   Eigen::MatrixXd V_emission_matrix(4,5);
   V_emission_matrix <<
   0.79, 0.1, 0.01, 0.55, 0.125,
@@ -341,12 +338,21 @@ TEST_CASE("YAML", "[io]") {
   0.07, 0.7, 0.01, 0.15, 0.125;
   Eigen::VectorXd V_next_transition(4);
   V_next_transition << 1, 1, 0.8, 0.5;
+  double V_n_self_transition_prob = 0.33333333333333337;
+  Eigen::VectorXd V_n_emission_vector(4);
+  V_n_emission_vector << 0.25, 0.25, 0.25, 0.25;
 
-  Germline correct_V_germline(V_landing, V_emission_matrix, V_next_transition);
-  Germline V_germline = Germline("data/V_germline_ex.yaml");
+  Germline correct_V_Germline(V_landing, V_emission_matrix, V_next_transition);
+  YAML::Node V_root = YAML::LoadFile("data/V_germline_ex.yaml");
+  Germline V_Germline = Germline(V_root);
+  NPadding V_NPadding = NPadding(V_root);
+  // V genes can't initialize NTInsertion objects.
+  // NTInsertion V_NTInsertion(V_root);
 
-  REQUIRE(V_germline.emission_matrix() == correct_V_germline.emission_matrix());
-  REQUIRE(V_germline.transition() == correct_V_germline.transition());
+  REQUIRE(V_Germline.emission_matrix() == correct_V_Germline.emission_matrix());
+  REQUIRE(V_Germline.transition() == correct_V_Germline.transition());
+  REQUIRE(V_NPadding.n_self_transition_prob() == V_n_self_transition_prob);
+  REQUIRE(V_NPadding.n_emission_vector() == V_n_emission_vector);
 
   Eigen::VectorXd D_landing(5);
   D_landing << 0.4, 0.1, 0.05, 0, 0;
@@ -379,12 +385,13 @@ TEST_CASE("YAML", "[io]") {
   0.075, 0.175, 0.05, 0.025,
   0.075, 0.175, 0.05, 0.025;
 
-  Germline correct_D_germline(D_landing, D_emission_matrix, D_next_transition);
-  Germline D_germline = Germline("data/D_germline_ex.yaml");
-  NTInsertion D_NTInsertion = NTInsertion("data/D_germline_ex.yaml");
+  Germline correct_D_Germline(D_landing, D_emission_matrix, D_next_transition);
+  YAML::Node D_root = YAML::LoadFile("data/D_germline_ex.yaml");
+  Germline D_Germline = Germline(D_root);
+  NTInsertion D_NTInsertion = NTInsertion(D_root);
 
-  REQUIRE(D_germline.emission_matrix() == correct_D_germline.emission_matrix());
-  REQUIRE(D_germline.transition() == correct_D_germline.transition());
+  REQUIRE(D_Germline.emission_matrix() == correct_D_Germline.emission_matrix());
+  REQUIRE(D_Germline.transition() == correct_D_Germline.transition());
   REQUIRE(D_NTInsertion.n_landing_in() == D_n_landing_in);
   REQUIRE(D_NTInsertion.n_landing_out() == D_n_landing_out);
   REQUIRE(D_NTInsertion.n_emission_matrix() == D_n_emission_matrix);

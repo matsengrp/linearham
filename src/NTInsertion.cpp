@@ -6,39 +6,33 @@
 namespace linearham {
 
 
-NTInsertion::NTInsertion(std::string yaml_path) {
-  assert(yaml_path.substr(yaml_path.length() - 4, 4) == "yaml");
-  YAML::Node root = YAML::LoadFile(yaml_path);
-
+/// @brief Constructor for NTInsertion starting from a YAML file.
+/// @param[in] root
+/// A root node associated with a germline YAML file.
+NTInsertion::NTInsertion(YAML::Node root) {
   // Store alphabet-map and germline name.
   // For the rest of this function, g[something] means germline_[something].
-  std::vector<std::string> alphabet =
-      root["tracks"]["nukes"].as<std::vector<std::string>>();
-  std::sort(alphabet.begin(), alphabet.end());
+  std::vector<std::string> alphabet;
   std::unordered_map<std::string, int> alphabet_map;
-  for (unsigned int i = 0; i < alphabet.size(); i++)
-    alphabet_map[alphabet[i]] = i;
+  std::tie(alphabet, alphabet_map) = get_alphabet(root);
   std::string gname = root["name"].as<std::string>();
 
   // In the YAML file, states of the germline gene are denoted
-  // [germline name]_[position]. This regex extracts that position.
-  std::regex grgx("^" + gname + "_([0-9]+)$");
-  // The vector of probabilities of various insertions on the left of this
-  // germline gene are denoted insert_left_[base]. This regex extracts that base.
-  std::regex nrgx(
-      "^insert_left_([" +
-      std::accumulate(alphabet.begin(), alphabet.end(), std::string()) + "])$");
+  // [germline name]_[position]. The vector of probabilities of various
+  // insertions on the left of this germline gene are denoted insert_left_[base].
+  // The regex's obtained below extract the corresponding position and base.
+  std::regex grgx, nrgx;
+  std::tie(grgx, nrgx) = get_regex(gname, alphabet);
   std::smatch match;
 
   // The HMM YAML has insert_left states then germline-encoded states.
   // Here we step through the insert states to get to the germline states.
-  int gstart = 0;
-  while (root["states"][gstart]["name"].as<std::string>().find(gname) ==
-         std::string::npos) {
-    gstart++;
-  }
+  int gstart, gend;
+  std::tie(gstart, gend) = find_germline_start_end(root, gname);
   assert(gstart == (alphabet.size() + 1));
-  int gcount = root["states"].size() - gstart;
+  assert((gend == (root["states"].size() - 1)) || (gend ==
+      (root["states"].size() - 2)));
+  int gcount = gend - gstart + 1;
 
   // Allocate space for the NTInsertion protected data members.
   n_landing_in_.setZero(alphabet.size());
@@ -88,7 +82,7 @@ NTInsertion::NTInsertion(std::string yaml_path) {
 
     std::tie(state_names, probs) =
         parse_string_prob_map(nstate["emissions"]["probs"]);
-    assert(is_equal_alphabet(state_names, alphabet));
+    assert(is_equal_string_vecs(state_names, alphabet));
 
     for (unsigned int j = 0; j < state_names.size(); j++) {
       n_emission_matrix_(alphabet_map[state_names[j]], alphabet_ind) =

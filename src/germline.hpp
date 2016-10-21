@@ -21,7 +21,7 @@ class Germline {
   Germline(){};
   Germline(Eigen::VectorXd& landing, Eigen::MatrixXd& emission_matrix,
            Eigen::VectorXd& next_transition);
-  Germline(std::string yaml_path);
+  Germline(YAML::Node root);
 
   Eigen::MatrixXd emission_matrix() const { return emission_matrix_; };
   Eigen::MatrixXd transition() const { return transition_; };

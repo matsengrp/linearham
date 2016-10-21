@@ -4,13 +4,13 @@ states:
 - emissions: null
   extras: {}
   name: init
-  transitions: {dummy_V_0: 0.75, insert_left_N: 0.25}
+  transitions: {dummy_V_0: 0.6666666666666666, insert_left_N: 0.33333333333333337}
 - emissions:
     probs: {A: 0.25, C: 0.25, G: 0.25, T: 0.25}
     track: nukes
   extras: {}
   name: insert_left_N
-  transitions: {dummy_V_0: 0.75, insert_left_N: 0.25}
+  transitions: {dummy_V_0: 0.6666666666666666, insert_left_N: 0.33333333333333337}
 - emissions:
     probs: {A: 0.79, C: 0.07, G: 0.07, T: 0.07}
     track: nukes

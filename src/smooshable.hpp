@@ -4,6 +4,7 @@
 #include "germline.hpp"
 #include "insertion.hpp"
 #include "NTInsertion.hpp"
+#include "NPadding.hpp"
 #include "linalg.hpp"
 
 /// @file smooshable.hpp

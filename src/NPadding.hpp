@@ -1,33 +1,28 @@
-//#ifndef LINEARHAM_NPADDING_
-//#define LINEARHAM_NPADDING_
+#ifndef LINEARHAM_NPADDING_
+#define LINEARHAM_NPADDING_
 
-//#include "linalg.hpp"
+#include "yaml_utils.hpp"
 
-///// @file NPadding.hpp
-///// @brief Headers for the NPadding class.
+/// @file NPadding.hpp
+/// @brief Headers for the NPadding class.
 
-//namespace linearham {
+namespace linearham {
 
 
-///// @brief An abstraction representing the padded germline states
-///// needed at the beginning (end) of the V (J) genes, relative to
-///// the read.
-//class NPadding {
-// protected:
-//  Eigen::VectorXd n_landing_in_;
-//  Eigen::MatrixXd n_landing_out_;
-//  Eigen::MatrixXd n_emission_matrix_;
-//  Eigen::MatrixXd n_transition_;
+/// @brief An abstraction used to represent the padded germline states on the
+/// left (right) of V (J) genes.
+class NPadding {
+ protected:
+  double n_self_transition_prob_;
+  Eigen::VectorXd n_emission_vector_;
 
-// public:
-//  NTInsertion(){};
-//  NTInsertion(std::string yaml_file);
+ public:
+  NPadding(){};
+  NPadding(YAML::Node root);
 
-//  Eigen::VectorXd n_landing_in() const { return n_landing_in_; };
-//  Eigen::MatrixXd n_landing_out() const { return n_landing_out_; };
-//  Eigen::MatrixXd n_emission_matrix() const { return n_emission_matrix_; };
-//  Eigen::MatrixXd n_transition() const { return n_transition_; };
-//};
-//}
+  double n_self_transition_prob() const { return n_self_transition_prob_; };
+  Eigen::VectorXd n_emission_vector() const { return n_emission_vector_; };
+};
+}
 
-//#endif  // LINEARHAM_NPADDING_
+#endif  // LINEARHAM_NPADDING_
