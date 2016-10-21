@@ -24,7 +24,6 @@ NPadding::NPadding(YAML::Node root) {
   std::tie(gstart, gend) = find_germline_start_end(root, gname);
   // Either we parse a "insert_left_N" or "insert_right_N" state (or neither).
   assert((gstart == 2) ^ (gend == (root["states"].size() - 2)));
-  int gcount = gend - gstart + 1;
 
   // Allocate space for the NPadding protected data members.
   n_emission_vector_.setZero(alphabet.size());
@@ -60,11 +59,9 @@ NPadding::NPadding(YAML::Node root) {
   YAML::Node check_state = root["states"][n_check_ind];
   assert(nstate["name"].as<std::string>() == nname);
 
-  std::map<std::string, double> nmap =
-      nstate["transitions"].as<std::map<std::string, double>>();
-  std::map<std::string, double> check_map =
-      check_state["transitions"].as<std::map<std::string, double>>();
-  assert(nmap == check_map);
+  assert(( // Double parens apparently needed for such macros.
+    nstate["transitions"].as<std::map<std::string, double>>() ==
+    check_state["transitions"].as<std::map<std::string, double>>()));
 
   std::vector<std::string> state_names;
   Eigen::VectorXd probs;
