@@ -338,6 +338,7 @@ TEST_CASE("YAML", "[io]") {
   0.07, 0.7, 0.01, 0.15, 0.125;
   Eigen::VectorXd V_next_transition(4);
   V_next_transition << 1, 1, 0.8, 0.5;
+  double V_gene_prob = 0.07;
   double V_n_self_transition_prob = 0.33333333333333337;
   Eigen::VectorXd V_n_emission_vector(4);
   V_n_emission_vector << 0.25, 0.25, 0.25, 0.25;
@@ -351,6 +352,7 @@ TEST_CASE("YAML", "[io]") {
 
   REQUIRE(V_Germline.emission_matrix() == correct_V_Germline.emission_matrix());
   REQUIRE(V_Germline.transition() == correct_V_Germline.transition());
+  REQUIRE(V_Germline.gene_prob() == V_gene_prob);
   REQUIRE(V_NPadding.n_self_transition_prob() == V_n_self_transition_prob);
   REQUIRE(V_NPadding.n_emission_vector() == V_n_emission_vector);
 
@@ -364,6 +366,7 @@ TEST_CASE("YAML", "[io]") {
   0.12, 0.07, 0.85, 0.15, 0.01;
   Eigen::VectorXd D_next_transition(4);
   D_next_transition << 0.98, 0.95, 0.6, 0.35;
+  double D_gene_prob = 0.035;
   Eigen::VectorXd D_n_landing_in(4);
   D_n_landing_in << 0.1, 0.2, 0.1, 0.05;
   Eigen::MatrixXd D_n_landing_out(4,5);
@@ -394,6 +397,7 @@ TEST_CASE("YAML", "[io]") {
 
   REQUIRE(D_Germline.emission_matrix() == correct_D_Germline.emission_matrix());
   REQUIRE(D_Germline.transition() == correct_D_Germline.transition());
+  REQUIRE(D_Germline.gene_prob() == D_gene_prob);
   REQUIRE(D_NTInsertion.n_landing_in() == D_n_landing_in);
   REQUIRE(D_NTInsertion.n_landing_out() == D_n_landing_out);
   REQUIRE(D_NTInsertion.n_emission_matrix() == D_n_emission_matrix);
@@ -409,6 +413,7 @@ TEST_CASE("YAML", "[io]") {
   0.03, 0.7, 0.06, 0.01, 0.08;
   Eigen::VectorXd J_next_transition(4);
   J_next_transition << 1, 1, 1, 1;
+  double J_gene_prob = 0.015;
   Eigen::VectorXd J_n_landing_in(4);
   J_n_landing_in << 0.1, 0.2, 0.2, 0.2;
   Eigen::MatrixXd J_n_landing_out(4,5);
@@ -441,6 +446,7 @@ TEST_CASE("YAML", "[io]") {
 
   REQUIRE(J_Germline.emission_matrix() == correct_J_Germline.emission_matrix());
   REQUIRE(J_Germline.transition() == correct_J_Germline.transition());
+  REQUIRE(J_Germline.gene_prob() == J_gene_prob);
   REQUIRE(J_NTInsertion.n_landing_in() == J_n_landing_in);
   REQUIRE(J_NTInsertion.n_landing_out() == J_n_landing_out);
   REQUIRE(J_NTInsertion.n_emission_matrix() == J_n_emission_matrix);
@@ -455,11 +461,13 @@ TEST_CASE("YAML", "[io]") {
 
   REQUIRE(V_Germ.emission_matrix() == correct_V_Germline.emission_matrix());
   REQUIRE(V_Germ.transition() == correct_V_Germline.transition());
+  REQUIRE(V_Germ.gene_prob() == V_gene_prob);
   REQUIRE(V_Germ.n_self_transition_prob() == V_n_self_transition_prob);
   REQUIRE(V_Germ.n_emission_vector() == V_n_emission_vector);
 
   REQUIRE(D_Germ.emission_matrix() == correct_D_Germline.emission_matrix());
   REQUIRE(D_Germ.transition() == correct_D_Germline.transition());
+  REQUIRE(D_Germ.gene_prob() == D_gene_prob);
   REQUIRE(D_Germ.n_landing_in() == D_n_landing_in);
   REQUIRE(D_Germ.n_landing_out() == D_n_landing_out);
   REQUIRE(D_Germ.n_emission_matrix() == D_n_emission_matrix);
@@ -467,6 +475,7 @@ TEST_CASE("YAML", "[io]") {
 
   REQUIRE(J_Germ.emission_matrix() == correct_J_Germline.emission_matrix());
   REQUIRE(J_Germ.transition() == correct_J_Germline.transition());
+  REQUIRE(J_Germ.gene_prob() == J_gene_prob);
   REQUIRE(J_Germ.n_landing_in() == J_n_landing_in);
   REQUIRE(J_Germ.n_landing_out() == J_n_landing_out);
   REQUIRE(J_Germ.n_emission_matrix() == J_n_emission_matrix);

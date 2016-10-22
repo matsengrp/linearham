@@ -57,6 +57,9 @@ Germline::Germline(YAML::Node root) {
   emission_matrix_.setZero(alphabet.size(), gcount);
   Eigen::VectorXd next_transition = Eigen::VectorXd::Zero(gcount - 1);
 
+  // Store the gene probability.
+  gene_prob_ = root["extras"]["gene_prob"].as<double>();
+
   // Parse the init state.
   YAML::Node init_state = root["states"][0];
   assert(init_state["name"].as<std::string>() == "init");

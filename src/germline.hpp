@@ -15,6 +15,7 @@ class Germline {
  protected:
   Eigen::MatrixXd emission_matrix_;
   Eigen::MatrixXd transition_;
+  double gene_prob_;
 
  public:
   Germline(){};
@@ -24,6 +25,7 @@ class Germline {
 
   Eigen::MatrixXd emission_matrix() const { return emission_matrix_; };
   Eigen::MatrixXd transition() const { return transition_; };
+  double gene_prob() const { return gene_prob_; };
   int length() const { return transition_.cols(); };
 
   void EmissionVector(const Eigen::Ref<const Eigen::VectorXi>& emission_indices,
