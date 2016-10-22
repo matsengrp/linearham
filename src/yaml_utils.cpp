@@ -8,6 +8,17 @@ namespace linearham {
 // "Zero" for parsing YAML files.
 const double EPS_PARSE = 1e-5;
 
+/// @brief Extract the root node from a YAML file.
+/// @param[in] yaml_path
+/// A string providing the path to a YAML file.
+/// @return
+/// A YAML root node.
+YAML::Node get_yaml_root(std::string yaml_path) {
+  assert(yaml_path.substr(yaml_path.length() - 4, 4) == "yaml");
+  YAML::Node root = YAML::LoadFile(yaml_path);
+  return root;
+};
+
 
 /// @brief Do two string vectors contain the same elements?
 /// @param[in] vec1

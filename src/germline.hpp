@@ -11,7 +11,6 @@ namespace linearham {
 
 /// @brief The HMM representation of a germline gene, without reference to any
 /// reads.
-///
 class Germline {
  protected:
   Eigen::MatrixXd emission_matrix_;

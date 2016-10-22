@@ -447,6 +447,32 @@ TEST_CASE("YAML", "[io]") {
   REQUIRE(J_NTInsertion.n_transition() == J_n_transition);
   REQUIRE(J_NPadding.n_self_transition_prob() == J_n_self_transition_prob);
   REQUIRE(J_NPadding.n_emission_vector() == J_n_emission_vector);
+
+  // Now, let's test the V/D/J germline classes.
+  VGermline V_Germ("data/V_germline_ex.yaml");
+  DGermline D_Germ("data/D_germline_ex.yaml");
+  JGermline J_Germ("data/J_germline_ex.yaml");
+
+  REQUIRE(V_Germ.emission_matrix() == correct_V_Germline.emission_matrix());
+  REQUIRE(V_Germ.transition() == correct_V_Germline.transition());
+  REQUIRE(V_Germ.n_self_transition_prob() == V_n_self_transition_prob);
+  REQUIRE(V_Germ.n_emission_vector() == V_n_emission_vector);
+
+  REQUIRE(D_Germ.emission_matrix() == correct_D_Germline.emission_matrix());
+  REQUIRE(D_Germ.transition() == correct_D_Germline.transition());
+  REQUIRE(D_Germ.n_landing_in() == D_n_landing_in);
+  REQUIRE(D_Germ.n_landing_out() == D_n_landing_out);
+  REQUIRE(D_Germ.n_emission_matrix() == D_n_emission_matrix);
+  REQUIRE(D_Germ.n_transition() == D_n_transition);
+
+  REQUIRE(J_Germ.emission_matrix() == correct_J_Germline.emission_matrix());
+  REQUIRE(J_Germ.transition() == correct_J_Germline.transition());
+  REQUIRE(J_Germ.n_landing_in() == J_n_landing_in);
+  REQUIRE(J_Germ.n_landing_out() == J_n_landing_out);
+  REQUIRE(J_Germ.n_emission_matrix() == J_n_emission_matrix);
+  REQUIRE(J_Germ.n_transition() == J_n_transition);
+  REQUIRE(J_Germ.n_self_transition_prob() == J_n_self_transition_prob);
+  REQUIRE(J_Germ.n_emission_vector() == J_n_emission_vector);
 }
 
 

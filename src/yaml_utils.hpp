@@ -8,6 +8,8 @@
 
 namespace linearham {
 
+YAML::Node get_yaml_root(std::string yaml_path);
+
 bool is_equal_string_vecs(std::vector<std::string> vec1,
                           std::vector<std::string> vec2);
 
