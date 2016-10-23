@@ -344,7 +344,7 @@ TEST_CASE("YAML", "[io]") {
   V_n_emission_vector << 0.25, 0.25, 0.25, 0.25;
 
   Germline correct_V_Germline(V_landing, V_emission_matrix, V_next_transition);
-  YAML::Node V_root = YAML::LoadFile("data/V_germline_ex.yaml");
+  YAML::Node V_root = get_yaml_root("data/V_germline_ex.yaml");
   Germline V_Germline = Germline(V_root);
   NPadding V_NPadding = NPadding(V_root);
   // V genes can't initialize NTInsertion objects.
@@ -389,7 +389,7 @@ TEST_CASE("YAML", "[io]") {
   0.075, 0.175, 0.05, 0.025;
 
   Germline correct_D_Germline(D_landing, D_emission_matrix, D_next_transition);
-  YAML::Node D_root = YAML::LoadFile("data/D_germline_ex.yaml");
+  YAML::Node D_root = get_yaml_root("data/D_germline_ex.yaml");
   Germline D_Germline = Germline(D_root);
   NTInsertion D_NTInsertion = NTInsertion(D_root);
   // D genes can't initialize NPadding objects.
@@ -439,7 +439,7 @@ TEST_CASE("YAML", "[io]") {
   J_n_emission_vector << 0.25, 0.25, 0.25, 0.25;
 
   Germline correct_J_Germline(J_landing, J_emission_matrix, J_next_transition);
-  YAML::Node J_root = YAML::LoadFile("data/J_germline_ex.yaml");
+  YAML::Node J_root = get_yaml_root("data/J_germline_ex.yaml");
   Germline J_Germline = Germline(J_root);
   NTInsertion J_NTInsertion = NTInsertion(J_root);
   NPadding J_NPadding = NPadding(J_root);
@@ -455,9 +455,9 @@ TEST_CASE("YAML", "[io]") {
   REQUIRE(J_NPadding.n_emission_vector() == J_n_emission_vector);
 
   // Now, let's test the V/D/J germline classes.
-  VGermline V_Germ("data/V_germline_ex.yaml");
-  DGermline D_Germ("data/D_germline_ex.yaml");
-  JGermline J_Germ("data/J_germline_ex.yaml");
+  VGermline V_Germ(V_root);
+  DGermline D_Germ(D_root);
+  JGermline J_Germ(J_root);
 
   REQUIRE(V_Germ.emission_matrix() == correct_V_Germline.emission_matrix());
   REQUIRE(V_Germ.transition() == correct_V_Germline.transition());
