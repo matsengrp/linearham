@@ -9,10 +9,10 @@ yaml_cpp_env.Command('_build/yaml-cpp/libyaml-cpp.a', '', 'cd _build/yaml-cpp &&
 ## linearham ##
 
 common_env = env.Clone()
-common_env.Append(CPPPATH=['lib/eigen', 'lib/yaml-cpp/include'])
-common_env.Append(CCFLAGS=['-std=c++11', '-g'])
+common_env.Append(CPPPATH=['lib/eigen', 'lib/yaml-cpp/include', 'lib/fast-cpp-csv-parser'])
+common_env.Append(CCFLAGS=['-pthread', '-std=c++11', '-g'])
 common_env.Append(LIBPATH=['_build/yaml-cpp'])
-common_env.Append(LIBS=['yaml-cpp'])
+common_env.Append(LIBS=['pthread', 'yaml-cpp'])
 common_env.Append(LINKFLAGS=['-g'])
 
 # Doubles compilation time.
@@ -28,5 +28,5 @@ test_env.VariantDir('_build/test', 'test')
 test_env.Append(CPPPATH=['src'])
 test_env.Program(target='_build/test/test',
                  LIBPATH=['_build/linearham', '_build/yaml-cpp'],
-                 LIBS=['linearham', 'yaml-cpp'],
+                 LIBS=['linearham', 'pthread', 'yaml-cpp'],
                  source=Glob('_build/test/*.cpp'))
