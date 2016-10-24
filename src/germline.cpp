@@ -75,12 +75,13 @@ Germline::Germline(YAML::Node root) {
     if (std::regex_match(state_names[i], match, grgx)) {
       landing[std::stoi(match[1])] = probs[i];
     } else {
+      // Make sure we don't match "insert_left_".
       assert(state_names[i].find("insert_left_") != std::string::npos);
     }
   }
 
   // Parse germline-encoded states.
-  for (unsigned int i = gstart; i < (gend + 1); i++) {
+  for (int i = gstart; i < gend + 1; i++) {
     YAML::Node gstate = root["states"][i];
     std::string gsname = gstate["name"].as<std::string>();
     assert(std::regex_match(gsname, match, grgx));

@@ -57,6 +57,7 @@ std::pair<std::vector<std::string>, Eigen::VectorXd> parse_string_prob_map(
   return std::make_pair(state_names, transition_probs);
 };
 
+
 /// @brief Extract the alphabet and alphabet-map from a YAML file.
 /// @param[in] root
 /// A YAML root node.
@@ -92,6 +93,7 @@ std::pair<std::regex, std::regex> get_regex(std::string gname,
 
   return std::make_pair(grgx, nrgx);
 };
+
 
 /// @brief Find the indices corresponding to the start and end of the germline
 /// gene.
