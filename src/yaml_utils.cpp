@@ -64,7 +64,7 @@ std::pair<std::vector<std::string>, Eigen::VectorXd> parse_string_prob_map(
 /// @return
 /// A 2-tuple containing the alphabet and alphabet-map.
 std::pair<std::vector<std::string>, std::unordered_map<std::string, int>>
-    get_alphabet(YAML::Node root) {
+get_alphabet(YAML::Node root) {
   assert(root.IsMap());
   std::vector<std::string> alphabet =
       root["tracks"]["nukes"].as<std::vector<std::string>>();
@@ -85,7 +85,7 @@ std::pair<std::vector<std::string>, std::unordered_map<std::string, int>>
 /// @return
 /// A 2-tuple containing the regex's.
 std::pair<std::regex, std::regex> get_regex(std::string gname,
-    std::vector<std::string> alphabet) {
+                                            std::vector<std::string> alphabet) {
   std::regex grgx("^" + gname + "_([0-9]+)$");
   std::regex nrgx(
       "^insert_left_([" +
@@ -103,7 +103,8 @@ std::pair<std::regex, std::regex> get_regex(std::string gname,
 /// The germline name.
 /// @return
 /// A 2-tuple containing the germline start and end indices.
-std::pair<int, int> find_germline_start_end(YAML::Node root, std::string gname) {
+std::pair<int, int> find_germline_start_end(YAML::Node root,
+                                            std::string gname) {
   assert(root.IsMap());
   int gstart = 0, gend = root["states"].size() - 1;
   while (root["states"][gstart]["name"].as<std::string>().find(gname) ==

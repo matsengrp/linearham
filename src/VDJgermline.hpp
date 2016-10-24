@@ -1,9 +1,9 @@
 #ifndef LINEARHAM_VDJGERMLINE_
 #define LINEARHAM_VDJGERMLINE_
 
-#include "germline.hpp"
-#include "NTInsertion.hpp"
 #include "NPadding.hpp"
+#include "NTInsertion.hpp"
+#include "germline.hpp"
 
 /// @file VDJgermline.hpp
 /// @brief Headers for the V, D, and J germline classes.
@@ -15,16 +15,14 @@ namespace linearham {
 class VGermline : public Germline, public NPadding {
  public:
   VGermline(){};
-  VGermline(YAML::Node root)
-      : Germline(root), NPadding(root) {};
+  VGermline(YAML::Node root) : Germline(root), NPadding(root){};
 };
 
 /// @brief An abstraction used to represent a D germline gene.
 class DGermline : public Germline, public NTInsertion {
  public:
   DGermline(){};
-  DGermline(YAML::Node root)
-      : Germline(root), NTInsertion(root) {};
+  DGermline(YAML::Node root) : Germline(root), NTInsertion(root){};
 };
 
 /// @brief An abstraction used to represent a J germline gene.
@@ -32,7 +30,7 @@ class JGermline : public Germline, public NTInsertion, public NPadding {
  public:
   JGermline(){};
   JGermline(YAML::Node root)
-      : Germline(root), NTInsertion(root), NPadding(root) {};
+      : Germline(root), NTInsertion(root), NPadding(root){};
 };
 }
 

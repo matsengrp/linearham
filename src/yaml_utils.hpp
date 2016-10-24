@@ -17,13 +17,12 @@ std::pair<std::vector<std::string>, Eigen::VectorXd> parse_string_prob_map(
     YAML::Node node);
 
 std::pair<std::vector<std::string>, std::unordered_map<std::string, int>>
-    get_alphabet(YAML::Node root);
+get_alphabet(YAML::Node root);
 
 std::pair<std::regex, std::regex> get_regex(std::string gname,
-    std::vector<std::string> alphabet);
+                                            std::vector<std::string> alphabet);
 
-std::pair<int, int> find_germline_start_end(YAML::Node root,
-    std::string gname);
+std::pair<int, int> find_germline_start_end(YAML::Node root, std::string gname);
 }
 
 #endif  // LINEARHAM_YAML_UTILS_

@@ -19,7 +19,8 @@ NTInsertion::NTInsertion(YAML::Node root) {
 
   // In the YAML file, states of the germline gene are denoted
   // [germline name]_[position]. The vector of probabilities of various
-  // insertions on the left of this germline gene are denoted insert_left_[base].
+  // insertions on the left of this germline gene are denoted
+  // insert_left_[base].
   // The regex's obtained below extract the corresponding position and base.
   std::regex grgx, nrgx;
   std::tie(grgx, nrgx) = get_regex(gname, alphabet);
@@ -31,8 +32,8 @@ NTInsertion::NTInsertion(YAML::Node root) {
   int gstart, gend;
   std::tie(gstart, gend) = find_germline_start_end(root, gname);
   assert(gstart == (alphabet.size() + 1));
-  assert((gend == (root["states"].size() - 1)) ^ (gend ==
-      (root["states"].size() - 2)));
+  assert((gend == (root["states"].size() - 1)) ^
+         (gend == (root["states"].size() - 2)));
   int gcount = gend - gstart + 1;
 
   // Allocate space for the NTInsertion protected data members.
@@ -66,8 +67,7 @@ NTInsertion::NTInsertion(YAML::Node root) {
     assert(std::regex_match(nname, match, nrgx));
     int alphabet_ind = alphabet_map[match[1]];
 
-    std::tie(state_names, probs) =
-        parse_string_prob_map(nstate["transitions"]);
+    std::tie(state_names, probs) = parse_string_prob_map(nstate["transitions"]);
 
     for (unsigned int j = 0; j < state_names.size(); j++) {
       if (std::regex_match(state_names[j], match, grgx)) {
@@ -86,8 +86,7 @@ NTInsertion::NTInsertion(YAML::Node root) {
     assert(is_equal_string_vecs(state_names, alphabet));
 
     for (unsigned int j = 0; j < state_names.size(); j++) {
-      n_emission_matrix_(alphabet_map[state_names[j]], alphabet_ind) =
-          probs[j];
+      n_emission_matrix_(alphabet_map[state_names[j]], alphabet_ind) = probs[j];
     }
   }
 };

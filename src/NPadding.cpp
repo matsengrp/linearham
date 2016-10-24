@@ -59,14 +59,13 @@ NPadding::NPadding(YAML::Node root) {
   YAML::Node check_state = root["states"][n_check_ind];
   assert(nstate["name"].as<std::string>() == nname);
 
-  assert(( // Double parens apparently needed for such macros.
-    nstate["transitions"].as<std::map<std::string, double>>() ==
-    check_state["transitions"].as<std::map<std::string, double>>()));
+  assert((  // Double parens apparently needed for such macros.
+      nstate["transitions"].as<std::map<std::string, double>>() ==
+      check_state["transitions"].as<std::map<std::string, double>>()));
 
   std::vector<std::string> state_names;
   Eigen::VectorXd probs;
-  std::tie(state_names, probs) =
-      parse_string_prob_map(nstate["transitions"]);
+  std::tie(state_names, probs) = parse_string_prob_map(nstate["transitions"]);
 
   // The "insert_[left|right]_N" state either transitions back to itself
   // or enters the [first germline|end] state.

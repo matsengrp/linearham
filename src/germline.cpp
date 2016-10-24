@@ -36,7 +36,8 @@ Germline::Germline(YAML::Node root) {
 
   // In the YAML file, states of the germline gene are denoted
   // [germline name]_[position]. The vector of probabilities of various
-  // insertions on the left of this germline gene are denoted insert_left_[base].
+  // insertions on the left of this germline gene are denoted
+  // insert_left_[base].
   // The regex's obtained below extract the corresponding position and base.
   std::regex grgx, nrgx;
   std::tie(grgx, nrgx) = get_regex(gname, alphabet);
@@ -48,8 +49,8 @@ Germline::Germline(YAML::Node root) {
   int gstart, gend;
   std::tie(gstart, gend) = find_germline_start_end(root, gname);
   assert((gstart == 2) ^ (gstart == (alphabet.size() + 1)));
-  assert((gend == (root["states"].size() - 1)) ^ (gend ==
-      (root["states"].size() - 2)));
+  assert((gend == (root["states"].size() - 1)) ^
+         (gend == (root["states"].size() - 2)));
   int gcount = gend - gstart + 1;
 
   // Create the Germline data structures.
@@ -97,8 +98,10 @@ Germline::Germline(YAML::Node root) {
         assert(std::stoi(match[1]) == (gindex + 1));
         next_transition[gindex] = probs[j];
       } else {
-        // ... or we can transition to the end (or "insert_right_N" for J genes).
-        assert((state_names[j] == "end") ^ (state_names[j] == "insert_right_N"));
+        // ... or we can transition to the end
+        // (or "insert_right_N" for J genes).
+        assert((state_names[j] == "end") ^
+               (state_names[j] == "insert_right_N"));
       }
     }
 
