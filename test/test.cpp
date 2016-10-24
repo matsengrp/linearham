@@ -3,7 +3,7 @@
 
 #include "catch.hpp"
 #include "smooshable_chain.hpp"
-
+#include "../lib/fast-cpp-csv-parser/csv.h"
 
 
 namespace linearham {
@@ -467,4 +467,22 @@ TEST_CASE("YAML", "[io]") {
 }
 
 
+// Partis CSV parsing.
+TEST_CASE("CSV", "[io]") {
+  io::CSVReader<3, io::trim_chars<>, io::double_quote_escape<' ','\"'> > in("data/hmm_input.csv");
+  in.read_header(io::ignore_extra_column, "seqs", "boundsbounds", "relpos");
+  std::string seq, boundsbounds_str, relpos_str;
+  in.read_row(seq, boundsbounds_str, relpos_str);  // First line.
+  std::map<std::string, int> relpos_m =
+    YAML::Load(relpos_str).as<std::map<std::string, int>>();
+  REQUIRE(relpos_m["IGHJ6*02"] == 333);
+  REQUIRE(relpos_m["IGHD2-15*01"] == 299);
+  in.read_row(seq, boundsbounds_str, relpos_str);  // Second line.
+  std::string correct_seq = "CAGGTGCAGCTGGTGCAGTCTGGGGCTGAGGTGAAGAAGCCTGGGGCCTCAGTGAAGGTCTCCTGCAAGGCTTCTGGATACACCTTCACCGGCTACTATATGCACTGGGTGCGACAGGCCCCTGGACAAGGGCTTGAGTGGATGGGATGGATCAACCCTAACAGTGGTGGCACAAACTATGCACAGAAGTTTCAGGGCTGGGTCACCATGACCAGGGACACGTCCATCAGCACAGCCTACATGGAGCTGAGCAGGCTGAGATCTGACGACACGGCCGTGTATTACTGTGCGAGAGATTTTTTATATTGTAGTGGTGGTAGCTGCTACTCCGGGGGGACTACTACTACTACGGTATGGACGTCTGGGGGCAAGGGACCACGGTCACCGTCTCCTCA";
+  REQUIRE(seq == correct_seq);
+  std::map<std::string, std::pair<int, int>> bb_map =
+    YAML::Load(boundsbounds_str).as<std::map<std::string, std::pair<int, int>>>();
+  REQUIRE(bb_map["v_l"].second == 2);
+  REQUIRE(bb_map["d_r"].first == 328);
+}
 }
