@@ -1,7 +1,6 @@
 #ifndef LINEARHAM_SMOOSHABLE_
 #define LINEARHAM_SMOOSHABLE_
 
-#include "insertion.hpp"
 #include "VDJgermline.hpp"
 
 /// @file smooshable.hpp

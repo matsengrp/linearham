@@ -180,24 +180,6 @@ TEST_CASE("Germline", "[germline]") {
 }
 
 
-// Insertion tests
-
-TEST_CASE("Insertion", "[insertion]") {
-  Eigen::VectorXd insertion_vector(2);
-  insertion_vector << 0.1, 0.2;
-  Eigen::MatrixXd emission_matrix(2,2);
-  emission_matrix <<
-  0.13, 0.17,
-  0.19, 0.3;
-  Eigen::MatrixXd transition(2,2);
-  transition <<
-  0.5, 0.07,
-  0.22, 0.43;
-
-  Insertion insertion(insertion_vector, emission_matrix, transition);
-}
-
-
 // Smooshable tests
 
 TEST_CASE("Smooshable", "[smooshable]") {
