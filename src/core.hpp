@@ -9,8 +9,7 @@
 namespace linearham {
 
 
-Eigen::MatrixXd BuildTransition(Eigen::VectorXd& landing,
-                                Eigen::VectorXd& next_transition);
+Eigen::MatrixXd BuildTransition(Eigen::VectorXd& next_transition);
 
 
 void BuildMatchMatrix(const Eigen::Ref<const Eigen::MatrixXd> transition,

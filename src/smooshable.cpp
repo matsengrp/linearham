@@ -37,19 +37,19 @@ Smooshable::Smooshable(Eigen::Ref<Eigen::MatrixXd> marginal) {
 /// The number of alternative start points allowed on the 5' (left) side.
 /// @param[in] right_flex
 /// The number of alternative end points allowed on the 3' (right) side.
-SmooshableGermline::SmooshableGermline(
-    Germline germline, int start,
-    const Eigen::Ref<const Eigen::VectorXi>& emission_indices, int left_flex,
-    int right_flex)
-    : Smooshable(left_flex, right_flex) {
-  assert(left_flex <= emission_indices.size() - 1);
-  assert(right_flex <= emission_indices.size() - 1);
-  germline.MatchMatrix(start, emission_indices, left_flex, right_flex,
-                       marginal_);
-  // scale match matrices if necessary.
-  scaler_count_ = ScaleMatrix(marginal_);
-  viterbi_ = marginal_;
-};
+// SmooshableGermline::SmooshableGermline(
+//    Germline germline, int start,
+//    const Eigen::Ref<const Eigen::VectorXi>& emission_indices, int left_flex,
+//    int right_flex)
+//    : Smooshable(left_flex, right_flex) {
+//  assert(left_flex <= emission_indices.size() - 1);
+//  assert(right_flex <= emission_indices.size() - 1);
+//  germline.MatchMatrix(start, emission_indices, left_flex, right_flex,
+//                       marginal_);
+//  // scale match matrices if necessary.
+//  scaler_count_ = ScaleMatrix(marginal_);
+//  viterbi_ = marginal_;
+//};
 
 
 // Functions

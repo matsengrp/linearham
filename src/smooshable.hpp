@@ -46,12 +46,13 @@ class Smooshable {
 
 
 /// A smooshable derived from a read aligned to a segment of germline gene.
-class SmooshableGermline : public Smooshable {
- public:
-  SmooshableGermline(Germline germline, int start,
-                     const Eigen::Ref<const Eigen::VectorXi>& emission_indices,
-                     int left_flex, int right_flex);
-};
+// class SmooshableGermline : public Smooshable {
+// public:
+//  SmooshableGermline(Germline germline, int start,
+//                     const Eigen::Ref<const Eigen::VectorXi>&
+//                     emission_indices,
+//                     int left_flex, int right_flex);
+//};
 
 
 // Functions

@@ -8,21 +8,21 @@
 
 namespace linearham {
 
-YAML::Node get_yaml_root(std::string yaml_path);
+YAML::Node GetYAMLRoot(std::string yaml_path);
 
-bool is_equal_string_vecs(std::vector<std::string> vec1,
-                          std::vector<std::string> vec2);
+bool IsEqualStringVecs(std::vector<std::string> vec1,
+                       std::vector<std::string> vec2);
 
-std::pair<std::vector<std::string>, Eigen::VectorXd> parse_string_prob_map(
+std::pair<std::vector<std::string>, Eigen::VectorXd> ParseStringProbMap(
     YAML::Node node);
 
 std::pair<std::vector<std::string>, std::unordered_map<std::string, int>>
-get_alphabet(YAML::Node root);
+GetAlphabet(YAML::Node root);
 
-std::pair<std::regex, std::regex> get_regex(std::string gname,
-                                            std::vector<std::string> alphabet);
+std::pair<std::regex, std::regex> GetStateRegex(
+    std::string gname, std::vector<std::string> alphabet);
 
-std::pair<int, int> find_germline_start_end(YAML::Node root, std::string gname);
+std::pair<int, int> FindGermlineStartEnd(YAML::Node root, std::string gname);
 }
 
 #endif  // LINEARHAM_YAML_UTILS_
