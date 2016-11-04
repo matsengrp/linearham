@@ -55,7 +55,49 @@ class Smooshable {
 //};
 
 
+class SmooshableXGermline : public Smooshable {
+ public:
+  SmooshableXGermline(std::shared_ptr<Germline> Germ_ptr,
+                      std::pair<int, int> left_flexbounds,
+                      std::pair<int, int> right_flexbounds,
+                      Eigen::Ref<Eigen::VectorXi> emission_indices,
+                      int relpos, bool pad_left);
+};
+
+
+class SmooshableNGermline : public Smooshable {
+ public:
+  SmooshableNGermline(std::shared_ptr<Germline> Germ_ptr,
+                      std::shared_ptr<NTInsertion> nti_ptr,
+                      std::pair<int, int> left_flexbounds,
+                      std::pair<int, int> leftright_flexbounds,
+                      std::pair<int, int> right_flexbounds,
+                      Eigen::Ref<Eigen::VectorXi> emission_indices,
+                      int relpos, bool pad_left);
+};
+
+
 // Functions
+Smooshable VSmooshable(std::string yaml_path,
+                       std::pair<int, int> V_left_flexbounds,
+                       std::pair<int, int> V_right_flexbounds,
+                       Eigen::Ref<Eigen::VectorXi> emission_indices,
+                       int V_relpos);
+
+std::pair<Smooshable, Smooshable> DSmooshables(std::string yaml_path,
+                                               std::pair<int, int> V_right_flexbounds,
+                                               std::pair<int, int> D_left_flexbounds,
+                                               std::pair<int, int> D_right_flexbounds,
+                                               Eigen::Ref<Eigen::VectorXi> emission_indices,
+                                               int D_relpos);
+
+std::pair<Smooshable, Smooshable> JSmooshables(std::string yaml_path,
+                                               std::pair<int, int> D_right_flexbounds,
+                                               std::pair<int, int> J_left_flexbounds,
+                                               std::pair<int, int> J_right_flexbounds,
+                                               Eigen::Ref<Eigen::VectorXi> emission_indices,
+                                               int J_relpos);
+
 std::pair<Smooshable, Eigen::MatrixXi> Smoosh(const Smooshable& s_a,
                                               const Smooshable& s_b);
 

@@ -52,7 +52,124 @@ Smooshable::Smooshable(Eigen::Ref<Eigen::MatrixXd> marginal) {
 //};
 
 
+SmooshableXGermline::SmooshableXGermline(std::shared_ptr<Germline> Germ_ptr,
+                                         std::pair<int, int> left_flexbounds,
+                                         std::pair<int, int> right_flexbounds,
+                                         Eigen::Ref<Eigen::VectorXi> emission_indices,
+                                         int relpos, bool pad_left) {
+  Eigen::MatrixXd germline_prob_matrix = Germ_ptr->GermlineProbMatrix(left_flexbounds, right_flexbounds,
+                                                                      emission_indices, relpos) * Germ_ptr->gene_prob();
+
+  // V or J gene
+  if (std::shared_ptr<NPadding> NPad_ptr = std::dynamic_pointer_cast<NPadding>(Germ_ptr)) {
+    double npadding_prob;
+    if (pad_left) {
+      // V gene
+      npadding_prob = NPad_ptr->NPaddingProb(left_flexbounds, emission_indices, relpos, pad_left);
+      marginal_ = germline_prob_matrix.row(std::max(relpos - left_flexbounds.first, 0)) * npadding_prob;
+      return;
+    } else {
+      // J gene
+      npadding_prob = NPad_ptr->NPaddingProb(right_flexbounds, emission_indices, relpos + Germ_ptr->length(), pad_left);
+      marginal_ = germline_prob_matrix.col(std::min(right_flexbounds.second, relpos + Germ_ptr->length()) - right_flexbounds.first) * npadding_prob;
+    }
+  } else {
+    // D gene
+    marginal_ = germline_prob_matrix;
+  }
+
+  Eigen::VectorXd landing = Eigen::VectorXd::Zero(left_flexbounds.second - left_flexbounds.first + 1);
+
+  // landing vector
+  if (relpos <= left_flexbounds.second) {
+    landing.tail(std::min(left_flexbounds.second - relpos + 1, left_flexbounds.second - left_flexbounds.first + 1)) = Germ_ptr->landing().segment(std::max(left_flexbounds.first - relpos, 0), left_flexbounds.second - std::max(left_flexbounds.first, relpos) + 1);
+    ColVecMatCwise(landing, marginal_, marginal_);
+  }
+};
+
+
+SmooshableNGermline::SmooshableNGermline(std::shared_ptr<Germline> Germ_ptr,
+                                         std::shared_ptr<NTInsertion> nti_ptr,
+                                         std::pair<int, int> left_flexbounds,
+                                         std::pair<int, int> leftright_flexbounds,
+                                         std::pair<int, int> right_flexbounds,
+                                         Eigen::Ref<Eigen::VectorXi> emission_indices,
+                                         int relpos, bool pad_left) {
+  Eigen::MatrixXd germline_prob_matrix = Germ_ptr->GermlineProbMatrix(leftright_flexbounds, right_flexbounds, emission_indices, relpos) * Germ_ptr->gene_prob();
+
+  Eigen::MatrixXd nti_prob_matrix = nti_ptr->NTIProbMatrix(left_flexbounds, leftright_flexbounds, emission_indices, relpos);
+
+  // J gene
+  if (!pad_left) {
+    std::shared_ptr<NPadding> NPad_ptr = std::dynamic_pointer_cast<NPadding>(Germ_ptr);
+    double npadding_prob = NPad_ptr->NPaddingProb(right_flexbounds, emission_indices, relpos + Germ_ptr->length(), pad_left);
+    marginal_ = germline_prob_matrix.col(std::min(right_flexbounds.second, relpos + Germ_ptr->length()) - right_flexbounds.first) * npadding_prob;
+  } else {
+    // D gene
+    marginal_ = germline_prob_matrix;
+  }
+
+  marginal_ = nti_prob_matrix * marginal_;
+};
+
+
 // Functions
+
+Smooshable VSmooshable(std::string yaml_path,
+                       std::pair<int, int> V_left_flexbounds,
+                       std::pair<int, int> V_right_flexbounds,
+                       Eigen::Ref<Eigen::VectorXi> emission_indices,
+                       int V_relpos) {
+  YAML::Node root = GetYAMLRoot(yaml_path);
+  std::shared_ptr<VGermline> VGerm_ptr(new VGermline(root));
+
+  Smooshable XSmoosh = SmooshableXGermline(VGerm_ptr, V_left_flexbounds,
+                                           V_right_flexbounds, emission_indices,
+                                           V_relpos, true);
+
+  return XSmoosh;
+}
+
+
+std::pair<Smooshable, Smooshable> DSmooshables(std::string yaml_path,
+                                               std::pair<int, int> V_right_flexbounds,
+                                               std::pair<int, int> D_left_flexbounds,
+                                               std::pair<int, int> D_right_flexbounds,
+                                               Eigen::Ref<Eigen::VectorXi> emission_indices,
+                                               int D_relpos) {
+  YAML::Node root = GetYAMLRoot(yaml_path);
+  std::shared_ptr<DGermline> DGerm_ptr(new DGermline(root));
+
+  Smooshable XSmoosh = SmooshableXGermline(DGerm_ptr, V_right_flexbounds,
+                                           D_right_flexbounds, emission_indices,
+                                           D_relpos, true);
+  Smooshable NSmoosh = SmooshableNGermline(DGerm_ptr, DGerm_ptr, V_right_flexbounds,
+                                           D_left_flexbounds, D_right_flexbounds,
+                                           emission_indices, D_relpos, true);
+
+  return std::make_pair(XSmoosh, NSmoosh);
+}
+
+
+std::pair<Smooshable, Smooshable> JSmooshables(std::string yaml_path,
+                                               std::pair<int, int> D_right_flexbounds,
+                                               std::pair<int, int> J_left_flexbounds,
+                                               std::pair<int, int> J_right_flexbounds,
+                                               Eigen::Ref<Eigen::VectorXi> emission_indices,
+                                               int J_relpos) {
+  YAML::Node root = GetYAMLRoot(yaml_path);
+  std::shared_ptr<JGermline> JGerm_ptr(new JGermline(root));
+
+  Smooshable XSmoosh = SmooshableXGermline(JGerm_ptr, D_right_flexbounds,
+                                           J_right_flexbounds, emission_indices,
+                                           J_relpos, false);
+  Smooshable NSmoosh = SmooshableNGermline(JGerm_ptr, JGerm_ptr, D_right_flexbounds,
+                                           J_left_flexbounds, J_right_flexbounds,
+                                           emission_indices, J_relpos, false);
+
+  return std::make_pair(XSmoosh, NSmoosh);
+}
+
 
 /// @brief Scales a matrix by SCALE_FACTOR as many times as needed to bring at
 /// least one entry of the matrix above SCALE_THRESHOLD.

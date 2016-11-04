@@ -434,6 +434,24 @@ TEST_CASE("NPadding", "[npadding]") {
 }
 
 
+TEST_CASE("test","[test]") {
+  initialize_global_test_vars();
+
+  Smooshable VSmoosh = VSmooshable("data/V_germline_ex.yaml", std::make_pair(0,2),
+                                   std::make_pair(5,7), emission_indices, 2);
+
+  Smooshable DXSmoosh, DNSmoosh;
+  std::tie(DXSmoosh, DNSmoosh) = DSmooshables("data/D_germline_ex.yaml", std::make_pair(4,5),
+                                              std::make_pair(6,8), std::make_pair(10,11),
+                                              emission_indices, 5);
+
+  Smooshable JXSmoosh, JNSmoosh;
+  std::tie(JXSmoosh, JNSmoosh) = JSmooshables("data/J_germline_ex.yaml", std::make_pair(5,6),
+                                              std::make_pair(8, 9), std::make_pair(12, 13),
+                                              emission_indices, 8);
+}
+
+
 //// Smooshable tests
 
 //TEST_CASE("Smooshable", "[smooshable]") {

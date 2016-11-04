@@ -18,6 +18,7 @@ class NPadding {
 
  public:
   NPadding(){};
+  virtual ~NPadding(){};
   NPadding(YAML::Node root);
 
   double n_transition_prob() const { return n_transition_prob_; };
