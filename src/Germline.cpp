@@ -1,6 +1,6 @@
-#include "germline.hpp"
+#include "Germline.hpp"
 
-/// @file germline.cpp
+/// @file Germline.cpp
 /// @brief The germline object.
 
 namespace linearham {
@@ -184,7 +184,7 @@ void Germline::MatchMatrix(
 /// germline states by filling the match matrix with zeroes.
 Eigen::MatrixXd Germline::GermlineProbMatrix(
     std::pair<int, int> left_flexbounds, std::pair<int, int> right_flexbounds,
-    Eigen::Ref<Eigen::VectorXi> emission_indices, int relpos) {
+    const Eigen::Ref<const Eigen::VectorXi>& emission_indices, int relpos) {
   assert(left_flexbounds.first <= left_flexbounds.second);
   assert(right_flexbounds.first <= right_flexbounds.second);
   assert(left_flexbounds.first + 1 <= right_flexbounds.first);

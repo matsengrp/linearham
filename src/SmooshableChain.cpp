@@ -1,8 +1,8 @@
 // SmooshableChain
 
-#include "smooshable_chain.hpp"
+#include "SmooshableChain.hpp"
 
-/// @file smooshable_chain.cpp
+/// @file SmooshableChain.cpp
 /// @brief Implementation of SmooshableChain class.
 
 namespace linearham {

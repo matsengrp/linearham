@@ -106,7 +106,8 @@ NTInsertion::NTInsertion(YAML::Node root) {
 /// the right of the NTI region.
 Eigen::MatrixXd NTInsertion::NTIProbMatrix(
     std::pair<int, int> left_flexbounds, std::pair<int, int> right_flexbounds,
-    Eigen::Ref<Eigen::VectorXi> emission_indices, int right_relpos) {
+    const Eigen::Ref<const Eigen::VectorXi>& emission_indices,
+    int right_relpos) {
   assert(left_flexbounds.first <= left_flexbounds.second);
   assert(right_flexbounds.first <= right_flexbounds.second);
   assert(left_flexbounds.first + 1 <= right_flexbounds.first);
