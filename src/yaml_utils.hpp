@@ -6,6 +6,9 @@
 #include "../yaml-cpp/include/yaml-cpp/yaml.h"
 #include "core.hpp"
 
+/// @file yaml_utils.hpp
+/// @brief Utilities for parsing YAML.
+
 namespace linearham {
 
 YAML::Node GetYAMLRoot(std::string yaml_path);

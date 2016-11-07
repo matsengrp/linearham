@@ -1,38 +1,55 @@
 #include "Smooshable.hpp"
 
 /// @file Smooshable.cpp
-/// @brief Implementation of Smooshable class and descendants.
+/// @brief Implementation of the Smooshable class.
 
 namespace linearham {
 
 
-// Smooshable
-
-/// @brief "Boring" constructor, which just sets up memory.
+/// @brief A "boring" Smooshable constructor, which just sets up memory.
+/// @param[in] left_flex
+/// How many alternative start points should we allow on the left side?
+/// @param[in] right_flex
+/// How many alternative end points should we allow on the right side?
 Smooshable::Smooshable(int left_flex, int right_flex) {
   marginal_.resize(left_flex + 1, right_flex + 1);
   viterbi_.resize(left_flex + 1, right_flex + 1);
 };
 
 
-/// @brief Constructor starting from marginal probabilities.
-Smooshable::Smooshable(Eigen::Ref<Eigen::MatrixXd> marginal) {
+/// @brief Constructor for Smooshable starting from a marginal probability
+/// matrix.
+/// @param[in] marginal
+/// A marginal probability matrix.
+Smooshable::Smooshable(const Eigen::Ref<const Eigen::MatrixXd>& marginal) {
   marginal_ = marginal;
   scaler_count_ = ScaleMatrix(marginal_);
   viterbi_ = marginal_;
 };
 
 
-// VDJSmooshable Functions
+// VDJSmooshable Constructor Functions
 
+
+/// @brief Creates a Smooshable object for a given V germline gene and read.
+/// @param[in] vgerm_obj
+/// An object of class VGermline.
+/// @param[in] V_left_flexbounds
+/// A 2-tuple of read positions providing the bounds of the V gene's left
+/// flex region.
+/// @param[in] V_right_flexbounds
+/// A 2-tuple of read positions providing the bounds of the V gene's right
+/// flex region.
+/// @param[in] emission_indices
+/// A vector of indices corresponding to the observed bases of the read.
+/// @param[in] V_relpos
+/// The read position corresponding to the first base of the V germline gene.
+/// @return
+/// A Smooshable object.
 Smooshable VSmooshable(
-    std::string yaml_path, std::pair<int, int> V_left_flexbounds,
+    const VGermline& vgerm_obj, std::pair<int, int> V_left_flexbounds,
     std::pair<int, int> V_right_flexbounds,
     const Eigen::Ref<const Eigen::VectorXi>& emission_indices, int V_relpos) {
-  // initializing VGermline object
-  YAML::Node root = GetYAMLRoot(yaml_path);
-  VGermline vgerm_obj = VGermline(root);
-
   // computing the germline match probability matrix and extracting the row
   // that corresponds to the first match starting position with a germline
   // state.
@@ -56,22 +73,36 @@ Smooshable VSmooshable(
 };
 
 
+/// @brief Creates Smooshable objects for a given D germline gene and read.
+/// @param[in] dgerm_obj
+/// An object of class DGermline.
+/// @param[in] V_right_flexbounds
+/// A 2-tuple of read positions providing the bounds of the V gene's right
+/// flex region.
+/// @param[in] D_left_flexbounds
+/// A 2-tuple of read positions providing the bounds of the D gene's left
+/// flex region.
+/// @param[in] D_right_flexbounds
+/// A 2-tuple of read positions providing the bounds of the D gene's right
+/// flex region.
+/// @param[in] emission_indices
+/// A vector of indices corresponding to the observed bases of the read.
+/// @param[in] D_relpos
+/// The read position corresponding to the first base of the D germline gene.
+/// @return
+/// A 2-tuple containing the Smooshable objects.
 std::pair<Smooshable, Smooshable> DSmooshables(
-    std::string yaml_path, std::pair<int, int> V_right_flexbounds,
+    const DGermline& dgerm_obj, std::pair<int, int> V_right_flexbounds,
     std::pair<int, int> D_left_flexbounds,
     std::pair<int, int> D_right_flexbounds,
     const Eigen::Ref<const Eigen::VectorXi>& emission_indices, int D_relpos) {
-  // initializing DGermline object
-  YAML::Node root = GetYAMLRoot(yaml_path);
-  DGermline dgerm_obj = DGermline(root);
-
   // computing the germline match probability matrix (assuming no left-NTIs)
   Eigen::MatrixXd xgerm_prob_matrix = dgerm_obj.GermlineProbMatrix(
       V_right_flexbounds, D_right_flexbounds, emission_indices, D_relpos);
 
   // multiplying in the associated landing probabilities
-  MultiplyLandingGermProbMat(dgerm_obj.landing(), xgerm_prob_matrix,
-                             V_right_flexbounds, D_relpos);
+  MultiplyLandingGermProbMatrix(dgerm_obj.landing(), xgerm_prob_matrix,
+                                V_right_flexbounds, D_relpos);
 
   // computing the germline match probability matrix (assuming some left-NTIs)
   Eigen::MatrixXd ngerm_prob_matrix =
@@ -92,15 +123,29 @@ std::pair<Smooshable, Smooshable> DSmooshables(
 };
 
 
+/// @brief Creates Smooshable objects for a given J germline gene and read.
+/// @param[in] jgerm_obj
+/// An object of class JGermline.
+/// @param[in] D_right_flexbounds
+/// A 2-tuple of read positions providing the bounds of the D gene's right
+/// flex region.
+/// @param[in] J_left_flexbounds
+/// A 2-tuple of read positions providing the bounds of the J gene's left
+/// flex region.
+/// @param[in] J_right_flexbounds
+/// A 2-tuple of read positions providing the bounds of the J gene's right
+/// flex region.
+/// @param[in] emission_indices
+/// A vector of indices corresponding to the observed bases of the read.
+/// @param[in] J_relpos
+/// The read position corresponding to the first base of the J germline gene.
+/// @return
+/// A 2-tuple containing the Smooshable objects.
 std::pair<Smooshable, Smooshable> JSmooshables(
-    std::string yaml_path, std::pair<int, int> D_right_flexbounds,
+    const JGermline& jgerm_obj, std::pair<int, int> D_right_flexbounds,
     std::pair<int, int> J_left_flexbounds,
     std::pair<int, int> J_right_flexbounds,
     const Eigen::Ref<const Eigen::VectorXi>& emission_indices, int J_relpos) {
-  // initializing JGermline object
-  YAML::Node root = GetYAMLRoot(yaml_path);
-  JGermline jgerm_obj = JGermline(root);
-
   // computing the germline match probability matrix (assuming no left-NTIs)
   // and extracting the column that corresponds to the last match ending
   // position with a germline state.
@@ -114,8 +159,8 @@ std::pair<Smooshable, Smooshable> JSmooshables(
           .col(end_pos);
 
   // multiplying in the associated landing probabilities
-  MultiplyLandingGermProbMat(jgerm_obj.landing(), xgerm_prob_col,
-                             D_right_flexbounds, J_relpos);
+  MultiplyLandingGermProbMatrix(jgerm_obj.landing(), xgerm_prob_col,
+                                D_right_flexbounds, J_relpos);
 
   // computing the germline match probability matrix (assuming some left-NTIs)
   // and extracting the same column as above.
@@ -146,7 +191,21 @@ std::pair<Smooshable, Smooshable> JSmooshables(
 
 // Auxiliary Functions
 
-void MultiplyLandingGermProbMat(
+
+/// @brief Multiplies a landing vector into a germline match probability
+/// matrix.
+/// @param[in] landing
+/// A vector of probabilities of landing somewhere to begin the germline
+/// match.
+/// @param[in,out] germ_prob_matrix
+/// A germline match probability matrix returned from
+/// Germline::GermlineProbMatrix.
+/// @param[in] left_flexbounds
+/// A 2-tuple of read positions providing the bounds of the germline's left flex
+/// region.
+/// @param[in] relpos
+/// The read position corresponding to the first base of the germline gene.
+void MultiplyLandingGermProbMatrix(
     const Eigen::Ref<const Eigen::VectorXd>& landing,
     Eigen::Ref<Eigen::MatrixXd> germ_prob_matrix,
     std::pair<int, int> left_flexbounds, int relpos) {
@@ -163,10 +222,10 @@ void MultiplyLandingGermProbMat(
 
 /// @brief Scales a matrix by SCALE_FACTOR as many times as needed to bring at
 /// least one entry of the matrix above SCALE_THRESHOLD.
-///
-/// @param[in] m
+/// @param[in,out] m
 /// Matrix.
-/// @return Number of times we multiplied by SCALE_FACTOR.
+/// @return
+/// Number of times we multiplied by SCALE_FACTOR.
 int ScaleMatrix(Eigen::Ref<Eigen::MatrixXd> m) {
   int n = 0;
   if ((m.array() == 0).all()) return n;
@@ -175,7 +234,7 @@ int ScaleMatrix(Eigen::Ref<Eigen::MatrixXd> m) {
     n++;
   }
   return n;
-}
+};
 
 
 /// @brief Smoosh two smooshables!
@@ -210,6 +269,7 @@ std::pair<Smooshable, Eigen::MatrixXi> Smoosh(const Smooshable& s_a,
   int k = ScaleMatrix(s_out.marginal());
   s_out.viterbi() *= pow(SCALE_FACTOR, k);
   s_out.scaler_count() += k;
+
   return std::make_pair(s_out, viterbi_idx);
 };
 }

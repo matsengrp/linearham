@@ -104,10 +104,12 @@ NTInsertion::NTInsertion(YAML::Node root) {
 /// @param[in] right_relpos
 /// The read position corresponding to the first base of the germline gene to
 /// the right of the NTI region.
+/// @return
+/// The NTI probability matrix.
 Eigen::MatrixXd NTInsertion::NTIProbMatrix(
     std::pair<int, int> left_flexbounds, std::pair<int, int> right_flexbounds,
     const Eigen::Ref<const Eigen::VectorXi>& emission_indices,
-    int right_relpos) {
+    int right_relpos) const {
   assert(left_flexbounds.first <= left_flexbounds.second);
   assert(right_flexbounds.first <= right_flexbounds.second);
   assert(left_flexbounds.first + 1 <= right_flexbounds.first);

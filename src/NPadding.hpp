@@ -4,7 +4,7 @@
 #include "yaml_utils.hpp"
 
 /// @file NPadding.hpp
-/// @brief Headers for the NPadding class.
+/// @brief Header for the NPadding class.
 
 namespace linearham {
 
@@ -18,7 +18,6 @@ class NPadding {
 
  public:
   NPadding(){};
-  virtual ~NPadding(){};
   NPadding(YAML::Node root);
 
   double n_transition_prob() const { return n_transition_prob_; };
@@ -28,7 +27,7 @@ class NPadding {
 
   double NPaddingProb(std::pair<int, int> flexbounds,
                       const Eigen::Ref<const Eigen::VectorXi>& emission_indices,
-                      int read_pos, bool pad_left);
+                      int read_pos, bool pad_left) const;
 };
 }
 

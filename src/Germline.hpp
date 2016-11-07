@@ -4,7 +4,7 @@
 #include "yaml_utils.hpp"
 
 /// @file Germline.hpp
-/// @brief Headers for the Germline class and descendants.
+/// @brief Header for the Germline class.
 
 namespace linearham {
 
@@ -19,16 +19,15 @@ class Germline {
   double gene_prob_;
 
   void EmissionVector(const Eigen::Ref<const Eigen::VectorXi>& emission_indices,
-                      int start, Eigen::Ref<Eigen::VectorXd> emission);
+                      int start, Eigen::Ref<Eigen::VectorXd> emission) const;
 
   void MatchMatrix(int start,
                    const Eigen::Ref<const Eigen::VectorXi>& emission_indices,
                    int left_flex, int right_flex,
-                   Eigen::Ref<Eigen::MatrixXd> match);
+                   Eigen::Ref<Eigen::MatrixXd> match) const;
 
  public:
   Germline(){};
-  virtual ~Germline(){};
   Germline(YAML::Node root);
 
   const Eigen::VectorXd& landing() const { return landing_; };
@@ -39,7 +38,7 @@ class Germline {
 
   Eigen::MatrixXd GermlineProbMatrix(
       std::pair<int, int> left_flexbounds, std::pair<int, int> right_flexbounds,
-      const Eigen::Ref<const Eigen::VectorXi>& emission_indices, int relpos);
+      const Eigen::Ref<const Eigen::VectorXi>& emission_indices, int relpos) const;
 };
 }
 

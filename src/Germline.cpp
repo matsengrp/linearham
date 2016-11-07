@@ -1,7 +1,7 @@
 #include "Germline.hpp"
 
 /// @file Germline.cpp
-/// @brief The germline object.
+/// @brief Implementation of the Germline class.
 
 namespace linearham {
 
@@ -121,7 +121,7 @@ Germline::Germline(YAML::Node root) {
 /// `i+start` entry of the germline sequence.
 void Germline::EmissionVector(
     const Eigen::Ref<const Eigen::VectorXi>& emission_indices, int start,
-    Eigen::Ref<Eigen::VectorXd> emission) {
+    Eigen::Ref<Eigen::VectorXd> emission) const {
   int length = emission_indices.size();
   assert(start + length <= this->length());
   VectorByIndices(
@@ -150,7 +150,7 @@ void Germline::EmissionVector(
 /// on maximal length).
 void Germline::MatchMatrix(
     int start, const Eigen::Ref<const Eigen::VectorXi>& emission_indices,
-    int left_flex, int right_flex, Eigen::Ref<Eigen::MatrixXd> match) {
+    int left_flex, int right_flex, Eigen::Ref<Eigen::MatrixXd> match) const {
   int length = emission_indices.size();
   assert(0 <= left_flex && left_flex <= length - 1);
   assert(0 <= right_flex && right_flex <= length - 1);
@@ -178,13 +178,18 @@ void Germline::MatchMatrix(
 /// A vector of indices corresponding to the observed bases of the read.
 /// @param[in] relpos
 /// The read position corresponding to the first base of the germline gene.
+/// @return
+/// The germline match probability matrix.
 ///
 /// This function uses `MatchMatrix` to build the match matrix for the relevant
 /// part of the germline gene then pads the remaining flex positions without
 /// germline states by filling the match matrix with zeroes.
+///
+/// Note that this function ignores the probability of transitioning into the
+/// match when calculating the germline match matrix.
 Eigen::MatrixXd Germline::GermlineProbMatrix(
     std::pair<int, int> left_flexbounds, std::pair<int, int> right_flexbounds,
-    const Eigen::Ref<const Eigen::VectorXi>& emission_indices, int relpos) {
+    const Eigen::Ref<const Eigen::VectorXi>& emission_indices, int relpos) const {
   assert(left_flexbounds.first <= left_flexbounds.second);
   assert(right_flexbounds.first <= right_flexbounds.second);
   assert(left_flexbounds.first + 1 <= right_flexbounds.first);

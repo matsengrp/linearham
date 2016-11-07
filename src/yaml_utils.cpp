@@ -26,7 +26,8 @@ YAML::Node GetYAMLRoot(std::string yaml_path) {
 /// @param[in] vec2
 /// The (sorted) vector to be tested against for set equality.
 /// @return
-/// If it is.
+/// A boolean indicating whether or not `vec1` and `vec2`
+/// do contain the same elements.
 bool IsEqualStringVecs(std::vector<std::string> vec1,
                        std::vector<std::string> vec2) {
   assert(std::is_sorted(vec2.begin(), vec2.end()));
@@ -39,7 +40,7 @@ bool IsEqualStringVecs(std::vector<std::string> vec1,
 /// @param[in] node
 /// A YAML map node.
 /// @return
-/// The map.
+/// The parsed YAML map.
 std::pair<std::vector<std::string>, Eigen::VectorXd> ParseStringProbMap(
     YAML::Node node) {
   assert(node.IsMap());
@@ -76,8 +77,8 @@ GetAlphabet(YAML::Node root) {
   return std::make_pair(alphabet, alphabet_map);
 };
 
-/// @brief Create the regex's that extract germline and insertion state
-/// labels.
+/// @brief Create the regex's that are used to extract germline and
+/// NTI state labels.
 /// @param[in] gname
 /// The germline name.
 /// @param[in] alphabet

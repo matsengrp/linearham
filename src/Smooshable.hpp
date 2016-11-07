@@ -4,7 +4,7 @@
 #include "VDJGermline.hpp"
 
 /// @file Smooshable.hpp
-/// @brief Headers for Smooshable class and descendants.
+/// @brief Header for the Smooshable class.
 
 namespace linearham {
 
@@ -27,7 +27,7 @@ class Smooshable {
  public:
   Smooshable(){};
   Smooshable(int left_flex, int right_flex);
-  Smooshable(Eigen::Ref<Eigen::MatrixXd> marginal);
+  Smooshable(const Eigen::Ref<const Eigen::MatrixXd>& marginal);
 
   int left_flex() const { return marginal_.rows() - 1; };
   int right_flex() const { return marginal_.cols() - 1; };
@@ -35,31 +35,29 @@ class Smooshable {
   int scaler_count() const { return scaler_count_; };
   int& scaler_count() { return scaler_count_; };
 
-  const Eigen::Ref<const Eigen::MatrixXd> marginal() const {
-    return marginal_;
-  };
+  const Eigen::MatrixXd& marginal() const { return marginal_; };
   Eigen::Ref<Eigen::MatrixXd> marginal() { return marginal_; };
 
-  const Eigen::Ref<const Eigen::MatrixXd> viterbi() const { return viterbi_; };
+  const Eigen::MatrixXd& viterbi() const { return viterbi_; };
   Eigen::Ref<Eigen::MatrixXd> viterbi() { return viterbi_; };
 };
 
 
-// VDJSmooshable Functions
+// VDJSmooshable Constructor Functions
 
 Smooshable VSmooshable(
-    std::string yaml_path, std::pair<int, int> V_left_flexbounds,
+    const VGermline& vgerm_obj, std::pair<int, int> V_left_flexbounds,
     std::pair<int, int> V_right_flexbounds,
     const Eigen::Ref<const Eigen::VectorXi>& emission_indices, int V_relpos);
 
 std::pair<Smooshable, Smooshable> DSmooshables(
-    std::string yaml_path, std::pair<int, int> V_right_flexbounds,
+    const DGermline& dgerm_obj, std::pair<int, int> V_right_flexbounds,
     std::pair<int, int> D_left_flexbounds,
     std::pair<int, int> D_right_flexbounds,
     const Eigen::Ref<const Eigen::VectorXi>& emission_indices, int D_relpos);
 
 std::pair<Smooshable, Smooshable> JSmooshables(
-    std::string yaml_path, std::pair<int, int> D_right_flexbounds,
+    const JGermline& jgerm_obj, std::pair<int, int> D_right_flexbounds,
     std::pair<int, int> J_left_flexbounds,
     std::pair<int, int> J_right_flexbounds,
     const Eigen::Ref<const Eigen::VectorXi>& emission_indices, int J_relpos);
@@ -67,7 +65,7 @@ std::pair<Smooshable, Smooshable> JSmooshables(
 
 // Auxiliary Functions
 
-void MultiplyLandingGermProbMat(
+void MultiplyLandingGermProbMatrix(
     const Eigen::Ref<const Eigen::VectorXd>& landing,
     Eigen::Ref<Eigen::MatrixXd> germ_prob_matrix,
     std::pair<int, int> left_flexbounds, int relpos);
