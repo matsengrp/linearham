@@ -45,44 +45,9 @@ class Smooshable {
 };
 
 
-/// A smooshable derived from a read aligned to a segment of germline gene.
-// class SmooshableGermline : public Smooshable {
-// public:
-//  SmooshableGermline(Germline germline, int start,
-//                     const Eigen::Ref<const Eigen::VectorXi>&
-//                     emission_indices,
-//                     int left_flex, int right_flex);
-//};
+// VDJSmooshable Functions
 
-
-class SmooshableXGermline : public Smooshable {
- public:
-  SmooshableXGermline(std::shared_ptr<Germline> Germ_ptr,
-                      std::pair<int, int> left_flexbounds,
-                      std::pair<int, int> right_flexbounds,
-                      const Eigen::Ref<const Eigen::VectorXi>& emission_indices,
-                      int relpos, bool pad_left);
-};
-
-
-class SmooshableNGermline : public Smooshable {
- public:
-  SmooshableNGermline(std::shared_ptr<Germline> Germ_ptr,
-                      std::shared_ptr<NTInsertion> nti_ptr,
-                      std::pair<int, int> left_flexbounds,
-                      std::pair<int, int> leftright_flexbounds,
-                      std::pair<int, int> right_flexbounds,
-                      const Eigen::Ref<const Eigen::VectorXi>& emission_indices,
-                      int relpos, bool pad_left);
-};
-
-
-// Functions
 Smooshable VSmooshable(
-    std::string yaml_path, std::pair<int, int> V_left_flexbounds,
-    std::pair<int, int> V_right_flexbounds,
-    const Eigen::Ref<const Eigen::VectorXi>& emission_indices, int V_relpos);
-Smooshable VSmooshable1(
     std::string yaml_path, std::pair<int, int> V_left_flexbounds,
     std::pair<int, int> V_right_flexbounds,
     const Eigen::Ref<const Eigen::VectorXi>& emission_indices, int V_relpos);
@@ -93,32 +58,24 @@ std::pair<Smooshable, Smooshable> DSmooshables(
     std::pair<int, int> D_right_flexbounds,
     const Eigen::Ref<const Eigen::VectorXi>& emission_indices, int D_relpos);
 
-void MultiplyLandingGermProbMat(
-    const Eigen::Ref<const Eigen::VectorXd>& landing,
-    Eigen::Ref<Eigen::MatrixXd> germ_prob_matrix,
-    std::pair<int, int> left_flexbounds, int relpos);
-
-std::pair<Smooshable, Smooshable> DSmooshables1(
-    std::string yaml_path, std::pair<int, int> V_right_flexbounds,
-    std::pair<int, int> D_left_flexbounds,
-    std::pair<int, int> D_right_flexbounds,
-    const Eigen::Ref<const Eigen::VectorXi>& emission_indices, int D_relpos);
-
 std::pair<Smooshable, Smooshable> JSmooshables(
     std::string yaml_path, std::pair<int, int> D_right_flexbounds,
     std::pair<int, int> J_left_flexbounds,
     std::pair<int, int> J_right_flexbounds,
     const Eigen::Ref<const Eigen::VectorXi>& emission_indices, int J_relpos);
-std::pair<Smooshable, Smooshable> JSmooshables1(
-    std::string yaml_path, std::pair<int, int> D_right_flexbounds,
-    std::pair<int, int> J_left_flexbounds,
-    std::pair<int, int> J_right_flexbounds,
-    const Eigen::Ref<const Eigen::VectorXi>& emission_indices, int J_relpos);
+
+
+// Auxiliary Functions
+
+void MultiplyLandingGermProbMat(
+    const Eigen::Ref<const Eigen::VectorXd>& landing,
+    Eigen::Ref<Eigen::MatrixXd> germ_prob_matrix,
+    std::pair<int, int> left_flexbounds, int relpos);
+
+int ScaleMatrix(Eigen::Ref<Eigen::MatrixXd> m);
 
 std::pair<Smooshable, Eigen::MatrixXi> Smoosh(const Smooshable& s_a,
                                               const Smooshable& s_b);
-
-int ScaleMatrix(Eigen::Ref<Eigen::MatrixXd> m);
 }
 
 #endif  // LINEARHAM_SMOOSHABLE_

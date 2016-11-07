@@ -439,31 +439,16 @@ TEST_CASE("test","[test]") {
 
   Smooshable VSmoosh = VSmooshable("data/V_germline_ex.yaml", std::make_pair(0,2),
                                    std::make_pair(5,7), emission_indices, 2);
-  Smooshable VSmoosh1 = VSmooshable1("data/V_germline_ex.yaml", std::make_pair(0,2),
-                                     std::make_pair(5,7), emission_indices, 2);
-  REQUIRE(VSmoosh.marginal() == VSmoosh1.marginal());
 
   Smooshable DXSmoosh, DNSmoosh;
   std::tie(DXSmoosh, DNSmoosh) = DSmooshables("data/D_germline_ex.yaml", std::make_pair(4,5),
                                               std::make_pair(6,8), std::make_pair(10,11),
                                               emission_indices, 5);
-  Smooshable DXSmoosh1, DNSmoosh1;
-  std::tie(DXSmoosh1, DNSmoosh1) = DSmooshables1("data/D_germline_ex.yaml", std::make_pair(4,5),
-                                                 std::make_pair(6,8), std::make_pair(10,11),
-                                                 emission_indices, 5);
-  REQUIRE(DXSmoosh.marginal() == DXSmoosh1.marginal());
-  REQUIRE(DNSmoosh.marginal() == DNSmoosh1.marginal());
 
   Smooshable JXSmoosh, JNSmoosh;
   std::tie(JXSmoosh, JNSmoosh) = JSmooshables("data/J_germline_ex.yaml", std::make_pair(5,6),
                                               std::make_pair(8, 9), std::make_pair(12, 13),
                                               emission_indices, 8);
-  Smooshable JXSmoosh1, JNSmoosh1;
-  std::tie(JXSmoosh1, JNSmoosh1) = JSmooshables1("data/J_germline_ex.yaml", std::make_pair(5,6),
-                                                 std::make_pair(8, 9), std::make_pair(12, 13),
-                                                 emission_indices, 8);
-  REQUIRE(JXSmoosh.marginal().isApprox(JXSmoosh1.marginal()));
-  REQUIRE(JNSmoosh.marginal().isApprox(JNSmoosh1.marginal()));
 }
 
 
