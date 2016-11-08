@@ -1,10 +1,10 @@
 #ifndef LINEARHAM_SMOOSHABLE_CHAIN_
 #define LINEARHAM_SMOOSHABLE_CHAIN_
 
-#include "smooshable.hpp"
+#include "Smooshable.hpp"
 
-/// @file smooshable_chain.hpp
-/// @brief Headers for SmooshableChain class.
+/// @file SmooshableChain.hpp
+/// @brief Header for the SmooshableChain class.
 
 namespace linearham {
 

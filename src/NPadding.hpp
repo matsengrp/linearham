@@ -4,7 +4,7 @@
 #include "yaml_utils.hpp"
 
 /// @file NPadding.hpp
-/// @brief Headers for the NPadding class.
+/// @brief Header for the NPadding class.
 
 namespace linearham {
 
@@ -13,15 +13,21 @@ namespace linearham {
 /// left (right) of V (J) genes.
 class NPadding {
  protected:
-  double n_self_transition_prob_;
+  double n_transition_prob_;
   Eigen::VectorXd n_emission_vector_;
 
  public:
   NPadding(){};
   NPadding(YAML::Node root);
 
-  double n_self_transition_prob() const { return n_self_transition_prob_; };
-  Eigen::VectorXd n_emission_vector() const { return n_emission_vector_; };
+  double n_transition_prob() const { return n_transition_prob_; };
+  const Eigen::VectorXd& n_emission_vector() const {
+    return n_emission_vector_;
+  };
+
+  double NPaddingProb(std::pair<int, int> flexbounds,
+                      const Eigen::Ref<const Eigen::VectorXi>& emission_indices,
+                      int read_pos, bool pad_left) const;
 };
 }
 

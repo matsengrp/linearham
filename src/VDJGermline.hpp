@@ -3,9 +3,9 @@
 
 #include "NPadding.hpp"
 #include "NTInsertion.hpp"
-#include "germline.hpp"
+#include "Germline.hpp"
 
-/// @file VDJgermline.hpp
+/// @file VDJGermline.hpp
 /// @brief Headers for the V, D, and J germline classes.
 
 namespace linearham {
