@@ -7,9 +7,9 @@ namespace linearham {
 
 
 /// @brief Constructor with a parent.
-SmooshableChain::SmooshableChain(Smooshable prev, Smooshable curr) {
-  prev_ = &prev;
-  curr_ = &curr;
+SmooshableChain::SmooshableChain(Smooshable* prev, Smooshable* curr) {
+  prev_ = prev;
+  curr_ = curr;
   }
 
 const Eigen::MatrixXd& SmooshableChain::marginal() {
@@ -17,11 +17,7 @@ const Eigen::MatrixXd& SmooshableChain::marginal() {
     // marginal_ hasn't been computed yet, so compute it.
     marginal_.resize(prev_->left_flex() + 1, curr_->right_flex() + 1);
     assert(prev_->right_flex() == curr_->left_flex());
-    std::cout << "\npassed matrices:\n";
-    std::cout << prev_->marginal() << "\n\n";
-    std::cout << curr_->marginal() << "\n\n";
     marginal_ = prev_->marginal() * curr_->marginal();
-    // std::cout << marginal_ << "\n\n";
     scaler_count_ = prev_->scaler_count() + curr_->scaler_count();
     // TODO dry
     int k = ScaleMatrix(marginal_);

@@ -463,13 +463,9 @@ TEST_CASE("Smooshable", "[smooshable]") {
   1,1,
   1,2;
 
-  std::cout << "\noriginal matrices:\n";
-  std::cout << A << "\n\n";
-  std::cout << B << "\n\n";
-  //std::cout << correct_AB_marginal << std::endl;
   Smooshable s_A = Smooshable(A);
   Smooshable s_B = Smooshable(B);
-  SmooshableChain s_AB = SmooshableChain(s_A, s_B);
+  SmooshableChain s_AB = SmooshableChain(&s_A, &s_B);
 
   REQUIRE(s_A.marginal() == A);
   REQUIRE(s_B.marginal() == B);

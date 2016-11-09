@@ -18,7 +18,7 @@ class SmooshableChain : public Smooshable {
   std::vector<int> viterbi_path_;
 
  public:
-  SmooshableChain(Smooshable, Smooshable);
+  SmooshableChain(Smooshable*, Smooshable*);
 
   const Eigen::MatrixXd& marginal();
 
