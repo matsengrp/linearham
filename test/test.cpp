@@ -2,7 +2,7 @@
 #define CATCH_CONFIG_MAIN
 
 #include "catch.hpp"
-#include "SmooshableChain.hpp"
+#include "SmooshableStack.hpp"
 #include "../lib/fast-cpp-csv-parser/csv.h"
 
 
@@ -463,22 +463,28 @@ TEST_CASE("Smooshable", "[smooshable]") {
   1,1,
   1,2;
 
-  Smooshable s_A = Smooshable(A);
-  Smooshable s_B = Smooshable(B);
-  SmooshableChain s_AB = SmooshableChain(&s_A, &s_B);
+  SmooshablePtr sp_A = std::make_shared<Smooshable>(Smooshable(A));
+  SmooshablePtr sp_B = std::make_shared<Smooshable>(Smooshable(B));
+  SmooshableChain s_AB = SmooshableChain(sp_A, sp_B);
 
-  REQUIRE(s_A.marginal() == A);
-  REQUIRE(s_B.marginal() == B);
+  REQUIRE(sp_A->marginal() == A);
+  REQUIRE(sp_B->marginal() == B);
   REQUIRE(s_AB.marginal() == correct_AB_marginal);
   //REQUIRE(s_AB.viterbi() == correct_AB_viterbi);
   //REQUIRE(AB_viterbi_idx == correct_AB_viterbi_idx);
   REQUIRE(s_AB.scaler_count() == 0);
 
-  // now let's test for underflow
+  // Now let's test for underflow.
   Smooshable s_AB_uflow = Smooshable(s_AB.marginal() * SCALE_THRESHOLD);
   REQUIRE(s_AB_uflow.marginal().isApprox(correct_AB_marginal));
   //REQUIRE(s_AB_uflow.viterbi().isApprox(correct_AB_marginal));
   REQUIRE(s_AB_uflow.scaler_count() == 1);
+
+  // SmooshableStack tests.
+  SmooshableStack ss = SmooshableStack(2);
+  ss.set(0, sp_A);
+  ss.set(1, sp_B);
+  ss.SmooshRight(ss);
 
 //  Eigen::MatrixXd C(2,1);
 //  C <<

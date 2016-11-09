@@ -8,18 +8,18 @@
 
 namespace linearham {
 
+typedef std::shared_ptr<Smooshable> SmooshablePtr;
 
 /// @brief TODO
 class SmooshableChain : public Smooshable {
  protected:
-  Smooshable* prev_;
-  Smooshable* curr_;
+  SmooshablePtr prev_;
+  SmooshablePtr curr_;
   Eigen::MatrixXd viterbi_;
   std::vector<int> viterbi_path_;
 
  public:
-  SmooshableChain(Smooshable*, Smooshable*);
-
+  SmooshableChain(SmooshablePtr, SmooshablePtr);
   const Eigen::MatrixXd& marginal();
 
   //const Eigen::MatrixXd& viterbi() const { return marginal_; };

@@ -1,4 +1,4 @@
-env = Environment()
+env = Environment(CXX='clang++')
 
 ## dependencies ##
 

@@ -6,8 +6,8 @@
 namespace linearham {
 
 
-/// @brief Constructor with a parent.
-SmooshableChain::SmooshableChain(Smooshable* prev, Smooshable* curr) {
+/// @brief Constructor given two parents.
+SmooshableChain::SmooshableChain(SmooshablePtr prev, SmooshablePtr curr) {
   prev_ = prev;
   curr_ = curr;
   }
