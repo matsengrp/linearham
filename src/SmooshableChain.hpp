@@ -9,32 +9,22 @@
 namespace linearham {
 
 
-typedef std::vector<Smooshable> SmooshableVector;
-typedef std::vector<Eigen::MatrixXi> IntMatrixVector;
-typedef std::vector<std::vector<int>> IntVectorVector;
-
-
-/// @brief An ordered list of smooshables that have been smooshed together, with
-/// associated information.
-///
-/// The idea is that you put a collection of smooshables together in a chain
-/// then smoosh them all together. It's nice to have a class for such a chain
-/// so that you can unwind the result in the end.
-class SmooshableChain {
+/// @brief TODO
+class SmooshableChain : public Smooshable {
  protected:
-  SmooshableVector originals_;
-  SmooshableVector smoosheds_;
-  IntVectorVector viterbi_paths_;
+  Smooshable* prev_;
+  Smooshable* curr_;
+  Eigen::MatrixXd viterbi_;
+  std::vector<int> viterbi_path_;
 
  public:
-  SmooshableChain(SmooshableVector originals);
+  SmooshableChain(Smooshable, Smooshable);
 
-  const SmooshableVector& originals() const { return originals_; };
-  SmooshableVector& originals() { return originals_; };
-  const SmooshableVector& smooshed() const { return smoosheds_; };
-  SmooshableVector& smooshed() { return smoosheds_; };
-  const IntVectorVector& viterbi_paths() const { return viterbi_paths_; };
-  IntVectorVector& viterbi_paths() { return viterbi_paths_; };
+  const Eigen::MatrixXd& marginal();
+
+  //const Eigen::MatrixXd& viterbi() const { return marginal_; };
+  //Eigen::Ref<Eigen::MatrixXd> viterbi() { return marginal_; };
+
 };
 }
 

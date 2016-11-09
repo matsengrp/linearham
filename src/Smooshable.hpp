@@ -12,6 +12,7 @@ namespace linearham {
 const double SCALE_FACTOR = pow(2, 256);
 const double SCALE_THRESHOLD = (1.0 / SCALE_FACTOR);
 
+
 /// @brief Abstracts something that has probabilities associated with sequence
 /// start and stop points.
 ///
@@ -21,11 +22,11 @@ const double SCALE_THRESHOLD = (1.0 / SCALE_FACTOR);
 class Smooshable {
  protected:
   Eigen::MatrixXd marginal_;
-  Eigen::MatrixXd viterbi_;
-  int scaler_count_;
+  int scaler_count_ = 0;
 
  public:
   Smooshable(){};
+  /// @todo remove this constructor?
   Smooshable(int left_flex, int right_flex);
   Smooshable(const Eigen::Ref<const Eigen::MatrixXd>& marginal);
 
@@ -33,13 +34,9 @@ class Smooshable {
   int right_flex() const { return marginal_.cols() - 1; };
 
   int scaler_count() const { return scaler_count_; };
-  int& scaler_count() { return scaler_count_; };
 
-  const Eigen::MatrixXd& marginal() const { return marginal_; };
-  Eigen::Ref<Eigen::MatrixXd> marginal() { return marginal_; };
-
-  const Eigen::MatrixXd& viterbi() const { return viterbi_; };
-  Eigen::Ref<Eigen::MatrixXd> viterbi() { return viterbi_; };
+  // This one can't be a const member function because SmooshableChain needs to modify itself to calculate on the fly.
+  const Eigen::MatrixXd& marginal() { return marginal_; };
 };
 
 

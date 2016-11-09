@@ -13,7 +13,6 @@ namespace linearham {
 /// How many alternative end points should we allow on the right side?
 Smooshable::Smooshable(int left_flex, int right_flex) {
   marginal_.resize(left_flex + 1, right_flex + 1);
-  viterbi_.resize(left_flex + 1, right_flex + 1);
 };
 
 
@@ -24,7 +23,6 @@ Smooshable::Smooshable(int left_flex, int right_flex) {
 Smooshable::Smooshable(const Eigen::Ref<const Eigen::MatrixXd>& marginal) {
   marginal_ = marginal;
   scaler_count_ = ScaleMatrix(marginal_);
-  viterbi_ = marginal_;
 };
 
 
@@ -237,6 +235,7 @@ int ScaleMatrix(Eigen::Ref<Eigen::MatrixXd> m) {
 };
 
 
+/*
 /// @brief Smoosh two smooshables!
 /// @param[in] s_a
 /// Smooshable on the left.
@@ -272,4 +271,5 @@ std::pair<Smooshable, Eigen::MatrixXi> Smoosh(const Smooshable& s_a,
 
   return std::make_pair(s_out, viterbi_idx);
 };
+*/
 }
