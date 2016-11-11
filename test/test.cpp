@@ -481,9 +481,9 @@ TEST_CASE("Smooshable", "[smooshable]") {
   REQUIRE(s_AB_uflow.scaler_count() == 1);
 
   // SmooshableStack tests.
-  SmooshableStack ss = SmooshableStack(2);
-  ss[0] = sp_A;
-  ss[1] = sp_B;
+  SmooshableStack ss = SmooshableStack();
+  ss.push_back(sp_A);
+  ss.push_back(sp_B);
   ss.SmooshRight(ss);
 
 //  Eigen::MatrixXd C(2,1);
