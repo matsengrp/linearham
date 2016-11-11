@@ -482,8 +482,8 @@ TEST_CASE("Smooshable", "[smooshable]") {
 
   // SmooshableStack tests.
   SmooshableStack ss = SmooshableStack(2);
-  ss.set(0, sp_A);
-  ss.set(1, sp_B);
+  ss[0] = sp_A;
+  ss[1] = sp_B;
   ss.SmooshRight(ss);
 
 //  Eigen::MatrixXd C(2,1);

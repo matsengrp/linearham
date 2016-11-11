@@ -12,15 +12,14 @@ namespace linearham {
 /// @brief TODO
 class SmooshableStack {
  protected:
- std::vector<std::shared_ptr<Smooshable>> items_;
+ std::vector<SmooshablePtr> items_;
 
  public:
   SmooshableStack(int size);
 
   int size() { return items_.size(); }
 
-  SmooshablePtr get(int i);
-  void set(int i, SmooshablePtr s);
+  SmooshablePtr& operator[] (const int index) { return items_[index]; }
 
   SmooshableStack SmooshRight(SmooshableStack& other);
 
