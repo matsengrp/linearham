@@ -1,70 +1,72 @@
 extras: {gene_prob: 0.015}
-name: dummy_J
+name: IGHJ_ex_star_01
 states:
 - emissions: null
   extras: {}
   name: init
-  transitions: {dummy_J_0: 0.25, dummy_J_1: 0.05, insert_left_A: 0.1, insert_left_C: 0.2, insert_left_G: 0.2, insert_left_T: 0.2}
+  transitions: {IGHJ_ex_star_01_0: 0.25, IGHJ_ex_star_01_1: 0.05, insert_left_A: 0.1, insert_left_C: 0.2, insert_left_G: 0.2, insert_left_T: 0.2}
 - emissions:
     probs: {A: 0.94, C: 0.02, G: 0.02, T: 0.02}
     track: nukes
   extras: {germline: A}
   name: insert_left_A
-  transitions: {dummy_J_0: 0.4, dummy_J_1: 0.25, insert_left_A: 0.05, insert_left_C: 0.15, insert_left_G: 0.075, insert_left_T: 0.075}
+  transitions: {IGHJ_ex_star_01_0: 0.4, IGHJ_ex_star_01_1: 0.25, insert_left_A: 0.05, insert_left_C: 0.15, insert_left_G: 0.075, insert_left_T: 0.075}
 - emissions:
     probs: {A: 0.02, C: 0.94, G: 0.02, T: 0.02}
     track: nukes
   extras: {germline: C}
   name: insert_left_C
-  transitions: {dummy_J_0: 0.4, dummy_J_1: 0.25, insert_left_A: 0.05, insert_left_C: 0.15, insert_left_G: 0.075, insert_left_T: 0.075}
+  transitions: {IGHJ_ex_star_01_0: 0.4, IGHJ_ex_star_01_1: 0.25, insert_left_A: 0.05, insert_left_C: 0.15, insert_left_G: 0.075, insert_left_T: 0.075}
 - emissions:
     probs: {A: 0.02, C: 0.02, G: 0.94, T: 0.02}
     track: nukes
   extras: {germline: G}
   name: insert_left_G
-  transitions: {dummy_J_0: 0.4, dummy_J_1: 0.25, insert_left_A: 0.05, insert_left_C: 0.15, insert_left_G: 0.075, insert_left_T: 0.075}
+  transitions: {IGHJ_ex_star_01_0: 0.4, IGHJ_ex_star_01_1: 0.25, insert_left_A: 0.05, insert_left_C: 0.15, insert_left_G: 0.075, insert_left_T: 0.075}
 - emissions:
     probs: {A: 0.02, C: 0.02, G: 0.02, T: 0.94}
     track: nukes
   extras: {germline: T}
   name: insert_left_T
-  transitions: {dummy_J_0: 0.4, dummy_J_1: 0.25, insert_left_A: 0.05, insert_left_C: 0.15, insert_left_G: 0.075, insert_left_T: 0.075}
+  transitions: {IGHJ_ex_star_01_0: 0.4, IGHJ_ex_star_01_1: 0.25, insert_left_A: 0.05, insert_left_C: 0.15, insert_left_G: 0.075, insert_left_T: 0.075}
 - emissions:
     probs: {A: 0.91, C: 0.03, G: 0.03, T: 0.03}
     track: nukes
   extras: {germline: A}
-  name: dummy_J_0
-  transitions: {dummy_J_1: 1.0}
+  name: IGHJ_ex_star_01_0
+  transitions: {IGHJ_ex_star_01_1: 1.0}
 - emissions:
     probs: {A: 0.1, C: 0.1, G: 0.1, T: 0.7}
     track: nukes
   extras: {germline: T}
-  name: dummy_J_1
-  transitions: {dummy_J_2: 1.0}
+  name: IGHJ_ex_star_01_1
+  transitions: {IGHJ_ex_star_01_2: 1.0}
 - emissions:
     probs: {A: 0.06, C: 0.06, G: 0.82, T: 0.06}
     track: nukes
   extras: {germline: G}
-  name: dummy_J_2
-  transitions: {dummy_J_3: 1.0}
+  name: IGHJ_ex_star_01_2
+  transitions: {IGHJ_ex_star_01_3: 1.0}
 - emissions:
     probs: {A: 0.01, C: 0.97, G: 0.01, T: 0.01}
     track: nukes
   extras: {germline: C}
-  name: dummy_J_3
-  transitions: {dummy_J_4: 1.0}
+  name: IGHJ_ex_star_01_3
+  transitions: {IGHJ_ex_star_01_4: 1.0}
 - emissions:
     probs: {A: 0.08, C: 0.08, G: 0.76, T: 0.08}
     track: nukes
   extras: {germline: G}
-  name: dummy_J_4
+  name: IGHJ_ex_star_01_4
   transitions: {end: 0.04, insert_right_N: 0.96}
 - emissions:
     probs: {A: 0.25, C: 0.25, G: 0.25, T: 0.25}
     track: nukes
   extras: {germline: N}
   name: insert_right_N
-  # Note that the "end" transition probability should be 0.040000000000000036.
+  # Duncan's J gene partis files have an end probability of 0.040000000000000036
+  # in the "insert_right_N" state, BUT have an end probability of 0.04 in the
+  # last germline state before it.
   transitions: {end: 0.04, insert_right_N: 0.96}
 tracks:
   nukes: [A, C, G, T]

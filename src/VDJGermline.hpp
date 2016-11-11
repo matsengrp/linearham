@@ -32,6 +32,25 @@ class JGermline : public Germline, public NTInsertion, public NPadding {
   JGermline(YAML::Node root)
       : Germline(root), NTInsertion(root), NPadding(root){};
 };
+
+/// @brief A common class for the different germline gene types.
+class GermlineGene {
+ public:
+  GermlineGene(){};
+
+  std::string type;
+  std::shared_ptr<Germline> germ_ptr;
+
+  std::shared_ptr<VGermline> VGermlinePtr() const;
+  std::shared_ptr<DGermline> DGermlinePtr() const;
+  std::shared_ptr<JGermline> JGermlinePtr() const;
+};
+
+
+// GermlineGene Map Function
+
+std::unordered_map<std::string, GermlineGene> CreateGermlineGeneMap(std::string dir_path);
+
 }
 
 #endif  // LINEARHAM_VDJGERMLINE_
