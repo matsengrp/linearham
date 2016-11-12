@@ -6,7 +6,7 @@
 namespace linearham {
 
 
-/// @brief Smoosh all of our smoooshables against those of another
+/// @brief Smoosh all of our Smooshishs against those of another
 /// SmooshableChain.
 SmooshableStack SmooshableStack::SmooshRight(SmooshableStack& other) {
   SmooshableStack new_ss = SmooshableStack();

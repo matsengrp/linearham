@@ -26,8 +26,6 @@ class Smooshable : public Smooshish {
 
  public:
   Smooshable(){};
-  /// @todo remove this constructor?
-  Smooshable(int left_flex, int right_flex);
   Smooshable(const Eigen::Ref<const Eigen::MatrixXd>& marginal);
 
   // We use override here to make sure that we are overriding the virtual

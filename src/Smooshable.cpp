@@ -6,16 +6,6 @@
 namespace linearham {
 
 
-/// @brief A "boring" Smooshable constructor, which just sets up memory.
-/// @param[in] left_flex
-/// How many alternative start points should we allow on the left side?
-/// @param[in] right_flex
-/// How many alternative end points should we allow on the right side?
-Smooshable::Smooshable(int left_flex, int right_flex) {
-  marginal_.resize(left_flex + 1, right_flex + 1);
-};
-
-
 /// @brief Constructor for Smooshable starting from a marginal probability
 /// matrix.
 /// @param[in] marginal
