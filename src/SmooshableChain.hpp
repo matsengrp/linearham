@@ -39,6 +39,7 @@ class SmooshableChain : public Smooshish {
   const Eigen::MatrixXd& viterbi() const override;
   const Eigen::MatrixXi& viterbi_idx() const;
   void AuxViterbiPath(int row, int col, std::vector<int>& path) const override;
+  float FinalViterbiLogProb() const;
   std::vector<int> ViterbiPath(int row, int col) const;
   IntVectorVector ViterbiPaths() const;
 };

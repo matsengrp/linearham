@@ -90,7 +90,8 @@ const Eigen::MatrixXi& SmooshableChain::viterbi_idx() const {
 
 
 /// @brief TODO
-void SmooshableChain::AuxViterbiPath(int row, int col, std::vector<int>& path) const {
+void SmooshableChain::AuxViterbiPath(int row, int col,
+                                     std::vector<int>& path) const {
   int new_col = viterbi_idx()(row, col);
   prev_->AuxViterbiPath(row, new_col, path);
   path.push_back(new_col);
@@ -119,5 +120,14 @@ IntVectorVector SmooshableChain::ViterbiPaths() const {
     }
   }
   return paths;
+};
+
+
+/// @brief Assuming that we are fully smooshed, get the log probability of the
+/// Viterbi path.
+float SmooshableChain::FinalViterbiLogProb() const {
+  assert(left_flex() == 1 && right_flex() == 1);
+
+  return viterbi()(0, 0) - scaler_count_ * LOG_SCALE_FACTOR;
 };
 };

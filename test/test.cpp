@@ -513,6 +513,8 @@ TEST_CASE("Smooshable", "[smooshable]") {
   ss.push_back(ps_B);
   ss.SmooshRight(ss);
 
+  // TODO test FinalViterbiLogProb
+
   // Germline Smooshable tests.
   VGermline vgerm_obj(V_root);
   DGermline dgerm_obj(D_root);

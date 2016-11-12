@@ -12,6 +12,7 @@ namespace linearham {
 
 const double SCALE_FACTOR = pow(2, 256);
 const double SCALE_THRESHOLD = (1.0 / SCALE_FACTOR);
+const double LOG_SCALE_FACTOR = log(SCALE_FACTOR);
 
 
 /// @brief Abstracts something that has probabilities associated with sequence
