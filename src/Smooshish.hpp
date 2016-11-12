@@ -24,7 +24,7 @@ class Smooshish {
 
   virtual const Eigen::MatrixXd& marginal() const = 0;
   virtual const Eigen::MatrixXd& viterbi() const = 0;
-  virtual void AuxViterbiPath(std::vector<int>& path, int lhs, int rhs) const = 0;
+  virtual void AuxViterbiPath(int row, int col, std::vector<int>& path) const = 0;
 };
 
 typedef std::shared_ptr<Smooshish> SmooshishPtr;

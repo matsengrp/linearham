@@ -90,10 +90,9 @@ const Eigen::MatrixXi& SmooshableChain::viterbi_idx() const {
 
 
 /// @brief TODO
-void SmooshableChain::AuxViterbiPath(std::vector<int>& path, int row,
-                                     int col) const {
+void SmooshableChain::AuxViterbiPath(int row, int col, std::vector<int>& path) const {
   int new_col = viterbi_idx()(row, col);
-  prev_->AuxViterbiPath(path, row, new_col);
+  prev_->AuxViterbiPath(row, new_col, path);
   path.push_back(new_col);
 };
 
@@ -104,7 +103,7 @@ std::vector<int> SmooshableChain::ViterbiPath(int row, int col) const {
   std::vector<int> path;
   /// @todo increase to 5?
   path.reserve(3);
-  AuxViterbiPath(path, row, col);
+  AuxViterbiPath(row, col, path);
 
   return path;
 };

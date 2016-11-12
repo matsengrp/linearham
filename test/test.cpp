@@ -480,13 +480,6 @@ TEST_CASE("Smooshable", "[smooshable]") {
   //REQUIRE(s_AB_uflow.viterbi().isApprox(correct_AB_marginal));
   REQUIRE(s_AB_uflow.scaler_count() == 1);
 
-  // SmooshableStack tests.
-  // TODO improve
-  SmooshableStack ss = SmooshableStack();
-  ss.push_back(ps_A);
-  ss.push_back(ps_B);
-  ss.SmooshRight(ss);
-
   Eigen::MatrixXd C(2,1);
   C <<
   0.89,
@@ -513,6 +506,14 @@ TEST_CASE("Smooshable", "[smooshable]") {
   IntVectorVector correct_viterbi_paths = {{1,0}, {2,1}};
   REQUIRE(s_ABC.ViterbiPaths() == correct_viterbi_paths);
 
+  // SmooshableStack tests.
+  // TODO improve
+  SmooshableStack ss = SmooshableStack();
+  ss.push_back(ps_A);
+  ss.push_back(ps_B);
+  ss.SmooshRight(ss);
+
+  // Germline Smooshable tests.
   VGermline vgerm_obj(V_root);
   DGermline dgerm_obj(D_root);
   JGermline jgerm_obj(J_root);

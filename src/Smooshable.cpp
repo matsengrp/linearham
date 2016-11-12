@@ -16,8 +16,8 @@ Smooshable::Smooshable(const Eigen::Ref<const Eigen::MatrixXd>& marginal) {
 };
 
 
-/// @todo
-void Smooshable::AuxViterbiPath(std::vector<int>&, int, int) const {};
+/// @brief Empty function: there are no paths in a raw Smooshable.
+void Smooshable::AuxViterbiPath(int, int, std::vector<int>&) const {};
 
 
 // VDJSmooshable Constructor Functions
