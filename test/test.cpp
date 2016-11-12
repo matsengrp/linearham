@@ -466,7 +466,6 @@ TEST_CASE("Smooshable", "[smooshable]") {
   SmooshablePtr ps_A = std::make_shared<Smooshable>(Smooshable(A));
   SmooshablePtr ps_B = std::make_shared<Smooshable>(Smooshable(B));
   SmooshableChainPtr ps_AB = std::make_shared<SmooshableChain>(SmooshableChain(ps_A, ps_B));
-  SmooshablePtr xs_AB = std::make_shared<Smooshable>(*ps_AB);
 
   REQUIRE(ps_A->marginal() == A);
   REQUIRE(ps_B->marginal() == B);
@@ -474,8 +473,6 @@ TEST_CASE("Smooshable", "[smooshable]") {
   REQUIRE(ps_AB->viterbi() == correct_AB_viterbi);
   REQUIRE(ps_AB->viterbi_idx() == correct_AB_viterbi_idx);
   REQUIRE(ps_AB->scaler_count() == 0);
-  std::cout << "as a SmooshableChain\n" << ps_AB->viterbi() << "\n\n";
-  std::cout << "as a Smooshable\n" << xs_AB->viterbi() << "\n\n";
 
   // Now let's test for underflow.
   Smooshable s_AB_uflow = Smooshable(ps_AB->marginal() * SCALE_THRESHOLD);
@@ -509,7 +506,6 @@ TEST_CASE("Smooshable", "[smooshable]") {
   // This 1 in the second row then gives us the corresponding column index,
   // which contains a 2. So the second path is {2,1}.
 
-  std::cout << "in test:" << ps_AB->viterbi() << "\n\n";
   SmooshableChain s_ABC = SmooshableChain(ps_AB, ps_C);
   REQUIRE(s_ABC.viterbi() == correct_ABC_viterbi);
   REQUIRE(s_ABC.viterbi_idx() == correct_ABC_viterbi_idx);

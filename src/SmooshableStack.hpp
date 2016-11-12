@@ -9,18 +9,18 @@
 namespace linearham {
 
 
-/// @brief A vector of Smooshables, representing alternative paths.
+/// @brief A vector of Smooshishs, representing alternative paths.
 class SmooshableStack {
  protected:
- std::vector<SmooshablePtr> items_;
+ std::vector<SmooshishPtr> items_;
 
  public:
   SmooshableStack(){};
 
   int size() { return items_.size(); }
-  SmooshablePtr& operator[] (const int index) { return items_[index]; }
+  SmooshishPtr& operator[] (const int index) { return items_[index]; }
 
-  void push_back(SmooshablePtr sp) { items_.push_back(sp); };
+  void push_back(SmooshishPtr sp) { items_.push_back(sp); };
 
   SmooshableStack SmooshRight(SmooshableStack& other);
 

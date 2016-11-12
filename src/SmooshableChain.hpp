@@ -20,21 +20,22 @@ namespace linearham {
 /// first. E.g. if Viterbi has already been calculated, we use that scaling for
 /// marginal. Our bounds are generous enough that the difference between the
 /// two will not cause underflow.
-class SmooshableChain : public Smooshable {
+class SmooshableChain : public Smooshish {
  protected:
-  SmooshablePtr prev_;
-  SmooshablePtr curr_;
+  SmooshishPtr prev_;
+  SmooshishPtr curr_;
   // This is the scaling that comes from smooshing the (presumably already
   // scaled) Smooshables that we were already passed.
   mutable int local_scaler_count_ = 0;
+  mutable Eigen::MatrixXd marginal_;
   mutable Eigen::MatrixXd viterbi_;
   mutable Eigen::MatrixXi viterbi_idx_;
   void PerhapsCalcViterbi() const;
 
  public:
-  SmooshableChain(SmooshablePtr, SmooshablePtr);
-  const Eigen::MatrixXd& marginal() const;
-  const Eigen::MatrixXd& viterbi() const;
+  SmooshableChain(SmooshishPtr, SmooshishPtr);
+  const Eigen::MatrixXd& marginal() const override;
+  const Eigen::MatrixXd& viterbi() const override;
   const Eigen::MatrixXi& viterbi_idx() const;
 };
 

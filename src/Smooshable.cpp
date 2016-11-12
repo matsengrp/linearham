@@ -236,21 +236,4 @@ int ScaleMatrix(Eigen::Ref<Eigen::MatrixXd> m) {
 };
 
 
-/*
-std::pair<Smooshable, Eigen::MatrixXi> Smoosh(const Smooshable& s_a,
-                                              const Smooshable& s_b) {
-  Smooshable s_out(s_a.left_flex(), s_b.right_flex());
-  Eigen::MatrixXi viterbi_idx(s_a.left_flex() + 1, s_b.right_flex() + 1);
-  assert(s_a.right_flex() == s_b.left_flex());
-  s_out.marginal() = s_a.marginal() * s_b.marginal();
-  BinaryMax(s_a.viterbi(), s_b.viterbi(), s_out.viterbi(), viterbi_idx);
-  s_out.scaler_count() = s_a.scaler_count() + s_b.scaler_count();
-  // check for underflow
-  int k = ScaleMatrix(s_out.marginal());
-  s_out.viterbi() *= pow(SCALE_FACTOR, k);
-  s_out.scaler_count() += k;
-
-  return std::make_pair(s_out, viterbi_idx);
-};
-*/
 }

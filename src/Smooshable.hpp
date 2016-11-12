@@ -1,6 +1,7 @@
 #ifndef LINEARHAM_SMOOSHABLE_
 #define LINEARHAM_SMOOSHABLE_
 
+#include "Smooshish.hpp"
 #include "VDJGermline.hpp"
 
 /// @file Smooshable.hpp
@@ -19,12 +20,9 @@ const double SCALE_THRESHOLD = (1.0 / SCALE_FACTOR);
 /// Smooshables have left_flex and right_flex, which is the number of
 /// alternative states that can serve as start (resp. end) states on the left
 /// (resp. right) sides.
-class Smooshable {
+class Smooshable : public Smooshish {
  protected:
-  // Although we won't mutate these values in Smooshable, we will in
-  // SmooshableChain.
-  mutable int scaler_count_ = 0;
-  mutable Eigen::MatrixXd marginal_;
+  Eigen::MatrixXd marginal_;
 
  public:
   Smooshable(){};
@@ -32,12 +30,12 @@ class Smooshable {
   Smooshable(int left_flex, int right_flex);
   Smooshable(const Eigen::Ref<const Eigen::MatrixXd>& marginal);
 
-  int left_flex() const { return marginal_.rows() - 1; };
-  int right_flex() const { return marginal_.cols() - 1; };
-  int scaler_count() const { return scaler_count_; };
-  const Eigen::MatrixXd& marginal() const { return marginal_; };
+  // We use override here to make sure that we are overriding the virtual
+  // method in Smooshish (rather than defining some other method via a
+  // different signature).
+  const Eigen::MatrixXd& marginal() const override { return marginal_; };
   // Viterbi probabilities are the same as marginal for raw Smooshables.
-  const Eigen::MatrixXd& viterbi() const { return marginal_; };
+  const Eigen::MatrixXd& viterbi() const override { return marginal_; };
 };
 
 typedef std::shared_ptr<Smooshable> SmooshablePtr;

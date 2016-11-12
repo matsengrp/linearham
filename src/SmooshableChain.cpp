@@ -7,7 +7,7 @@ namespace linearham {
 
 
 /// @brief Constructor given two parents.
-SmooshableChain::SmooshableChain(SmooshablePtr prev, SmooshablePtr curr) {
+SmooshableChain::SmooshableChain(SmooshishPtr prev, SmooshishPtr curr) {
   prev_ = prev;
   curr_ = curr;
 }
@@ -50,10 +50,7 @@ void SmooshableChain::PerhapsCalcViterbi() const {
     viterbi_.resize(prev_->left_flex() + 1, curr_->right_flex() + 1);
     viterbi_idx_.resize(prev_->left_flex() + 1, curr_->right_flex() + 1);
     prev_->viterbi();
-    std::cout << "prev\n" << prev_->viterbi() << "\n\n";
-    std::cout << "curr\n" << curr_->viterbi() << "\n\n";
     BinaryMax(prev_->viterbi(), curr_->viterbi(), viterbi_, viterbi_idx_);
-    std::cout << "ours\n" << viterbi_ << "\n\n";
     // Now handle scaling.
     if (marginal_.size() == 0) {
       // marginal_ hasn't been computed, so we determine scaling.
