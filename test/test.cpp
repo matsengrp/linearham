@@ -510,9 +510,8 @@ TEST_CASE("Smooshable", "[smooshable]") {
   REQUIRE(s_ABC.viterbi() == correct_ABC_viterbi);
   REQUIRE(s_ABC.viterbi_idx() == correct_ABC_viterbi_idx);
 
-//  IntVectorVector correct_viterbi_paths = {{1,0}, {2,1}};
-//  REQUIRE(chain.smooshed()[0].viterbi() == correct_AB_viterbi);
-//  REQUIRE(chain.viterbi_paths() == correct_viterbi_paths);
+  IntVectorVector correct_viterbi_paths = {{1,0}, {2,1}};
+  REQUIRE(s_ABC.ViterbiPaths() == correct_viterbi_paths);
 
   VGermline vgerm_obj(V_root);
   DGermline dgerm_obj(D_root);

@@ -87,4 +87,38 @@ const Eigen::MatrixXi& SmooshableChain::viterbi_idx() const {
   PerhapsCalcViterbi();
   return viterbi_idx_;
 }
+
+
+/// @brief TODO
+void SmooshableChain::AuxViterbiPath(std::vector<int>& path, int row,
+                                     int col) const {
+  int new_col = viterbi_idx()(row, col);
+  prev_->AuxViterbiPath(path, row, new_col);
+  path.push_back(new_col);
+};
+
+
+/// @brief Give the Viterbi path corresponding to the given row and column of
+/// the Viterbi matrix.
+std::vector<int> SmooshableChain::ViterbiPath(int row, int col) const {
+  std::vector<int> path;
+  /// @todo increase to 5?
+  path.reserve(3);
+  AuxViterbiPath(path, row, col);
+
+  return path;
+};
+
+
+/// @brief Obtain all of the Viterbi paths, first indexing by row and then
+/// column.
+IntVectorVector SmooshableChain::ViterbiPaths() const {
+  IntVectorVector paths;
+  for (int i = 0; i < viterbi_idx_.rows(); i++) {
+    for (int j = 0; j < viterbi_idx_.cols(); j++) {
+      paths.push_back(ViterbiPath(i, j));
+    }
+  }
+  return paths;
+};
 };

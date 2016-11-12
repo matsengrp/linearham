@@ -8,6 +8,7 @@
 
 namespace linearham {
 
+typedef std::vector<std::vector<int>> IntVectorVector;
 
 /// @brief A class to hold something implementing the Smooshable
 /// interface that is defined by smooshing multiple Smooshables or
@@ -37,6 +38,9 @@ class SmooshableChain : public Smooshish {
   const Eigen::MatrixXd& marginal() const override;
   const Eigen::MatrixXd& viterbi() const override;
   const Eigen::MatrixXi& viterbi_idx() const;
+  void AuxViterbiPath(std::vector<int>& path, int lhs, int rhs) const override;
+  std::vector<int> ViterbiPath(int lhs, int rhs) const;
+  IntVectorVector ViterbiPaths() const;
 };
 
 typedef std::shared_ptr<SmooshableChain> SmooshableChainPtr;

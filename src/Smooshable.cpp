@@ -16,6 +16,10 @@ Smooshable::Smooshable(const Eigen::Ref<const Eigen::MatrixXd>& marginal) {
 };
 
 
+/// @todo
+void Smooshable::AuxViterbiPath(std::vector<int>&, int, int) const {};
+
+
 // VDJSmooshable Constructor Functions
 
 
@@ -93,6 +97,7 @@ std::pair<Smooshable, Smooshable> DSmooshables(
                                 V_right_flexbounds, D_relpos);
 
   // computing the germline match probability matrix (assuming some left-NTIs)
+  /// @todo we need to turn this into a smooshablechain
   Eigen::MatrixXd ngerm_prob_matrix =
       dgerm_obj.NTIProbMatrix(V_right_flexbounds, D_left_flexbounds,
                               emission_indices, D_relpos) *
@@ -152,6 +157,7 @@ std::pair<Smooshable, Smooshable> JSmooshables(
 
   // computing the germline match probability matrix (assuming some left-NTIs)
   // and extracting the same column as above.
+  /// @todo we need to turn this into a smooshablechain
   Eigen::MatrixXd ngerm_prob_col =
       jgerm_obj.NTIProbMatrix(D_right_flexbounds, J_left_flexbounds,
                               emission_indices, J_relpos) *
