@@ -21,8 +21,10 @@ const double SCALE_THRESHOLD = (1.0 / SCALE_FACTOR);
 /// (resp. right) sides.
 class Smooshable {
  protected:
-  Eigen::MatrixXd marginal_;
-  int scaler_count_ = 0;
+  // Although we won't mutate these values in Smooshable, we will in
+  // SmooshableChain.
+  mutable int scaler_count_ = 0;
+  mutable Eigen::MatrixXd marginal_;
 
  public:
   Smooshable(){};
@@ -32,12 +34,13 @@ class Smooshable {
 
   int left_flex() const { return marginal_.rows() - 1; };
   int right_flex() const { return marginal_.cols() - 1; };
-
   int scaler_count() const { return scaler_count_; };
-
-  // This one can't be a const member function because SmooshableChain needs to modify itself to calculate on the fly.
-  const Eigen::MatrixXd& marginal() { return marginal_; };
+  const Eigen::MatrixXd& marginal() const { return marginal_; };
+  // Viterbi probabilities are the same as marginal for raw Smooshables.
+  const Eigen::MatrixXd& viterbi() const { return marginal_; };
 };
+
+typedef std::shared_ptr<Smooshable> SmooshablePtr;
 
 
 // VDJSmooshable Constructor Functions
@@ -69,8 +72,6 @@ void MultiplyLandingGermProbMatrix(
 
 int ScaleMatrix(Eigen::Ref<Eigen::MatrixXd> m);
 
-std::pair<Smooshable, Eigen::MatrixXi> Smoosh(const Smooshable& s_a,
-                                              const Smooshable& s_b);
 }
 
 #endif  // LINEARHAM_SMOOSHABLE_

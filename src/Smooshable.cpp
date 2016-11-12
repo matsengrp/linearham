@@ -187,6 +187,7 @@ std::pair<Smooshable, Smooshable> JSmooshables(
 };
 
 
+
 // Auxiliary Functions
 
 
@@ -236,26 +237,6 @@ int ScaleMatrix(Eigen::Ref<Eigen::MatrixXd> m) {
 
 
 /*
-/// @brief Smoosh two smooshables!
-/// @param[in] s_a
-/// Smooshable on the left.
-/// @param[in] s_b
-/// Smooshable on the right.
-/// @return (s_out, viterbi_idx)
-/// `s_out` is the smooshable resulting from smooshing s_a and s_b.
-/// `viterbi_idx` is the corresponding viterbi index.
-///
-/// When we smoosh two smooshables, they must have the same right and left
-/// flexes.
-/// Say this common value is n.
-/// The marginal probability is just a matrix product:
-/// \f[
-/// C_{i,k} := \sum_j A_{i,j} B_{j,k}
-/// \f]
-/// because we are summing over the various ways to divide up the common segment
-/// between the left and right smooshable.
-/// The equivalent entry for the Viterbi sequence just has sum replaced with
-/// max.
 std::pair<Smooshable, Eigen::MatrixXi> Smoosh(const Smooshable& s_a,
                                               const Smooshable& s_b) {
   Smooshable s_out(s_a.left_flex(), s_b.right_flex());
