@@ -21,7 +21,7 @@ namespace linearham {
 /// marginal. Our bounds are generous enough that the difference between the
 /// two will not cause underflow.
 class SmooshableChain : public Smooshish {
- protected:
+ private:
   SmooshishPtr prev_;
   SmooshishPtr curr_;
   // This is the scaling that comes from smooshing the (presumably already

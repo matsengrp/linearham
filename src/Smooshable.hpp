@@ -21,7 +21,7 @@ const double SCALE_THRESHOLD = (1.0 / SCALE_FACTOR);
 /// alternative states that can serve as start (resp. end) states on the left
 /// (resp. right) sides.
 class Smooshable : public Smooshish {
- protected:
+ private:
   Eigen::MatrixXd marginal_;
 
  public:
