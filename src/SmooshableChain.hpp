@@ -42,7 +42,7 @@ class SmooshableChain : public Smooshish {
   int right_flex() const override { return right_flex_; };
   const Eigen::MatrixXd& marginal() const override;
   const Eigen::MatrixXd& viterbi() const override;
-  const Eigen::MatrixXi& viterbi_idx() const;
+  const Eigen::MatrixXi& viterbi_idx() const override;
   void AuxViterbiPath(int row, int col, std::vector<int>& path) const override;
   float FinalViterbiLogProb() const;
   std::vector<int> ViterbiPath(int row, int col) const;

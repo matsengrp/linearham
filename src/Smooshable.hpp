@@ -38,6 +38,7 @@ class Smooshable : public Smooshish {
   const Eigen::MatrixXd& marginal() const override { return marginal_; };
   // Viterbi probabilities are the same as marginal for raw Smooshables.
   const Eigen::MatrixXd& viterbi() const override { return marginal_; };
+  const Eigen::MatrixXi& viterbi_idx() const override;
   void AuxViterbiPath(int, int, std::vector<int>&) const override;
 };
 

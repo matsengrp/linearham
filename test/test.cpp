@@ -521,6 +521,7 @@ TEST_CASE("Smooshable", "[smooshable]") {
   for(auto s = ss_ABC.begin(); s != ss_ABC.end(); ++s) {
     (*s)->viterbi();
     REQUIRE((*s)->viterbi() == correct_ABC_viterbi);
+    REQUIRE((*s)->viterbi_idx() == correct_ABC_viterbi_idx);
   }
 
   // TODO test FinalViterbiLogProb

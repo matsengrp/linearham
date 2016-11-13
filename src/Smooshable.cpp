@@ -16,7 +16,17 @@ Smooshable::Smooshable(const Eigen::Ref<const Eigen::MatrixXd>& marginal) {
 };
 
 
-/// @brief Empty function: there are no paths in a raw Smooshable.
+/// @brief Raise exception: there are no Viterbi paths in a Smooshable.
+const Eigen::MatrixXi& Smooshable::viterbi_idx() const {
+  throw std::logic_error("No Viterbi paths in a Smooshable.");
+}
+
+
+/// @brief Empty function: there are no paths in a Smooshable.
+///
+/// We don't throw an exception as above because this is naturally
+/// called in the recursive process of buliding a Viterbi path.
+/// This call is the "empty base case".
 void Smooshable::AuxViterbiPath(int, int, std::vector<int>&) const {};
 
 
@@ -183,7 +193,6 @@ std::pair<Smooshable, Smooshable> JSmooshables(
 };
 
 
-
 // Auxiliary Functions
 
 
@@ -230,6 +239,4 @@ int ScaleMatrix(Eigen::Ref<Eigen::MatrixXd> m) {
   }
   return n;
 };
-
-
 }

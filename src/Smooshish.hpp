@@ -24,6 +24,7 @@ class Smooshish {
 
   virtual const Eigen::MatrixXd& marginal() const = 0;
   virtual const Eigen::MatrixXd& viterbi() const = 0;
+  virtual const Eigen::MatrixXi& viterbi_idx() const = 0;
   virtual void AuxViterbiPath(int row, int col, std::vector<int>& path) const = 0;
 };
 
