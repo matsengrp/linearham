@@ -16,6 +16,25 @@ SmooshableChain::SmooshableChain(SmooshishPtr prev, SmooshishPtr curr) {
 }
 
 
+/// @brief Take care of scaling; how we do so depends on what has been computed.
+///
+/// This implements the ideas described in the class documentation in a way that
+/// can be used by either marginal or Viterbi calculation.
+void SmooshableChain::Scale(Eigen::MatrixXd& myself, Eigen::MatrixXd& other) const {
+  if (other.size() == 0) {
+    // The other matrix hasn't been computed, so we determine scaling.
+    local_scaler_count_ = ScaleMatrix(myself);
+    scaler_count_ =
+        local_scaler_count_ + prev_->scaler_count() + curr_->scaler_count();
+  } else {
+    // The other matrix has been computed, and we just use its scaler.
+    if (local_scaler_count_ != 0) {
+      myself *= pow(SCALE_FACTOR, local_scaler_count_);
+    }
+  }
+}
+
+
 /// @brief Return the marginal matrix, computing it if needed.
 /// The marginal probability is just a matrix product:
 /// \f[
@@ -28,18 +47,7 @@ const Eigen::MatrixXd& SmooshableChain::marginal() const {
     // marginal_ hasn't been computed yet, so compute it.
     marginal_.resize(left_flex() + 1, right_flex() + 1);
     marginal_ = prev_->marginal() * curr_->marginal();
-    // Now handle scaling.
-    if (viterbi_.size() == 0) {
-      // viterbi_ hasn't been computed, so we determine scaling.
-      local_scaler_count_ = ScaleMatrix(marginal_);
-      scaler_count_ =
-          local_scaler_count_ + prev_->scaler_count() + curr_->scaler_count();
-    } else {
-      // viterbi_ has been computed, and we just use its scaler.
-      if (local_scaler_count_ != 0) {
-        marginal_ *= pow(SCALE_FACTOR, local_scaler_count_);
-      }
-    }
+    Scale(marginal_, viterbi_);
   }
   return marginal_;
 }
@@ -51,18 +59,7 @@ void SmooshableChain::PerhapsCalcViterbi() const {
     viterbi_.resize(left_flex() + 1, right_flex() + 1);
     viterbi_idx_.resize(left_flex() + 1, right_flex() + 1);
     BinaryMax(prev_->viterbi(), curr_->viterbi(), viterbi_, viterbi_idx_);
-    // Now handle scaling.
-    if (marginal_.size() == 0) {
-      // marginal_ hasn't been computed, so we determine scaling.
-      local_scaler_count_ = ScaleMatrix(viterbi_);
-      scaler_count_ =
-          local_scaler_count_ + prev_->scaler_count() + curr_->scaler_count();
-    } else {
-      // marginal_ has been computed, and we just use its scaler.
-      if (local_scaler_count_ != 0) {
-        viterbi_ *= pow(SCALE_FACTOR, local_scaler_count_);
-      }
-    }
+    Scale(viterbi_, marginal_);
   }
 }
 

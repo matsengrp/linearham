@@ -34,6 +34,7 @@ class SmooshableChain : public Smooshish {
   mutable Eigen::MatrixXd viterbi_;
   mutable Eigen::MatrixXi viterbi_idx_;
   void PerhapsCalcViterbi() const;
+  void Scale(Eigen::MatrixXd& myself, Eigen::MatrixXd& other) const;
 
  public:
   SmooshableChain(SmooshishPtr, SmooshishPtr);
