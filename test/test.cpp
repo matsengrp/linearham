@@ -523,20 +523,18 @@ TEST_CASE("Smooshable", "[smooshable]") {
     REQUIRE((*s)->viterbi_idx() == correct_ABC_viterbi_idx);
   }
 
-  // FinalViterbiLogProb test.
+  // FinalViterbiLogProb test. Also, this test exercises the SmooshableChain underflow machinery.
   Eigen::MatrixXd Z(1,2);
+  // Set up values just above the threshold so they will underflow.
   Z <<
-  0.014, 0.27;
+  1.001*SCALE_THRESHOLD, 1.002*SCALE_THRESHOLD;
   SmooshablePtr ps_Z = std::make_shared<Smooshable>(Smooshable(Z));
   SmooshableStack ss_Z = SmooshableStack();
   ss_Z.push_back(ps_Z);
   SmooshableStack ss_ZC = ss_Z.SmooshRight(ss_C);
   for(auto s = ss_ZC.begin(); s != ss_ZC.end(); ++s) {
-    REQUIRE((*s)->FinalViterbiLogProb() == log(0.43*0.27));
+    REQUIRE((*s)->FinalViterbiLogProb() == -1*LOG_SCALE_FACTOR + log(0.89*1.001));
   }
-
-
-  // TODO underflow tests from smooshing
 
   // Germline Smooshable tests.
   VGermline vgerm_obj(V_root);
