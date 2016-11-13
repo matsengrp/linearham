@@ -6,17 +6,6 @@
 namespace linearham {
 
 
-/// @brief A "boring" Smooshable constructor, which just sets up memory.
-/// @param[in] left_flex
-/// How many alternative start points should we allow on the left side?
-/// @param[in] right_flex
-/// How many alternative end points should we allow on the right side?
-Smooshable::Smooshable(int left_flex, int right_flex) {
-  marginal_.resize(left_flex + 1, right_flex + 1);
-  viterbi_.resize(left_flex + 1, right_flex + 1);
-};
-
-
 /// @brief Constructor for Smooshable starting from a marginal probability
 /// matrix.
 /// @param[in] marginal
@@ -24,8 +13,21 @@ Smooshable::Smooshable(int left_flex, int right_flex) {
 Smooshable::Smooshable(const Eigen::Ref<const Eigen::MatrixXd>& marginal) {
   marginal_ = marginal;
   scaler_count_ = ScaleMatrix(marginal_);
-  viterbi_ = marginal_;
 };
+
+
+/// @brief Raise exception: there are no Viterbi paths in a Smooshable.
+const Eigen::MatrixXi& Smooshable::viterbi_idx() const {
+  throw std::logic_error("No Viterbi paths in a Smooshable.");
+}
+
+
+/// @brief Empty function: there are no paths in a Smooshable.
+///
+/// We don't throw an exception as above because this is naturally
+/// called in the recursive process of buliding a Viterbi path.
+/// This call is the "empty base case".
+void Smooshable::AuxViterbiPath(int, int, std::vector<int>&) const {};
 
 
 // VDJSmooshable Constructor Functions
@@ -105,6 +107,7 @@ std::pair<Smooshable, Smooshable> DSmooshables(
                                 V_right_flexbounds, D_relpos);
 
   // computing the germline match probability matrix (assuming some left-NTIs)
+  /// @todo we need to turn this into a smooshablechain
   Eigen::MatrixXd ngerm_prob_matrix =
       dgerm_obj.NTIProbMatrix(V_right_flexbounds, D_left_flexbounds,
                               emission_indices, D_relpos) *
@@ -164,6 +167,7 @@ std::pair<Smooshable, Smooshable> JSmooshables(
 
   // computing the germline match probability matrix (assuming some left-NTIs)
   // and extracting the same column as above.
+  /// @todo we need to turn this into a smooshablechain
   Eigen::MatrixXd ngerm_prob_col =
       jgerm_obj.NTIProbMatrix(D_right_flexbounds, J_left_flexbounds,
                               emission_indices, J_relpos) *
@@ -234,42 +238,5 @@ int ScaleMatrix(Eigen::Ref<Eigen::MatrixXd> m) {
     n++;
   }
   return n;
-};
-
-
-/// @brief Smoosh two smooshables!
-/// @param[in] s_a
-/// Smooshable on the left.
-/// @param[in] s_b
-/// Smooshable on the right.
-/// @return (s_out, viterbi_idx)
-/// `s_out` is the smooshable resulting from smooshing s_a and s_b.
-/// `viterbi_idx` is the corresponding viterbi index.
-///
-/// When we smoosh two smooshables, they must have the same right and left
-/// flexes.
-/// Say this common value is n.
-/// The marginal probability is just a matrix product:
-/// \f[
-/// C_{i,k} := \sum_j A_{i,j} B_{j,k}
-/// \f]
-/// because we are summing over the various ways to divide up the common segment
-/// between the left and right smooshable.
-/// The equivalent entry for the Viterbi sequence just has sum replaced with
-/// max.
-std::pair<Smooshable, Eigen::MatrixXi> Smoosh(const Smooshable& s_a,
-                                              const Smooshable& s_b) {
-  Smooshable s_out(s_a.left_flex(), s_b.right_flex());
-  Eigen::MatrixXi viterbi_idx(s_a.left_flex() + 1, s_b.right_flex() + 1);
-  assert(s_a.right_flex() == s_b.left_flex());
-  s_out.marginal() = s_a.marginal() * s_b.marginal();
-  BinaryMax(s_a.viterbi(), s_b.viterbi(), s_out.viterbi(), viterbi_idx);
-  s_out.scaler_count() = s_a.scaler_count() + s_b.scaler_count();
-  // check for underflow
-  int k = ScaleMatrix(s_out.marginal());
-  s_out.viterbi() *= pow(SCALE_FACTOR, k);
-  s_out.scaler_count() += k;
-
-  return std::make_pair(s_out, viterbi_idx);
 };
 }

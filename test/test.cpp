@@ -2,7 +2,7 @@
 #define CATCH_CONFIG_MAIN
 
 #include "catch.hpp"
-#include "SmooshableChain.hpp"
+#include "Pile.hpp"
 #include "../lib/fast-cpp-csv-parser/csv.h"
 
 
@@ -463,48 +463,80 @@ TEST_CASE("Smooshable", "[smooshable]") {
   1,1,
   1,2;
 
-  Smooshable s_A = Smooshable(A);
-  Smooshable s_B = Smooshable(B);
-  Smooshable s_AB;
-  Eigen::MatrixXi AB_viterbi_idx;
-  std::tie(s_AB, AB_viterbi_idx) = Smoosh(s_A, s_B);
+  SmooshablePtr ps_A = std::make_shared<Smooshable>(Smooshable(A));
+  SmooshablePtr ps_B = std::make_shared<Smooshable>(Smooshable(B));
+  ChainPtr ps_AB = std::make_shared<Chain>(Chain(ps_A, ps_B));
 
-  REQUIRE(s_AB.marginal() == correct_AB_marginal);
-  REQUIRE(s_AB.viterbi() == correct_AB_viterbi);
-  REQUIRE(AB_viterbi_idx == correct_AB_viterbi_idx);
-  REQUIRE(s_AB.scaler_count() == 0);
+  REQUIRE(ps_A->marginal() == A);
+  REQUIRE(ps_B->marginal() == B);
+  REQUIRE(ps_AB->marginal() == correct_AB_marginal);
+  REQUIRE(ps_AB->viterbi() == correct_AB_viterbi);
+  REQUIRE(ps_AB->viterbi_idx() == correct_AB_viterbi_idx);
+  REQUIRE(ps_AB->scaler_count() == 0);
 
-  // now let's test for underflow
-  Smooshable s_AB_uflow = Smooshable(s_AB.marginal() * SCALE_THRESHOLD);
+  // Now let's test for underflow.
+  Smooshable s_AB_uflow = Smooshable(ps_AB->marginal() * SCALE_THRESHOLD);
   REQUIRE(s_AB_uflow.marginal().isApprox(correct_AB_marginal));
-  REQUIRE(s_AB_uflow.viterbi().isApprox(correct_AB_marginal));
+  //REQUIRE(s_AB_uflow.viterbi().isApprox(correct_AB_marginal));
   REQUIRE(s_AB_uflow.scaler_count() == 1);
 
-//  Eigen::MatrixXd C(2,1);
-//  C <<
-//  0.89,
-//  0.43;
-//  Smooshable s_C = Smooshable(C);
-//  Eigen::MatrixXd correct_ABC_viterbi(2,1);
-//  correct_ABC_viterbi <<
-//  // 0.71*0.29*0.89 > 0.71*0.41*0.43
-//  // 0.31*0.29*0.89 < 0.37*0.97*0.43
-//  0.71*0.29*0.89,
-//  0.37*0.97*0.43;
-//  // So the Viterbi indices are
-//  // 0
-//  // 1
-//  //
-//  // This 1 in the second row then gives us the corresponding column index,
-//  // which contains a 2. So the second path is {2,1}.
+  Eigen::MatrixXd C(2,1);
+  C <<
+  0.89,
+  0.43;
+  SmooshablePtr ps_C = std::make_shared<Smooshable>(Smooshable(C));
+  Eigen::MatrixXd correct_ABC_viterbi(2,1);
+  Eigen::MatrixXi correct_ABC_viterbi_idx(2,1);
+  correct_ABC_viterbi <<
+  // 0.71*0.29*0.89 > 0.71*0.41*0.43
+  // 0.31*0.29*0.89 < 0.37*0.97*0.43
+  0.71*0.29*0.89,
+  0.37*0.97*0.43;
+  // So the Viterbi indices are
+  correct_ABC_viterbi_idx <<
+  0,
+  1;
+  // This 1 in the second row then gives us the corresponding column index,
+  // which contains a 2. So the second path is {2,1}.
 
-//  SmooshableVector sv = {s_A, s_B, s_C};
-//  SmooshableChain chain = SmooshableChain(sv);
-//  IntVectorVector correct_viterbi_paths = {{1,0}, {2,1}};
-//  REQUIRE(chain.smooshed()[0].viterbi() == correct_AB_viterbi);
-//  REQUIRE(chain.smooshed().back().viterbi() == correct_ABC_viterbi);
-//  REQUIRE(chain.viterbi_paths() == correct_viterbi_paths);
+  Chain s_ABC = Chain(ps_AB, ps_C);
+  REQUIRE(s_ABC.viterbi() == correct_ABC_viterbi);
+  REQUIRE(s_ABC.viterbi_idx() == correct_ABC_viterbi_idx);
 
+  IntVectorVector correct_viterbi_paths = {{1,0}, {2,1}};
+  REQUIRE(s_ABC.ViterbiPaths() == correct_viterbi_paths);
+
+  // Pile tests.
+  Pile ss_A = Pile();
+  Pile ss_B = Pile();
+  Pile ss_C = Pile();
+  Pile ss_AB = Pile();
+  Pile ss_ABC = Pile();
+  ss_A.push_back(ps_A);
+  ss_B.push_back(ps_B);
+  ss_B.push_back(ps_B);
+  ss_C.push_back(ps_C);
+  ss_AB = ss_A.SmooshRight(ss_B);
+  ss_ABC = ss_AB.SmooshRight(ss_C);
+  for(auto s = ss_ABC.begin(); s != ss_ABC.end(); ++s) {
+    REQUIRE((*s)->viterbi() == correct_ABC_viterbi);
+    REQUIRE((*s)->viterbi_idx() == correct_ABC_viterbi_idx);
+  }
+
+  // FinalViterbiLogProb test. Also, this test exercises the Chain underflow machinery.
+  Eigen::MatrixXd Z(1,2);
+  // Set up values just above the threshold so they will underflow.
+  Z <<
+  1.001*SCALE_THRESHOLD, 1.002*SCALE_THRESHOLD;
+  SmooshablePtr ps_Z = std::make_shared<Smooshable>(Smooshable(Z));
+  Pile ss_Z = Pile();
+  ss_Z.push_back(ps_Z);
+  Pile ss_ZC = ss_Z.SmooshRight(ss_C);
+  for(auto s = ss_ZC.begin(); s != ss_ZC.end(); ++s) {
+    REQUIRE((*s)->FinalViterbiLogProb() == -1*LOG_SCALE_FACTOR + log(0.89*1.001));
+  }
+
+  // Germline Smooshable tests.
   VGermline vgerm_obj(V_root);
   DGermline dgerm_obj(D_root);
   JGermline jgerm_obj(J_root);
