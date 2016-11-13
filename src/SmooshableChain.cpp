@@ -20,7 +20,8 @@ SmooshableChain::SmooshableChain(SmooshishPtr prev, SmooshishPtr curr) {
 ///
 /// This implements the ideas described in the class documentation in a way that
 /// can be used by either marginal or Viterbi calculation.
-void SmooshableChain::Scale(Eigen::MatrixXd& myself, Eigen::MatrixXd& other) const {
+void SmooshableChain::Scale(Eigen::MatrixXd& myself,
+                            Eigen::MatrixXd& other) const {
   if (other.size() == 0) {
     // The other matrix hasn't been computed, so we determine scaling.
     local_scaler_count_ = ScaleMatrix(myself);
@@ -117,14 +118,5 @@ IntVectorVector SmooshableChain::ViterbiPaths() const {
     }
   }
   return paths;
-};
-
-
-/// @brief Assuming that we are fully smooshed, get the log probability of the
-/// Viterbi path.
-float SmooshableChain::FinalViterbiLogProb() const {
-  assert(left_flex() == 1 && right_flex() == 1);
-
-  return viterbi()(0, 0) - scaler_count_ * LOG_SCALE_FACTOR;
 };
 };

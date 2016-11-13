@@ -519,12 +519,22 @@ TEST_CASE("Smooshable", "[smooshable]") {
   ss_AB = ss_A.SmooshRight(ss_B);
   ss_ABC = ss_AB.SmooshRight(ss_C);
   for(auto s = ss_ABC.begin(); s != ss_ABC.end(); ++s) {
-    (*s)->viterbi();
     REQUIRE((*s)->viterbi() == correct_ABC_viterbi);
     REQUIRE((*s)->viterbi_idx() == correct_ABC_viterbi_idx);
   }
 
-  // TODO test FinalViterbiLogProb
+  // FinalViterbiLogProb test.
+  Eigen::MatrixXd Z(1,2);
+  Z <<
+  0.014, 0.27;
+  SmooshablePtr ps_Z = std::make_shared<Smooshable>(Smooshable(Z));
+  SmooshableStack ss_Z = SmooshableStack();
+  ss_Z.push_back(ps_Z);
+  SmooshableStack ss_ZC = ss_Z.SmooshRight(ss_C);
+  for(auto s = ss_ZC.begin(); s != ss_ZC.end(); ++s) {
+    REQUIRE((*s)->FinalViterbiLogProb() == log(0.43*0.27));
+  }
+
 
   // TODO underflow tests from smooshing
 

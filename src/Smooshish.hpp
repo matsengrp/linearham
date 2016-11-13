@@ -11,6 +11,12 @@
 
 namespace linearham {
 
+
+const double SCALE_FACTOR = pow(2, 256);
+const double SCALE_THRESHOLD = (1.0 / SCALE_FACTOR);
+const double LOG_SCALE_FACTOR = log(SCALE_FACTOR);
+
+
 class Smooshish {
  protected:
   // Although we won't mutate these values in Smooshable, we will in
@@ -26,6 +32,8 @@ class Smooshish {
   virtual const Eigen::MatrixXd& viterbi() const = 0;
   virtual const Eigen::MatrixXi& viterbi_idx() const = 0;
   virtual void AuxViterbiPath(int row, int col, std::vector<int>& path) const = 0;
+  double FinalViterbiLogProb() const;
+
 };
 
 typedef std::shared_ptr<Smooshish> SmooshishPtr;
