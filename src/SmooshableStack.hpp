@@ -23,6 +23,13 @@ class SmooshableStack {
   void push_back(SmooshishPtr sp) { items_.push_back(sp); };
 
   SmooshableStack SmooshRight(SmooshableStack& other);
+
+  typedef typename std::vector<SmooshishPtr>::size_type size_type;
+  typedef typename std::vector<SmooshishPtr>::const_iterator const_iterator;
+  inline bool empty() const { return items_.empty(); }
+  inline const_iterator begin() const { return items_.begin(); }
+  inline const_iterator end() const { return items_.end(); }
+  inline size_type size() const { return items_.size(); }
 };
 }
 

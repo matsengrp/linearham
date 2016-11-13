@@ -507,7 +507,6 @@ TEST_CASE("Smooshable", "[smooshable]") {
   REQUIRE(s_ABC.ViterbiPaths() == correct_viterbi_paths);
 
   // SmooshableStack tests.
-  // TODO improve
   SmooshableStack ss_A = SmooshableStack();
   SmooshableStack ss_B = SmooshableStack();
   SmooshableStack ss_C = SmooshableStack();
@@ -519,8 +518,14 @@ TEST_CASE("Smooshable", "[smooshable]") {
   ss_C.push_back(ps_C);
   ss_AB = ss_A.SmooshRight(ss_B);
   ss_ABC = ss_AB.SmooshRight(ss_C);
+  for(auto s = ss_ABC.begin(); s != ss_ABC.end(); ++s) {
+    (*s)->viterbi();
+    REQUIRE((*s)->viterbi() == correct_ABC_viterbi);
+  }
 
   // TODO test FinalViterbiLogProb
+
+  // TODO underflow tests from smooshing
 
   // Germline Smooshable tests.
   VGermline vgerm_obj(V_root);

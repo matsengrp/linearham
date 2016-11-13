@@ -29,8 +29,8 @@ class Smooshable : public Smooshish {
   Smooshable(){};
   Smooshable(const Eigen::Ref<const Eigen::MatrixXd>& marginal);
 
-  int left_flex() const { return marginal_.rows() - 1; };
-  int right_flex() const { return marginal_.cols() - 1; };
+  int left_flex() const override { return marginal_.rows() - 1; };
+  int right_flex() const override { return marginal_.cols() - 1; };
 
   // We use override here to make sure that we are overriding the virtual
   // method in Smooshish (rather than defining some other method via a
