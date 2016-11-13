@@ -1,13 +1,13 @@
-#include "SmooshableChain.hpp"
+#include "Chain.hpp"
 
-/// @file SmooshableChain.cpp
-/// @brief Implementation of the SmooshableChain class.
+/// @file Chain.cpp
+/// @brief Implementation of the Chain class.
 
 namespace linearham {
 
 
 /// @brief Constructor given two parents.
-SmooshableChain::SmooshableChain(SmooshishPtr prev, SmooshishPtr curr) {
+Chain::Chain(SmooshishPtr prev, SmooshishPtr curr) {
   prev_ = prev;
   curr_ = curr;
   assert(prev_->right_flex() == curr_->left_flex());
@@ -20,7 +20,7 @@ SmooshableChain::SmooshableChain(SmooshishPtr prev, SmooshishPtr curr) {
 ///
 /// This implements the ideas described in the class documentation in a way that
 /// can be used by either marginal or Viterbi calculation.
-void SmooshableChain::Scale(Eigen::MatrixXd& myself,
+void Chain::Scale(Eigen::MatrixXd& myself,
                             Eigen::MatrixXd& other) const {
   if (other.size() == 0) {
     // The other matrix hasn't been computed, so we determine scaling.
@@ -43,7 +43,7 @@ void SmooshableChain::Scale(Eigen::MatrixXd& myself,
 /// \f]
 /// because we are summing over the various ways to divide up the common segment
 /// between the left and right smooshable.
-const Eigen::MatrixXd& SmooshableChain::marginal() const {
+const Eigen::MatrixXd& Chain::marginal() const {
   if (marginal_.size() == 0) {
     // marginal_ hasn't been computed yet, so compute it.
     marginal_.resize(left_flex() + 1, right_flex() + 1);
@@ -54,7 +54,7 @@ const Eigen::MatrixXd& SmooshableChain::marginal() const {
 }
 
 
-void SmooshableChain::PerhapsCalcViterbi() const {
+void Chain::PerhapsCalcViterbi() const {
   if (viterbi_.size() == 0) {
     // viterbi_ hasn't been computed yet, so compute it.
     viterbi_.resize(left_flex() + 1, right_flex() + 1);
@@ -70,7 +70,7 @@ void SmooshableChain::PerhapsCalcViterbi() const {
 /// \f[
 /// V_{i,k} := \max_j A_{i,j} B_{j,k}
 /// \f]
-const Eigen::MatrixXd& SmooshableChain::viterbi() const {
+const Eigen::MatrixXd& Chain::viterbi() const {
   PerhapsCalcViterbi();
   return viterbi_;
 }
@@ -81,14 +81,14 @@ const Eigen::MatrixXd& SmooshableChain::viterbi() const {
 /// \f[
 /// I_{i,k} := \argmax_j A_{i,j} B_{j,k}
 /// \f]
-const Eigen::MatrixXi& SmooshableChain::viterbi_idx() const {
+const Eigen::MatrixXi& Chain::viterbi_idx() const {
   PerhapsCalcViterbi();
   return viterbi_idx_;
 }
 
 
 /// @brief TODO
-void SmooshableChain::AuxViterbiPath(int row, int col,
+void Chain::AuxViterbiPath(int row, int col,
                                      std::vector<int>& path) const {
   int new_col = viterbi_idx()(row, col);
   prev_->AuxViterbiPath(row, new_col, path);
@@ -98,7 +98,7 @@ void SmooshableChain::AuxViterbiPath(int row, int col,
 
 /// @brief Give the Viterbi path corresponding to the given row and column of
 /// the Viterbi matrix.
-std::vector<int> SmooshableChain::ViterbiPath(int row, int col) const {
+std::vector<int> Chain::ViterbiPath(int row, int col) const {
   std::vector<int> path;
   /// @todo increase to 5?
   path.reserve(3);
@@ -110,7 +110,7 @@ std::vector<int> SmooshableChain::ViterbiPath(int row, int col) const {
 
 /// @brief Obtain all of the Viterbi paths, first indexing by row and then
 /// column.
-IntVectorVector SmooshableChain::ViterbiPaths() const {
+IntVectorVector Chain::ViterbiPaths() const {
   IntVectorVector paths;
   for (int i = 0; i < viterbi_idx_.rows(); i++) {
     for (int j = 0; j < viterbi_idx_.cols(); j++) {

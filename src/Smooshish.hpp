@@ -7,7 +7,7 @@
 #include <memory>
 
 /// @file Smooshish.hpp
-/// @brief Simple base class for Smooshable and SmooshableChain.
+/// @brief Simple base class for Smooshable and Chain.
 
 namespace linearham {
 
@@ -20,7 +20,7 @@ const double LOG_SCALE_FACTOR = log(SCALE_FACTOR);
 class Smooshish {
  protected:
   // Although we won't mutate these values in Smooshable, we will in
-  // SmooshableChain.
+  // Chain.
   mutable int scaler_count_;
 
  public:

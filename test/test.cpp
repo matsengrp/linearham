@@ -2,7 +2,7 @@
 #define CATCH_CONFIG_MAIN
 
 #include "catch.hpp"
-#include "SmooshableStack.hpp"
+#include "Pile.hpp"
 #include "../lib/fast-cpp-csv-parser/csv.h"
 
 
@@ -465,7 +465,7 @@ TEST_CASE("Smooshable", "[smooshable]") {
 
   SmooshablePtr ps_A = std::make_shared<Smooshable>(Smooshable(A));
   SmooshablePtr ps_B = std::make_shared<Smooshable>(Smooshable(B));
-  SmooshableChainPtr ps_AB = std::make_shared<SmooshableChain>(SmooshableChain(ps_A, ps_B));
+  ChainPtr ps_AB = std::make_shared<Chain>(Chain(ps_A, ps_B));
 
   REQUIRE(ps_A->marginal() == A);
   REQUIRE(ps_B->marginal() == B);
@@ -499,19 +499,19 @@ TEST_CASE("Smooshable", "[smooshable]") {
   // This 1 in the second row then gives us the corresponding column index,
   // which contains a 2. So the second path is {2,1}.
 
-  SmooshableChain s_ABC = SmooshableChain(ps_AB, ps_C);
+  Chain s_ABC = Chain(ps_AB, ps_C);
   REQUIRE(s_ABC.viterbi() == correct_ABC_viterbi);
   REQUIRE(s_ABC.viterbi_idx() == correct_ABC_viterbi_idx);
 
   IntVectorVector correct_viterbi_paths = {{1,0}, {2,1}};
   REQUIRE(s_ABC.ViterbiPaths() == correct_viterbi_paths);
 
-  // SmooshableStack tests.
-  SmooshableStack ss_A = SmooshableStack();
-  SmooshableStack ss_B = SmooshableStack();
-  SmooshableStack ss_C = SmooshableStack();
-  SmooshableStack ss_AB = SmooshableStack();
-  SmooshableStack ss_ABC = SmooshableStack();
+  // Pile tests.
+  Pile ss_A = Pile();
+  Pile ss_B = Pile();
+  Pile ss_C = Pile();
+  Pile ss_AB = Pile();
+  Pile ss_ABC = Pile();
   ss_A.push_back(ps_A);
   ss_B.push_back(ps_B);
   ss_B.push_back(ps_B);
@@ -523,15 +523,15 @@ TEST_CASE("Smooshable", "[smooshable]") {
     REQUIRE((*s)->viterbi_idx() == correct_ABC_viterbi_idx);
   }
 
-  // FinalViterbiLogProb test. Also, this test exercises the SmooshableChain underflow machinery.
+  // FinalViterbiLogProb test. Also, this test exercises the Chain underflow machinery.
   Eigen::MatrixXd Z(1,2);
   // Set up values just above the threshold so they will underflow.
   Z <<
   1.001*SCALE_THRESHOLD, 1.002*SCALE_THRESHOLD;
   SmooshablePtr ps_Z = std::make_shared<Smooshable>(Smooshable(Z));
-  SmooshableStack ss_Z = SmooshableStack();
+  Pile ss_Z = Pile();
   ss_Z.push_back(ps_Z);
-  SmooshableStack ss_ZC = ss_Z.SmooshRight(ss_C);
+  Pile ss_ZC = ss_Z.SmooshRight(ss_C);
   for(auto s = ss_ZC.begin(); s != ss_ZC.end(); ++s) {
     REQUIRE((*s)->FinalViterbiLogProb() == -1*LOG_SCALE_FACTOR + log(0.89*1.001));
   }

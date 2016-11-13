@@ -1,28 +1,28 @@
 #ifndef LINEARHAM_SMOOSHABLE_STACK_
 #define LINEARHAM_SMOOSHABLE_STACK_
 
-#include "SmooshableChain.hpp"
+#include "Chain.hpp"
 
-/// @file SmooshableStack.hpp
-/// @brief Header for the SmooshableStack class.
+/// @file Pile.hpp
+/// @brief Header for the Pile class.
 
 namespace linearham {
 
 
 /// @brief A vector of Smooshishs, representing alternative paths.
-class SmooshableStack {
+class Pile {
  private:
   std::vector<SmooshishPtr> items_;
 
  public:
-  SmooshableStack(){};
+  Pile(){};
 
   int size() { return items_.size(); }
   SmooshishPtr& operator[](const int index) { return items_[index]; }
 
   void push_back(SmooshishPtr sp) { items_.push_back(sp); };
 
-  SmooshableStack SmooshRight(SmooshableStack& other);
+  Pile SmooshRight(Pile& other);
 
   typedef typename std::vector<SmooshishPtr>::size_type size_type;
   typedef typename std::vector<SmooshishPtr>::const_iterator const_iterator;

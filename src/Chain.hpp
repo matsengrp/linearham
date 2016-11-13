@@ -3,8 +3,8 @@
 
 #include "Smooshable.hpp"
 
-/// @file SmooshableChain.hpp
-/// @brief Header for the SmooshableChain class.
+/// @file Chain.hpp
+/// @brief Header for the Chain class.
 
 namespace linearham {
 
@@ -12,7 +12,7 @@ typedef std::vector<std::vector<int>> IntVectorVector;
 
 /// @brief A class to hold something implementing the Smooshable
 /// interface that is defined by smooshing multiple Smooshables or
-/// SmooshableChains.
+/// Chains.
 ///
 /// Note that the marginal and Viterbi matrices are computed on the
 /// fly as needed. We want them to share a scaler count, but not
@@ -21,7 +21,7 @@ typedef std::vector<std::vector<int>> IntVectorVector;
 /// first. E.g. if Viterbi has already been calculated, we use that scaling for
 /// marginal. Our bounds are generous enough that the difference between the
 /// two will not cause underflow.
-class SmooshableChain : public Smooshish {
+class Chain : public Smooshish {
  private:
   SmooshishPtr prev_;
   SmooshishPtr curr_;
@@ -37,7 +37,7 @@ class SmooshableChain : public Smooshish {
   void Scale(Eigen::MatrixXd& myself, Eigen::MatrixXd& other) const;
 
  public:
-  SmooshableChain(SmooshishPtr, SmooshishPtr);
+  Chain(SmooshishPtr, SmooshishPtr);
   int left_flex() const override { return left_flex_; };
   int right_flex() const override { return right_flex_; };
   const Eigen::MatrixXd& marginal() const override;
@@ -49,7 +49,7 @@ class SmooshableChain : public Smooshish {
   IntVectorVector ViterbiPaths() const;
 };
 
-typedef std::shared_ptr<SmooshableChain> SmooshableChainPtr;
+typedef std::shared_ptr<Chain> ChainPtr;
 }
 
 #endif  // LINEARHAM_SMOOSHABLE_CHAIN_
