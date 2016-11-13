@@ -18,8 +18,8 @@ class Smooshish {
   mutable int scaler_count_;
 
  public:
-  int left_flex() const { return marginal().rows() - 1; };
-  int right_flex() const { return marginal().cols() - 1; };
+  virtual int left_flex() const = 0;
+  virtual int right_flex() const = 0;
   int scaler_count() const { return scaler_count_; };
 
   virtual const Eigen::MatrixXd& marginal() const = 0;

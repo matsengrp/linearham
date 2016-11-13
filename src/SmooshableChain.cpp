@@ -10,6 +10,9 @@ namespace linearham {
 SmooshableChain::SmooshableChain(SmooshishPtr prev, SmooshishPtr curr) {
   prev_ = prev;
   curr_ = curr;
+  assert(prev_->right_flex() == curr_->left_flex());
+  left_flex_ = prev_->left_flex();
+  right_flex_ = curr_->right_flex();
 }
 
 
@@ -23,8 +26,7 @@ SmooshableChain::SmooshableChain(SmooshishPtr prev, SmooshishPtr curr) {
 const Eigen::MatrixXd& SmooshableChain::marginal() const {
   if (marginal_.size() == 0) {
     // marginal_ hasn't been computed yet, so compute it.
-    assert(prev_->right_flex() == curr_->left_flex());
-    marginal_.resize(prev_->left_flex() + 1, curr_->right_flex() + 1);
+    marginal_.resize(left_flex() + 1, right_flex() + 1);
     marginal_ = prev_->marginal() * curr_->marginal();
     // Now handle scaling.
     if (viterbi_.size() == 0) {
@@ -46,10 +48,8 @@ const Eigen::MatrixXd& SmooshableChain::marginal() const {
 void SmooshableChain::PerhapsCalcViterbi() const {
   if (viterbi_.size() == 0) {
     // viterbi_ hasn't been computed yet, so compute it.
-    assert(prev_->right_flex() == curr_->left_flex());
-    viterbi_.resize(prev_->left_flex() + 1, curr_->right_flex() + 1);
-    viterbi_idx_.resize(prev_->left_flex() + 1, curr_->right_flex() + 1);
-    prev_->viterbi();
+    viterbi_.resize(left_flex() + 1, right_flex() + 1);
+    viterbi_idx_.resize(left_flex() + 1, right_flex() + 1);
     BinaryMax(prev_->viterbi(), curr_->viterbi(), viterbi_, viterbi_idx_);
     // Now handle scaling.
     if (marginal_.size() == 0) {

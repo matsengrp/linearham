@@ -25,6 +25,8 @@ class SmooshableChain : public Smooshish {
  private:
   SmooshishPtr prev_;
   SmooshishPtr curr_;
+  int left_flex_ = 0;
+  int right_flex_ = 0;
   // This is the scaling that comes from smooshing the (presumably already
   // scaled) Smooshables that we were already passed.
   mutable int local_scaler_count_ = 0;
@@ -35,6 +37,8 @@ class SmooshableChain : public Smooshish {
 
  public:
   SmooshableChain(SmooshishPtr, SmooshishPtr);
+  int left_flex() const override { return left_flex_; };
+  int right_flex() const override { return right_flex_; };
   const Eigen::MatrixXd& marginal() const override;
   const Eigen::MatrixXd& viterbi() const override;
   const Eigen::MatrixXi& viterbi_idx() const;

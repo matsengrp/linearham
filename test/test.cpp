@@ -508,10 +508,17 @@ TEST_CASE("Smooshable", "[smooshable]") {
 
   // SmooshableStack tests.
   // TODO improve
-  SmooshableStack ss = SmooshableStack();
-  ss.push_back(ps_A);
-  ss.push_back(ps_B);
-  ss.SmooshRight(ss);
+  SmooshableStack ss_A = SmooshableStack();
+  SmooshableStack ss_B = SmooshableStack();
+  SmooshableStack ss_C = SmooshableStack();
+  SmooshableStack ss_AB = SmooshableStack();
+  SmooshableStack ss_ABC = SmooshableStack();
+  ss_A.push_back(ps_A);
+  ss_B.push_back(ps_B);
+  ss_B.push_back(ps_B);
+  ss_C.push_back(ps_C);
+  ss_AB = ss_A.SmooshRight(ss_B);
+  ss_ABC = ss_AB.SmooshRight(ss_C);
 
   // TODO test FinalViterbiLogProb
 
