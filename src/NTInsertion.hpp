@@ -13,7 +13,10 @@ namespace linearham {
 /// regions between germline genes.
 class NTInsertion {
  protected:
+  // A vector of landing probabilities to begin a NTI region.
   Eigen::VectorXd n_landing_in_;
+  // A vector of landing probabilities to exit a NTI region
+  // and enter a germline match segment.
   Eigen::MatrixXd n_landing_out_;
   Eigen::MatrixXd n_emission_matrix_;
   Eigen::MatrixXd n_transition_;

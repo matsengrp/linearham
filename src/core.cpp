@@ -20,25 +20,15 @@ namespace linearham {
 /// matrix M with the part of the match probability coming from the
 /// transitions. If \f$a\f$ is next_transition,
 /// \f[
-/// M_{i,j} := (1-a_j) \prod_{k=i}^{j-1} a_k
+/// M_{i,j} := \prod_{k=i}^{j-1} a_k
 /// \f]
 /// is the cumulative transition probability of having a match start at i and
-/// end at j, ignoring the transition into the match.
+/// end at j, ignoring the transitions into and out of the match.
 Eigen::MatrixXd BuildTransition(
     const Eigen::Ref<const Eigen::VectorXd>& next_transition) {
   int ell = next_transition.size() + 1;
-  Eigen::MatrixXd transition(ell, ell);
-  Eigen::VectorXd fall_off(ell);
-
-  transition.setOnes();
+  Eigen::MatrixXd transition = Eigen::MatrixXd::Ones(ell, ell);
   SubProductMatrix(next_transition, transition.block(0, 1, ell - 1, ell - 1));
-
-  // Changing to array here allows for component-wise operations.
-  fall_off.head(ell - 1).array() = 1. - next_transition.array();
-  fall_off(ell - 1) = 1.;
-
-  RowVecMatCwise(fall_off, transition, transition);
-
   transition.triangularView<Eigen::StrictlyLower>().setZero();
 
   return transition;

@@ -117,8 +117,10 @@ Eigen::MatrixXd NTInsertion::NTIProbMatrix(
   assert(right_relpos <= right_flexbounds.second);
 
   assert(right_relpos < emission_indices.size());
+  assert(0 < left_flexbounds.first && 0 < left_flexbounds.second);
   assert(left_flexbounds.first < emission_indices.size() &&
          left_flexbounds.second < emission_indices.size());
+  assert(0 < right_flexbounds.first && 0 < right_flexbounds.second);
   assert(right_flexbounds.first < emission_indices.size() &&
          right_flexbounds.second < emission_indices.size());
 
@@ -131,7 +133,7 @@ Eigen::MatrixXd NTInsertion::NTIProbMatrix(
       Eigen::MatrixXd::Zero(g_lr - g_ll + 1, n_transition_.cols());
   Eigen::MatrixXd outp(g_lr - g_ll + 1, g_rr - g_rl + 1);
 
-  // looping from left to right across the NTI region
+  // Loop from left to right across the NTI region.
   for (int i = g_ll; i < g_rr; i++) {
     // left flex computations
     if (i <= g_lr) {
@@ -147,7 +149,7 @@ Eigen::MatrixXd NTInsertion::NTIProbMatrix(
                      cache_mat);
     }
 
-    // storing final probabilities in output matrix
+    // Store final probabilities in output matrix.
     if (i >= g_rl - 1)
       outp.col(i - (g_rl - 1)) =
           cache_mat * n_landing_out_.col(i + 1 - right_relpos);

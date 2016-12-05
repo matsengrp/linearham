@@ -2,8 +2,7 @@
 #define CATCH_CONFIG_MAIN
 
 #include "catch.hpp"
-#include "SmooshableChain.hpp"
-#include "../lib/fast-cpp-csv-parser/csv.h"
+#include "Pile.hpp"
 
 
 namespace test {
@@ -16,9 +15,9 @@ YAML::Node V_root, D_root, J_root;
 Eigen::VectorXi emission_indices(13);
 
 void initialize_global_test_vars() {
-  V_root = GetYAMLRoot("data/V_germline_ex.yaml");
-  D_root = GetYAMLRoot("data/D_germline_ex.yaml");
-  J_root = GetYAMLRoot("data/J_germline_ex.yaml");
+  V_root = YAML::LoadFile("data/hmm_params_ex/IGHV_ex_star_01.yaml");
+  D_root = YAML::LoadFile("data/hmm_params_ex/IGHD_ex_star_01.yaml");
+  J_root = YAML::LoadFile("data/hmm_params_ex/IGHJ_ex_star_01.yaml");
   emission_indices << 0, 1, 0, 2, 3, 0, 1, 1, 1, 3, 2, 3, 3;
 }
 
@@ -28,13 +27,13 @@ void initialize_global_test_vars() {
 TEST_CASE("ColVecMatCwise", "[linalg]") {
   Eigen::VectorXd b(3);
   Eigen::MatrixXd A(3,4), B(3,4), correct_B(3,4);
-  A << 1, 2.9, 3,  4,
-       5, 6,   7,  8,
-       9, 10,  11, 12;
+  A << 1, 2.9,  3,  4,
+       5,   6,  7,  8,
+       9,  10, 11, 12;
   b << 0, 4, 1;
-  correct_B <<  0,  0,  0,  0,
-                20, 24, 28, 32,
-                9, 10,  11, 12;
+  correct_B << 0,  0,  0,  0,
+              20, 24, 28, 32,
+               9, 10, 11, 12;
 
   ColVecMatCwise(b, A, B);
   REQUIRE(B == correct_B);
@@ -48,13 +47,13 @@ TEST_CASE("ColVecMatCwise", "[linalg]") {
 TEST_CASE("RowVecMatCwise", "[linalg]") {
   Eigen::RowVectorXd b(4);
   Eigen::MatrixXd A(3,4), B(3,4), correct_B(3,4);
-  A << 1, 2.9, 3,  4,
-       5, 6,   7,  8,
-       9, 10,  11, 12;
+  A << 1, 2.9,  3,  4,
+       5,   6,  7,  8,
+       9,  10, 11, 12;
   b << 0, 4, 1, 10;
-  correct_B <<  0, 11.6, 3, 40,
-                0, 24,   7, 80,
-                0, 40,  11, 120;
+  correct_B << 0, 11.6,  3,  40,
+               0,   24,  7,  80,
+               0,   40, 11, 120;
 
   RowVecMatCwise(b, A, B);
   REQUIRE(B == correct_B);
@@ -64,9 +63,9 @@ TEST_CASE("RowVecMatCwise", "[linalg]") {
 TEST_CASE("SubProductMatrix", "[linalg]") {
   Eigen::MatrixXd A(3,3), correct_A(3,3);
   Eigen::VectorXd e(3);
-  correct_A <<  2.5, -2.5, -5,
-                  1,   -1, -2,
-                  1,    1,  2;
+  correct_A << 2.5, -2.5, -5,
+                 1,   -1, -2,
+                 1,    1,  2;
   e << 2.5, -1, 2;
   A.setConstant(999);
 
@@ -79,10 +78,10 @@ TEST_CASE("VectorByIndices", "[linalg]") {
   Eigen::VectorXd b(4), correct_b(4);
   Eigen::MatrixXd A(3,4);
   Eigen::VectorXi a(4);
-  correct_b <<  9,  2.9,  7,  4;
-  A << 1, 2.9, 3,  4,
-       5, 6,   7,  8,
-       9, 10,  11, 12;
+  correct_b << 9, 2.9, 7, 4;
+  A << 1, 2.9,  3,  4,
+       5,   6,  7,  8,
+       9,  10, 11, 12;
   a << 2, 0, 1, 0;
 
   VectorByIndices(A, a, b);
@@ -125,10 +124,9 @@ TEST_CASE("BuildTransition", "[core]") {
   next_transition << 0.2, 0.3;
   Eigen::MatrixXd correct_transition(3,3);
   correct_transition <<
-  // Format is transition * ... * fall_off
-  0.8 , 0.2*0.7, 0.2*0.3,
-  0   ,     0.7,     0.3,
-  0   ,       0,       1;
+  1, 0.2, 0.2*0.3,
+  0,   1,     0.3,
+  0,   0,       1;
 
   Eigen::MatrixXd transition;
   transition = BuildTransition(next_transition);
@@ -143,10 +141,10 @@ TEST_CASE("BuildMatch", "[core]") {
   next_transition << 0.2, 0.3;
   Eigen::MatrixXd correct_match(3,3);
   correct_match <<
-  // Format is emission * transition * ... * fall_off
-  0.5*0.8    , 0.5*0.2*0.71*0.7, 0.5*0.2*0.71*0.3*0.11 ,
-  0          , 0.71*0.7        , 0.71*0.3*0.11         ,
-  0          , 0               , 0.11                  ;
+  // Format is emission * transition * ... * emission
+  0.5, 0.5*0.2*0.71, 0.5*0.2*0.71*0.3*0.11,
+    0,         0.71,         0.71*0.3*0.11,
+    0,            0,                  0.11;
   Eigen::MatrixXd match(3,3);
   Eigen::MatrixXd transition;
 
@@ -162,8 +160,10 @@ TEST_CASE("Germline", "[germline]") {
   initialize_global_test_vars();
 
   // V tests
-  Eigen::VectorXd V_landing(5);
-  V_landing << 0.6666666666666666, 0, 0, 0, 0;
+  Eigen::VectorXd V_landing_in(5);
+  V_landing_in << 0.6666666666666666, 0, 0, 0, 0;
+  Eigen::VectorXd V_landing_out(5);
+  V_landing_out << 0, 0, 0.2, 0.5, 1;
   Eigen::MatrixXd V_emission_matrix(4,5);
   V_emission_matrix <<
   0.79, 0.1, 0.01, 0.55, 0.125,
@@ -172,17 +172,17 @@ TEST_CASE("Germline", "[germline]") {
   0.07, 0.7, 0.01, 0.15, 0.125;
   Eigen::MatrixXd V_transition(5,5);
   V_transition <<
-  // Format is transition * ... * fall_off
-  0, 1*0, 1*1*0.2, 1*1*0.8*0.5, 1*1*0.8*0.5,
-  0,   0,   1*0.2,   1*0.8*0.5,   1*0.8*0.5,
-  0,   0,     0.2,     0.8*0.5,     0.8*0.5,
-  0,   0,       0,         0.5,         0.5,
-  0,   0,       0,           0,           1;
+  1, 1, 1*1, 1*1*0.8, 1*1*0.8*0.5,
+  0, 1,   1,   1*0.8,   1*0.8*0.5,
+  0, 0,   1,     0.8,     0.8*0.5,
+  0, 0,   0,       1,         0.5,
+  0, 0,   0,       0,           1;
   double V_gene_prob = 0.07;
 
   Germline V_Germline(V_root);
 
-  REQUIRE(V_Germline.landing() == V_landing);
+  REQUIRE(V_Germline.landing_in() == V_landing_in);
+  REQUIRE(V_Germline.landing_out() == V_landing_out);
   REQUIRE(V_Germline.emission_matrix() == V_emission_matrix);
   REQUIRE(V_Germline.transition().isApprox(V_transition));
   REQUIRE(V_Germline.gene_prob() == V_gene_prob);
@@ -193,17 +193,19 @@ TEST_CASE("Germline", "[germline]") {
   std::pair<int, int> V_right_flexbounds = std::make_pair(7, 10);
   Eigen::MatrixXd V_GermlineProbMatrix(3,4);
   V_GermlineProbMatrix <<
-  // Format is emission * transition * ... * fall_off
-  0*0*0.07*1*0.1*1*0.01*0.2, 0*0*0.07*1*0.1*1*0.01*0.8*0.15*0.5, 0*0*0.07*1*0.1*1*0.01*0.8*0.15*0.5*0.625, 0*0*0.07*1*0.1*1*0.01*0.8*0.15*0.5*0.625*0*0,
-      0.07*1*0.1*1*0.01*0.2,     0.07*1*0.1*1*0.01*0.8*0.15*0.5,     0.07*1*0.1*1*0.01*0.8*0.15*0.5*0.625,     0.07*1*0.1*1*0.01*0.8*0.15*0.5*0.625*0*0,
-             0.1*1*0.01*0.2,            0.1*1*0.01*0.8*0.15*0.5,            0.1*1*0.01*0.8*0.15*0.5*0.625,            0.1*1*0.01*0.8*0.15*0.5*0.625*0*0;
+  // Format is emission * transition * ... * emission
+  0*0*0.07*1*0.1*1*0.01, 0*0*0.07*1*0.1*1*0.01*0.8*0.15, 0*0*0.07*1*0.1*1*0.01*0.8*0.15*0.5*0.625, 0*0*0.07*1*0.1*1*0.01*0.8*0.15*0.5*0.625*0*0,
+      0.07*1*0.1*1*0.01,     0.07*1*0.1*1*0.01*0.8*0.15,     0.07*1*0.1*1*0.01*0.8*0.15*0.5*0.625,     0.07*1*0.1*1*0.01*0.8*0.15*0.5*0.625*0*0,
+             0.1*1*0.01,            0.1*1*0.01*0.8*0.15,            0.1*1*0.01*0.8*0.15*0.5*0.625,            0.1*1*0.01*0.8*0.15*0.5*0.625*0*0;
 
   REQUIRE(V_Germline.GermlineProbMatrix(V_left_flexbounds, V_right_flexbounds,
                                         emission_indices, V_relpos).isApprox(V_GermlineProbMatrix));
 
   // D tests
-  Eigen::VectorXd D_landing(5);
-  D_landing << 0.4, 0.1, 0.05, 0, 0;
+  Eigen::VectorXd D_landing_in(5);
+  D_landing_in << 0.4, 0.1, 0.05, 0, 0;
+  Eigen::VectorXd D_landing_out(5);
+  D_landing_out << 0.02, 0.05, 0.4, 0.65, 1;
   Eigen::MatrixXd D_emission_matrix(4,5);
   D_emission_matrix <<
   0.12, 0.07, 0.05, 0.55, 0.01,
@@ -212,17 +214,17 @@ TEST_CASE("Germline", "[germline]") {
   0.12, 0.07, 0.85, 0.15, 0.01;
   Eigen::MatrixXd D_transition(5,5);
   D_transition <<
-  // Format is transition * ... * fall_off
-  0.02, 0.98*0.05, 0.98*0.95*0.4, 0.98*0.95*0.6*0.65, 0.98*0.95*0.6*0.35,
-     0,      0.05,      0.95*0.4,      0.95*0.6*0.65,      0.95*0.6*0.35,
-     0,         0,           0.4,           0.6*0.65,           0.6*0.35,
-     0,         0,             0,               0.65,               0.35,
-     0,         0,             0,                  0,                  1;
+  1, 0.98, 0.98*0.95, 0.98*0.95*0.6, 0.98*0.95*0.6*0.35,
+  0,    1,      0.95,      0.95*0.6,      0.95*0.6*0.35,
+  0,    0,         1,           0.6,           0.6*0.35,
+  0,    0,         0,             1,               0.35,
+  0,    0,         0,             0,                  1;
   double D_gene_prob = 0.035;
 
   Germline D_Germline(D_root);
 
-  REQUIRE(D_Germline.landing() == D_landing);
+  REQUIRE(D_Germline.landing_in() == D_landing_in);
+  REQUIRE(D_Germline.landing_out() == D_landing_out);
   REQUIRE(D_Germline.emission_matrix() == D_emission_matrix);
   REQUIRE(D_Germline.transition().isApprox(D_transition));
   REQUIRE(D_Germline.gene_prob() == D_gene_prob);
@@ -233,10 +235,10 @@ TEST_CASE("Germline", "[germline]") {
   std::pair<int, int> D_right_flexbounds = std::make_pair(5, 7);
   Eigen::MatrixXd D_GermlineProbMatrix(3,3);
   D_GermlineProbMatrix <<
-  // Format is emission * transition * ... * fall_off
-  0.79*0.95*0.85*0.4, 0.79*0.95*0.85*0.6*0.55*0.65, 0.79*0.95*0.85*0.6*0.55*0.35*0.97,
-            0.85*0.4,           0.85*0.6*0.55*0.65,           0.85*0.6*0.55*0.35*0.97,
-                   0,                    0.55*0.65,                    0.55*0.35*0.97;
+  // Format is emission * transition * ... * emission
+  0.79*0.95*0.85, 0.79*0.95*0.85*0.6*0.55, 0.79*0.95*0.85*0.6*0.55*0.35*0.97,
+            0.85,           0.85*0.6*0.55,           0.85*0.6*0.55*0.35*0.97,
+               0,                    0.55,                    0.55*0.35*0.97;
 
   REQUIRE(D_Germline.GermlineProbMatrix(D_left_flexbounds, D_right_flexbounds,
                                         emission_indices, D_relpos).isApprox(D_GermlineProbMatrix));
@@ -251,8 +253,10 @@ TEST_CASE("Germline", "[germline]") {
                                         emission_indices, D_relpos) == D_GermlineProbMatrix);
 
   // J tests
-  Eigen::VectorXd J_landing(5);
-  J_landing << 0.25, 0.05, 0, 0, 0;
+  Eigen::VectorXd J_landing_in(5);
+  J_landing_in << 0.25, 0.05, 0, 0, 0;
+  Eigen::VectorXd J_landing_out(5);
+  J_landing_out << 0, 0, 0, 0, 0.04;
   Eigen::MatrixXd J_emission_matrix(4,5);
   J_emission_matrix <<
   0.91, 0.1, 0.06, 0.01, 0.08,
@@ -261,17 +265,17 @@ TEST_CASE("Germline", "[germline]") {
   0.03, 0.7, 0.06, 0.01, 0.08;
   Eigen::MatrixXd J_transition(5,5);
   J_transition <<
-  // Format is transition * ... * fall_off
-     0, 1*0, 1*1*0, 1*1*1*0, 1*1*1*1*1,
-     0,   0,   1*0,   1*1*0,   1*1*1*1,
-     0,   0,     0,     1*0,     1*1*1,
-     0,   0,     0,       0,       1*1,
-     0,   0,     0,       0,         1;
+  1, 1, 1*1, 1*1*1, 1*1*1*1,
+  0, 1,   1,   1*1,   1*1*1,
+  0, 0,   1,     1,     1*1,
+  0, 0,   0,     1,       1,
+  0, 0,   0,     0,       1;
   double J_gene_prob = 0.015;
 
   Germline J_Germline(J_root);
 
-  REQUIRE(J_Germline.landing() == J_landing);
+  REQUIRE(J_Germline.landing_in() == J_landing_in);
+  REQUIRE(J_Germline.landing_out() == J_landing_out);
   REQUIRE(J_Germline.emission_matrix() == J_emission_matrix);
   REQUIRE(J_Germline.transition().isApprox(J_transition));
   REQUIRE(J_Germline.gene_prob() == J_gene_prob);
@@ -282,9 +286,9 @@ TEST_CASE("Germline", "[germline]") {
   std::pair<int, int> J_right_flexbounds = std::make_pair(12, 13);
   Eigen::MatrixXd J_GermlineProbMatrix(2,2);
   J_GermlineProbMatrix <<
-  // Format is emission * transition * ... * fall_off
-  0.03*1*0.7*1*0.82*1*0.01*0, 0.03*1*0.7*1*0.82*1*0.01*1*0.08*1,
-         0.7*1*0.82*1*0.01*0,        0.7*1*0.82*1*0.01*1*0.08*1;
+  // Format is emission * transition * ... * emission
+  0.03*1*0.7*1*0.82*1*0.01, 0.03*1*0.7*1*0.82*1*0.01*1*0.08,
+         0.7*1*0.82*1*0.01,        0.7*1*0.82*1*0.01*1*0.08;
 
   REQUIRE(J_Germline.GermlineProbMatrix(J_left_flexbounds, J_right_flexbounds,
                                         emission_indices, J_relpos).isApprox(J_GermlineProbMatrix));
@@ -386,8 +390,10 @@ TEST_CASE("NTInsertion", "[ntinsertion]") {
        0,    0.0265, 0,
        0,         0, 0;
 
-  REQUIRE(J_NTInsertion.NTIProbMatrix(J_left_flexbounds, J_right_flexbounds,
-                                      emission_indices, J_right_relpos).isApprox(J_NTIProbMatrix));
+  REQUIRE(J_NTInsertion
+              .NTIProbMatrix(J_left_flexbounds, J_right_flexbounds,
+                             emission_indices, J_right_relpos)
+              .isApprox(J_NTIProbMatrix));
 }
 
 
@@ -463,64 +469,198 @@ TEST_CASE("Smooshable", "[smooshable]") {
   1,1,
   1,2;
 
-  Smooshable s_A = Smooshable(A);
-  Smooshable s_B = Smooshable(B);
-  Smooshable s_AB;
-  Eigen::MatrixXi AB_viterbi_idx;
-  std::tie(s_AB, AB_viterbi_idx) = Smoosh(s_A, s_B);
+  SmooshablePtr ps_A = BuildSmooshablePtr(A);
+  SmooshablePtr ps_B = BuildSmooshablePtr(B);
+  ChainPtr ps_AB = std::make_shared<Chain>(Chain(ps_A, ps_B));
 
-  REQUIRE(s_AB.marginal() == correct_AB_marginal);
-  REQUIRE(s_AB.viterbi() == correct_AB_viterbi);
-  REQUIRE(AB_viterbi_idx == correct_AB_viterbi_idx);
-  REQUIRE(s_AB.scaler_count() == 0);
+  REQUIRE(ps_A->marginal() == A);
+  REQUIRE(ps_B->marginal() == B);
+  REQUIRE(ps_AB->marginal() == correct_AB_marginal);
+  REQUIRE(ps_AB->viterbi() == correct_AB_viterbi);
+  REQUIRE(ps_AB->viterbi_idx() == correct_AB_viterbi_idx);
+  REQUIRE(ps_AB->scaler_count() == 0);
 
-  // now let's test for underflow
-  Smooshable s_AB_uflow = Smooshable(s_AB.marginal() * SCALE_THRESHOLD);
+  // Now let's test for underflow.
+  Smooshable s_AB_uflow = Smooshable(ps_AB->marginal() * SCALE_THRESHOLD);
   REQUIRE(s_AB_uflow.marginal().isApprox(correct_AB_marginal));
-  REQUIRE(s_AB_uflow.viterbi().isApprox(correct_AB_marginal));
   REQUIRE(s_AB_uflow.scaler_count() == 1);
 
-//  Eigen::MatrixXd C(2,1);
-//  C <<
-//  0.89,
-//  0.43;
-//  Smooshable s_C = Smooshable(C);
-//  Eigen::MatrixXd correct_ABC_viterbi(2,1);
-//  correct_ABC_viterbi <<
-//  // 0.71*0.29*0.89 > 0.71*0.41*0.43
-//  // 0.31*0.29*0.89 < 0.37*0.97*0.43
-//  0.71*0.29*0.89,
-//  0.37*0.97*0.43;
-//  // So the Viterbi indices are
-//  // 0
-//  // 1
-//  //
-//  // This 1 in the second row then gives us the corresponding column index,
-//  // which contains a 2. So the second path is {2,1}.
+  Eigen::MatrixXd C(2,1);
+  C <<
+  0.89,
+  0.43;
+  SmooshablePtr ps_C = BuildSmooshablePtr(C);
+  Eigen::MatrixXd correct_ABC_viterbi(2,1);
+  Eigen::MatrixXi correct_ABC_viterbi_idx(2,1);
+  correct_ABC_viterbi <<
+  // 0.71*0.29*0.89 > 0.71*0.41*0.43
+  // 0.31*0.29*0.89 < 0.37*0.97*0.43
+  0.71*0.29*0.89,
+  0.37*0.97*0.43;
+  // So the Viterbi indices are
+  correct_ABC_viterbi_idx <<
+  0,
+  1;
+  // This 1 in the second row then gives us the corresponding column index,
+  // which contains a 2. So the second path is {2,1}.
 
-//  SmooshableVector sv = {s_A, s_B, s_C};
-//  SmooshableChain chain = SmooshableChain(sv);
-//  IntVectorVector correct_viterbi_paths = {{1,0}, {2,1}};
-//  REQUIRE(chain.smooshed()[0].viterbi() == correct_AB_viterbi);
-//  REQUIRE(chain.smooshed().back().viterbi() == correct_ABC_viterbi);
-//  REQUIRE(chain.viterbi_paths() == correct_viterbi_paths);
+  Chain s_ABC = Chain(ps_AB, ps_C);
+  REQUIRE(s_ABC.viterbi() == correct_ABC_viterbi);
+  REQUIRE(s_ABC.viterbi_idx() == correct_ABC_viterbi_idx);
+  IntVectorVector correct_viterbi_paths = {{1,0}, {2,1}};
+  REQUIRE(s_ABC.ViterbiPaths() == correct_viterbi_paths);
 
+  // SmooshVector tests.
+  SmooshablePtrVect sv = {ps_B, ps_C};
+  ChainPtr s_ABC_alt = SmooshVector(ps_A, sv);
+  REQUIRE(s_ABC.viterbi() == s_ABC_alt->viterbi());
+  REQUIRE(s_ABC.viterbi_idx() == s_ABC_alt->viterbi_idx());
+  REQUIRE(s_ABC.ViterbiPaths() == s_ABC_alt->ViterbiPaths());
+
+  // Pile tests.
+  Pile p_A = Pile();
+  Pile p_B = Pile();
+  Pile p_C = Pile();
+  Pile p_ABC = Pile();
+  p_A.push_back(ps_A);
+  p_B.push_back(ps_B);
+  p_C.push_back(ps_C);
+  p_ABC = p_A.SmooshRight({sv});
+  for(auto s = p_ABC.begin(); s != p_ABC.end(); ++s) {
+    REQUIRE((*s)->viterbi() == correct_ABC_viterbi);
+    REQUIRE((*s)->viterbi_idx() == correct_ABC_viterbi_idx);
+  }
+
+  // FinalViterbiLogProb test. Also, this test exercises the Chain underflow machinery.
+  Eigen::MatrixXd Z(1,2);
+  // Set up values just above the threshold so they will underflow.
+  Z <<
+  1.001*SCALE_THRESHOLD, 1.002*SCALE_THRESHOLD;
+  SmooshablePtr ps_Z = BuildSmooshablePtr(Z);
+  Pile p_Z = Pile();
+  p_Z.push_back(ps_Z);
+  Pile p_ZC = p_Z.SmooshRight({{ps_C}});
+  for(auto s = p_ZC.begin(); s != p_ZC.end(); ++s) {
+    REQUIRE((*s)->FinalViterbiLogProb() == -1*LOG_SCALE_FACTOR + log(0.89*1.001));
+  }
+
+  // Germline Smooshable tests.
   VGermline vgerm_obj(V_root);
   DGermline dgerm_obj(D_root);
   JGermline jgerm_obj(J_root);
+  std::map<std::string, std::pair<int, int>> flexbounds;
 
-  Smooshable VSmoosh = VSmooshable(vgerm_obj, std::make_pair(0,2),
-                                   std::make_pair(5,7), emission_indices, 2);
+  // V tests
+  Eigen::MatrixXd VSmoosh_marginal(1,3);
+  VSmoosh_marginal <<
+  // Format is gene_prob * npadding_prob * emission * transition * ... * emission * landing_out
+  0.07*0.33333333333333337*0.25*0.33333333333333337*0.25*0.6666666666666666*0.79*1*0.1*1*0.01*0.2, 0.07*0.33333333333333337*0.25*0.33333333333333337*0.25*0.6666666666666666*0.79*1*0.1*1*0.01*0.8*0.55*0.5, 0.07*0.33333333333333337*0.25*0.33333333333333337*0.25*0.6666666666666666*0.79*1*0.1*1*0.01*0.8*0.55*0.5*0.625;
 
-  Smooshable DXSmoosh, DNSmoosh;
-  std::tie(DXSmoosh, DNSmoosh) = DSmooshables(dgerm_obj, std::make_pair(4,5),
-                                              std::make_pair(6,8), std::make_pair(10,11),
-                                              emission_indices, 5);
+  flexbounds["v_l"] = {0,2};
+  flexbounds["v_r"] = {5,7};
+  SmooshablePtr VSmoosh = VSmooshable(vgerm_obj, flexbounds, emission_indices, 2);
 
-  Smooshable JXSmoosh, JNSmoosh;
-  std::tie(JXSmoosh, JNSmoosh) = JSmooshables(jgerm_obj, std::make_pair(5,6),
-                                              std::make_pair(8, 9), std::make_pair(12, 13),
-                                              emission_indices, 8);
+  REQUIRE(VSmoosh->marginal().isApprox(VSmoosh_marginal));
+
+  // D tests
+  Eigen::MatrixXd DXSmoosh_marginal(2,2);
+  DXSmoosh_marginal <<
+  // Format is gene_prob * landing_in * emission * transition * ... * emission * landing_out
+  0.035*0*0*0*0.12*0.98*0.07*0.95*0.05*0.6*0.15*0.35*0.01, 0.035*0*0*0*0.12*0.98*0.07*0.95*0.05*0.6*0.15*0.35*0.01*0*0,
+    0.035*0.4*0.12*0.98*0.07*0.95*0.05*0.6*0.15*0.35*0.01,   0.035*0.4*0.12*0.98*0.07*0.95*0.05*0.6*0.15*0.35*0.01*0*0;
+  Eigen::MatrixXd DNSmoosh_nti_marginal(2,3);
+  DNSmoosh_nti_marginal <<
+  0.0006875, 8.04375000e-05, 0,
+   0.011875, 1.38937500e-03, 0;
+  Eigen::MatrixXd DNSmoosh_ngerm_marginal(3,2);
+  DNSmoosh_ngerm_marginal <<
+  // Format is gene_prob * emission * transition * ... * emission * landing_out
+  0.035*0.07*0.95*0.05*0.6*0.15*0.35*0.01, 0.035*0.07*0.95*0.05*0.6*0.15*0.35*0.01*0*0,
+            0.035*0.05*0.6*0.15*0.35*0.01,           0.035*0.05*0.6*0.15*0.35*0.01*0*0,
+                     0.035*0.15*0.35*0.01,                    0.035*0.15*0.35*0.01*0*0;
+
+  flexbounds["v_r"] = {4,5};
+  flexbounds["d_l"] = {6,8};
+  flexbounds["d_r"] = {10,11};
+  SmooshablePtrVect DXSmoosh(1), DNSmoosh(2);
+  std::tie(DXSmoosh, DNSmoosh) = DSmooshables(dgerm_obj, flexbounds, emission_indices, 5);
+
+  REQUIRE(DXSmoosh[0]->marginal().isApprox(DXSmoosh_marginal));
+  REQUIRE(DNSmoosh[0]->marginal().isApprox(DNSmoosh_nti_marginal));
+  REQUIRE(DNSmoosh[1]->marginal().isApprox(DNSmoosh_ngerm_marginal));
+
+  // J tests
+  Eigen::MatrixXd JXSmoosh_marginal(2,1);
+  JXSmoosh_marginal <<
+  // The germline gene has no bases in the left flex region.
+  0,
+  0;
+  Eigen::MatrixXd JNSmoosh_nti_marginal(2,2);
+  JNSmoosh_nti_marginal <<
+  0.00089146, 8.07886e-05,
+    0.011484,  0.00104074;
+  Eigen::MatrixXd JNSmoosh_ngerm_marginal(2,1);
+  JNSmoosh_ngerm_marginal <<
+  // Format is gene_prob * emission * transition * ... * emission * npadding_prob
+  0.015*0.03*1*0.7*1*0.82*1*0.01*1*0.08*0.04,
+         0.015*0.7*1*0.82*1*0.01*1*0.08*0.04;
+
+  flexbounds["d_r"] = {5,6};
+  flexbounds["j_l"] = {8,9};
+  flexbounds["j_r"] = {12,13};
+  SmooshablePtrVect JXSmoosh(1), JNSmoosh(2);
+  std::tie(JXSmoosh, JNSmoosh) =
+      JSmooshables(jgerm_obj, flexbounds, emission_indices, 8);
+
+  REQUIRE(JXSmoosh[0]->marginal().isApprox(JXSmoosh_marginal));
+  REQUIRE(JNSmoosh[0]->marginal().isApprox(JNSmoosh_nti_marginal, 1e-5));
+  REQUIRE(JNSmoosh[1]->marginal().isApprox(JNSmoosh_ngerm_marginal));
+
+  // VDJ Pile tests.
+  flexbounds["v_l"] = {0,2};
+  flexbounds["v_r"] = {4,6};
+  flexbounds["d_l"] = {7,8};
+  flexbounds["d_r"] = {9,10};
+  flexbounds["j_l"] = {11,12};
+  flexbounds["j_r"] = {13,13};
+  VSmoosh = VSmooshable(vgerm_obj, flexbounds, emission_indices, 1);
+  std::tie(DXSmoosh, DNSmoosh) = DSmooshables(dgerm_obj, flexbounds, emission_indices, 5);
+  std::tie(JXSmoosh, JNSmoosh) = JSmooshables(jgerm_obj, flexbounds, emission_indices, 10);
+
+  Pile actual_vdj_pile = Pile();
+  actual_vdj_pile.push_back(VSmoosh);
+  actual_vdj_pile = actual_vdj_pile.SmooshRight({DXSmoosh, DNSmoosh}).SmooshRight({JXSmoosh, JNSmoosh});
+
+  std::vector<Pile> expected_vdj_piles =
+      CreateVDJPiles("data/hmm_input_ex.csv", "data/hmm_params_ex");
+
+  REQUIRE(expected_vdj_piles[0][0]->marginal() == actual_vdj_pile[0]->marginal());
+  REQUIRE(expected_vdj_piles[0][1]->marginal() == actual_vdj_pile[1]->marginal());
+  REQUIRE(expected_vdj_piles[0][2]->marginal() == actual_vdj_pile[2]->marginal());
+  REQUIRE(expected_vdj_piles[0][3]->marginal() == actual_vdj_pile[3]->marginal());
+}
+
+
+// VDJGermline tests
+
+TEST_CASE("VDJGermline", "[vdjgermline]") {
+  std::unordered_map<std::string, GermlineGene> ggene_map = CreateGermlineGeneMap("data/hmm_params_ex");
+  std::shared_ptr<VGermline> vgene_ptr = ggene_map["IGHV_ex*01"].VGermlinePtr();
+  std::shared_ptr<DGermline> dgene_ptr = ggene_map["IGHD_ex*01"].DGermlinePtr();
+  std::shared_ptr<JGermline> jgene_ptr = ggene_map["IGHJ_ex*01"].JGermlinePtr();
+}
+
+
+// Partis CSV parsing.
+
+TEST_CASE("CSV", "[io]") {
+  std::vector<Query> queries = ReadQueries("data/hmm_input_real.csv");
+  std::string correct_seq = "CAGGTGCAGCTGGTGCAGTCTGGGGCTGAGGTGAAGAAGCCTGGGGCCTCAGTGAAGGTCTCCTGCAAGGCTTCTGGATACACCTTCACCGGCTACTATATGCACTGGGTGCGACAGGCCCCTGGACAAGGGCTTGAGTGGATGGGATGGATCAACCCTAACAGTGGTGGCACAAACTATGCACAGAAGTTTCAGGGCTGGGTCACCATGACCAGGGACACGTCCATCAGCACAGCCTACATGGAGCTGAGCAGGCTGAGATCTGACGACACGGCCGTGTATTACTGTGCGAGAGATTTTTTATATTGTAGTGGTGGTAGCTGCTACTCCGGGGGGACTACTACTACTACGGTATGGACGTCTGGGGGCAAGGGACCACGGTCACCGTCTCCTCA";
+  REQUIRE(queries[0].relpos().at("IGHJ6*02") == 333);
+  REQUIRE(queries[0].relpos().at("IGHD2-15*01") == 299);
+  REQUIRE(queries[1].seq() == correct_seq);
+  REQUIRE(queries[1].flexbounds().at("v_l").second == 2);
+  REQUIRE(queries[1].flexbounds().at("d_r").first == 328);
 }
 
 
@@ -528,25 +668,5 @@ TEST_CASE("Smooshable", "[smooshable]") {
 
 TEST_CASE("Ham Comparison 1", "[ham]") {
 
-}
-
-
-// Partis CSV parsing.
-TEST_CASE("CSV", "[io]") {
-  io::CSVReader<3, io::trim_chars<>, io::double_quote_escape<' ','\"'> > in("data/hmm_input.csv");
-  in.read_header(io::ignore_extra_column, "seqs", "boundsbounds", "relpos");
-  std::string seq, boundsbounds_str, relpos_str;
-  in.read_row(seq, boundsbounds_str, relpos_str);  // First line.
-  std::map<std::string, int> relpos_m =
-    YAML::Load(relpos_str).as<std::map<std::string, int>>();
-  REQUIRE(relpos_m["IGHJ6*02"] == 333);
-  REQUIRE(relpos_m["IGHD2-15*01"] == 299);
-  in.read_row(seq, boundsbounds_str, relpos_str);  // Second line.
-  std::string correct_seq = "CAGGTGCAGCTGGTGCAGTCTGGGGCTGAGGTGAAGAAGCCTGGGGCCTCAGTGAAGGTCTCCTGCAAGGCTTCTGGATACACCTTCACCGGCTACTATATGCACTGGGTGCGACAGGCCCCTGGACAAGGGCTTGAGTGGATGGGATGGATCAACCCTAACAGTGGTGGCACAAACTATGCACAGAAGTTTCAGGGCTGGGTCACCATGACCAGGGACACGTCCATCAGCACAGCCTACATGGAGCTGAGCAGGCTGAGATCTGACGACACGGCCGTGTATTACTGTGCGAGAGATTTTTTATATTGTAGTGGTGGTAGCTGCTACTCCGGGGGGACTACTACTACTACGGTATGGACGTCTGGGGGCAAGGGACCACGGTCACCGTCTCCTCA";
-  REQUIRE(seq == correct_seq);
-  std::map<std::string, std::pair<int, int>> bb_map =
-    YAML::Load(boundsbounds_str).as<std::map<std::string, std::pair<int, int>>>();
-  REQUIRE(bb_map["v_l"].second == 2);
-  REQUIRE(bb_map["d_r"].first == 328);
 }
 }

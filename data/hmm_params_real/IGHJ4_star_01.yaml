@@ -437,6 +437,7 @@ states:
     track: nukes
   extras: {ambiguous_char: N, ambiguous_emission_prob: 0.25, germline: N}
   name: insert_right_N
-  transitions: {end: 0.040000000000000036, insert_right_N: 0.96}
+  # Note that the "end" transition probability should be 0.040000000000000036.
+  transitions: {end: 0.04, insert_right_N: 0.96}
 tracks:
   nukes: [A, C, G, T]

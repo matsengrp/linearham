@@ -6,17 +6,6 @@
 namespace linearham {
 
 
-/// @brief A "boring" Smooshable constructor, which just sets up memory.
-/// @param[in] left_flex
-/// How many alternative start points should we allow on the left side?
-/// @param[in] right_flex
-/// How many alternative end points should we allow on the right side?
-Smooshable::Smooshable(int left_flex, int right_flex) {
-  marginal_.resize(left_flex + 1, right_flex + 1);
-  viterbi_.resize(left_flex + 1, right_flex + 1);
-};
-
-
 /// @brief Constructor for Smooshable starting from a marginal probability
 /// matrix.
 /// @param[in] marginal
@@ -24,198 +13,235 @@ Smooshable::Smooshable(int left_flex, int right_flex) {
 Smooshable::Smooshable(const Eigen::Ref<const Eigen::MatrixXd>& marginal) {
   marginal_ = marginal;
   scaler_count_ = ScaleMatrix(marginal_);
-  viterbi_ = marginal_;
 };
+
+
+/// @brief Raise exception: there are no Viterbi paths in a Smooshable.
+const Eigen::MatrixXi& Smooshable::viterbi_idx() const {
+  throw std::logic_error("No Viterbi paths in a Smooshable.");
+}
+
+
+/// @brief Empty function: there are no paths in a Smooshable.
+///
+/// We don't throw an exception as above because this is naturally
+/// called in the recursive process of building a Viterbi path.
+/// This call is the "empty base case".
+void Smooshable::AuxViterbiPath(int, int, std::vector<int>&) const {};
+
+
+// SmooshablePtr Functions
+
+SmooshablePtr BuildSmooshablePtr(
+    const Eigen::Ref<const Eigen::MatrixXd>& marginal) {
+  return std::make_shared<Smooshable>(Smooshable(marginal));
+}
 
 
 // VDJSmooshable Constructor Functions
 
-
 /// @brief Creates a Smooshable object for a given V germline gene and read.
 /// @param[in] vgerm_obj
 /// An object of class VGermline.
-/// @param[in] V_left_flexbounds
-/// A 2-tuple of read positions providing the bounds of the V gene's left
-/// flex region.
-/// @param[in] V_right_flexbounds
-/// A 2-tuple of read positions providing the bounds of the V gene's right
-/// flex region.
+/// @param[in] flexbounds
+/// The VDJ flexbounds map from a Query object.
 /// @param[in] emission_indices
 /// A vector of indices corresponding to the observed bases of the read.
-/// @param[in] V_relpos
+/// @param[in] v_relpos
 /// The read position corresponding to the first base of the V germline gene.
 /// @return
-/// A Smooshable object.
-Smooshable VSmooshable(
-    const VGermline& vgerm_obj, std::pair<int, int> V_left_flexbounds,
-    std::pair<int, int> V_right_flexbounds,
-    const Eigen::Ref<const Eigen::VectorXi>& emission_indices, int V_relpos) {
-  // computing the germline match probability matrix and extracting the row
-  // that corresponds to the first match starting position with a germline
-  // state.
-  int start_pos = std::max(V_relpos - V_left_flexbounds.first, 0);
-  Eigen::MatrixXd germ_prob_row =
-      vgerm_obj
-          .GermlineProbMatrix(V_left_flexbounds, V_right_flexbounds,
-                              emission_indices, V_relpos)
-          .row(start_pos);
+/// A SmooshablePtr.
+SmooshablePtr VSmooshable(
+    const VGermline& vgerm_obj,
+    const std::map<std::string, std::pair<int, int>>& flexbounds,
+    const Eigen::Ref<const Eigen::VectorXi>& emission_indices, int v_relpos) {
+  // Compute the germline match probability matrix.
+  Eigen::MatrixXd germ_prob_matrix = vgerm_obj.GermlineProbMatrix(
+      flexbounds.at("v_l"), flexbounds.at("v_r"), emission_indices, v_relpos);
 
-  // multiplying in the associated gene and padding probabilities
-  germ_prob_row *= vgerm_obj.gene_prob();
+  // Multiply in the associated landing-out probabilities.
+  MultiplyLandingGermProbMatrix(
+      vgerm_obj.landing_out(), flexbounds.at("v_l"), flexbounds.at("v_r"),
+      v_relpos, vgerm_obj.length(), false, germ_prob_matrix);
+
+  // Extract the row that corresponds to the first match starting
+  // position with a germline state.
+  int start_pos = std::max(v_relpos - flexbounds.at("v_l").first, 0);
+  germ_prob_matrix = germ_prob_matrix.row(start_pos).eval();
+
+  // Multiply in the associated gene and padding probabilities.
+  germ_prob_matrix *= vgerm_obj.gene_prob();
   double npadding_prob = vgerm_obj.NPaddingProb(
-      V_left_flexbounds, emission_indices, V_relpos, true);
-  germ_prob_row *= npadding_prob;
+      flexbounds.at("v_l"), emission_indices, v_relpos, true);
+  germ_prob_matrix *= npadding_prob;
 
-  // storing Smooshable object
-  Smooshable v_smooshable = Smooshable(germ_prob_row);
-
-  return v_smooshable;
+  return BuildSmooshablePtr(germ_prob_matrix);
 };
 
 
 /// @brief Creates Smooshable objects for a given D germline gene and read.
 /// @param[in] dgerm_obj
 /// An object of class DGermline.
-/// @param[in] V_right_flexbounds
-/// A 2-tuple of read positions providing the bounds of the V gene's right
-/// flex region.
-/// @param[in] D_left_flexbounds
-/// A 2-tuple of read positions providing the bounds of the D gene's left
-/// flex region.
-/// @param[in] D_right_flexbounds
-/// A 2-tuple of read positions providing the bounds of the D gene's right
-/// flex region.
+/// @param[in] flexbounds
+/// The VDJ flexbounds map from a Query object.
 /// @param[in] emission_indices
 /// A vector of indices corresponding to the observed bases of the read.
-/// @param[in] D_relpos
+/// @param[in] d_relpos
 /// The read position corresponding to the first base of the D germline gene.
 /// @return
-/// A 2-tuple containing the Smooshable objects.
-std::pair<Smooshable, Smooshable> DSmooshables(
-    const DGermline& dgerm_obj, std::pair<int, int> V_right_flexbounds,
-    std::pair<int, int> D_left_flexbounds,
-    std::pair<int, int> D_right_flexbounds,
-    const Eigen::Ref<const Eigen::VectorXi>& emission_indices, int D_relpos) {
-  // computing the germline match probability matrix (assuming no left-NTIs)
+/// A 2-tuple containing a SmooshablePtrVect of size 1 (for the non-NTI case)
+/// and a SmooshablePtrVect of size 2 (for the NTI case).
+std::pair<SmooshablePtrVect, SmooshablePtrVect> DSmooshables(
+    const DGermline& dgerm_obj,
+    const std::map<std::string, std::pair<int, int>>& flexbounds,
+    const Eigen::Ref<const Eigen::VectorXi>& emission_indices, int d_relpos) {
+  // Compute the germline match probability matrix (assuming no left-NTIs).
   Eigen::MatrixXd xgerm_prob_matrix = dgerm_obj.GermlineProbMatrix(
-      V_right_flexbounds, D_right_flexbounds, emission_indices, D_relpos);
+      flexbounds.at("v_r"), flexbounds.at("d_r"), emission_indices, d_relpos);
 
-  // multiplying in the associated landing probabilities
-  MultiplyLandingGermProbMatrix(dgerm_obj.landing(), xgerm_prob_matrix,
-                                V_right_flexbounds, D_relpos);
+  // Multiply in the associated landing-in probabilities (if necessary).
+  if (d_relpos <= flexbounds.at("v_r").second) {
+    MultiplyLandingGermProbMatrix(
+        dgerm_obj.landing_in(), flexbounds.at("v_r"), flexbounds.at("d_r"),
+        d_relpos, dgerm_obj.length(), true, xgerm_prob_matrix);
+  }
 
-  // computing the germline match probability matrix (assuming some left-NTIs)
-  Eigen::MatrixXd ngerm_prob_matrix =
-      dgerm_obj.NTIProbMatrix(V_right_flexbounds, D_left_flexbounds,
-                              emission_indices, D_relpos) *
-      dgerm_obj.GermlineProbMatrix(D_left_flexbounds, D_right_flexbounds,
-                                   emission_indices, D_relpos);
+  // Compute the germline match probability matrix (assuming some left-NTIs).
+  Eigen::MatrixXd nti_prob_matrix = dgerm_obj.NTIProbMatrix(
+      flexbounds.at("v_r"), flexbounds.at("d_l"), emission_indices, d_relpos);
+  Eigen::MatrixXd ngerm_prob_matrix = dgerm_obj.GermlineProbMatrix(
+      flexbounds.at("d_l"), flexbounds.at("d_r"), emission_indices, d_relpos);
 
-  // multiplying in the associated gene probability
+  // Multiply in the associated landing-out and gene probabilities.
+  MultiplyLandingGermProbMatrix(
+      dgerm_obj.landing_out(), flexbounds.at("v_r"), flexbounds.at("d_r"),
+      d_relpos, dgerm_obj.length(), false, xgerm_prob_matrix);
+  MultiplyLandingGermProbMatrix(
+      dgerm_obj.landing_out(), flexbounds.at("d_l"), flexbounds.at("d_r"),
+      d_relpos, dgerm_obj.length(), false, ngerm_prob_matrix);
   xgerm_prob_matrix *= dgerm_obj.gene_prob();
   ngerm_prob_matrix *= dgerm_obj.gene_prob();
 
-  // storing Smooshable objects
-  Smooshable dx_smooshable = Smooshable(xgerm_prob_matrix);
-  Smooshable dn_smooshable = Smooshable(ngerm_prob_matrix);
-
-  return std::make_pair(dx_smooshable, dn_smooshable);
+  // Store Smooshable objects.
+  SmooshablePtrVect dx_smooshable = {BuildSmooshablePtr(xgerm_prob_matrix)};
+  SmooshablePtrVect dn_smooshables = {BuildSmooshablePtr(nti_prob_matrix),
+                                      BuildSmooshablePtr(ngerm_prob_matrix)};
+  return std::make_pair(dx_smooshable, dn_smooshables);
 };
 
 
 /// @brief Creates Smooshable objects for a given J germline gene and read.
 /// @param[in] jgerm_obj
 /// An object of class JGermline.
-/// @param[in] D_right_flexbounds
-/// A 2-tuple of read positions providing the bounds of the D gene's right
-/// flex region.
-/// @param[in] J_left_flexbounds
-/// A 2-tuple of read positions providing the bounds of the J gene's left
-/// flex region.
-/// @param[in] J_right_flexbounds
-/// A 2-tuple of read positions providing the bounds of the J gene's right
-/// flex region.
+/// @param[in] flexbounds
+/// The VDJ flexbounds map from a Query object.
 /// @param[in] emission_indices
 /// A vector of indices corresponding to the observed bases of the read.
-/// @param[in] J_relpos
+/// @param[in] j_relpos
 /// The read position corresponding to the first base of the J germline gene.
 /// @return
-/// A 2-tuple containing the Smooshable objects.
-std::pair<Smooshable, Smooshable> JSmooshables(
-    const JGermline& jgerm_obj, std::pair<int, int> D_right_flexbounds,
-    std::pair<int, int> J_left_flexbounds,
-    std::pair<int, int> J_right_flexbounds,
-    const Eigen::Ref<const Eigen::VectorXi>& emission_indices, int J_relpos) {
-  // computing the germline match probability matrix (assuming no left-NTIs)
-  // and extracting the column that corresponds to the last match ending
+/// A 2-tuple containing a SmooshablePtrVect of size 1 (for the non-NTI case)
+/// and a SmooshablePtrVect of size 2 (for the NTI case).
+std::pair<SmooshablePtrVect, SmooshablePtrVect> JSmooshables(
+    const JGermline& jgerm_obj,
+    const std::map<std::string, std::pair<int, int>>& flexbounds,
+    const Eigen::Ref<const Eigen::VectorXi>& emission_indices, int j_relpos) {
+  // Compute the germline match probability matrix (assuming no left-NTIs).
+  Eigen::MatrixXd xgerm_prob_matrix = jgerm_obj.GermlineProbMatrix(
+      flexbounds.at("d_r"), flexbounds.at("j_r"), emission_indices, j_relpos);
+
+  // Multiply in the associated landing-in probabilities (if necessary).
+  if (j_relpos <= flexbounds.at("d_r").second) {
+    MultiplyLandingGermProbMatrix(
+        jgerm_obj.landing_in(), flexbounds.at("d_r"), flexbounds.at("j_r"),
+        j_relpos, jgerm_obj.length(), true, xgerm_prob_matrix);
+  }
+
+  // Compute the germline match probability matrix (assuming some left-NTIs).
+  Eigen::MatrixXd nti_prob_matrix = jgerm_obj.NTIProbMatrix(
+      flexbounds.at("d_r"), flexbounds.at("j_l"), emission_indices, j_relpos);
+  Eigen::MatrixXd ngerm_prob_matrix = jgerm_obj.GermlineProbMatrix(
+      flexbounds.at("j_l"), flexbounds.at("j_r"), emission_indices, j_relpos);
+
+  // Extract the column that corresponds to the last match ending
   // position with a germline state.
   int end_pos =
-      std::min(J_right_flexbounds.second, J_relpos + jgerm_obj.length()) -
-      J_right_flexbounds.first;
-  Eigen::MatrixXd xgerm_prob_col =
-      jgerm_obj
-          .GermlineProbMatrix(D_right_flexbounds, J_right_flexbounds,
-                              emission_indices, J_relpos)
-          .col(end_pos);
+      std::min(flexbounds.at("j_r").second, j_relpos + jgerm_obj.length()) -
+      flexbounds.at("j_r").first;
+  xgerm_prob_matrix = xgerm_prob_matrix.col(end_pos).eval();
+  ngerm_prob_matrix = ngerm_prob_matrix.col(end_pos).eval();
 
-  // multiplying in the associated landing probabilities
-  MultiplyLandingGermProbMatrix(jgerm_obj.landing(), xgerm_prob_col,
-                                D_right_flexbounds, J_relpos);
-
-  // computing the germline match probability matrix (assuming some left-NTIs)
-  // and extracting the same column as above.
-  Eigen::MatrixXd ngerm_prob_col =
-      jgerm_obj.NTIProbMatrix(D_right_flexbounds, J_left_flexbounds,
-                              emission_indices, J_relpos) *
-      jgerm_obj
-          .GermlineProbMatrix(J_left_flexbounds, J_right_flexbounds,
-                              emission_indices, J_relpos)
-          .col(end_pos);
-
-  // multiplying in the associated gene and padding probabilities
-  xgerm_prob_col *= jgerm_obj.gene_prob();
-  ngerm_prob_col *= jgerm_obj.gene_prob();
+  // Multiply in the associated gene and padding probabilities.
+  xgerm_prob_matrix *= jgerm_obj.gene_prob();
+  ngerm_prob_matrix *= jgerm_obj.gene_prob();
   double npadding_prob =
-      jgerm_obj.NPaddingProb(J_right_flexbounds, emission_indices,
-                             J_relpos + jgerm_obj.length(), false);
-  xgerm_prob_col *= npadding_prob;
-  ngerm_prob_col *= npadding_prob;
+      jgerm_obj.NPaddingProb(flexbounds.at("j_r"), emission_indices,
+                             j_relpos + jgerm_obj.length(), false);
+  xgerm_prob_matrix *= npadding_prob;
+  ngerm_prob_matrix *= npadding_prob;
 
-  // storing Smooshable objects
-  Smooshable jx_smooshable = Smooshable(xgerm_prob_col);
-  Smooshable jn_smooshable = Smooshable(ngerm_prob_col);
+  // Store Smooshable objects.
+  SmooshablePtrVect jx_smooshable = {BuildSmooshablePtr(xgerm_prob_matrix)};
+  SmooshablePtrVect jn_smooshables = {BuildSmooshablePtr(nti_prob_matrix),
+                                      BuildSmooshablePtr(ngerm_prob_matrix)};
 
-  return std::make_pair(jx_smooshable, jn_smooshable);
+  return std::make_pair(jx_smooshable, jn_smooshables);
 };
 
 
 // Auxiliary Functions
 
 
-/// @brief Multiplies a landing vector into a germline match probability
-/// matrix.
+/// @brief Multiplies a landing probability vector into a germline match
+/// probability matrix.
 /// @param[in] landing
-/// A vector of probabilities of landing somewhere to begin the germline
+/// A vector of landing probabilities to either begin or end the germline
 /// match.
-/// @param[in,out] germ_prob_matrix
-/// A germline match probability matrix returned from
-/// Germline::GermlineProbMatrix.
 /// @param[in] left_flexbounds
 /// A 2-tuple of read positions providing the bounds of the germline's left flex
 /// region.
+/// @param[in] right_flexbounds
+/// A 2-tuple of read positions providing the bounds of the germline's right
+/// flex region.
 /// @param[in] relpos
 /// The read position corresponding to the first base of the germline gene.
+/// @param[in] germ_length
+/// The length of the germline gene.
+/// @param[in] landing_in
+/// A boolean specifying whether we are multiplying in a landing-in or landing-out
+/// probability vector.
+/// @param[in,out] germ_prob_matrix
+/// A germline match probability matrix returned from
+/// Germline::GermlineProbMatrix.
 void MultiplyLandingGermProbMatrix(
     const Eigen::Ref<const Eigen::VectorXd>& landing,
-    Eigen::Ref<Eigen::MatrixXd> germ_prob_matrix,
-    std::pair<int, int> left_flexbounds, int relpos) {
-  if (relpos <= left_flexbounds.second) {
-    int num_landing_rows =
-        left_flexbounds.second - std::max(relpos, left_flexbounds.first) + 1;
-    int germ_start_pos = std::max(left_flexbounds.first - relpos, 0);
-    ColVecMatCwise(landing.segment(germ_start_pos, num_landing_rows),
-                   germ_prob_matrix.bottomRows(num_landing_rows),
-                   germ_prob_matrix.bottomRows(num_landing_rows));
+    std::pair<int, int> left_flexbounds, std::pair<int, int> right_flexbounds,
+    int relpos, int germ_length, bool landing_in,
+    Eigen::Ref<Eigen::MatrixXd> germ_prob_matrix) {
+  int read_start, read_end, left_flex, right_flex;
+  FindGermProbMatrixIndices(
+      left_flexbounds, right_flexbounds, relpos, germ_length,
+      read_start, read_end, left_flex, right_flex);
+
+  // Compute the row and column start indices for the germline match matrix block.
+  int row_start = read_start - left_flexbounds.first;
+  int col_start = read_end - right_flex - right_flexbounds.first;
+
+  // Are we landing-in or landing-out?
+  if (landing_in) {
+    ColVecMatCwise(landing.segment(read_start - relpos,
+                                   left_flex + 1),
+                   germ_prob_matrix.block(row_start, col_start,
+                                          left_flex + 1, right_flex + 1),
+                   germ_prob_matrix.block(row_start, col_start,
+                                          left_flex + 1, right_flex + 1));
+  } else {
+    RowVecMatCwise(landing.segment(read_end - right_flex - relpos - 1,
+                                   right_flex + 1),
+                   germ_prob_matrix.block(row_start, col_start,
+                                          left_flex + 1, right_flex + 1),
+                   germ_prob_matrix.block(row_start, col_start,
+                                          left_flex + 1, right_flex + 1));
   }
 };
 
@@ -234,42 +260,5 @@ int ScaleMatrix(Eigen::Ref<Eigen::MatrixXd> m) {
     n++;
   }
   return n;
-};
-
-
-/// @brief Smoosh two smooshables!
-/// @param[in] s_a
-/// Smooshable on the left.
-/// @param[in] s_b
-/// Smooshable on the right.
-/// @return (s_out, viterbi_idx)
-/// `s_out` is the smooshable resulting from smooshing s_a and s_b.
-/// `viterbi_idx` is the corresponding viterbi index.
-///
-/// When we smoosh two smooshables, they must have the same right and left
-/// flexes.
-/// Say this common value is n.
-/// The marginal probability is just a matrix product:
-/// \f[
-/// C_{i,k} := \sum_j A_{i,j} B_{j,k}
-/// \f]
-/// because we are summing over the various ways to divide up the common segment
-/// between the left and right smooshable.
-/// The equivalent entry for the Viterbi sequence just has sum replaced with
-/// max.
-std::pair<Smooshable, Eigen::MatrixXi> Smoosh(const Smooshable& s_a,
-                                              const Smooshable& s_b) {
-  Smooshable s_out(s_a.left_flex(), s_b.right_flex());
-  Eigen::MatrixXi viterbi_idx(s_a.left_flex() + 1, s_b.right_flex() + 1);
-  assert(s_a.right_flex() == s_b.left_flex());
-  s_out.marginal() = s_a.marginal() * s_b.marginal();
-  BinaryMax(s_a.viterbi(), s_b.viterbi(), s_out.viterbi(), viterbi_idx);
-  s_out.scaler_count() = s_a.scaler_count() + s_b.scaler_count();
-  // check for underflow
-  int k = ScaleMatrix(s_out.marginal());
-  s_out.viterbi() *= pow(SCALE_FACTOR, k);
-  s_out.scaler_count() += k;
-
-  return std::make_pair(s_out, viterbi_idx);
 };
 }

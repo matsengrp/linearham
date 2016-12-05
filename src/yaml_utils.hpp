@@ -1,17 +1,16 @@
 #ifndef LINEARHAM_YAML_UTILS_
 #define LINEARHAM_YAML_UTILS_
 
+#include <dirent.h>
 #include <regex>
 #include <unordered_map>
-#include "../yaml-cpp/include/yaml-cpp/yaml.h"
+#include <yaml-cpp/yaml.h>
 #include "core.hpp"
 
 /// @file yaml_utils.hpp
 /// @brief Utilities for parsing YAML.
 
 namespace linearham {
-
-YAML::Node GetYAMLRoot(std::string yaml_path);
 
 bool IsEqualStringVecs(std::vector<std::string> vec1,
                        std::vector<std::string> vec2);

@@ -1,6 +1,7 @@
 #ifndef LINEARHAM_SMOOSHABLE_
 #define LINEARHAM_SMOOSHABLE_
 
+#include "Smooshish.hpp"
 #include "VDJGermline.hpp"
 
 /// @file Smooshable.hpp
@@ -9,71 +10,68 @@
 namespace linearham {
 
 
-const double SCALE_FACTOR = pow(2, 256);
-const double SCALE_THRESHOLD = (1.0 / SCALE_FACTOR);
-
 /// @brief Abstracts something that has probabilities associated with sequence
 /// start and stop points.
 ///
 /// Smooshables have left_flex and right_flex, which is the number of
 /// alternative states that can serve as start (resp. end) states on the left
 /// (resp. right) sides.
-class Smooshable {
- protected:
+class Smooshable : public Smooshish {
+ private:
   Eigen::MatrixXd marginal_;
-  Eigen::MatrixXd viterbi_;
-  int scaler_count_;
 
  public:
   Smooshable(){};
-  Smooshable(int left_flex, int right_flex);
   Smooshable(const Eigen::Ref<const Eigen::MatrixXd>& marginal);
 
-  int left_flex() const { return marginal_.rows() - 1; };
-  int right_flex() const { return marginal_.cols() - 1; };
+  int left_flex() const override { return marginal_.rows() - 1; };
+  int right_flex() const override { return marginal_.cols() - 1; };
 
-  int scaler_count() const { return scaler_count_; };
-  int& scaler_count() { return scaler_count_; };
-
-  const Eigen::MatrixXd& marginal() const { return marginal_; };
-  Eigen::Ref<Eigen::MatrixXd> marginal() { return marginal_; };
-
-  const Eigen::MatrixXd& viterbi() const { return viterbi_; };
-  Eigen::Ref<Eigen::MatrixXd> viterbi() { return viterbi_; };
+  // We use override here to make sure that we are overriding the virtual
+  // method in Smooshish (rather than defining some other method via a
+  // different signature).
+  const Eigen::MatrixXd& marginal() const override { return marginal_; };
+  // Viterbi probabilities are the same as marginal for raw Smooshables.
+  const Eigen::MatrixXd& viterbi() const override { return marginal_; };
+  const Eigen::MatrixXi& viterbi_idx() const override;
+  void AuxViterbiPath(int, int, std::vector<int>&) const override;
 };
+
+
+// SmooshablePtr
+
+typedef std::shared_ptr<Smooshable> SmooshablePtr;
+SmooshablePtr BuildSmooshablePtr(const Eigen::Ref<const Eigen::MatrixXd>&);
+typedef std::vector<SmooshablePtr> SmooshablePtrVect;
 
 
 // VDJSmooshable Constructor Functions
 
-Smooshable VSmooshable(
-    const VGermline& vgerm_obj, std::pair<int, int> V_left_flexbounds,
-    std::pair<int, int> V_right_flexbounds,
-    const Eigen::Ref<const Eigen::VectorXi>& emission_indices, int V_relpos);
+SmooshablePtr VSmooshable(
+    const VGermline& vgerm_obj,
+    const std::map<std::string, std::pair<int, int>>& flexbounds,
+    const Eigen::Ref<const Eigen::VectorXi>& emission_indices, int v_relpos);
 
-std::pair<Smooshable, Smooshable> DSmooshables(
-    const DGermline& dgerm_obj, std::pair<int, int> V_right_flexbounds,
-    std::pair<int, int> D_left_flexbounds,
-    std::pair<int, int> D_right_flexbounds,
-    const Eigen::Ref<const Eigen::VectorXi>& emission_indices, int D_relpos);
+std::pair<SmooshablePtrVect, SmooshablePtrVect> DSmooshables(
+    const DGermline& dgerm_obj,
+    const std::map<std::string, std::pair<int, int>>& flexbounds,
+    const Eigen::Ref<const Eigen::VectorXi>& emission_indices, int d_relpos);
 
-std::pair<Smooshable, Smooshable> JSmooshables(
-    const JGermline& jgerm_obj, std::pair<int, int> D_right_flexbounds,
-    std::pair<int, int> J_left_flexbounds,
-    std::pair<int, int> J_right_flexbounds,
-    const Eigen::Ref<const Eigen::VectorXi>& emission_indices, int J_relpos);
+std::pair<SmooshablePtrVect, SmooshablePtrVect> JSmooshables(
+    const JGermline& jgerm_obj,
+    const std::map<std::string, std::pair<int, int>>& flexbounds,
+    const Eigen::Ref<const Eigen::VectorXi>& emission_indices, int j_relpos);
 
 
 // Auxiliary Functions
 
 void MultiplyLandingGermProbMatrix(
     const Eigen::Ref<const Eigen::VectorXd>& landing,
-    Eigen::Ref<Eigen::MatrixXd> germ_prob_matrix,
-    std::pair<int, int> left_flexbounds, int relpos);
+    std::pair<int, int> left_flexbounds, std::pair<int, int> right_flexbounds,
+    int relpos, int germ_length, bool landing_in,
+    Eigen::Ref<Eigen::MatrixXd> germ_prob_matrix);
 
 int ScaleMatrix(Eigen::Ref<Eigen::MatrixXd> m);
-
-std::pair<Smooshable, Eigen::MatrixXi> Smoosh(const Smooshable& s_a,
-                                              const Smooshable& s_b);
 }
 
 #endif  // LINEARHAM_SMOOSHABLE_

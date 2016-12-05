@@ -111,7 +111,8 @@ double NPadding::NPaddingProb(
   assert(flexbounds.first <= flexbounds.second);
   assert(flexbounds.first <= read_pos || read_pos <= flexbounds.second);
 
-  assert(read_pos <= emission_indices.size());
+  assert(0 < read_pos || read_pos < emission_indices.size());
+  assert(0 <= flexbounds.first && 0 <= flexbounds.second);
   assert(flexbounds.first <= emission_indices.size() &&
          flexbounds.second <= emission_indices.size());
 
@@ -120,7 +121,7 @@ double NPadding::NPaddingProb(
   g_r = flexbounds.second;
   double prob;
 
-  // finding the read positions that need padded germline states
+  // Find the read positions that need padded germline states.
   if (pad_left) {
     pad_start = g_l;
     pad_end = std::max(read_pos, g_l);
@@ -130,7 +131,7 @@ double NPadding::NPaddingProb(
   }
   int n_count = pad_end - pad_start;
 
-  // computing the probability of the padded germline path
+  // Compute the probability of the padded germline path.
   prob = pow(n_transition_prob_, n_count) * (1 - n_transition_prob_);
   for (int i = pad_start; i < pad_end; i++) {
     prob *= n_emission_vector_[emission_indices[i]];
