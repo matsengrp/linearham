@@ -62,7 +62,7 @@ states:
 - emissions:
     probs: {A: 0.25, C: 0.25, G: 0.25, T: 0.25}
     track: nukes
-  extras: {germline: N}
+  extras: {ambiguous_emission_prob: 0.25, germline: N}
   name: insert_right_N
   # Duncan's J gene partis files have an end probability of 0.040000000000000036
   # in the "insert_right_N" state, BUT have an end probability of 0.04 in the

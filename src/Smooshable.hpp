@@ -50,7 +50,8 @@ typedef std::vector<SmooshablePtr> SmooshablePtrVect;
 SmooshablePtr VSmooshable(
     const VGermline& vgerm_obj,
     const std::map<std::string, std::pair<int, int>>& flexbounds,
-    const Eigen::Ref<const Eigen::VectorXi>& emission_indices, int v_relpos);
+    const Eigen::Ref<const Eigen::VectorXi>& emission_indices,
+    int v_relpos, std::pair<int, int> n_read_counts);
 
 std::pair<SmooshablePtrVect, SmooshablePtrVect> DSmooshables(
     const DGermline& dgerm_obj,
@@ -60,7 +61,8 @@ std::pair<SmooshablePtrVect, SmooshablePtrVect> DSmooshables(
 std::pair<SmooshablePtrVect, SmooshablePtrVect> JSmooshables(
     const JGermline& jgerm_obj,
     const std::map<std::string, std::pair<int, int>>& flexbounds,
-    const Eigen::Ref<const Eigen::VectorXi>& emission_indices, int j_relpos);
+    const Eigen::Ref<const Eigen::VectorXi>& emission_indices,
+    int j_relpos, std::pair<int, int> n_read_counts);
 
 
 // Auxiliary Functions

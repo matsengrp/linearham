@@ -112,8 +112,8 @@ Eigen::MatrixXd NTInsertion::NTIProbMatrix(
     int right_relpos) const {
   assert(left_flexbounds.first <= left_flexbounds.second);
   assert(right_flexbounds.first <= right_flexbounds.second);
-  assert(left_flexbounds.first + 1 <= right_flexbounds.first);
-  assert(left_flexbounds.second + 1 <= right_flexbounds.second);
+  assert(left_flexbounds.first <= right_flexbounds.first);
+  assert(left_flexbounds.second <= right_flexbounds.second);
   assert(right_relpos <= right_flexbounds.second);
 
   assert(right_relpos < emission_indices.size());
@@ -131,7 +131,8 @@ Eigen::MatrixXd NTInsertion::NTIProbMatrix(
   g_rr = right_flexbounds.second;
   Eigen::MatrixXd cache_mat =
       Eigen::MatrixXd::Zero(g_lr - g_ll + 1, n_transition_.cols());
-  Eigen::MatrixXd outp(g_lr - g_ll + 1, g_rr - g_rl + 1);
+  Eigen::MatrixXd outp =
+      Eigen::MatrixXd::Zero(g_lr - g_ll + 1, g_rr - g_rl + 1);
 
   // Loop from left to right across the NTI region.
   for (int i = g_ll; i < g_rr; i++) {
@@ -150,7 +151,7 @@ Eigen::MatrixXd NTInsertion::NTIProbMatrix(
     }
 
     // Store final probabilities in output matrix.
-    if (i >= g_rl - 1)
+    if (i >= std::max(g_rl, right_relpos) - 1)
       outp.col(i - (g_rl - 1)) =
           cache_mat * n_landing_out_.col(i + 1 - right_relpos);
   }
