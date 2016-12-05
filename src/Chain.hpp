@@ -52,7 +52,6 @@ class Chain : public Smooshish {
 typedef std::shared_ptr<Chain> ChainPtr;
 
 ChainPtr SmooshVector(SmooshishPtr, SmooshablePtrVect);
-
 }
 
 #endif  // LINEARHAM_CHAIN_

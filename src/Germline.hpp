@@ -39,21 +39,24 @@ class Germline {
   const Eigen::MatrixXd& emission_matrix() const { return emission_matrix_; };
   const Eigen::MatrixXd& transition() const { return transition_; };
   double gene_prob() const { return gene_prob_; };
-  const std::unordered_map<std::string, int>& alphabet_map() const { return alphabet_map_; };
+  const std::unordered_map<std::string, int>& alphabet_map() const {
+    return alphabet_map_;
+  };
   int length() const { return transition_.cols(); };
 
   Eigen::MatrixXd GermlineProbMatrix(
       std::pair<int, int> left_flexbounds, std::pair<int, int> right_flexbounds,
-      const Eigen::Ref<const Eigen::VectorXi>& emission_indices, int relpos) const;
+      const Eigen::Ref<const Eigen::VectorXi>& emission_indices,
+      int relpos) const;
 };
 
 
 // Auxiliary Functions
 
-void FindGermProbMatrixIndices(
-    std::pair<int, int> left_flexbounds, std::pair<int, int> right_flexbounds,
-    int relpos, int germ_length,
-    int& read_start, int& read_end, int& left_flex, int& right_flex);
+void FindGermProbMatrixIndices(std::pair<int, int> left_flexbounds,
+                               std::pair<int, int> right_flexbounds, int relpos,
+                               int germ_length, int& read_start, int& read_end,
+                               int& left_flex, int& right_flex);
 }
 
 #endif  // LINEARHAM_GERMLINE_

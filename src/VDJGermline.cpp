@@ -24,7 +24,8 @@ std::shared_ptr<JGermline> GermlineGene::JGermlinePtr() const {
 };
 
 
-std::unordered_map<std::string, GermlineGene> CreateGermlineGeneMap(std::string dir_path) {
+std::unordered_map<std::string, GermlineGene> CreateGermlineGeneMap(
+    std::string dir_path) {
   // Check the directory path and open the stream.
   if (dir_path.back() != '/') dir_path += "/";
   DIR* dir = opendir(dir_path.c_str());
@@ -44,7 +45,8 @@ std::unordered_map<std::string, GermlineGene> CreateGermlineGeneMap(std::string 
     if (!std::regex_match(file_name, match, yaml_rgx)) continue;
 
     // Fix germline gene name.
-    std::string gname = std::regex_replace(match.str(1), std::regex("_star_"), "*");
+    std::string gname =
+        std::regex_replace(match.str(1), std::regex("_star_"), "*");
 
     // Store YAML root.
     YAML::Node root = YAML::LoadFile(dir_path + file_name);
@@ -68,9 +70,12 @@ std::unordered_map<std::string, GermlineGene> CreateGermlineGeneMap(std::string 
   }
 
   // All Germline alphabet maps should be identical.
-  // (Note: `outp` only has forward iterators, so we cannot end at `std::prev(outp.end())`.)
-  for (auto it = outp.begin(), end = std::next(outp.begin(), outp.size() - 1); it != end; ) {
-    assert(it->second.germ_ptr->alphabet_map() == (++it)->second.germ_ptr->alphabet_map());
+  // (Note: `outp` only has forward iterators, so we cannot end at
+  // `std::prev(outp.end())`.)
+  for (auto it = outp.begin(), end = std::next(outp.begin(), outp.size() - 1);
+       it != end;) {
+    assert(it->second.germ_ptr->alphabet_map() ==
+           (++it)->second.germ_ptr->alphabet_map());
   }
 
   // Close directory stream.
@@ -78,5 +83,4 @@ std::unordered_map<std::string, GermlineGene> CreateGermlineGeneMap(std::string 
 
   return outp;
 };
-
 }

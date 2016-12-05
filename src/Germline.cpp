@@ -190,7 +190,8 @@ void Germline::MatchMatrix(
 /// out of the match when calculating the germline match matrix.
 Eigen::MatrixXd Germline::GermlineProbMatrix(
     std::pair<int, int> left_flexbounds, std::pair<int, int> right_flexbounds,
-    const Eigen::Ref<const Eigen::VectorXi>& emission_indices, int relpos) const {
+    const Eigen::Ref<const Eigen::VectorXi>& emission_indices,
+    int relpos) const {
   assert(left_flexbounds.first <= left_flexbounds.second);
   assert(right_flexbounds.first <= right_flexbounds.second);
   assert(left_flexbounds.first + 1 <= right_flexbounds.first);
@@ -205,9 +206,9 @@ Eigen::MatrixXd Germline::GermlineProbMatrix(
   assert(right_flexbounds.first <= emission_indices.size() &&
          right_flexbounds.second <= emission_indices.size());
 
-  Eigen::MatrixXd outp =
-      Eigen::MatrixXd::Zero(left_flexbounds.second - left_flexbounds.first + 1,
-                            right_flexbounds.second - right_flexbounds.first + 1);
+  Eigen::MatrixXd outp = Eigen::MatrixXd::Zero(
+      left_flexbounds.second - left_flexbounds.first + 1,
+      right_flexbounds.second - right_flexbounds.first + 1);
 
   // If the germline's left flex region has no germline states,
   // return a match probability matrix filled only with zeroes.
@@ -215,9 +216,9 @@ Eigen::MatrixXd Germline::GermlineProbMatrix(
 
   // Determine the output matrix block that will hold the germline match matrix.
   int read_start, read_end, left_flex, right_flex;
-  FindGermProbMatrixIndices(
-      left_flexbounds, right_flexbounds, relpos, this->length(),
-      read_start, read_end, left_flex, right_flex);
+  FindGermProbMatrixIndices(left_flexbounds, right_flexbounds, relpos,
+                            this->length(), read_start, read_end, left_flex,
+                            right_flex);
 
   int row_start = read_start - left_flexbounds.first;
   int col_start = read_end - right_flex - right_flexbounds.first;
@@ -226,8 +227,7 @@ Eigen::MatrixXd Germline::GermlineProbMatrix(
   MatchMatrix(read_start - relpos,
               emission_indices.segment(read_start, read_end - read_start),
               left_flex, right_flex,
-              outp.block(row_start, col_start,
-                         left_flex + 1, right_flex + 1));
+              outp.block(row_start, col_start, left_flex + 1, right_flex + 1));
 
   return outp;
 };
@@ -256,11 +256,12 @@ Eigen::MatrixXd Germline::GermlineProbMatrix(
 /// The number of alternative match starting positions with actual germline
 /// states.
 /// @param[out] right_flex
-/// The number of alternative match ending positions with actual germline states.
-void FindGermProbMatrixIndices(
-    std::pair<int, int> left_flexbounds, std::pair<int, int> right_flexbounds,
-    int relpos, int germ_length,
-    int& read_start, int& read_end, int& left_flex, int& right_flex) {
+/// The number of alternative match ending positions with actual germline
+/// states.
+void FindGermProbMatrixIndices(std::pair<int, int> left_flexbounds,
+                               std::pair<int, int> right_flexbounds, int relpos,
+                               int germ_length, int& read_start, int& read_end,
+                               int& left_flex, int& right_flex) {
   int g_ll, g_lr, g_rl, g_rr;
   g_ll = left_flexbounds.first;
   g_lr = left_flexbounds.second;

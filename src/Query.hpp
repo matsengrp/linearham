@@ -1,8 +1,8 @@
 #ifndef LINEARHAM_QUERY_
 #define LINEARHAM_QUERY_
 
-#include <yaml-cpp/yaml.h>
 #include <csv.h>
+#include <yaml-cpp/yaml.h>
 
 /// @file Query.hpp
 /// @brief Header for the Query class.

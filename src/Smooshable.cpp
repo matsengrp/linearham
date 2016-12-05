@@ -60,9 +60,9 @@ SmooshablePtr VSmooshable(
       flexbounds.at("v_l"), flexbounds.at("v_r"), emission_indices, v_relpos);
 
   // Multiply in the associated landing-out probabilities.
-  MultiplyLandingGermProbMatrix(
-      vgerm_obj.landing_out(), flexbounds.at("v_l"), flexbounds.at("v_r"),
-      v_relpos, vgerm_obj.length(), false, germ_prob_matrix);
+  MultiplyLandingGermProbMatrix(vgerm_obj.landing_out(), flexbounds.at("v_l"),
+                                flexbounds.at("v_r"), v_relpos,
+                                vgerm_obj.length(), false, germ_prob_matrix);
 
   // Extract the row that corresponds to the first match starting
   // position with a germline state.
@@ -101,9 +101,9 @@ std::pair<SmooshablePtrVect, SmooshablePtrVect> DSmooshables(
 
   // Multiply in the associated landing-in probabilities (if necessary).
   if (d_relpos <= flexbounds.at("v_r").second) {
-    MultiplyLandingGermProbMatrix(
-        dgerm_obj.landing_in(), flexbounds.at("v_r"), flexbounds.at("d_r"),
-        d_relpos, dgerm_obj.length(), true, xgerm_prob_matrix);
+    MultiplyLandingGermProbMatrix(dgerm_obj.landing_in(), flexbounds.at("v_r"),
+                                  flexbounds.at("d_r"), d_relpos,
+                                  dgerm_obj.length(), true, xgerm_prob_matrix);
   }
 
   // Compute the germline match probability matrix (assuming some left-NTIs).
@@ -113,12 +113,12 @@ std::pair<SmooshablePtrVect, SmooshablePtrVect> DSmooshables(
       flexbounds.at("d_l"), flexbounds.at("d_r"), emission_indices, d_relpos);
 
   // Multiply in the associated landing-out and gene probabilities.
-  MultiplyLandingGermProbMatrix(
-      dgerm_obj.landing_out(), flexbounds.at("v_r"), flexbounds.at("d_r"),
-      d_relpos, dgerm_obj.length(), false, xgerm_prob_matrix);
-  MultiplyLandingGermProbMatrix(
-      dgerm_obj.landing_out(), flexbounds.at("d_l"), flexbounds.at("d_r"),
-      d_relpos, dgerm_obj.length(), false, ngerm_prob_matrix);
+  MultiplyLandingGermProbMatrix(dgerm_obj.landing_out(), flexbounds.at("v_r"),
+                                flexbounds.at("d_r"), d_relpos,
+                                dgerm_obj.length(), false, xgerm_prob_matrix);
+  MultiplyLandingGermProbMatrix(dgerm_obj.landing_out(), flexbounds.at("d_l"),
+                                flexbounds.at("d_r"), d_relpos,
+                                dgerm_obj.length(), false, ngerm_prob_matrix);
   xgerm_prob_matrix *= dgerm_obj.gene_prob();
   ngerm_prob_matrix *= dgerm_obj.gene_prob();
 
@@ -152,9 +152,9 @@ std::pair<SmooshablePtrVect, SmooshablePtrVect> JSmooshables(
 
   // Multiply in the associated landing-in probabilities (if necessary).
   if (j_relpos <= flexbounds.at("d_r").second) {
-    MultiplyLandingGermProbMatrix(
-        jgerm_obj.landing_in(), flexbounds.at("d_r"), flexbounds.at("j_r"),
-        j_relpos, jgerm_obj.length(), true, xgerm_prob_matrix);
+    MultiplyLandingGermProbMatrix(jgerm_obj.landing_in(), flexbounds.at("d_r"),
+                                  flexbounds.at("j_r"), j_relpos,
+                                  jgerm_obj.length(), true, xgerm_prob_matrix);
   }
 
   // Compute the germline match probability matrix (assuming some left-NTIs).
@@ -208,7 +208,8 @@ std::pair<SmooshablePtrVect, SmooshablePtrVect> JSmooshables(
 /// @param[in] germ_length
 /// The length of the germline gene.
 /// @param[in] landing_in
-/// A boolean specifying whether we are multiplying in a landing-in or landing-out
+/// A boolean specifying whether we are multiplying in a landing-in or
+/// landing-out
 /// probability vector.
 /// @param[in,out] germ_prob_matrix
 /// A germline match probability matrix returned from
@@ -219,29 +220,29 @@ void MultiplyLandingGermProbMatrix(
     int relpos, int germ_length, bool landing_in,
     Eigen::Ref<Eigen::MatrixXd> germ_prob_matrix) {
   int read_start, read_end, left_flex, right_flex;
-  FindGermProbMatrixIndices(
-      left_flexbounds, right_flexbounds, relpos, germ_length,
-      read_start, read_end, left_flex, right_flex);
+  FindGermProbMatrixIndices(left_flexbounds, right_flexbounds, relpos,
+                            germ_length, read_start, read_end, left_flex,
+                            right_flex);
 
-  // Compute the row and column start indices for the germline match matrix block.
+  // Compute the row and column start indices for the germline match matrix
+  // block.
   int row_start = read_start - left_flexbounds.first;
   int col_start = read_end - right_flex - right_flexbounds.first;
 
   // Are we landing-in or landing-out?
   if (landing_in) {
-    ColVecMatCwise(landing.segment(read_start - relpos,
-                                   left_flex + 1),
-                   germ_prob_matrix.block(row_start, col_start,
-                                          left_flex + 1, right_flex + 1),
-                   germ_prob_matrix.block(row_start, col_start,
-                                          left_flex + 1, right_flex + 1));
+    ColVecMatCwise(landing.segment(read_start - relpos, left_flex + 1),
+                   germ_prob_matrix.block(row_start, col_start, left_flex + 1,
+                                          right_flex + 1),
+                   germ_prob_matrix.block(row_start, col_start, left_flex + 1,
+                                          right_flex + 1));
   } else {
-    RowVecMatCwise(landing.segment(read_end - right_flex - relpos - 1,
-                                   right_flex + 1),
-                   germ_prob_matrix.block(row_start, col_start,
-                                          left_flex + 1, right_flex + 1),
-                   germ_prob_matrix.block(row_start, col_start,
-                                          left_flex + 1, right_flex + 1));
+    RowVecMatCwise(
+        landing.segment(read_end - right_flex - relpos - 1, right_flex + 1),
+        germ_prob_matrix.block(row_start, col_start, left_flex + 1,
+                               right_flex + 1),
+        germ_prob_matrix.block(row_start, col_start, left_flex + 1,
+                               right_flex + 1));
   }
 };
 

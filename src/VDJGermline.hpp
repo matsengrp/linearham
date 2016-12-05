@@ -1,9 +1,9 @@
 #ifndef LINEARHAM_VDJGERMLINE_
 #define LINEARHAM_VDJGERMLINE_
 
+#include "Germline.hpp"
 #include "NPadding.hpp"
 #include "NTInsertion.hpp"
-#include "Germline.hpp"
 
 /// @file VDJGermline.hpp
 /// @brief Headers for the V, D, and J germline classes.
@@ -49,8 +49,8 @@ class GermlineGene {
 
 // GermlineGene Map Function
 
-std::unordered_map<std::string, GermlineGene> CreateGermlineGeneMap(std::string dir_path);
-
+std::unordered_map<std::string, GermlineGene> CreateGermlineGeneMap(
+    std::string dir_path);
 }
 
 #endif  // LINEARHAM_VDJGERMLINE_

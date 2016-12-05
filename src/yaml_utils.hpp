@@ -2,9 +2,9 @@
 #define LINEARHAM_YAML_UTILS_
 
 #include <dirent.h>
+#include <yaml-cpp/yaml.h>
 #include <regex>
 #include <unordered_map>
-#include <yaml-cpp/yaml.h>
 #include "core.hpp"
 
 /// @file yaml_utils.hpp

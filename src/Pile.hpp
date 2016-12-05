@@ -34,11 +34,11 @@ class Pile {
   inline void reserve(std::size_t new_cap) { items_.reserve(new_cap); }
 };
 
-Eigen::VectorXi ConvertSeqToInts(const std::string& seq,
-                                 const std::unordered_map<std::string, int>& alphabet_map);
+Eigen::VectorXi ConvertSeqToInts(
+    const std::string& seq,
+    const std::unordered_map<std::string, int>& alphabet_map);
 
-std::vector<Pile> CreateVDJPiles(std::string csv_path,
-                                 std::string dir_path);
+std::vector<Pile> CreateVDJPiles(std::string csv_path, std::string dir_path);
 }
 
 #endif  // LINEARHAM_PILE_

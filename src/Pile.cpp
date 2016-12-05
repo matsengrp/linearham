@@ -80,17 +80,15 @@ std::vector<Pile> CreateVDJPiles(std::string csv_path, std::string dir_path) {
                                       seq_ints, relpos));
       } else if (ggene.type == "D") {
         SmooshablePtrVect dx_smooshable, dn_smooshables;
-        std::tie(dx_smooshable, dn_smooshables) =
-            DSmooshables(*ggene.DGermlinePtr(), query.flexbounds(),
-                         seq_ints, relpos);
+        std::tie(dx_smooshable, dn_smooshables) = DSmooshables(
+            *ggene.DGermlinePtr(), query.flexbounds(), seq_ints, relpos);
         d_smooshables.push_back(dx_smooshable);
         d_smooshables.push_back(dn_smooshables);
       } else {
         assert(ggene.type == "J");
         SmooshablePtrVect jx_smooshable, jn_smooshables;
-        std::tie(jx_smooshable, jn_smooshables) =
-            JSmooshables(*ggene.JGermlinePtr(), query.flexbounds(),
-                         seq_ints, relpos);
+        std::tie(jx_smooshable, jn_smooshables) = JSmooshables(
+            *ggene.JGermlinePtr(), query.flexbounds(), seq_ints, relpos);
         j_smooshables.push_back(jx_smooshable);
         j_smooshables.push_back(jn_smooshables);
       }
