@@ -75,9 +75,11 @@ std::vector<Pile> CreateVDJPiles(std::string csv_path, std::string dir_path) {
 
       // Construct the proper Smooshable(s).
       GermlineGene ggene = ggene_map[gname];
+      assert(ggene.type != "null");
+
       if (ggene.type == "V") {
         outp[i].push_back(VSmooshable(*ggene.VGermlinePtr(), query.flexbounds(),
-                                      seq_ints, relpos));
+                                      seq_ints, relpos, query.n_read_counts()));
       } else if (ggene.type == "D") {
         SmooshablePtrVect dx_smooshable, dn_smooshables;
         std::tie(dx_smooshable, dn_smooshables) = DSmooshables(
@@ -88,7 +90,8 @@ std::vector<Pile> CreateVDJPiles(std::string csv_path, std::string dir_path) {
         assert(ggene.type == "J");
         SmooshablePtrVect jx_smooshable, jn_smooshables;
         std::tie(jx_smooshable, jn_smooshables) = JSmooshables(
-            *ggene.JGermlinePtr(), query.flexbounds(), seq_ints, relpos);
+            *ggene.JGermlinePtr(), query.flexbounds(),
+            seq_ints, relpos, query.n_read_counts());
         j_smooshables.push_back(jx_smooshable);
         j_smooshables.push_back(jn_smooshables);
       }

@@ -49,12 +49,15 @@ SmooshablePtr BuildSmooshablePtr(
 /// A vector of indices corresponding to the observed bases of the read.
 /// @param[in] v_relpos
 /// The read position corresponding to the first base of the V germline gene.
+/// @param[in] n_read_counts
+/// The number of N's on the left/right of the "untrimmed" sequence.
 /// @return
 /// A SmooshablePtr.
 SmooshablePtr VSmooshable(
     const VGermline& vgerm_obj,
     const std::map<std::string, std::pair<int, int>>& flexbounds,
-    const Eigen::Ref<const Eigen::VectorXi>& emission_indices, int v_relpos) {
+    const Eigen::Ref<const Eigen::VectorXi>& emission_indices,
+    int v_relpos, std::pair<int, int> n_read_counts) {
   // Compute the germline match probability matrix.
   Eigen::MatrixXd germ_prob_matrix = vgerm_obj.GermlineProbMatrix(
       flexbounds.at("v_l"), flexbounds.at("v_r"), emission_indices, v_relpos);
@@ -71,8 +74,9 @@ SmooshablePtr VSmooshable(
 
   // Multiply in the associated gene and padding probabilities.
   germ_prob_matrix *= vgerm_obj.gene_prob();
-  double npadding_prob = vgerm_obj.NPaddingProb(
-      flexbounds.at("v_l"), emission_indices, v_relpos, true);
+  double npadding_prob =
+      vgerm_obj.NPaddingProb(flexbounds.at("v_l"), emission_indices,
+                             v_relpos, n_read_counts.first, true);
   germ_prob_matrix *= npadding_prob;
 
   return BuildSmooshablePtr(germ_prob_matrix);
@@ -126,6 +130,7 @@ std::pair<SmooshablePtrVect, SmooshablePtrVect> DSmooshables(
   SmooshablePtrVect dx_smooshable = {BuildSmooshablePtr(xgerm_prob_matrix)};
   SmooshablePtrVect dn_smooshables = {BuildSmooshablePtr(nti_prob_matrix),
                                       BuildSmooshablePtr(ngerm_prob_matrix)};
+
   return std::make_pair(dx_smooshable, dn_smooshables);
 };
 
@@ -139,13 +144,16 @@ std::pair<SmooshablePtrVect, SmooshablePtrVect> DSmooshables(
 /// A vector of indices corresponding to the observed bases of the read.
 /// @param[in] j_relpos
 /// The read position corresponding to the first base of the J germline gene.
+/// @param[in] n_read_counts
+/// The number of N's on the left/right of the "untrimmed" sequence.
 /// @return
 /// A 2-tuple containing a SmooshablePtrVect of size 1 (for the non-NTI case)
 /// and a SmooshablePtrVect of size 2 (for the NTI case).
 std::pair<SmooshablePtrVect, SmooshablePtrVect> JSmooshables(
     const JGermline& jgerm_obj,
     const std::map<std::string, std::pair<int, int>>& flexbounds,
-    const Eigen::Ref<const Eigen::VectorXi>& emission_indices, int j_relpos) {
+    const Eigen::Ref<const Eigen::VectorXi>& emission_indices,
+    int j_relpos, std::pair<int, int> n_read_counts) {
   // Compute the germline match probability matrix (assuming no left-NTIs).
   Eigen::MatrixXd xgerm_prob_matrix = jgerm_obj.GermlineProbMatrix(
       flexbounds.at("d_r"), flexbounds.at("j_r"), emission_indices, j_relpos);
@@ -176,7 +184,8 @@ std::pair<SmooshablePtrVect, SmooshablePtrVect> JSmooshables(
   ngerm_prob_matrix *= jgerm_obj.gene_prob();
   double npadding_prob =
       jgerm_obj.NPaddingProb(flexbounds.at("j_r"), emission_indices,
-                             j_relpos + jgerm_obj.length(), false);
+                             j_relpos + jgerm_obj.length(),
+                             n_read_counts.second, false);
   xgerm_prob_matrix *= npadding_prob;
   ngerm_prob_matrix *= npadding_prob;
 

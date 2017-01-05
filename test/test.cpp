@@ -13,12 +13,14 @@ using namespace linearham;
 
 YAML::Node V_root, D_root, J_root;
 Eigen::VectorXi emission_indices(13);
+std::pair<int, int> n_read_counts;
 
 void initialize_global_test_vars() {
   V_root = YAML::LoadFile("data/hmm_params_ex/IGHV_ex_star_01.yaml");
   D_root = YAML::LoadFile("data/hmm_params_ex/IGHD_ex_star_01.yaml");
   J_root = YAML::LoadFile("data/hmm_params_ex/IGHJ_ex_star_01.yaml");
   emission_indices << 0, 1, 0, 2, 3, 0, 1, 1, 1, 3, 2, 3, 3;
+  n_read_counts = {3,2};
 }
 
 
@@ -402,42 +404,79 @@ TEST_CASE("NTInsertion", "[ntinsertion]") {
 TEST_CASE("NPadding", "[npadding]") {
   initialize_global_test_vars();
 
+  // For each gene, we will test Case 1, Case 2a, and Case 2b as shown
+  // at https://github.com/matsengrp/linearham/issues/35#issuecomment-270037356.
+
   // V tests
   double V_n_transition_prob = 0.33333333333333337;
+  double V_ambig_emission_prob = 0.25;
   Eigen::VectorXd V_n_emission_vector(4);
   V_n_emission_vector << 0.25, 0.25, 0.25, 0.25;
 
   NPadding V_NPadding(V_root);
 
   REQUIRE(V_NPadding.n_transition_prob() == V_n_transition_prob);
+  REQUIRE(V_NPadding.ambig_emission_prob() == V_ambig_emission_prob);
   REQUIRE(V_NPadding.n_emission_vector() == V_n_emission_vector);
 
+  // Case 1
   int V_read_pos = 2;
   std::pair<int, int> V_flexbounds = std::make_pair(0, 3);
-  double V_NPaddingProb = 0.33333333333333337*0.25*0.33333333333333337*0.25*(1 - 0.33333333333333337);
+  double V_NPaddingProb = 0.33333333333333337*0.25*0.33333333333333337*0.25*0.33333333333333337*0.25*0.33333333333333337*0.25*0.33333333333333337*0.25*(1 - 0.33333333333333337);
 
   REQUIRE(V_NPadding.NPaddingProb(V_flexbounds, emission_indices,
-                                  V_read_pos, true) == V_NPaddingProb);
+                                  V_read_pos, n_read_counts.first, true) == V_NPaddingProb);
+
+  // Case 2a
+  V_read_pos = -4;
+  V_NPaddingProb = 0.25*0.25*0.25*(1 - 0.33333333333333337);
+
+  REQUIRE(V_NPadding.NPaddingProb(V_flexbounds, emission_indices,
+                                  V_read_pos, n_read_counts.first, true) == V_NPaddingProb);
+
+  // Case 2b
+  V_read_pos = -2;
+  V_NPaddingProb = 0.33333333333333337*0.25*(1 - 0.33333333333333337)*0.25*0.25;
+
+  REQUIRE(V_NPadding.NPaddingProb(V_flexbounds, emission_indices,
+                                  V_read_pos, n_read_counts.first, true) == V_NPaddingProb);
 
   // D genes can't initialize NPadding objects.
   // NPadding D_NPadding = NPadding(D_root);
 
   // J tests
   double J_n_transition_prob = 0.96;
+  double J_ambig_emission_prob = 0.25;
   Eigen::VectorXd J_n_emission_vector(4);
   J_n_emission_vector << 0.25, 0.25, 0.25, 0.25;
 
   NPadding J_NPadding(J_root);
 
   REQUIRE(J_NPadding.n_transition_prob() == J_n_transition_prob);
+  REQUIRE(J_NPadding.ambig_emission_prob() == J_ambig_emission_prob);
   REQUIRE(J_NPadding.n_emission_vector() == J_n_emission_vector);
 
+  // Case 1
   int J_read_pos = 10;
   std::pair<int, int> J_flexbounds = std::make_pair(9, 13);
-  double J_NPaddingProb = 0.96*0.25*0.96*0.25*0.96*0.25*(1 - 0.96);
+  double J_NPaddingProb = 0.96*0.25*0.96*0.25*0.96*0.25*0.96*0.25*0.96*0.25*(1 - 0.96);
 
   REQUIRE(J_NPadding.NPaddingProb(J_flexbounds, emission_indices,
-                                  J_read_pos, false) == J_NPaddingProb);
+                                  J_read_pos, n_read_counts.second, false) == J_NPaddingProb);
+
+  // Case 2a
+  J_read_pos = 16;
+  J_NPaddingProb = 0.25*0.25*(1 - 0.96);
+
+  REQUIRE(J_NPadding.NPaddingProb(J_flexbounds, emission_indices,
+                                  J_read_pos, n_read_counts.second, false) == J_NPaddingProb);
+
+  // Case 2b
+  J_read_pos = 14;
+  J_NPaddingProb = 0.25*0.96*0.25*(1 - 0.96);
+
+  REQUIRE(J_NPadding.NPaddingProb(J_flexbounds, emission_indices,
+                                  J_read_pos, n_read_counts.second, false) == J_NPaddingProb);
 }
 
 
@@ -554,11 +593,11 @@ TEST_CASE("Smooshable", "[smooshable]") {
   Eigen::MatrixXd VSmoosh_marginal(1,3);
   VSmoosh_marginal <<
   // Format is gene_prob * npadding_prob * emission * transition * ... * emission * landing_out
-  0.07*0.33333333333333337*0.25*0.33333333333333337*0.25*0.6666666666666666*0.79*1*0.1*1*0.01*0.2, 0.07*0.33333333333333337*0.25*0.33333333333333337*0.25*0.6666666666666666*0.79*1*0.1*1*0.01*0.8*0.55*0.5, 0.07*0.33333333333333337*0.25*0.33333333333333337*0.25*0.6666666666666666*0.79*1*0.1*1*0.01*0.8*0.55*0.5*0.625;
+  0.07*0.33333333333333337*0.25*0.33333333333333337*0.25*0.33333333333333337*0.25*0.33333333333333337*0.25*0.33333333333333337*0.25*0.6666666666666666*0.79*1*0.1*1*0.01*0.2, 0.07*0.33333333333333337*0.25*0.33333333333333337*0.25*0.33333333333333337*0.25*0.33333333333333337*0.25*0.33333333333333337*0.25*0.6666666666666666*0.79*1*0.1*1*0.01*0.8*0.55*0.5, 0.07*0.33333333333333337*0.25*0.33333333333333337*0.25*0.33333333333333337*0.25*0.33333333333333337*0.25*0.33333333333333337*0.25*0.6666666666666666*0.79*1*0.1*1*0.01*0.8*0.55*0.5*0.625;
 
   flexbounds["v_l"] = {0,2};
   flexbounds["v_r"] = {5,7};
-  SmooshablePtr VSmoosh = VSmooshable(vgerm_obj, flexbounds, emission_indices, 2);
+  SmooshablePtr VSmoosh = VSmooshable(vgerm_obj, flexbounds, emission_indices, 2, n_read_counts);
 
   REQUIRE(VSmoosh->marginal().isApprox(VSmoosh_marginal));
 
@@ -602,15 +641,15 @@ TEST_CASE("Smooshable", "[smooshable]") {
   Eigen::MatrixXd JNSmoosh_ngerm_marginal(2,1);
   JNSmoosh_ngerm_marginal <<
   // Format is gene_prob * emission * transition * ... * emission * npadding_prob
-  0.015*0.03*1*0.7*1*0.82*1*0.01*1*0.08*0.04,
-         0.015*0.7*1*0.82*1*0.01*1*0.08*0.04;
+  0.015*0.03*1*0.7*1*0.82*1*0.01*1*0.08*0.96*0.25*0.96*0.25*0.04,
+         0.015*0.7*1*0.82*1*0.01*1*0.08*0.96*0.25*0.96*0.25*0.04;
 
   flexbounds["d_r"] = {5,6};
   flexbounds["j_l"] = {8,9};
   flexbounds["j_r"] = {12,13};
   SmooshablePtrVect JXSmoosh(1), JNSmoosh(2);
   std::tie(JXSmoosh, JNSmoosh) =
-      JSmooshables(jgerm_obj, flexbounds, emission_indices, 8);
+      JSmooshables(jgerm_obj, flexbounds, emission_indices, 8, n_read_counts);
 
   REQUIRE(JXSmoosh[0]->marginal().isApprox(JXSmoosh_marginal));
   REQUIRE(JNSmoosh[0]->marginal().isApprox(JNSmoosh_nti_marginal, 1e-5));
@@ -623,9 +662,9 @@ TEST_CASE("Smooshable", "[smooshable]") {
   flexbounds["d_r"] = {9,10};
   flexbounds["j_l"] = {11,12};
   flexbounds["j_r"] = {13,13};
-  VSmoosh = VSmooshable(vgerm_obj, flexbounds, emission_indices, 1);
+  VSmoosh = VSmooshable(vgerm_obj, flexbounds, emission_indices, 1, n_read_counts);
   std::tie(DXSmoosh, DNSmoosh) = DSmooshables(dgerm_obj, flexbounds, emission_indices, 5);
-  std::tie(JXSmoosh, JNSmoosh) = JSmooshables(jgerm_obj, flexbounds, emission_indices, 10);
+  std::tie(JXSmoosh, JNSmoosh) = JSmooshables(jgerm_obj, flexbounds, emission_indices, 10, n_read_counts);
 
   Pile actual_vdj_pile = Pile();
   actual_vdj_pile.push_back(VSmoosh);
@@ -656,17 +695,34 @@ TEST_CASE("VDJGermline", "[vdjgermline]") {
 TEST_CASE("CSV", "[io]") {
   std::vector<Query> queries = ReadQueries("data/hmm_input_real.csv");
   std::string correct_seq = "CAGGTGCAGCTGGTGCAGTCTGGGGCTGAGGTGAAGAAGCCTGGGGCCTCAGTGAAGGTCTCCTGCAAGGCTTCTGGATACACCTTCACCGGCTACTATATGCACTGGGTGCGACAGGCCCCTGGACAAGGGCTTGAGTGGATGGGATGGATCAACCCTAACAGTGGTGGCACAAACTATGCACAGAAGTTTCAGGGCTGGGTCACCATGACCAGGGACACGTCCATCAGCACAGCCTACATGGAGCTGAGCAGGCTGAGATCTGACGACACGGCCGTGTATTACTGTGCGAGAGATTTTTTATATTGTAGTGGTGGTAGCTGCTACTCCGGGGGGACTACTACTACTACGGTATGGACGTCTGGGGGCAAGGGACCACGGTCACCGTCTCCTCA";
+  std::vector<std::pair<int, int>> n_read_counts = {{0,0}, {2,3}};
+
+  REQUIRE(queries[0].n_read_counts() == n_read_counts[0]);
   REQUIRE(queries[0].relpos().at("IGHJ6*02") == 333);
   REQUIRE(queries[0].relpos().at("IGHD2-15*01") == 299);
   REQUIRE(queries[1].seq() == correct_seq);
+  REQUIRE(queries[1].n_read_counts() == n_read_counts[1]);
   REQUIRE(queries[1].flexbounds().at("v_l").second == 2);
   REQUIRE(queries[1].flexbounds().at("d_r").first == 328);
 }
 
 
-// Ham comparison tests
+// BCRHam comparison tests
 
-TEST_CASE("Ham Comparison 1", "[ham]") {
+TEST_CASE("BCRHam Comparison 1", "[bcrham]") {
+  io::CSVReader<1, io::trim_chars<>, io::double_quote_escape<',','\"'>> in(
+      "data/bcrham_compare/hmm_output.csv");
+  in.read_header(io::ignore_extra_column, "logprob");
+  double logprob;
+  std::vector<double> viterbi_logprobs;
+  while (in.read_row(logprob)) {
+    viterbi_logprobs.push_back(logprob);
+  }
 
+  std::vector<Pile> expected_piles = CreateVDJPiles("data/bcrham_compare/hmm_input.csv", "data/hmm_params_bcrham");
+
+  for (int i = 0; i < viterbi_logprobs.size(); i++) {
+    REQUIRE(std::fabs(viterbi_logprobs[i] - log(expected_piles[i][0]->viterbi()(0,0))) <= 1e-3);
+  }
 }
 }

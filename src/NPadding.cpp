@@ -31,12 +31,16 @@ NPadding::NPadding(YAML::Node root) {
   // Initialize local variables.
   int n_index, n_check_ind;
   std::string nname, next_name;
-  double correct_trans_prob;
 
   // For "insert_[left|right]_N" states, the transition probabilities should
   // be identical to the transition probabilities at the "[init|last germline]"
   // state.
   // The local variable `n_check_ind` is used to check the above statement.
+
+  // Note that these NPadding probabilities are geometric probabilities, so it
+  // seems unlikely that we can actually assert what the probabilities will be
+  // from dataset to dataset.
+  // (See https://github.com/psathyrella/partis/blob/master/python/hmmwriter.py#L601)
 
   // Case 1: "insert_left_N" state
   if (gstart == 2) {
@@ -44,14 +48,12 @@ NPadding::NPadding(YAML::Node root) {
     n_check_ind = gstart - 2;
     nname = "insert_left_N";
     next_name = gname + "_0";
-    correct_trans_prob = 0.33333333333333337;
   } else {
     // Case 2: "insert_right_N" state
     n_index = gend + 1;
     n_check_ind = gend;
     nname = "insert_right_N";
     next_name = "end";
-    correct_trans_prob = 0.96;
   }
 
   // Parse the "insert_[left|right]_N" state.
@@ -71,7 +73,6 @@ NPadding::NPadding(YAML::Node root) {
   // or enters the [first germline|end] state.
   for (unsigned int i = 0; i < state_names.size(); i++) {
     if (state_names[i] == nname) {
-      assert(probs[i] == correct_trans_prob);
       n_transition_prob_ = probs[i];
     } else {
       assert(state_names[i] == next_name);
@@ -86,11 +87,16 @@ NPadding::NPadding(YAML::Node root) {
     assert(probs[j] == 0.25);
     n_emission_vector_[alphabet_map[state_names[j]]] = probs[j];
   }
+
+  // Store the ambiguous emission probability for the "insert_[left|right]_N" state.
+  assert(nstate["extras"]["germline"].as<std::string>() == "N");
+  assert(nstate["extras"]["ambiguous_emission_prob"].as<double>() == 0.25);
+  ambig_emission_prob_ = nstate["extras"]["ambiguous_emission_prob"].as<double>();
 };
 
 
-/// @brief Calculates the probability of a path through padded germline states
-/// to the left (right) of a given V (J) gene.
+/// @brief Calculates the probability of a padding path to the left (right)
+/// of a given V (J) gene.
 /// @param[in] flexbounds
 /// A 2-tuple of read positions providing the left (right) flex bounds of a V
 /// (J) gene.
@@ -99,15 +105,18 @@ NPadding::NPadding(YAML::Node root) {
 /// @param[in] read_pos
 /// The read position of the first germline base or the read position to the
 /// right of the last germline base in the case of a V or J gene, respectively.
+/// @param[in] n_read_count
+/// The number of N's on the left (right) of the "untrimmed" sequence in the case
+/// of a V (J) gene.
 /// @param[in] pad_left
-/// A boolean specifying whether to pad the germline on the left (i.e. V gene)
-/// or on the right (i.e. J gene).
+/// A boolean specifying whether to pad on the left (i.e. V gene) or on the right
+/// (i.e. J gene).
 /// @return
 /// The padding path probability.
 double NPadding::NPaddingProb(
     std::pair<int, int> flexbounds,
-    const Eigen::Ref<const Eigen::VectorXi>& emission_indices, int read_pos,
-    bool pad_left) const {
+    const Eigen::Ref<const Eigen::VectorXi>& emission_indices,
+    int read_pos, int n_read_count, bool pad_left) const {
   assert(flexbounds.first <= flexbounds.second);
   assert(flexbounds.first <= read_pos || read_pos <= flexbounds.second);
 
@@ -116,26 +125,32 @@ double NPadding::NPaddingProb(
   assert(flexbounds.first <= emission_indices.size() &&
          flexbounds.second <= emission_indices.size());
 
-  int g_l, g_r, pad_start, pad_end;
+  int g_l, g_r, pad_start, pad_end, n_exclude_count;
   g_l = flexbounds.first;
   g_r = flexbounds.second;
-  double prob;
+  double prob = (1 - n_transition_prob_);
 
-  // Find the read positions that need padded germline states.
+  // To understand the different cases of the NPadding calculation below,
+  // see https://github.com/matsengrp/linearham/issues/35#issuecomment-270037356.
+
+  // Find the appropriate amount of padding required.
   if (pad_left) {
     pad_start = g_l;
     pad_end = std::max(read_pos, g_l);
+    n_exclude_count = std::min(pad_end - read_pos, n_read_count);
   } else {
     pad_start = std::min(read_pos, g_r);
     pad_end = g_r;
+    n_exclude_count = std::min(read_pos - pad_start, n_read_count);
   }
-  int n_count = pad_end - pad_start;
+  int n_flex_count = pad_end - pad_start;
 
-  // Compute the probability of the padded germline path.
-  prob = pow(n_transition_prob_, n_count) * (1 - n_transition_prob_);
+  // Compute the probability of the padding path.
+  prob *= pow(n_transition_prob_, n_flex_count + n_read_count - n_exclude_count);
   for (int i = pad_start; i < pad_end; i++) {
     prob *= n_emission_vector_[emission_indices[i]];
   }
+  prob *= pow(ambig_emission_prob_, n_read_count);
 
   return prob;
 };
