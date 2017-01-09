@@ -40,7 +40,7 @@ Eigen::VectorXi ConvertSeqToInts(
   return seq_ints;
 };
 
-
+/*
 /// @brief Create Piles with VDJ chains for each read in the
 /// partis CSV file.
 /// @param[in] csv_path
@@ -102,5 +102,5 @@ std::vector<Pile> CreateVDJPiles(std::string csv_path, std::string dir_path) {
   }
 
   return outp;
-};
+};*/
 }

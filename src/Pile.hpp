@@ -38,7 +38,7 @@ Eigen::VectorXi ConvertSeqToInts(
     const std::string& seq,
     const std::unordered_map<std::string, int>& alphabet_map);
 
-std::vector<Pile> CreateVDJPiles(std::string csv_path, std::string dir_path);
+//std::vector<Pile> CreateVDJPiles(std::string csv_path, std::string dir_path);
 }
 
 #endif  // LINEARHAM_PILE_

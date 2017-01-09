@@ -7,25 +7,25 @@ namespace linearham {
 
 
 std::shared_ptr<VGermline> GermlineGene::VGermlinePtr() const {
-  assert(type == "V");
-  return std::static_pointer_cast<VGermline>(germ_ptr);
+  assert(gtype == "V");
+  return std::static_pointer_cast<VGermline>(vdj_germ_ptr);
 };
 
 
 std::shared_ptr<DGermline> GermlineGene::DGermlinePtr() const {
-  assert(type == "D");
-  return std::static_pointer_cast<DGermline>(germ_ptr);
+  assert(gtype == "D");
+  return std::static_pointer_cast<DGermline>(vdj_germ_ptr);
 };
 
 
 std::shared_ptr<JGermline> GermlineGene::JGermlinePtr() const {
-  assert(type == "J");
-  return std::static_pointer_cast<JGermline>(germ_ptr);
+  assert(gtype == "J");
+  return std::static_pointer_cast<JGermline>(vdj_germ_ptr);
 };
 
 
 std::unordered_map<std::string, GermlineGene> CreateGermlineGeneMap(
-    std::string dir_path) {
+    std::string dir_path, std::string program_type) {
   // Check the directory path and open the stream.
   if (dir_path.back() != '/') dir_path += "/";
   DIR* dir = opendir(dir_path.c_str());
@@ -54,15 +54,15 @@ std::unordered_map<std::string, GermlineGene> CreateGermlineGeneMap(
     // Create the GermlineGene object.
     GermlineGene ggene;
     if (match[2] == "V") {
-      ggene.type = "V";
-      ggene.germ_ptr.reset(new VGermline(root));
+      ggene.gtype = "V";
+      ggene.vdj_germ_ptr.reset(new VGermline(root, program_type));
     } else if (match[2] == "D") {
-      ggene.type = "D";
-      ggene.germ_ptr.reset(new DGermline(root));
+      ggene.gtype = "D";
+      ggene.vdj_germ_ptr.reset(new DGermline(root, program_type));
     } else {
       assert(match[2] == "J");
-      ggene.type = "J";
-      ggene.germ_ptr.reset(new JGermline(root));
+      ggene.gtype = "J";
+      ggene.vdj_germ_ptr.reset(new JGermline(root, program_type));
     }
 
     // Insert results into output map.
@@ -74,8 +74,8 @@ std::unordered_map<std::string, GermlineGene> CreateGermlineGeneMap(
   // `std::prev(outp.end())`.)
   for (auto it = outp.begin(), end = std::next(outp.begin(), outp.size() - 1);
        it != end;) {
-    assert(it->second.germ_ptr->alphabet_map() ==
-           (++it)->second.germ_ptr->alphabet_map());
+    assert(it->second.vdj_germ_ptr->base_germ_ptr()->alphabet_map() ==
+           (++it)->second.vdj_germ_ptr->base_germ_ptr()->alphabet_map());
   }
 
   // Close directory stream.
