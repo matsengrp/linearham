@@ -18,7 +18,7 @@ class Germline {
 
  public:
   Germline(){};
-  Germline(YAML::Node root, std::string base_derived_type);
+  Germline(YAML::Node root, std::string derived_type);
 
   std::shared_ptr<BaseGermline> base_germ_ptr() const {
     return base_germ_ptr_;

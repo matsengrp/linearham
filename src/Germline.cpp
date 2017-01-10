@@ -9,14 +9,14 @@ namespace linearham {
 /// @brief Constructor for Germline starting from a YAML file.
 /// @param[in] root
 /// A root node associated with a germline YAML file.
-/// @param[in] base_derived_type
+/// @param[in] derived_type
 /// A string specifying the BaseGermline derived type (i.e. either "simple" or
 /// "phylo").
-Germline::Germline(YAML::Node root, std::string base_derived_type) {
-  if (base_derived_type == "simple") {
+Germline::Germline(YAML::Node root, std::string derived_type) {
+  if (derived_type == "simple") {
     base_germ_ptr_.reset(new SimpleGermline(root));
   } else {
-    assert(base_derived_type == "phylo");
+    assert(derived_type == "phylo");
     base_germ_ptr_.reset(new PhyloGermline(root));
   }
 };
