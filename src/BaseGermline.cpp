@@ -167,11 +167,11 @@ Eigen::MatrixXd BaseGermline::GermlineProbMatrix(
 
   // Compute the length of the read (SimpleGermline) or MSA (PhyloGermline).
   int seq_size;
-  if (emission_data.type == "simple") {
-    seq_size = emission_data.simple->size();
+  if (emission_data.data_type() == "simple") {
+    seq_size = emission_data.simple()->size();
   } else {
-    assert(emission_data.type == "phylo");
-    seq_size = emission_data.phylo->msa().cols();
+    assert(emission_data.data_type() == "phylo");
+    seq_size = emission_data.phylo()->msa().cols();
   }
 
   assert(0 < relpos + this->length() && relpos < seq_size);

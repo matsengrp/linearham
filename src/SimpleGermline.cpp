@@ -76,12 +76,12 @@ SimpleGermline::SimpleGermline(YAML::Node root) : BaseGermline(root) {
 void SimpleGermline::EmissionVector(
     const EmissionData& emission_data, int relpos, int match_start,
     Eigen::Ref<Eigen::VectorXd> emission) const {
-  assert(emission_data.type == "simple");
+  assert(emission_data.data_type() == "simple");
   int match_length = emission.size();
   assert(match_start - relpos + match_length <= this->length());
   VectorByIndices(emission_matrix_.block(0, match_start - relpos,
                                          emission_matrix_.rows(), match_length),
-                  emission_data.simple->segment(match_start, match_length),
+                  emission_data.simple()->segment(match_start, match_length),
                   emission);
 };
 }
