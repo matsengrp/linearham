@@ -37,11 +37,16 @@ class JGermline : public Germline, public NTInsertion, public NPadding {
 
 /// @brief A common class for the different germline gene types.
 class GermlineGene {
+ private:
+  std::string gtype_;
+  std::shared_ptr<Germline> vdj_germ_ptr_;
+
  public:
   GermlineGene(){};
+  GermlineGene(std::string gtype, std::shared_ptr<Germline> vdj_germ_ptr);
 
-  std::string gtype = "null";
-  std::shared_ptr<Germline> vdj_germ_ptr;
+  std::string gtype() const { return gtype_; };
+  std::shared_ptr<Germline> vdj_germ_ptr() const { return vdj_germ_ptr_; };
 
   std::shared_ptr<VGermline> VGermlinePtr() const;
   std::shared_ptr<DGermline> DGermlinePtr() const;
