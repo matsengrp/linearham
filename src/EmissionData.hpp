@@ -20,14 +20,8 @@ class EmissionData {
   EmissionData(){};
 
   std::string data_type() const { return data_type_; };
-  std::shared_ptr<Eigen::VectorXi> simple() const {
-    assert(data_type_ == "simple");
-    return simple_;
-  };
-  std::shared_ptr<Phylo> phylo() const {
-    assert(data_type_ == "phylo");
-    return phylo_;
-  };
+  std::shared_ptr<Eigen::VectorXi> simple() const;
+  std::shared_ptr<Phylo> phylo() const;
 };
 }
 
