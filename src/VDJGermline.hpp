@@ -15,38 +15,31 @@ namespace linearham {
 class VGermline : public Germline, public NPadding {
  public:
   VGermline(){};
-  VGermline(YAML::Node root, std::string program_type)
-      : Germline(root, program_type), NPadding(root){};
+  VGermline(YAML::Node root) : Germline(root), NPadding(root){};
 };
 
 /// @brief An abstraction used to represent a D germline gene.
 class DGermline : public Germline, public NTInsertion {
  public:
   DGermline(){};
-  DGermline(YAML::Node root, std::string program_type)
-      : Germline(root, program_type), NTInsertion(root){};
+  DGermline(YAML::Node root) : Germline(root), NTInsertion(root){};
 };
 
 /// @brief An abstraction used to represent a J germline gene.
 class JGermline : public Germline, public NTInsertion, public NPadding {
  public:
   JGermline(){};
-  JGermline(YAML::Node root, std::string program_type)
-      : Germline(root, program_type), NTInsertion(root), NPadding(root){};
+  JGermline(YAML::Node root)
+      : Germline(root), NTInsertion(root), NPadding(root){};
 };
 
 /// @brief A common class for the different germline gene types.
 class GermlineGene {
- private:
-  std::string gtype_;
-  std::shared_ptr<Germline> vdj_germ_ptr_;
-
  public:
   GermlineGene(){};
-  GermlineGene(std::string gtype, std::shared_ptr<Germline> vdj_germ_ptr);
 
-  std::string gtype() const { return gtype_; };
-  std::shared_ptr<Germline> vdj_germ_ptr() const { return vdj_germ_ptr_; };
+  std::string type = "null";
+  std::shared_ptr<Germline> germ_ptr;
 
   std::shared_ptr<VGermline> VGermlinePtr() const;
   std::shared_ptr<DGermline> DGermlinePtr() const;
@@ -57,7 +50,7 @@ class GermlineGene {
 // GermlineGene Map Function
 
 std::unordered_map<std::string, GermlineGene> CreateGermlineGeneMap(
-    std::string dir_path, std::string program_type);
+    std::string dir_path);
 }
 
 #endif  // LINEARHAM_VDJGERMLINE_

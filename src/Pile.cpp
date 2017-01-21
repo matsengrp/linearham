@@ -21,34 +21,14 @@ Pile Pile::SmooshRight(const std::vector<SmooshablePtrVect>& futures) {
 };
 
 
-/// @brief Converts a string sequence to an integer sequence according to
-/// the alphabet map.
-/// @param[in] seq
-/// The string sequence.
-/// @param[in] alphabet_map
-/// The string-integer alphabet map.
-/// @return
-/// The integer sequence.
-Eigen::VectorXi ConvertSeqToInts(
-    const std::string& seq,
-    const std::unordered_map<std::string, int>& alphabet_map) {
-  Eigen::VectorXi seq_ints(seq.size());
-  for (std::size_t i = 0; i < seq.size(); i++) {
-    seq_ints[i] = alphabet_map.at(std::string{seq[i]});
-  }
-
-  return seq_ints;
-};
-
 /*
-/// @brief Create Piles with VDJ chains for each read in the
-/// partis CSV file.
+/// @brief Create Piles with VDJ chains for each read in the partis CSV file.
 /// @param[in] csv_path
-/// Path to a CSV of Queries.
+/// Path to a partis CSV file.
 /// @param[in] dir_path
 /// Path to a directory of HMM YAML files.
-/// @return A vector of Piles, indexed on the input queries, each of which have
-/// full V(D)J chains.
+/// @return A vector of Piles, indexed on the CSV rows, each of which have full
+/// V(D)J chains.
 std::vector<Pile> CreateVDJPiles(std::string csv_path, std::string dir_path) {
   // Initialize GermlineGene map and Query objects.
   std::unordered_map<std::string, GermlineGene> ggene_map =

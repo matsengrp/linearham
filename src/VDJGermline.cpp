@@ -6,40 +6,26 @@
 namespace linearham {
 
 
-/// @brief Constructor for GermlineGene.
-/// @param[in] gtype
-/// A string specifying the germline gene type (i.e. "V", "D", or "J").
-/// @param[in] vdj_germ_ptr
-/// A Germline smart pointer (pointing to either a VGermline, DGermline, or
-/// JGermline object).
-GermlineGene::GermlineGene(std::string gtype,
-                           std::shared_ptr<Germline> vdj_germ_ptr) {
-  assert(gtype == "V" || gtype == "D" || gtype == "J");
-  gtype_ = gtype;
-  vdj_germ_ptr_ = vdj_germ_ptr;
-}
-
-
 std::shared_ptr<VGermline> GermlineGene::VGermlinePtr() const {
-  assert(gtype_ == "V");
-  return std::static_pointer_cast<VGermline>(vdj_germ_ptr_);
+  assert(type == "V");
+  return std::static_pointer_cast<VGermline>(germ_ptr);
 };
 
 
 std::shared_ptr<DGermline> GermlineGene::DGermlinePtr() const {
-  assert(gtype_ == "D");
-  return std::static_pointer_cast<DGermline>(vdj_germ_ptr_);
+  assert(type == "D");
+  return std::static_pointer_cast<DGermline>(germ_ptr);
 };
 
 
 std::shared_ptr<JGermline> GermlineGene::JGermlinePtr() const {
-  assert(gtype_ == "J");
-  return std::static_pointer_cast<JGermline>(vdj_germ_ptr_);
+  assert(type == "J");
+  return std::static_pointer_cast<JGermline>(germ_ptr);
 };
 
 
 std::unordered_map<std::string, GermlineGene> CreateGermlineGeneMap(
-    std::string dir_path, std::string program_type) {
+    std::string dir_path) {
   // Check the directory path and open the stream.
   if (dir_path.back() != '/') dir_path += "/";
   DIR* dir = opendir(dir_path.c_str());
@@ -65,23 +51,22 @@ std::unordered_map<std::string, GermlineGene> CreateGermlineGeneMap(
     // Store YAML root.
     YAML::Node root = YAML::LoadFile(dir_path + file_name);
 
-    // Insert (germline name, GermlineGene object) into output map.
-    std::string gtype;
-    std::shared_ptr<Germline> vdj_germ_ptr;
-
+    // Create the GermlineGene object.
+    GermlineGene ggene;
     if (match[2] == "V") {
-      gtype = "V";
-      vdj_germ_ptr.reset(new VGermline(root, program_type));
+      ggene.type = "V";
+      ggene.germ_ptr.reset(new VGermline(root));
     } else if (match[2] == "D") {
-      gtype = "D";
-      vdj_germ_ptr.reset(new DGermline(root, program_type));
+      ggene.type = "D";
+      ggene.germ_ptr.reset(new DGermline(root));
     } else {
       assert(match[2] == "J");
-      gtype = "J";
-      vdj_germ_ptr.reset(new JGermline(root, program_type));
+      ggene.type = "J";
+      ggene.germ_ptr.reset(new JGermline(root));
     }
 
-    outp.emplace(gname, GermlineGene(gtype, vdj_germ_ptr));
+    // Insert results into output map.
+    outp.emplace(gname, ggene);
   }
 
   // All Germline alphabet maps should be identical.
@@ -89,8 +74,8 @@ std::unordered_map<std::string, GermlineGene> CreateGermlineGeneMap(
   // `std::prev(outp.end())`.)
   for (auto it = outp.begin(), end = std::next(outp.begin(), outp.size() - 1);
        it != end;) {
-    assert(it->second.vdj_germ_ptr()->base_germ_ptr()->alphabet_map() ==
-           (++it)->second.vdj_germ_ptr()->base_germ_ptr()->alphabet_map());
+    assert(it->second.germ_ptr->alphabet_map() ==
+           (++it)->second.germ_ptr->alphabet_map());
   }
 
   // Close directory stream.

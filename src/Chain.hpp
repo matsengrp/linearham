@@ -2,6 +2,7 @@
 #define LINEARHAM_CHAIN_
 
 #include "Smooshable.hpp"
+#include "yaml_utils.hpp"
 
 /// @file Chain.hpp
 /// @brief Header for the Chain class.

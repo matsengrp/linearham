@@ -2,7 +2,6 @@
 #define LINEARHAM_SMOOSHABLE_
 
 #include "Smooshish.hpp"
-#include "VDJGermline.hpp"
 
 /// @file Smooshable.hpp
 /// @brief Header for the Smooshable class.
@@ -45,33 +44,7 @@ SmooshablePtr BuildSmooshablePtr(const Eigen::Ref<const Eigen::MatrixXd>&);
 typedef std::vector<SmooshablePtr> SmooshablePtrVect;
 
 
-// VDJSmooshable Constructor Functions
-
-SmooshablePtr VSmooshable(
-    const VGermline& vgerm_obj,
-    const std::map<std::string, std::pair<int, int>>& flexbounds,
-    const Eigen::Ref<const Eigen::VectorXi>& emission_indices,
-    int v_relpos, std::pair<int, int> n_read_counts);
-
-std::pair<SmooshablePtrVect, SmooshablePtrVect> DSmooshables(
-    const DGermline& dgerm_obj,
-    const std::map<std::string, std::pair<int, int>>& flexbounds,
-    const Eigen::Ref<const Eigen::VectorXi>& emission_indices, int d_relpos);
-
-std::pair<SmooshablePtrVect, SmooshablePtrVect> JSmooshables(
-    const JGermline& jgerm_obj,
-    const std::map<std::string, std::pair<int, int>>& flexbounds,
-    const Eigen::Ref<const Eigen::VectorXi>& emission_indices,
-    int j_relpos, std::pair<int, int> n_read_counts);
-
-
 // Auxiliary Functions
-
-void MultiplyLandingGermProbMatrix(
-    const Eigen::Ref<const Eigen::VectorXd>& landing,
-    std::pair<int, int> left_flexbounds, std::pair<int, int> right_flexbounds,
-    int relpos, int germ_length, bool landing_in,
-    Eigen::Ref<Eigen::MatrixXd> germ_prob_matrix);
 
 int ScaleMatrix(Eigen::Ref<Eigen::MatrixXd> m);
 }

@@ -50,11 +50,13 @@ NTInsertion::NTInsertion(YAML::Node root) {
   Eigen::VectorXd probs;
   std::tie(state_names, probs) = ParseStringProbMap(init_state["transitions"]);
 
-  // The init state has landing probabilities in each of the NTI states.
+  // The init state has landing-in probabilities in each of the NTI states.
   for (unsigned int i = 0; i < state_names.size(); i++) {
     if (std::regex_match(state_names[i], match, nrgx)) {
       n_landing_in_[alphabet_map[match[1]]] = probs[i];
     } else {
+      // If the init state does not land in a NTI state, it must land in the
+      // germline gene.
       assert(std::regex_match(state_names[i], match, grgx));
     }
   }
@@ -72,11 +74,10 @@ NTInsertion::NTInsertion(YAML::Node root) {
       if (std::regex_match(state_names[j], match, grgx)) {
         // Get probabilities of going from NTI to germline genes.
         n_landing_out_(alphabet_ind, std::stoi(match[1])) = probs[j];
-      } else if (std::regex_match(state_names[j], match, nrgx)) {
-        // Get probabilities of going between NTI states.
-        n_transition_(alphabet_ind, alphabet_map[match[1]]) = probs[j];
       } else {
-        assert(0);
+        // Get probabilities of going between NTI states.
+        assert(std::regex_match(state_names[j], match, nrgx));
+        n_transition_(alphabet_ind, alphabet_map[match[1]]) = probs[j];
       }
     }
 
@@ -88,74 +89,5 @@ NTInsertion::NTInsertion(YAML::Node root) {
       n_emission_matrix_(alphabet_map[state_names[j]], alphabet_ind) = probs[j];
     }
   }
-};
-
-
-/// @brief Creates the matrix with the probabilities of non-templated insertions
-/// to the left of a given D or J gene.
-/// @param[in] left_flexbounds
-/// A 2-tuple of read positions providing the right flex bounds of the germline
-/// to the left of the NTI region.
-/// @param[in] right_flexbounds
-/// A 2-tuple of read positions providing the left flex bounds of the germline
-/// to the right of the NTI region.
-/// @param[in] emission_indices
-/// A vector of indices corresponding to the observed bases of the read.
-/// @param[in] right_relpos
-/// The read position corresponding to the first base of the germline gene to
-/// the right of the NTI region.
-/// @return
-/// The NTI probability matrix.
-Eigen::MatrixXd NTInsertion::NTIProbMatrix(
-    std::pair<int, int> left_flexbounds, std::pair<int, int> right_flexbounds,
-    const Eigen::Ref<const Eigen::VectorXi>& emission_indices,
-    int right_relpos) const {
-  assert(left_flexbounds.first <= left_flexbounds.second);
-  assert(right_flexbounds.first <= right_flexbounds.second);
-  assert(left_flexbounds.first <= right_flexbounds.first);
-  assert(left_flexbounds.second <= right_flexbounds.second);
-  assert(right_relpos <= right_flexbounds.second);
-
-  assert(right_relpos < emission_indices.size());
-  assert(0 < left_flexbounds.first && 0 < left_flexbounds.second);
-  assert(left_flexbounds.first < emission_indices.size() &&
-         left_flexbounds.second < emission_indices.size());
-  assert(0 < right_flexbounds.first && 0 < right_flexbounds.second);
-  assert(right_flexbounds.first < emission_indices.size() &&
-         right_flexbounds.second < emission_indices.size());
-
-  int g_ll, g_lr, g_rl, g_rr;
-  g_ll = left_flexbounds.first;
-  g_lr = left_flexbounds.second;
-  g_rl = right_flexbounds.first;
-  g_rr = right_flexbounds.second;
-  Eigen::MatrixXd cache_mat =
-      Eigen::MatrixXd::Zero(g_lr - g_ll + 1, n_transition_.cols());
-  Eigen::MatrixXd outp =
-      Eigen::MatrixXd::Zero(g_lr - g_ll + 1, g_rr - g_rl + 1);
-
-  // Loop from left to right across the NTI region.
-  for (int i = g_ll; i < g_rr; i++) {
-    // left flex computations
-    if (i <= g_lr) {
-      if (i != g_ll) cache_mat.topRows(i - g_ll) *= n_transition_;
-      cache_mat.row(i - g_ll) = n_landing_in_;
-      RowVecMatCwise(n_emission_matrix_.row(emission_indices[i]),
-                     cache_mat.topRows(i - g_ll + 1),
-                     cache_mat.topRows(i - g_ll + 1));
-    } else {
-      // non-flex & right flex computations
-      cache_mat *= n_transition_;
-      RowVecMatCwise(n_emission_matrix_.row(emission_indices[i]), cache_mat,
-                     cache_mat);
-    }
-
-    // Store final probabilities in output matrix.
-    if (i >= std::max(g_rl, right_relpos) - 1)
-      outp.col(i - (g_rl - 1)) =
-          cache_mat * n_landing_out_.col(i + 1 - right_relpos);
-  }
-
-  return outp;
 };
 }
