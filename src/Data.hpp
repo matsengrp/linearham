@@ -12,6 +12,9 @@ namespace linearham {
 
 
 /// @brief Abstract base class for SimpleData and PhyloData.
+///
+/// We can deal with a lot of the common functionality here, given an
+/// implementation of EmissionVector and some smaller things.
 class Data {
  protected:
   std::map<std::string, std::pair<int, int>> flexbounds_;
@@ -48,6 +51,7 @@ class Data {
 
  public:
   Data(){};
+  virtual ~Data() {};
 
   const std::map<std::string, std::pair<int, int>>& flexbounds() const {
     return flexbounds_;

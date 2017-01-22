@@ -14,7 +14,7 @@ namespace linearham {
 /// probabilities.
 class Germline {
  protected:
-  // Germline information - (Simple|Phylo)Data
+  // Germline information for (Simple|Phylo)Data
   Eigen::VectorXd landing_in_;   // A vector of landing probabilities to begin a
                                  // germline match segment.
   Eigen::VectorXd landing_out_;  // A vector of landing probabilities to end a
@@ -24,13 +24,13 @@ class Germline {
   std::unordered_map<std::string, int>
       alphabet_map_;  // The nucleotide-integer map.
 
-  // Germline information - SimpleData
+  // Germline information for SimpleData
   Eigen::MatrixXd emission_matrix_;  // A matrix of HMM emission probabilities.
                                      // The rows denote the different emitted
                                      // bases and the columns denote the
                                      // different germline positions.
 
-  // Germline information - PhyloData
+  // Germline information for PhyloData
   Eigen::VectorXi bases_;  // A vector of germline bases.
   Eigen::VectorXd rates_;  // A vector of germline rates.
 

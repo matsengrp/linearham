@@ -1,7 +1,7 @@
 #include "Data.hpp"
 
 /// @file Data.cpp
-/// @brief Implementation of the Data class.
+/// @brief Partial implementation of the pure virtual Data base class.
 
 namespace linearham {
 
