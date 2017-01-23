@@ -51,7 +51,7 @@ class Data {
 
  public:
   Data(){};
-  virtual ~Data() {};
+  virtual ~Data(){};
 
   const std::map<std::string, std::pair<int, int>>& flexbounds() const {
     return flexbounds_;

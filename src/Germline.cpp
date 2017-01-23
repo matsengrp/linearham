@@ -103,7 +103,8 @@ Germline::Germline(YAML::Node root) {
     // Parse germline bases and rates.
     bases_[gindex] =
         alphabet_map_[gstate["extras"]["germline"].as<std::string>()];
-    /// @todo HOW SHOULD I POPULATE THIS??? - DELETE ME!
+    /// @todo `rates_` will be populated through the use of a 4 rate discrete
+    /// gamma model.
     rates_[gindex] = 1;
   }
 

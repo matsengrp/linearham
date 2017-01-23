@@ -14,7 +14,7 @@ namespace linearham {
 /// (phylo)HMM path probabilities.
 class NTInsertion {
  protected:
-  // NTInsertion information - (Simple|Phylo)Data
+  // NTInsertion information for (Simple|Phylo)Data
   Eigen::VectorXd n_landing_in_;   // A vector of landing probabilities to begin
                                    // a NTI segment.
   Eigen::MatrixXd n_landing_out_;  // A matrix of landing probabilities to end a
@@ -24,7 +24,7 @@ class NTInsertion {
                                    // different germline positions.
   Eigen::MatrixXd n_transition_;   // The NTI transition probability matrix.
 
-  // NTInsertion information - SimpleData
+  // NTInsertion information for SimpleData
   Eigen::MatrixXd n_emission_matrix_;  // The NTI emission probability matrix.
                                        // The rows denote the different emitted
                                        // bases and the columns denote the
