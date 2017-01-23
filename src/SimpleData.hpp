@@ -34,7 +34,7 @@ class SimpleData : public Data {
 typedef std::shared_ptr<SimpleData> SimpleDataPtr;
 
 
-std::vector<SimpleDataPtr> CreateSimpleDataPtrs(
+std::vector<SimpleDataPtr> ReadCSVData(
     std::string csv_path,
     const std::unordered_map<std::string, int>& alphabet_map);
 }

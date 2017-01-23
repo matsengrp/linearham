@@ -388,7 +388,7 @@ void FindGermProbMatrixIndices(std::pair<int, int> left_flexbounds,
 /// The length of the germline gene.
 /// @param[in] landing_in
 /// A boolean specifying whether we are multiplying in a landing-in or
-/// landing-out probability vector
+/// landing-out probability vector.
 /// @param[in,out] germ_prob_matrix
 /// A germline match probability matrix returned from GermlineProbMatrix.
 void MultiplyLandingGermProbMatrix(

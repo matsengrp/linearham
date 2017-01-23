@@ -19,6 +19,7 @@ class Data {
  protected:
   std::map<std::string, std::pair<int, int>> flexbounds_;
   std::map<std::string, int> relpos_;
+  Pile vdj_pile_;
 
   void MatchMatrix(const Germline& germ_data,
                    const Eigen::Ref<const Eigen::VectorXd>& emission,
@@ -43,6 +44,10 @@ class Data {
 
   std::pair<SmooshablePtrVect, SmooshablePtrVect> JSmooshables(
       const JGermline& jgerm_data, int j_relpos) const;
+
+  // Pile Functions
+  Pile CreatePile(
+      const std::unordered_map<std::string, GermlineGene>& ggene_map) const;
 
  private:
   virtual void EmissionVector(const Germline& germ_data, int relpos,

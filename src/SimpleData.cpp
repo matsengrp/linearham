@@ -80,7 +80,7 @@ void SimpleData::EmissionVector(const Germline& germ_data, int relpos,
 /// The nucleotide-integer alphabet map.
 /// @return
 /// A vector of SimpleData pointers.
-std::vector<SimpleDataPtr> CreateSimpleDataPtrs(
+std::vector<SimpleDataPtr> ReadCSVData(
     std::string csv_path,
     const std::unordered_map<std::string, int>& alphabet_map) {
   assert(csv_path.substr(csv_path.length() - 3, 3) == "csv");
