@@ -26,11 +26,11 @@ class Chain : public Smooshish {
  private:
   SmooshishPtr prev_;
   SmooshablePtr curr_;
-  int left_flex_ = 0;
-  int right_flex_ = 0;
+  int left_flex_;
+  int right_flex_;
   // This is the scaling that comes from smooshing the (presumably already
   // scaled) Smooshables that we were already passed.
-  mutable int local_scaler_count_ = 0;
+  mutable int local_scaler_count_;
   mutable Eigen::MatrixXd marginal_;
   mutable Eigen::MatrixXd viterbi_;
   mutable Eigen::MatrixXi viterbi_idx_;
