@@ -24,6 +24,11 @@ std::shared_ptr<JGermline> GermlineGene::JGermlinePtr() const {
 };
 
 
+/// @brief Constructs a GermlineGene map from germline YAML files.
+/// @param[in] dir_path
+/// Path to a directory of germline gene HMM YAML files.
+/// @return
+/// A map holding (germline name, GermlineGene) pairs.
 std::unordered_map<std::string, GermlineGene> CreateGermlineGeneMap(
     std::string dir_path) {
   // Check the directory path and open the stream.
@@ -69,7 +74,7 @@ std::unordered_map<std::string, GermlineGene> CreateGermlineGeneMap(
     outp.emplace(gname, ggene);
   }
 
-  // All Germline alphabet maps should be identical.
+  // All Germline alphabet maps (and hence alphabets) should be identical.
   // (Note: `outp` only has forward iterators, so we cannot end at
   // `std::prev(outp.end())`.)
   for (auto it = outp.begin(), end = std::next(outp.begin(), outp.size() - 1);

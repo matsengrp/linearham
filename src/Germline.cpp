@@ -12,9 +12,8 @@ namespace linearham {
 Germline::Germline(YAML::Node root) {
   // Store alphabet-map and germline name.
   // For the rest of this function, g[something] means germline_[something].
-  std::vector<std::string> alphabet;
-  std::tie(alphabet, alphabet_map_) = GetAlphabet(root);
-  std::string gname = root["name"].as<std::string>();
+  std::tie(alphabet_, alphabet_map_) = GetAlphabet(root);
+  name_ = root["name"].as<std::string>();
 
   // In the YAML file, states of the germline gene are denoted
   // [germline name]_[position]. The vector of probabilities of various
@@ -22,15 +21,15 @@ Germline::Germline(YAML::Node root) {
   // insert_left_[base].
   // The regex's obtained below extract the corresponding position and base.
   std::regex grgx, nrgx;
-  std::tie(grgx, nrgx) = GetStateRegex(gname, alphabet);
+  std::tie(grgx, nrgx) = GetStateRegex(name_, alphabet_);
   std::smatch match;
 
   // The HMM YAML has insert_left states (perhaps), germline-encoded states,
   // then insert_right states (perhaps).
   // Here we step through the insert states to get to the germline states.
   int gstart, gend;
-  std::tie(gstart, gend) = FindGermlineStartEnd(root, gname);
-  assert((gstart == 2) ^ (gstart == (alphabet.size() + 1)));
+  std::tie(gstart, gend) = FindGermlineStartEnd(root, name_);
+  assert((gstart == 2) ^ (gstart == (alphabet_.size() + 1)));
   assert((gend == (root["states"].size() - 1)) ^
          (gend == (root["states"].size() - 2)));
   int gcount = gend - gstart + 1;
@@ -38,7 +37,7 @@ Germline::Germline(YAML::Node root) {
   // Create the Germline data structures.
   landing_in_.setZero(gcount);
   landing_out_.setZero(gcount);
-  emission_matrix_.setZero(alphabet.size(), gcount);
+  emission_matrix_.setZero(alphabet_.size(), gcount);
   bases_.setZero(gcount);
   rates_.setZero(gcount);
   Eigen::VectorXd next_transition = Eigen::VectorXd::Zero(gcount - 1);
@@ -94,7 +93,7 @@ Germline::Germline(YAML::Node root) {
     // Parse germline emission data.
     std::tie(state_names, probs) =
         ParseStringProbMap(gstate["emissions"]["probs"]);
-    assert(IsEqualStringVecs(state_names, alphabet));
+    assert(IsEqualStringVecs(state_names, alphabet_));
 
     for (unsigned int j = 0; j < state_names.size(); j++) {
       emission_matrix_(alphabet_map_[state_names[j]], gindex) = probs[j];
