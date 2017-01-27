@@ -34,6 +34,9 @@ Germline::Germline(YAML::Node root) {
          (gend == (root["states"].size() - 2)));
   int gcount = gend - gstart + 1;
 
+  // Fix germline gene name.
+  name_ = std::regex_replace(name_, std::regex("_star_"), "*");
+
   // Create the Germline data structures.
   landing_in_.setZero(gcount);
   landing_out_.setZero(gcount);
