@@ -78,7 +78,7 @@ Eigen::VectorXd SimpleData::EmissionVector(
                                         match_indices[1] - match_indices[0]),
       seq_.segment(match_indices[0], match_indices[1] - match_indices[0]),
       emission);
-
+ 
   return emission;
 };
 
