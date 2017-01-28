@@ -42,7 +42,7 @@ std::unordered_map<std::string, GermlineGene> CreateGermlineGeneMap(
   std::smatch match;
 
   // Initialize output map.
-  std::unordered_map<std::string, GermlineGene> outp;
+  std::unordered_map<std::string, GermlineGene> ggenes;
 
   while ((dir_entry = readdir(dir)) != nullptr) {
     // Check the file name and determine the germline gene type.
@@ -71,13 +71,14 @@ std::unordered_map<std::string, GermlineGene> CreateGermlineGeneMap(
     }
 
     // Insert results into output map.
-    outp.emplace(gname, ggene);
+    ggenes.emplace(gname, ggene);
   }
 
   // All Germline alphabet maps (and hence alphabets) should be identical.
-  // (Note: `outp` only has forward iterators, so we cannot end at
-  // `std::prev(outp.end())`.)
-  for (auto it = outp.begin(), end = std::next(outp.begin(), outp.size() - 1);
+  // (Note: `ggenes` only has forward iterators, so we cannot end at
+  // `std::prev(ggenes.end())`.)
+  for (auto it = ggenes.begin(),
+            end = std::next(ggenes.begin(), ggenes.size() - 1);
        it != end;) {
     assert(it->second.germ_ptr->alphabet_map() ==
            (++it)->second.germ_ptr->alphabet_map());
@@ -86,6 +87,6 @@ std::unordered_map<std::string, GermlineGene> CreateGermlineGeneMap(
   // Close directory stream.
   closedir(dir);
 
-  return outp;
+  return ggenes;
 };
 }

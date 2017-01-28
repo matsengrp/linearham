@@ -1,8 +1,8 @@
 // This tells Catch to provide a main() - only do this in one cpp file.
 #define CATCH_CONFIG_MAIN
 
-#include "catch.hpp"/*
-#include "Pile.hpp"
+#include "catch.hpp"
+#include "SimpleData.hpp"
 
 
 namespace test {
@@ -156,8 +156,17 @@ TEST_CASE("BuildMatch", "[core]") {
 }
 
 
-// Germline tests
+TEST_CASE("SimpleData", "[simpledata]") {
+  initialize_global_test_vars();
 
+  std::vector<SimpleDataPtr> simple_data_ptrs =
+      ReadCSVData("data/hmm_input_ex.csv", "data/hmm_params_ex");
+
+  std::cout << simple_data_ptrs[0]->vdj_pile()[0]->marginal() << std::endl;
+}
+
+// Germline tests
+/*
 TEST_CASE("Germline", "[germline]") {
   initialize_global_test_vars();
 
@@ -724,6 +733,5 @@ TEST_CASE("BCRHam Comparison 1", "[bcrham]") {
   for (int i = 0; i < viterbi_logprobs.size(); i++) {
     REQUIRE(std::fabs(viterbi_logprobs[i] - log(expected_piles[i][0]->viterbi()(0,0))) <= 1e-3);
   }
+}*/
 }
-}
-*/

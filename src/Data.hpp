@@ -19,6 +19,7 @@ class Data {
  protected:
   std::map<std::string, std::pair<int, int>> flexbounds_;
   std::map<std::string, int> relpos_;
+  std::map<std::array<std::string, 2>, std::array<int, 6>> match_indices_;
   Pile vdj_pile_;
 
   void MatchMatrix(const Germline& germ_data,
@@ -26,10 +27,9 @@ class Data {
                    int relpos, int match_start, int left_flex, int right_flex,
                    Eigen::Ref<Eigen::MatrixXd> match) const;
 
-  Eigen::MatrixXd GermlineProbMatrix(const Germline& germ_data,
-                                     std::pair<int, int> left_flexbounds,
-                                     std::pair<int, int> right_flexbounds,
-                                     int relpos) const;
+  Eigen::MatrixXd GermlineTransProbMatrix(
+      const Germline& germ_data, std::string left_flexbounds_name,
+      std::string right_flexbounds_name) const;
 
   Eigen::MatrixXd NTIProbMatrix(const NTInsertion& nti_data,
                                 std::pair<int, int> left_flexbounds,
@@ -37,22 +37,35 @@ class Data {
                                 int right_relpos) const;
 
   // VDJSmooshable Constructor Functions
-  SmooshablePtr VSmooshable(const VGermline& vgerm_data, int v_relpos) const;
+  SmooshablePtr VSmooshable(const VGermline& vgerm_data) const;
 
   std::pair<SmooshablePtrVect, SmooshablePtrVect> DSmooshables(
-      const DGermline& dgerm_data, int d_relpos) const;
+      const DGermline& dgerm_data) const;
 
   std::pair<SmooshablePtrVect, SmooshablePtrVect> JSmooshables(
-      const JGermline& jgerm_data, int j_relpos) const;
+      const JGermline& jgerm_data) const;
 
   // Pile Functions
-  Pile CreatePile(
-      const std::unordered_map<std::string, GermlineGene>& ggene_map) const;
+  void InitializePile(
+      const std::unordered_map<std::string, GermlineGene>& ggenes);
+
+  // Auxiliary Functions
+  void CacheMatchMatrixIndices(int germ_length, std::string gname,
+                               std::string left_flexbounds_name,
+                               std::string right_flexbounds_name);
+
+  void MultiplyLandingMatchMatrix(
+      const Eigen::Ref<const Eigen::VectorXd>& landing, std::string gname,
+      std::string left_flexbounds_name, bool landing_in,
+      Eigen::Ref<Eigen::MatrixXd> match_matrix) const;
+
+  Eigen::MatrixXd EmissionMatchMatrix(
+      const Germline& germ_data, std::string left_flexbounds_name,
+      const Eigen::Ref<const Eigen::MatrixXd>& match_matrix) const;
 
  private:
-  virtual void EmissionVector(const Germline& germ_data, int relpos,
-                              int match_start,
-                              Eigen::Ref<Eigen::VectorXd> emission) const = 0;
+  virtual Eigen::VectorXd EmissionVector(
+      const Germline& germ_data, std::string left_flexbounds_name) const = 0;
 
  public:
   Data(){};
@@ -62,25 +75,16 @@ class Data {
     return flexbounds_;
   };
   const std::map<std::string, int>& relpos() const { return relpos_; };
+  const std::map<std::array<std::string, 2>, std::array<int, 6>>&
+  match_indices() const {
+    return match_indices_;
+  };
+  const Pile& vdj_pile() const { return vdj_pile_; };
   virtual int length() const = 0;
 };
 
 
 typedef std::shared_ptr<Data> DataPtr;
-
-
-// Auxiliary Functions
-
-void FindGermProbMatrixIndices(std::pair<int, int> left_flexbounds,
-                               std::pair<int, int> right_flexbounds, int relpos,
-                               int germ_length, int& match_start,
-                               int& match_end, int& left_flex, int& right_flex);
-
-void MultiplyLandingGermProbMatrix(
-    const Eigen::Ref<const Eigen::VectorXd>& landing,
-    std::pair<int, int> left_flexbounds, std::pair<int, int> right_flexbounds,
-    int relpos, int germ_length, bool landing_in,
-    Eigen::Ref<Eigen::MatrixXd> germ_prob_matrix);
 }
 
 #endif  // LINEARHAM_DATA_
