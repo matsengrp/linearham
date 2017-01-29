@@ -68,8 +68,8 @@ Eigen::VectorXd SimpleData::EmissionVector(
   // Extract the match indices and relpos.
   std::array<int, 6> match_indices =
       match_indices_.at({germ_data.name(), left_flexbounds_name});
-  int match_start = match_indices[0];
-  int match_end = match_indices[1];
+  int match_start = match_indices[kMatchStart];
+  int match_end = match_indices[kMatchEnd];
   int relpos = relpos_.at(germ_data.name());
 
   // Compute the emission probability vector.

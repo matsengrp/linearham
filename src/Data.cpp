@@ -32,12 +32,12 @@ Eigen::MatrixXd Data::GermlineTransProbMatrix(
   std::pair<int, int> right_flexbounds = flexbounds_.at(right_flexbounds_name);
   std::array<int, 6> match_indices =
       match_indices_.at({germ_data.name(), left_flexbounds_name});
-  int match_start = match_indices[0];
-  int match_end = match_indices[1];
-  int left_flex = match_indices[2];
-  int right_flex = match_indices[3];
-  int row_start = match_indices[4];
-  int col_start = match_indices[5];
+  int match_start = match_indices[kMatchStart];
+  int match_end = match_indices[kMatchEnd];
+  int left_flex = match_indices[kLeftFlex];
+  int right_flex = match_indices[kRightFlex];
+  int row_start = match_indices[kRowStart];
+  int col_start = match_indices[kColStart];
   int relpos = relpos_.at(germ_data.name());
 
   assert(left_flexbounds.first <= left_flexbounds.second);
@@ -419,12 +419,12 @@ void Data::MultiplyLandingMatchMatrix(
   // Extract the match indices and relpos.
   std::array<int, 6> match_indices =
       match_indices_.at({gname, left_flexbounds_name});
-  int match_start = match_indices[0];
-  int match_end = match_indices[1];
-  int left_flex = match_indices[2];
-  int right_flex = match_indices[3];
-  int row_start = match_indices[4];
-  int col_start = match_indices[5];
+  int match_start = match_indices[kMatchStart];
+  int match_end = match_indices[kMatchEnd];
+  int left_flex = match_indices[kLeftFlex];
+  int right_flex = match_indices[kRightFlex];
+  int row_start = match_indices[kRowStart];
+  int col_start = match_indices[kColStart];
   int relpos = relpos_.at(gname);
 
   // Are we landing-in or landing-out?
@@ -461,12 +461,12 @@ Eigen::MatrixXd Data::EmissionMatchMatrix(
   // Extract the match indices.
   std::array<int, 6> match_indices =
       match_indices_.at({germ_data.name(), left_flexbounds_name});
-  int match_start = match_indices[0];
-  int match_end = match_indices[1];
-  int left_flex = match_indices[2];
-  int right_flex = match_indices[3];
-  int row_start = match_indices[4];
-  int col_start = match_indices[5];
+  int match_start = match_indices[kMatchStart];
+  int match_end = match_indices[kMatchEnd];
+  int left_flex = match_indices[kLeftFlex];
+  int right_flex = match_indices[kRightFlex];
+  int row_start = match_indices[kRowStart];
+  int col_start = match_indices[kColStart];
 
   // Compute the match matrix (with emission probabilities).
   Eigen::VectorXd emission = EmissionVector(germ_data, left_flexbounds_name);

@@ -80,6 +80,17 @@ class Data {
 
 
 typedef std::shared_ptr<Data> DataPtr;
+
+
+/// @brief An enumerated type that is used for `match_indices_` array indexing.
+enum MatchIndices {
+  kMatchStart,
+  kMatchEnd,
+  kLeftFlex,
+  kRightFlex,
+  kRowStart,
+  kColStart
+};
 }
 
 #endif  // LINEARHAM_DATA_
