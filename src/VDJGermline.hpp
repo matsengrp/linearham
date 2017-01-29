@@ -38,7 +38,7 @@ class GermlineGene {
  public:
   GermlineGene(){};
 
-  std::string type = "null";
+  std::string type;
   std::shared_ptr<Germline> germ_ptr;
 
   std::shared_ptr<VGermline> VGermlinePtr() const;

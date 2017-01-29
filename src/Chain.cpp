@@ -45,7 +45,7 @@ void Chain::Scale(Eigen::MatrixXd& myself, Eigen::MatrixXd& other) const {
 const Eigen::MatrixXd& Chain::marginal() const {
   if (marginal_.size() == 0) {
     // marginal_ hasn't been computed yet, so compute it.
-    marginal_.resize(left_flex() + 1, right_flex() + 1);
+    marginal_.resize(left_flex_ + 1, right_flex_ + 1);
     marginal_ = prev_->marginal() * curr_->marginal();
     Scale(marginal_, viterbi_);
   }
@@ -57,8 +57,8 @@ const Eigen::MatrixXd& Chain::marginal() const {
 void Chain::PerhapsCalcViterbi() const {
   if (viterbi_.size() == 0) {
     // viterbi_ hasn't been computed yet, so compute it.
-    viterbi_.resize(left_flex() + 1, right_flex() + 1);
-    viterbi_idx_.resize(left_flex() + 1, right_flex() + 1);
+    viterbi_.resize(left_flex_ + 1, right_flex_ + 1);
+    viterbi_idx_.resize(left_flex_ + 1, right_flex_ + 1);
     BinaryMax(prev_->viterbi(), curr_->viterbi(), viterbi_, viterbi_idx_);
     Scale(viterbi_, marginal_);
   }
@@ -89,7 +89,7 @@ const Eigen::MatrixXi& Chain::viterbi_idx() const {
 
 /// @brief Recursive auxiliary function to get the Viterbi path.
 void Chain::AuxViterbiPath(int row, int col, std::vector<int>& path) const {
-  int new_col = viterbi_idx()(row, col);
+  int new_col = viterbi_idx_(row, col);
   prev_->AuxViterbiPath(row, new_col, path);
   path.push_back(new_col);
 };
@@ -112,8 +112,10 @@ std::vector<int> Chain::ViterbiPath(int row, int col) const {
 /// column.
 IntVectorVector Chain::ViterbiPaths() const {
   IntVectorVector paths;
-  for (int i = 0; i < viterbi_idx_.rows(); i++) {
-    for (int j = 0; j < viterbi_idx_.cols(); j++) {
+  // Note that we call `viterbi_idx()` (not `viterbi_idx_`) because this ensures
+  // `viterbi_idx_` is computed.
+  for (int i = 0; i < viterbi_idx().rows(); i++) {
+    for (int j = 0; j < viterbi_idx().cols(); j++) {
       paths.push_back(ViterbiPath(i, j));
     }
   }

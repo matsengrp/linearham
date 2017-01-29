@@ -2,7 +2,7 @@
 #define CATCH_CONFIG_MAIN
 
 #include "catch.hpp"
-#include "Pile.hpp"
+#include "SimpleData.hpp"
 
 
 namespace test {
@@ -136,28 +136,17 @@ TEST_CASE("BuildTransition", "[core]") {
 }
 
 
-TEST_CASE("BuildMatch", "[core]") {
-  Eigen::VectorXd emission(3);
-  emission << 0.5, 0.71, 0.11;
-  Eigen::VectorXd next_transition(2);
-  next_transition << 0.2, 0.3;
-  Eigen::MatrixXd correct_match(3,3);
-  correct_match <<
-  // Format is emission * transition * ... * emission
-  0.5, 0.5*0.2*0.71, 0.5*0.2*0.71*0.3*0.11,
-    0,         0.71,         0.71*0.3*0.11,
-    0,            0,                  0.11;
-  Eigen::MatrixXd match(3,3);
-  Eigen::MatrixXd transition;
+TEST_CASE("SimpleData", "[simpledata]") {
+  initialize_global_test_vars();
 
-  transition = BuildTransition(next_transition);
-  BuildMatchMatrix(transition, emission, match);
-  REQUIRE(match.isApprox(correct_match));
+  std::vector<SimpleDataPtr> simple_data_ptrs =
+      ReadCSVData("data/hmm_input_ex.csv", "data/hmm_params_ex");
+
+  std::cout << simple_data_ptrs[0]->vdj_pile()[0]->marginal() << std::endl;
 }
 
-
 // Germline tests
-
+/*
 TEST_CASE("Germline", "[germline]") {
   initialize_global_test_vars();
 
@@ -724,5 +713,5 @@ TEST_CASE("BCRHam Comparison 1", "[bcrham]") {
   for (int i = 0; i < viterbi_logprobs.size(); i++) {
     REQUIRE(std::fabs(viterbi_logprobs[i] - log(expected_piles[i][0]->viterbi()(0,0))) <= 1e-3);
   }
-}
+}*/
 }
