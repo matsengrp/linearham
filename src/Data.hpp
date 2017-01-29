@@ -22,11 +22,6 @@ class Data {
   std::map<std::array<std::string, 2>, std::array<int, 6>> match_indices_;
   Pile vdj_pile_;
 
-  void MatchMatrix(const Germline& germ_data,
-                   const Eigen::Ref<const Eigen::VectorXd>& emission,
-                   int relpos, int match_start, int left_flex, int right_flex,
-                   Eigen::Ref<Eigen::MatrixXd> match) const;
-
   Eigen::MatrixXd GermlineTransProbMatrix(
       const Germline& germ_data, std::string left_flexbounds_name,
       std::string right_flexbounds_name) const;

@@ -33,20 +33,4 @@ Eigen::MatrixXd BuildTransition(
 
   return transition;
 };
-
-
-/// @brief Builds a matrix with the probabilities of linear matches.
-/// @param[in] transition
-/// Transition matrix from BuildTransition.
-/// @param[in] emission
-/// Vector of emission probabilities for a given read.
-/// @param[out] match
-/// Matrix of matches of various length.
-void BuildMatchMatrix(const Eigen::Ref<const Eigen::MatrixXd>& transition,
-                      const Eigen::Ref<const Eigen::VectorXd>& emission,
-                      Eigen::Ref<Eigen::MatrixXd> match) {
-  SubProductMatrix(emission, match);
-  // Component-wise product:
-  match.array() *= transition.array();
-};
 }

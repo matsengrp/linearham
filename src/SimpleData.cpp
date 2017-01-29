@@ -68,17 +68,18 @@ Eigen::VectorXd SimpleData::EmissionVector(
   // Extract the match indices and relpos.
   std::array<int, 6> match_indices =
       match_indices_.at({germ_data.name(), left_flexbounds_name});
+  int match_start = match_indices[0];
+  int match_end = match_indices[1];
   int relpos = relpos_.at(germ_data.name());
 
   // Compute the emission probability vector.
-  Eigen::VectorXd emission(match_indices[1] - match_indices[0]);
+  Eigen::VectorXd emission(match_end - match_start);
   VectorByIndices(
-      germ_data.emission_matrix().block(0, match_indices[0] - relpos,
+      germ_data.emission_matrix().block(0, match_start - relpos,
                                         germ_data.emission_matrix().rows(),
-                                        match_indices[1] - match_indices[0]),
-      seq_.segment(match_indices[0], match_indices[1] - match_indices[0]),
-      emission);
- 
+                                        match_end - match_start),
+      seq_.segment(match_start, match_end - match_start), emission);
+
   return emission;
 };
 

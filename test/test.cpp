@@ -136,26 +136,6 @@ TEST_CASE("BuildTransition", "[core]") {
 }
 
 
-TEST_CASE("BuildMatch", "[core]") {
-  Eigen::VectorXd emission(3);
-  emission << 0.5, 0.71, 0.11;
-  Eigen::VectorXd next_transition(2);
-  next_transition << 0.2, 0.3;
-  Eigen::MatrixXd correct_match(3,3);
-  correct_match <<
-  // Format is emission * transition * ... * emission
-  0.5, 0.5*0.2*0.71, 0.5*0.2*0.71*0.3*0.11,
-    0,         0.71,         0.71*0.3*0.11,
-    0,            0,                  0.11;
-  Eigen::MatrixXd match(3,3);
-  Eigen::MatrixXd transition;
-
-  transition = BuildTransition(next_transition);
-  BuildMatchMatrix(transition, emission, match);
-  REQUIRE(match.isApprox(correct_match));
-}
-
-
 TEST_CASE("SimpleData", "[simpledata]") {
   initialize_global_test_vars();
 

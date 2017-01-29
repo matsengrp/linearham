@@ -6,49 +6,6 @@
 namespace linearham {
 
 
-/// @brief Prepares a matrix with the probabilities of various germline linear
-/// matches (between actual germline states).
-/// @param[in] germ_data
-/// An object of class Germline.
-/// @param[in] emission
-/// A vector of per-site emission probabilities.
-/// @param[in] relpos
-/// The read/MSA position corresponding to the first base of the germline gene.
-/// @param[in] match_start
-/// The read/MSA position of the first germline match base.
-/// @param[in] left_flex
-/// The number of alternative match starting positions with actual germline
-/// states.
-/// @param[in] right_flex
-/// The number of alternative match ending positions with actual germline
-/// states.
-/// @param[out] match
-/// Storage for the matrix of germline match probabilities.
-///
-/// The match matrix has its (zero-indexed) \f$i,j\f$th entry equal to the
-/// probability of a linear match starting at germline position
-/// `match_start - relpos + i` and ending `right_flex - j` positions before the
-/// last germline match base.
-void Data::MatchMatrix(const Germline& germ_data,
-                       const Eigen::Ref<const Eigen::VectorXd>& emission,
-                       int relpos, int match_start, int left_flex,
-                       int right_flex,
-                       Eigen::Ref<Eigen::MatrixXd> match) const {
-  int match_length = emission.size();
-  assert(0 <= left_flex && left_flex <= match_length - 1);
-  assert(0 <= right_flex && right_flex <= match_length - 1);
-  assert(match_start - relpos + match_length <= germ_data.length());
-  /// @todo Inefficient. Shouldn't calculate fullMatch then cut it down.
-  Eigen::MatrixXd fullMatch(match_length, match_length);
-  BuildMatchMatrix(
-      germ_data.transition().block(match_start - relpos, match_start - relpos,
-                                   match_length, match_length),
-      emission, fullMatch);
-  match = fullMatch.block(0, match_length - right_flex - 1, left_flex + 1,
-                          right_flex + 1);
-};
-
-
 /// @brief Creates the transition probability portion of the germline match
 /// probability matrix.
 /// @param[in] germ_data
@@ -75,6 +32,12 @@ Eigen::MatrixXd Data::GermlineTransProbMatrix(
   std::pair<int, int> right_flexbounds = flexbounds_.at(right_flexbounds_name);
   std::array<int, 6> match_indices =
       match_indices_.at({germ_data.name(), left_flexbounds_name});
+  int match_start = match_indices[0];
+  int match_end = match_indices[1];
+  int left_flex = match_indices[2];
+  int right_flex = match_indices[3];
+  int row_start = match_indices[4];
+  int col_start = match_indices[5];
   int relpos = relpos_.at(germ_data.name());
 
   assert(left_flexbounds.first <= left_flexbounds.second);
@@ -97,14 +60,12 @@ Eigen::MatrixXd Data::GermlineTransProbMatrix(
   if (relpos > left_flexbounds.second) return match_matrix;
 
   // Compute the transition probability portion of the germline match matrix.
-  match_matrix.block(match_indices[4], match_indices[5], match_indices[2] + 1,
-                     match_indices[3] + 1) =
+  match_matrix.block(row_start, col_start, left_flex + 1, right_flex + 1) =
       germ_data.transition()
-          .block(match_indices[0] - relpos, match_indices[0] - relpos,
-                 match_indices[1] - match_indices[0],
-                 match_indices[1] - match_indices[0])
-          .block(0, match_indices[1] - match_indices[0] - match_indices[3] - 1,
-                 match_indices[2] + 1, match_indices[3] + 1);
+          .block(match_start - relpos, match_start - relpos,
+                 match_end - match_start, match_end - match_start)
+          .block(0, match_end - match_start - right_flex - 1, left_flex + 1,
+                 right_flex + 1);
 
   return match_matrix;
 };
@@ -458,24 +419,27 @@ void Data::MultiplyLandingMatchMatrix(
   // Extract the match indices and relpos.
   std::array<int, 6> match_indices =
       match_indices_.at({gname, left_flexbounds_name});
+  int match_start = match_indices[0];
+  int match_end = match_indices[1];
+  int left_flex = match_indices[2];
+  int right_flex = match_indices[3];
+  int row_start = match_indices[4];
+  int col_start = match_indices[5];
   int relpos = relpos_.at(gname);
 
   // Are we landing-in or landing-out?
   if (landing_in) {
     ColVecMatCwise(
-        landing.segment(match_indices[0] - relpos, match_indices[2] + 1),
-        match_matrix.block(match_indices[4], match_indices[5],
-                           match_indices[2] + 1, match_indices[3] + 1),
-        match_matrix.block(match_indices[4], match_indices[5],
-                           match_indices[2] + 1, match_indices[3] + 1));
+        landing.segment(match_start - relpos, left_flex + 1),
+        match_matrix.block(row_start, col_start, left_flex + 1, right_flex + 1),
+        match_matrix.block(row_start, col_start, left_flex + 1,
+                           right_flex + 1));
   } else {
     RowVecMatCwise(
-        landing.segment(match_indices[1] - match_indices[3] - relpos - 1,
-                        match_indices[3] + 1),
-        match_matrix.block(match_indices[4], match_indices[5],
-                           match_indices[2] + 1, match_indices[3] + 1),
-        match_matrix.block(match_indices[4], match_indices[5],
-                           match_indices[2] + 1, match_indices[3] + 1));
+        landing.segment(match_end - right_flex - relpos - 1, right_flex + 1),
+        match_matrix.block(row_start, col_start, left_flex + 1, right_flex + 1),
+        match_matrix.block(row_start, col_start, left_flex + 1,
+                           right_flex + 1));
   }
 };
 
@@ -497,21 +461,26 @@ Eigen::MatrixXd Data::EmissionMatchMatrix(
   // Extract the match indices.
   std::array<int, 6> match_indices =
       match_indices_.at({germ_data.name(), left_flexbounds_name});
+  int match_start = match_indices[0];
+  int match_end = match_indices[1];
+  int left_flex = match_indices[2];
+  int right_flex = match_indices[3];
+  int row_start = match_indices[4];
+  int col_start = match_indices[5];
 
   // Compute the match matrix (with emission probabilities).
   Eigen::VectorXd emission = EmissionVector(germ_data, left_flexbounds_name);
   Eigen::MatrixXd emission_matrix(emission.size(), emission.size());
+  /// @todo Inefficient. Shouldn't calculate full match then cut it down.
   SubProductMatrix(emission, emission_matrix);
 
   Eigen::MatrixXd emission_match_matrix = match_matrix;
   emission_match_matrix
-      .block(match_indices[4], match_indices[5], match_indices[2] + 1,
-             match_indices[3] + 1)
-      .array() *=
-      emission_matrix
-          .block(0, match_indices[1] - match_indices[0] - match_indices[3] - 1,
-                 match_indices[2] + 1, match_indices[3] + 1)
-          .array();
+      .block(row_start, col_start, left_flex + 1, right_flex + 1)
+      .array() *= emission_matrix
+                      .block(0, match_end - match_start - right_flex - 1,
+                             left_flex + 1, right_flex + 1)
+                      .array();
 
   return emission_match_matrix;
 };
