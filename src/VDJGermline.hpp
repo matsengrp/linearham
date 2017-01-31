@@ -15,21 +15,21 @@ namespace linearham {
 class VGermline : public Germline, public NPadding {
  public:
   VGermline(){};
-  VGermline(YAML::Node root) : Germline(root), NPadding(root){};
+  VGermline(const YAML::Node& root) : Germline(root), NPadding(root){};
 };
 
 /// @brief An abstraction used to represent a D germline gene.
 class DGermline : public Germline, public NTInsertion {
  public:
   DGermline(){};
-  DGermline(YAML::Node root) : Germline(root), NTInsertion(root){};
+  DGermline(const YAML::Node& root) : Germline(root), NTInsertion(root){};
 };
 
 /// @brief An abstraction used to represent a J germline gene.
 class JGermline : public Germline, public NTInsertion, public NPadding {
  public:
   JGermline(){};
-  JGermline(YAML::Node root)
+  JGermline(const YAML::Node& root)
       : Germline(root), NTInsertion(root), NPadding(root){};
 };
 

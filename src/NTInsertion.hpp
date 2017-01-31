@@ -32,7 +32,7 @@ class NTInsertion {
 
  public:
   NTInsertion(){};
-  NTInsertion(YAML::Node root);
+  NTInsertion(const YAML::Node& root);
 
   const Eigen::VectorXd& n_landing_in() const { return n_landing_in_; };
   const Eigen::MatrixXd& n_landing_out() const { return n_landing_out_; };

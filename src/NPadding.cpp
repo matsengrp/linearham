@@ -9,7 +9,7 @@ namespace linearham {
 /// @brief Constructor for NPadding starting from a YAML file.
 /// @param[in] root
 /// A root node associated with a germline YAML file.
-NPadding::NPadding(YAML::Node root) {
+NPadding::NPadding(const YAML::Node& root) {
   // Store alphabet-map and germline name.
   // For the rest of this function, g[something] means germline_[something].
   std::vector<std::string> alphabet;

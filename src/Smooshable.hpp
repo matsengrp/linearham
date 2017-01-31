@@ -17,15 +17,20 @@ namespace linearham {
 /// (resp. right) sides.
 class Smooshable : public Smooshish {
  private:
+  // The marginal probability matrix (without emission probabilities).
+  Eigen::MatrixXd pre_marginal_;
+  // The marginal probability matrix (with emission probabilities).
   Eigen::MatrixXd marginal_;
 
  public:
   Smooshable(){};
-  Smooshable(const Eigen::Ref<const Eigen::MatrixXd>& marginal);
+  Smooshable(const Eigen::Ref<const Eigen::MatrixXd>& pre_marginal,
+             const Eigen::Ref<const Eigen::MatrixXd>& marginal);
 
   int left_flex() const override { return marginal_.rows() - 1; };
   int right_flex() const override { return marginal_.cols() - 1; };
 
+  const Eigen::MatrixXd& pre_marginal() const { return pre_marginal_; };
   // We use override here to make sure that we are overriding the virtual
   // method in Smooshish (rather than defining some other method via a
   // different signature).
@@ -40,7 +45,9 @@ class Smooshable : public Smooshish {
 // SmooshablePtr
 
 typedef std::shared_ptr<Smooshable> SmooshablePtr;
-SmooshablePtr BuildSmooshablePtr(const Eigen::Ref<const Eigen::MatrixXd>&);
+SmooshablePtr BuildSmooshablePtr(
+    const Eigen::Ref<const Eigen::MatrixXd>& pre_marginal,
+    const Eigen::Ref<const Eigen::MatrixXd>& marginal);
 typedef std::vector<SmooshablePtr> SmooshablePtrVect;
 
 

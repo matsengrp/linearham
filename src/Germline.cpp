@@ -9,7 +9,7 @@ namespace linearham {
 /// @brief Constructor for Germline starting from a YAML file.
 /// @param[in] root
 /// A root node associated with a germline YAML file.
-Germline::Germline(YAML::Node root) {
+Germline::Germline(const YAML::Node& root) {
   // Store alphabet-map and germline name.
   // For the rest of this function, g[something] means germline_[something].
   std::tie(alphabet_, alphabet_map_) = GetAlphabet(root);

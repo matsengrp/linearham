@@ -15,8 +15,9 @@ class PhyloData : public Data {
  private:
   Eigen::MatrixXi msa_;
 
-  void EmissionVector(const Germline& germ_data, int relpos, int match_start,
-                      Eigen::Ref<Eigen::VectorXd> emission) const override;
+  Eigen::VectorXd EmissionVector(
+      const Germline& germ_data,
+      std::string left_flexbounds_name) const override;
 
  public:
   PhyloData(){};

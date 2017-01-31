@@ -22,8 +22,8 @@ class SimpleData : public Data {
 
  public:
   SimpleData(){};
-  SimpleData(std::string seq_str, std::string flexbounds_str,
-             std::string relpos_str, std::pair<int, int> n_read_counts,
+  SimpleData(const std::string& seq_str, const std::string& flexbounds_str,
+             const std::string& relpos_str, std::pair<int, int> n_read_counts,
              const std::unordered_map<std::string, GermlineGene>& ggenes);
 
   const Eigen::VectorXi& seq() const { return seq_; };

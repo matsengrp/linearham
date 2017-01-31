@@ -19,7 +19,7 @@ class NPadding {
 
  public:
   NPadding(){};
-  NPadding(YAML::Node root);
+  NPadding(const YAML::Node& root);
 
   double n_transition_prob() const { return n_transition_prob_; };
   double ambig_emission_prob() const { return ambig_emission_prob_; };

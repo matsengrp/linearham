@@ -173,7 +173,7 @@ SmooshablePtr Data::VSmooshable(const VGermline& vgerm_data) const {
   Eigen::MatrixXd emission_match_matrix =
       EmissionMatchMatrix(vgerm_data, "v_l", match_matrix);
 
-  return BuildSmooshablePtr(match_matrix);
+  return BuildSmooshablePtr(match_matrix, emission_match_matrix);
 };
 
 
@@ -222,9 +222,11 @@ std::pair<SmooshablePtrVect, SmooshablePtrVect> Data::DSmooshables(
       EmissionMatchMatrix(dgerm_data, "d_l", nmatch_matrix);
 
   // Store Smooshable objects.
-  SmooshablePtrVect dx_smooshable = {BuildSmooshablePtr(xmatch_matrix)};
-  SmooshablePtrVect dn_smooshables = {BuildSmooshablePtr(nti_matrix),
-                                      BuildSmooshablePtr(nmatch_matrix)};
+  SmooshablePtrVect dx_smooshable = {
+      BuildSmooshablePtr(xmatch_matrix, emission_xmatch_matrix)};
+  SmooshablePtrVect dn_smooshables = {
+      BuildSmooshablePtr(Eigen::MatrixXd::Zero(0, 0), nti_matrix),
+      BuildSmooshablePtr(nmatch_matrix, emission_nmatch_matrix)};
 
   return std::make_pair(dx_smooshable, dn_smooshables);
 };
@@ -285,9 +287,11 @@ std::pair<SmooshablePtrVect, SmooshablePtrVect> Data::JSmooshables(
       EmissionMatchMatrix(jgerm_data, "j_l", nmatch_matrix);
 
   // Store Smooshable objects.
-  SmooshablePtrVect jx_smooshable = {BuildSmooshablePtr(xmatch_matrix)};
-  SmooshablePtrVect jn_smooshables = {BuildSmooshablePtr(nti_matrix),
-                                      BuildSmooshablePtr(nmatch_matrix)};
+  SmooshablePtrVect jx_smooshable = {
+      BuildSmooshablePtr(xmatch_matrix, emission_xmatch_matrix)};
+  SmooshablePtrVect jn_smooshables = {
+      BuildSmooshablePtr(Eigen::MatrixXd::Zero(0, 0), nti_matrix),
+      BuildSmooshablePtr(nmatch_matrix, emission_nmatch_matrix)};
 
   return std::make_pair(jx_smooshable, jn_smooshables);
 };

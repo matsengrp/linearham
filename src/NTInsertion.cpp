@@ -9,7 +9,7 @@ namespace linearham {
 /// @brief Constructor for NTInsertion starting from a YAML file.
 /// @param[in] root
 /// A root node associated with a germline YAML file.
-NTInsertion::NTInsertion(YAML::Node root) {
+NTInsertion::NTInsertion(const YAML::Node& root) {
   // Store alphabet-map and germline name.
   // For the rest of this function, g[something] means germline_[something].
   std::vector<std::string> alphabet;
