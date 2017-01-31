@@ -7,12 +7,16 @@ namespace linearham {
 
 
 /// @brief Constructor for Smooshable.
+/// @param[in] germ_ptr
+/// A pointer to an object of class Germline.
 /// @param[in] pre_marginal
 /// A marginal probability matrix (without emission probabilities).
 /// @param[in] marginal
 /// A marginal probability matrix (with emission probabilities).
-Smooshable::Smooshable(const Eigen::Ref<const Eigen::MatrixXd>& pre_marginal,
+Smooshable::Smooshable(GermlinePtr germ_ptr,
+                       const Eigen::Ref<const Eigen::MatrixXd>& pre_marginal,
                        const Eigen::Ref<const Eigen::MatrixXd>& marginal) {
+  germ_ptr_ = germ_ptr;
   pre_marginal_ = pre_marginal;
   marginal_ = marginal;
   scaler_count_ = ScaleMatrix(marginal_);
@@ -36,9 +40,10 @@ void Smooshable::AuxViterbiPath(int, int, std::vector<int>&) const {};
 // SmooshablePtr Functions
 
 SmooshablePtr BuildSmooshablePtr(
-    const Eigen::Ref<const Eigen::MatrixXd>& pre_marginal,
+    GermlinePtr germ_ptr, const Eigen::Ref<const Eigen::MatrixXd>& pre_marginal,
     const Eigen::Ref<const Eigen::MatrixXd>& marginal) {
-  return std::make_shared<Smooshable>(Smooshable(pre_marginal, marginal));
+  return std::make_shared<Smooshable>(
+      Smooshable(germ_ptr, pre_marginal, marginal));
 };
 
 

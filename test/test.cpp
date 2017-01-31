@@ -673,9 +673,9 @@ TEST_CASE("Smooshable", "[smooshable]") {
 
 TEST_CASE("VDJGermline", "[vdjgermline]") {
   std::unordered_map<std::string, GermlineGene> ggene_map = CreateGermlineGeneMap("data/hmm_params_ex");
-  std::shared_ptr<VGermline> vgene_ptr = ggene_map["IGHV_ex*01"].VGermlinePtr();
-  std::shared_ptr<DGermline> dgene_ptr = ggene_map["IGHD_ex*01"].DGermlinePtr();
-  std::shared_ptr<JGermline> jgene_ptr = ggene_map["IGHJ_ex*01"].JGermlinePtr();
+  VGermlinePtr vgene_ptr = ggene_map["IGHV_ex*01"].VGermlinePtr();
+  DGermlinePtr dgene_ptr = ggene_map["IGHD_ex*01"].DGermlinePtr();
+  JGermlinePtr jgene_ptr = ggene_map["IGHJ_ex*01"].JGermlinePtr();
 }
 
 

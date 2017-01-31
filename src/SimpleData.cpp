@@ -44,8 +44,8 @@ SimpleData::SimpleData(
 
 /// @brief Creates a vector with per-site emission probabilities for a trimmed
 /// read.
-/// @param[in] germ_data
-/// An object of class Germline.
+/// @param[in] germ_ptr
+/// A pointer to an object of class Germline.
 /// @param[in] left_flexbounds_name
 /// The name of the left flexbounds, which is a 2-tuple of read positions
 /// providing the bounds of the germline's left flex region.
@@ -64,19 +64,19 @@ SimpleData::SimpleData(
 /// SimpleData object with a read sequence vector of any length (given the
 /// constraints on maximal length).
 Eigen::VectorXd SimpleData::EmissionVector(
-    const Germline& germ_data, std::string left_flexbounds_name) const {
+    GermlinePtr germ_ptr, std::string left_flexbounds_name) const {
   // Extract the match indices and relpos.
   std::array<int, 6> match_indices =
-      match_indices_.at({germ_data.name(), left_flexbounds_name});
+      match_indices_.at({germ_ptr->name(), left_flexbounds_name});
   int match_start = match_indices[kMatchStart];
   int match_end = match_indices[kMatchEnd];
-  int relpos = relpos_.at(germ_data.name());
+  int relpos = relpos_.at(germ_ptr->name());
 
   // Compute the emission probability vector.
   Eigen::VectorXd emission(match_end - match_start);
   VectorByIndices(
-      germ_data.emission_matrix().block(0, match_start - relpos,
-                                        germ_data.emission_matrix().rows(),
+      germ_ptr->emission_matrix().block(0, match_start - relpos,
+                                        germ_ptr->emission_matrix().rows(),
                                         match_end - match_start),
       seq_.segment(match_start, match_end - match_start), emission);
 

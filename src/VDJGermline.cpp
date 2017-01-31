@@ -6,19 +6,19 @@
 namespace linearham {
 
 
-std::shared_ptr<VGermline> GermlineGene::VGermlinePtr() const {
+VGermlinePtr GermlineGene::VGermlinePtrCast() const {
   assert(type == "V");
   return std::static_pointer_cast<VGermline>(germ_ptr);
 };
 
 
-std::shared_ptr<DGermline> GermlineGene::DGermlinePtr() const {
+DGermlinePtr GermlineGene::DGermlinePtrCast() const {
   assert(type == "D");
   return std::static_pointer_cast<DGermline>(germ_ptr);
 };
 
 
-std::shared_ptr<JGermline> GermlineGene::JGermlinePtr() const {
+JGermlinePtr GermlineGene::JGermlinePtrCast() const {
   assert(type == "J");
   return std::static_pointer_cast<JGermline>(germ_ptr);
 };

@@ -1,6 +1,7 @@
 #ifndef LINEARHAM_SMOOSHABLE_
 #define LINEARHAM_SMOOSHABLE_
 
+#include "Germline.hpp"
 #include "Smooshish.hpp"
 
 /// @file Smooshable.hpp
@@ -17,6 +18,7 @@ namespace linearham {
 /// (resp. right) sides.
 class Smooshable : public Smooshish {
  private:
+  GermlinePtr germ_ptr_;
   // The marginal probability matrix (without emission probabilities).
   Eigen::MatrixXd pre_marginal_;
   // The marginal probability matrix (with emission probabilities).
@@ -24,12 +26,14 @@ class Smooshable : public Smooshish {
 
  public:
   Smooshable(){};
-  Smooshable(const Eigen::Ref<const Eigen::MatrixXd>& pre_marginal,
+  Smooshable(GermlinePtr germ_ptr,
+             const Eigen::Ref<const Eigen::MatrixXd>& pre_marginal,
              const Eigen::Ref<const Eigen::MatrixXd>& marginal);
 
   int left_flex() const override { return marginal_.rows() - 1; };
   int right_flex() const override { return marginal_.cols() - 1; };
 
+  GermlinePtr germ_ptr() const { return germ_ptr_; };
   const Eigen::MatrixXd& pre_marginal() const { return pre_marginal_; };
   // We use override here to make sure that we are overriding the virtual
   // method in Smooshish (rather than defining some other method via a
@@ -45,10 +49,11 @@ class Smooshable : public Smooshish {
 // SmooshablePtr
 
 typedef std::shared_ptr<Smooshable> SmooshablePtr;
-SmooshablePtr BuildSmooshablePtr(
-    const Eigen::Ref<const Eigen::MatrixXd>& pre_marginal,
-    const Eigen::Ref<const Eigen::MatrixXd>& marginal);
 typedef std::vector<SmooshablePtr> SmooshablePtrVect;
+
+SmooshablePtr BuildSmooshablePtr(
+    GermlinePtr germ_ptr, const Eigen::Ref<const Eigen::MatrixXd>& pre_marginal,
+    const Eigen::Ref<const Eigen::MatrixXd>& marginal);
 
 
 // Auxiliary Functions

@@ -55,6 +55,9 @@ class Germline {
   const Eigen::VectorXd& rates() const { return rates_; };
   int length() const { return transition_.cols(); };
 };
+
+
+typedef std::shared_ptr<Germline> GermlinePtr;
 }
 
 #endif  // LINEARHAM_GERMLINE_

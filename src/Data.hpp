@@ -23,7 +23,7 @@ class Data {
   Pile vdj_pile_;
 
   Eigen::MatrixXd GermlineTransProbMatrix(
-      const Germline& germ_data, std::string left_flexbounds_name,
+      GermlinePtr germ_ptr, std::string left_flexbounds_name,
       std::string right_flexbounds_name) const;
 
   Eigen::MatrixXd NTIProbMatrix(const NTInsertion& nti_data,
@@ -32,13 +32,13 @@ class Data {
                                 int right_relpos) const;
 
   // VDJSmooshable Constructor Functions
-  SmooshablePtr VSmooshable(const VGermline& vgerm_data) const;
+  SmooshablePtr VSmooshable(VGermlinePtr vgerm_ptr) const;
 
   std::pair<SmooshablePtrVect, SmooshablePtrVect> DSmooshables(
-      const DGermline& dgerm_data) const;
+      DGermlinePtr dgerm_ptr) const;
 
   std::pair<SmooshablePtrVect, SmooshablePtrVect> JSmooshables(
-      const JGermline& jgerm_data) const;
+      JGermlinePtr jgerm_ptr) const;
 
   // Pile Functions
   void InitializePile(
@@ -55,12 +55,12 @@ class Data {
       Eigen::Ref<Eigen::MatrixXd> match_matrix) const;
 
   Eigen::MatrixXd EmissionMatchMatrix(
-      const Germline& germ_data, std::string left_flexbounds_name,
+      GermlinePtr germ_ptr, std::string left_flexbounds_name,
       const Eigen::Ref<const Eigen::MatrixXd>& match_matrix) const;
 
  private:
   virtual Eigen::VectorXd EmissionVector(
-      const Germline& germ_data, std::string left_flexbounds_name) const = 0;
+      GermlinePtr germ_ptr, std::string left_flexbounds_name) const = 0;
 
  public:
   Data(){};

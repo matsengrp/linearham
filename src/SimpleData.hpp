@@ -17,8 +17,7 @@ class SimpleData : public Data {
   std::pair<int, int> n_read_counts_;
 
   Eigen::VectorXd EmissionVector(
-      const Germline& germ_data,
-      std::string left_flexbounds_name) const override;
+      GermlinePtr germ_ptr, std::string left_flexbounds_name) const override;
 
  public:
   SimpleData(){};

@@ -33,17 +33,23 @@ class JGermline : public Germline, public NTInsertion, public NPadding {
       : Germline(root), NTInsertion(root), NPadding(root){};
 };
 
+
+typedef std::shared_ptr<VGermline> VGermlinePtr;
+typedef std::shared_ptr<DGermline> DGermlinePtr;
+typedef std::shared_ptr<JGermline> JGermlinePtr;
+
+
 /// @brief A common class for the different germline gene types.
 class GermlineGene {
  public:
   GermlineGene(){};
 
   std::string type;
-  std::shared_ptr<Germline> germ_ptr;
+  GermlinePtr germ_ptr;
 
-  std::shared_ptr<VGermline> VGermlinePtr() const;
-  std::shared_ptr<DGermline> DGermlinePtr() const;
-  std::shared_ptr<JGermline> JGermlinePtr() const;
+  VGermlinePtr VGermlinePtrCast() const;
+  DGermlinePtr DGermlinePtrCast() const;
+  JGermlinePtr JGermlinePtrCast() const;
 };
 
 
