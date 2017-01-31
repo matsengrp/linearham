@@ -18,6 +18,9 @@ class PhyloData : public Data {
   Eigen::VectorXd EmissionVector(
       GermlinePtr germ_ptr, std::string left_flexbounds_name) const override;
 
+  // Pile Functions
+  void MarkPileAsDirty();
+
  public:
   PhyloData(){};
 

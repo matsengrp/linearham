@@ -95,6 +95,17 @@ void Chain::AuxViterbiPath(int row, int col, std::vector<int>& path) const {
 };
 
 
+/// @brief If a Chain is not dirty, mark it as dirty (and recursively mark the
+/// downstream Smooshishs as dirty).
+void Chain::MarkAsDirty() {
+  if (!is_dirty_) {
+    prev_->MarkAsDirty();
+    curr_->MarkAsDirty();
+    is_dirty_ = true;
+  }
+};
+
+
 /// @brief Give the Viterbi path corresponding to the given row and column of
 /// the Viterbi matrix.
 std::vector<int> Chain::ViterbiPath(int row, int col) const {

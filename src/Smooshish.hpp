@@ -22,17 +22,23 @@ class Smooshish {
   // Although we won't mutate these values in Smooshable, we will in
   // Chain.
   mutable int scaler_count_;
+  // Does this Smooshish need to be re-calculated?
+  // (This matters only in the PhyloData class.)
+  bool is_dirty_ = false;
 
  public:
   virtual int left_flex() const = 0;
   virtual int right_flex() const = 0;
   int scaler_count() const { return scaler_count_; };
+  bool is_dirty() const { return is_dirty_; };
 
   virtual const Eigen::MatrixXd& marginal() const = 0;
   virtual const Eigen::MatrixXd& viterbi() const = 0;
   virtual const Eigen::MatrixXi& viterbi_idx() const = 0;
   virtual void AuxViterbiPath(int row, int col,
                               std::vector<int>& path) const = 0;
+  virtual void MarkAsDirty() = 0;
+
   double FinalViterbiLogProb() const;
 };
 

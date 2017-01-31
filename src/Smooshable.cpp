@@ -37,6 +37,14 @@ const Eigen::MatrixXi& Smooshable::viterbi_idx() const {
 void Smooshable::AuxViterbiPath(int, int, std::vector<int>&) const {};
 
 
+/// @brief If a Smooshable is not dirty, mark it as dirty.
+void Smooshable::MarkAsDirty() {
+  if (!is_dirty_) {
+    is_dirty_ = true;
+  }
+};
+
+
 // SmooshablePtr Functions
 
 SmooshablePtr BuildSmooshablePtr(
