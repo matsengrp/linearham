@@ -45,6 +45,17 @@ void Smooshable::MarkAsDirty() {
 };
 
 
+/// @brief If a Smooshable is dirty, store the associated SmooshablePtr.
+/// @param[in] dirty_smooshables
+/// A vector of SmooshishPtr's storing dirty Smooshables.
+void Smooshable::AuxFindDirtySmooshables(
+    std::vector<SmooshishPtr>& dirty_smooshables) {
+  if (is_dirty_) {
+    dirty_smooshables.push_back(shared_from_this());
+  }
+};
+
+
 // SmooshablePtr Functions
 
 SmooshablePtr BuildSmooshablePtr(

@@ -44,6 +44,8 @@ class Smooshable : public Smooshish {
   const Eigen::MatrixXi& viterbi_idx() const override;
   void AuxViterbiPath(int, int, std::vector<int>&) const override;
   void MarkAsDirty() override;
+  void AuxFindDirtySmooshables(
+      std::vector<SmooshishPtr>& dirty_smooshables) override;
 };
 
 

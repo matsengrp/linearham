@@ -17,13 +17,14 @@ const double SCALE_THRESHOLD = (1.0 / SCALE_FACTOR);
 const double LOG_SCALE_FACTOR = log(SCALE_FACTOR);
 
 
-class Smooshish {
+class Smooshish : public std::enable_shared_from_this<Smooshish> {
  protected:
   // Although we won't mutate these values in Smooshable, we will in
   // Chain.
   mutable int scaler_count_;
-  // Does this Smooshish need to be re-calculated?
-  // (This matters only in the PhyloData class.)
+  // Does the Smooshish marginal probability matrix need to be recalculated?
+  // (i.e. is it "dirty"?)
+  // (Note: This matters only for phyloHMM analysis.)
   bool is_dirty_ = false;
 
  public:
@@ -38,6 +39,8 @@ class Smooshish {
   virtual void AuxViterbiPath(int row, int col,
                               std::vector<int>& path) const = 0;
   virtual void MarkAsDirty() = 0;
+  virtual void AuxFindDirtySmooshables(
+      std::vector<std::shared_ptr<Smooshish>>& dirty_smooshables) = 0;
 
   double FinalViterbiLogProb() const;
 };

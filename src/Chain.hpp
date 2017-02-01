@@ -45,9 +45,11 @@ class Chain : public Smooshish {
   const Eigen::MatrixXd& viterbi() const override;
   const Eigen::MatrixXi& viterbi_idx() const override;
   void AuxViterbiPath(int row, int col, std::vector<int>& path) const override;
-  void MarkAsDirty() override;
   std::vector<int> ViterbiPath(int row, int col) const;
   IntVectorVector ViterbiPaths() const;
+  void MarkAsDirty() override;
+  void AuxFindDirtySmooshables(
+      std::vector<SmooshishPtr>& dirty_smooshables) override;
 };
 
 typedef std::shared_ptr<Chain> ChainPtr;

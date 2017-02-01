@@ -19,7 +19,9 @@ class PhyloData : public Data {
       GermlinePtr germ_ptr, std::string left_flexbounds_name) const override;
 
   // Pile Functions
-  void MarkPileAsDirty();
+  void MarkPileAsDirty() const;
+
+  // void CleanPile() const;
 
  public:
   PhyloData(){};
@@ -30,6 +32,11 @@ class PhyloData : public Data {
 
 
 typedef std::shared_ptr<PhyloData> PhyloDataPtr;
+
+
+// Auxiliary Functions
+
+std::vector<SmooshishPtr> FindDirtySmooshables(SmooshishPtr sp);
 }
 
 #endif  // LINEARHAM_PHYLODATA_
