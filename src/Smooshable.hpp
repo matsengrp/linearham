@@ -19,6 +19,7 @@ namespace linearham {
 class Smooshable : public Smooshish {
  private:
   GermlinePtr germ_ptr_;
+  std::string left_flexbounds_name_;
   // The marginal probability matrix (without emission probabilities).
   Eigen::MatrixXd pre_marginal_;
   // The marginal probability matrix (with emission probabilities).
@@ -34,6 +35,7 @@ class Smooshable : public Smooshish {
   int right_flex() const override { return marginal_.cols() - 1; };
 
   GermlinePtr germ_ptr() const { return germ_ptr_; };
+  std::string left_flexbounds_name() const { return left_flexbounds_name_; };
   const Eigen::MatrixXd& pre_marginal() const { return pre_marginal_; };
   // We use override here to make sure that we are overriding the virtual
   // method in Smooshish (rather than defining some other method via a

@@ -173,7 +173,8 @@ SmooshablePtr Data::VSmooshable(VGermlinePtr vgerm_ptr) const {
   Eigen::MatrixXd emission_match_matrix =
       EmissionMatchMatrix(vgerm_ptr, "v_l", match_matrix);
 
-  return BuildSmooshablePtr(vgerm_ptr, match_matrix, emission_match_matrix);
+  return BuildSmooshablePtr(vgerm_ptr, "v_l", match_matrix,
+                            emission_match_matrix);
 };
 
 
@@ -222,11 +223,12 @@ std::pair<SmooshablePtrVect, SmooshablePtrVect> Data::DSmooshables(
       EmissionMatchMatrix(dgerm_ptr, "d_l", nmatch_matrix);
 
   // Store Smooshable objects.
-  SmooshablePtrVect dx_smooshable = {
-      BuildSmooshablePtr(dgerm_ptr, xmatch_matrix, emission_xmatch_matrix)};
+  SmooshablePtrVect dx_smooshable = {BuildSmooshablePtr(
+      dgerm_ptr, "v_r", xmatch_matrix, emission_xmatch_matrix)};
   SmooshablePtrVect dn_smooshables = {
-      BuildSmooshablePtr(nullptr, Eigen::MatrixXd::Zero(0, 0), nti_matrix),
-      BuildSmooshablePtr(dgerm_ptr, nmatch_matrix, emission_nmatch_matrix)};
+      BuildSmooshablePtr(nullptr, "", Eigen::MatrixXd::Zero(0, 0), nti_matrix),
+      BuildSmooshablePtr(dgerm_ptr, "d_l", nmatch_matrix,
+                         emission_nmatch_matrix)};
 
   return std::make_pair(dx_smooshable, dn_smooshables);
 };
@@ -287,11 +289,12 @@ std::pair<SmooshablePtrVect, SmooshablePtrVect> Data::JSmooshables(
       EmissionMatchMatrix(jgerm_ptr, "j_l", nmatch_matrix);
 
   // Store Smooshable objects.
-  SmooshablePtrVect jx_smooshable = {
-      BuildSmooshablePtr(jgerm_ptr, xmatch_matrix, emission_xmatch_matrix)};
+  SmooshablePtrVect jx_smooshable = {BuildSmooshablePtr(
+      jgerm_ptr, "d_r", xmatch_matrix, emission_xmatch_matrix)};
   SmooshablePtrVect jn_smooshables = {
-      BuildSmooshablePtr(nullptr, Eigen::MatrixXd::Zero(0, 0), nti_matrix),
-      BuildSmooshablePtr(jgerm_ptr, nmatch_matrix, emission_nmatch_matrix)};
+      BuildSmooshablePtr(nullptr, "", Eigen::MatrixXd::Zero(0, 0), nti_matrix),
+      BuildSmooshablePtr(jgerm_ptr, "j_l", nmatch_matrix,
+                         emission_nmatch_matrix)};
 
   return std::make_pair(jx_smooshable, jn_smooshables);
 };
