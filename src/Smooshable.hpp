@@ -27,7 +27,7 @@ class Smooshable : public Smooshish {
 
  public:
   Smooshable(){};
-  Smooshable(GermlinePtr germ_ptr,
+  Smooshable(GermlinePtr germ_ptr, std::string left_flexbounds_name,
              const Eigen::Ref<const Eigen::MatrixXd>& pre_marginal,
              const Eigen::Ref<const Eigen::MatrixXd>& marginal);
 
@@ -46,8 +46,10 @@ class Smooshable : public Smooshish {
   const Eigen::MatrixXi& viterbi_idx() const override;
   void AuxViterbiPath(int, int, std::vector<int>&) const override;
   void MarkAsDirty() override;
+  void MarkAsClean() override;
   void AuxFindDirtySmooshables(
       std::vector<SmooshishPtr>& dirty_smooshables) override;
+  void AuxUpdateMarginal(const Eigen::Ref<const Eigen::MatrixXd>& new_marginal);
 };
 
 
@@ -57,7 +59,8 @@ typedef std::shared_ptr<Smooshable> SmooshablePtr;
 typedef std::vector<SmooshablePtr> SmooshablePtrVect;
 
 SmooshablePtr BuildSmooshablePtr(
-    GermlinePtr germ_ptr, const Eigen::Ref<const Eigen::MatrixXd>& pre_marginal,
+    GermlinePtr germ_ptr, std::string left_flexbounds_name,
+    const Eigen::Ref<const Eigen::MatrixXd>& pre_marginal,
     const Eigen::Ref<const Eigen::MatrixXd>& marginal);
 
 

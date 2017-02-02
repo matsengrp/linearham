@@ -123,13 +123,27 @@ IntVectorVector Chain::ViterbiPaths() const {
 };
 
 
-/// @brief If a Chain is not dirty, mark it as dirty (and recursively mark the
-/// downstream Smooshishs as dirty).
+/// @brief If a Chain is clean, mark it as dirty and recursively mark the
+/// downstream Smooshishs as dirty.
 void Chain::MarkAsDirty() {
   if (!is_dirty_) {
+    is_dirty_ = true;
     prev_->MarkAsDirty();
     curr_->MarkAsDirty();
-    is_dirty_ = true;
+  }
+};
+
+
+/// @brief If a Chain is dirty, mark it as clean, resize its marginal/viterbi
+/// probability matrices to empty matrices, and recursively mark the downstream
+/// Smooshishs as clean.
+void Chain::MarkAsClean() {
+  if (is_dirty_) {
+    is_dirty_ = false;
+    marginal_.resize(0, 0);
+    viterbi_.resize(0, 0);
+    prev_->MarkAsClean();
+    curr_->MarkAsClean();
   }
 };
 

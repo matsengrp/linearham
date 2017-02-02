@@ -48,6 +48,7 @@ class Chain : public Smooshish {
   std::vector<int> ViterbiPath(int row, int col) const;
   IntVectorVector ViterbiPaths() const;
   void MarkAsDirty() override;
+  void MarkAsClean() override;
   void AuxFindDirtySmooshables(
       std::vector<SmooshishPtr>& dirty_smooshables) override;
 };

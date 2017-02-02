@@ -39,6 +39,7 @@ class Smooshish : public std::enable_shared_from_this<Smooshish> {
   virtual void AuxViterbiPath(int row, int col,
                               std::vector<int>& path) const = 0;
   virtual void MarkAsDirty() = 0;
+  virtual void MarkAsClean() = 0;
   virtual void AuxFindDirtySmooshables(
       std::vector<std::shared_ptr<Smooshish>>& dirty_smooshables) = 0;
 

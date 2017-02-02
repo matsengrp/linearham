@@ -45,10 +45,18 @@ const Eigen::MatrixXi& Smooshable::viterbi_idx() const {
 void Smooshable::AuxViterbiPath(int, int, std::vector<int>&) const {};
 
 
-/// @brief If a Smooshable is not dirty, mark it as dirty.
+/// @brief If a Smooshable is clean, mark it as dirty.
 void Smooshable::MarkAsDirty() {
   if (!is_dirty_) {
     is_dirty_ = true;
+  }
+};
+
+
+/// @brief If a Smooshable is dirty, mark it as clean.
+void Smooshable::MarkAsClean() {
+  if (is_dirty_) {
+    is_dirty_ = false;
   }
 };
 
@@ -61,6 +69,16 @@ void Smooshable::AuxFindDirtySmooshables(
   if (is_dirty_) {
     dirty_smooshables.push_back(shared_from_this());
   }
+};
+
+
+/// @brief Updates the Smooshable marginal probability matrix.
+/// @param[in] new_marginal
+/// A recomputed marginal probability matrix.
+void Smooshable::AuxUpdateMarginal(
+    const Eigen::Ref<const Eigen::MatrixXd>& new_marginal) {
+  marginal_ = new_marginal;
+  scaler_count_ = ScaleMatrix(marginal_);
 };
 
 

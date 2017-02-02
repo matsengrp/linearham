@@ -18,10 +18,13 @@ class PhyloData : public Data {
   Eigen::VectorXd EmissionVector(
       GermlinePtr germ_ptr, std::string left_flexbounds_name) const override;
 
+  // Smooshable Functions
+  void UpdateMarginal(SmooshishPtr sp) const;
+
   // Pile Functions
   void MarkPileAsDirty() const;
 
-  // void CleanPile() const;
+  void CleanPile() const;
 
  public:
   PhyloData(){};
