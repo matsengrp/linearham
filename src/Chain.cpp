@@ -124,7 +124,7 @@ IntVectorVector Chain::ViterbiPaths() const {
 
 
 /// @brief If a Chain is clean, mark it as dirty and recursively mark the
-/// downstream Smooshishs as dirty.
+/// upstream Smooshishs as dirty.
 void Chain::MarkAsDirty() {
   if (!is_dirty_) {
     is_dirty_ = true;
@@ -135,11 +135,11 @@ void Chain::MarkAsDirty() {
 
 
 /// @brief If a Chain is dirty, mark it as clean, resize its marginal/viterbi
-/// probability matrices to empty matrices, and recursively mark the downstream
+/// probability matrices to empty matrices, and recursively mark the upstream
 /// Smooshishs as clean.
 ///
 /// Note that resizing a dirty Chain's marginal/viterbi probability matrices to
-/// empty matrices will force recomputations based on the downstream Smooshishs'
+/// empty matrices will force recomputations based on the upstream Smooshishs'
 /// probability matrices (see member functions `marginal()`, `viterbi()`, and
 /// `viterbi_idx()`).
 void Chain::MarkAsClean() {
@@ -153,8 +153,8 @@ void Chain::MarkAsClean() {
 };
 
 
-/// @brief If a Chain is dirty, recurse over the downstream Smooshishs looking
-/// for dirty Smooshables.
+/// @brief If a Chain is dirty, recurse over the upstream Smooshishs looking for
+/// dirty Smooshables.
 /// @param[in] dirty_smooshables
 /// A vector of SmooshishPtr's storing dirty Smooshables.
 void Chain::AuxFindDirtySmooshables(
