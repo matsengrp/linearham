@@ -137,6 +137,11 @@ void Chain::MarkAsDirty() {
 /// @brief If a Chain is dirty, mark it as clean, resize its marginal/viterbi
 /// probability matrices to empty matrices, and recursively mark the downstream
 /// Smooshishs as clean.
+///
+/// Note that resizing a dirty Chain's marginal/viterbi probability matrices to
+/// empty matrices will force recomputations based on the downstream Smooshishs'
+/// probability matrices (see member functions `marginal()`, `viterbi()`, and
+/// `viterbi_idx()`).
 void Chain::MarkAsClean() {
   if (is_dirty_) {
     is_dirty_ = false;

@@ -43,6 +43,23 @@ void PhyloData::MarkPileAsDirty() const {
 
 /// @brief Cleans the dirty Smooshishs in `vdj_pile_` by recomputing marginal
 /// probability matrices for raw Smooshables according to the current phylogeny.
+///
+/// Note that this function recomputes marginal probability matrices for dirty
+/// Smooshables only (and not for dirty Chains).  The probability matrices in
+/// Chain objects are computed from the corresponding matrices in raw Smooshable
+/// objects.  Thus, once the dirty Smooshables have been updated, the upstream
+/// dirty Chains can be updated too (although this does not happen in this
+/// function).
+///
+/// Ideally, we would recurse over each SmooshishPtr in `vdj_pile_` and update
+/// marginal probability matrices during the recursion.  This is infeasible in
+/// our setting because most of the information needed to recompute marginal
+/// probability matrices is stored in the `PhyloData` class.  Thus, we recurse
+/// over each SmooshishPtr in `vdj_pile_` and extract out the dirty Smooshables
+/// in the given Smooshish.  These dirty Smooshables are then updated in
+/// `PhyloData` and all Smooshishs in the given Smooshish we recursed over are
+/// considered clean (remember that Chains being clean only depend on the
+/// downstream Smooshables being clean).
 void PhyloData::CleanPile() const {
   // Iterate over the SmooshishPtr's and clean each one.
   for (std::size_t i = 0; i < vdj_pile_.size(); i++) {
