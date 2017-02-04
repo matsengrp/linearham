@@ -20,7 +20,8 @@ namespace linearham {
 SimpleData::SimpleData(
     const std::string& seq_str, const std::string& flexbounds_str,
     const std::string& relpos_str, std::pair<int, int> n_read_counts,
-    const std::unordered_map<std::string, GermlineGene>& ggenes) {
+    const std::unordered_map<std::string, GermlineGene>& ggenes)
+    : Data(flexbounds_str, relpos_str) {
   // Convert the read sequence string to a vector of integers (according to the
   // alphabet map).
   seq_.resize(seq_str.size());
@@ -28,11 +29,6 @@ SimpleData::SimpleData(
     seq_[i] = ggenes.begin()->second.germ_ptr->alphabet_map().at(
         std::string{seq_str[i]});
   }
-
-  // Parse the `flexbounds` and `relpos` JSON strings.
-  flexbounds_ = YAML::Load(flexbounds_str)
-                    .as<std::map<std::string, std::pair<int, int>>>();
-  relpos_ = YAML::Load(relpos_str).as<std::map<std::string, int>>();
 
   // Store `n_read_counts`.
   n_read_counts_ = n_read_counts;
