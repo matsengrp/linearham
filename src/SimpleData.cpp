@@ -117,7 +117,7 @@ std::vector<SimpleDataPtr> ReadCSVData(std::string csv_path,
   while (in.read_row(seq_str, flexbounds_str, relpos_str)) {
     assert(std::regex_match(seq_str, match, nrgx));
     n_read_counts = {match[1].length(), match[3].length()};
-    simple_data_ptrs.emplace_back(std::make_shared<SimpleData>(
+    simple_data_ptrs.push_back(std::make_shared<SimpleData>(
         match[2], flexbounds_str, relpos_str, n_read_counts, ggenes));
   }
 
