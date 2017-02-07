@@ -33,6 +33,9 @@ SimpleData::SimpleData(
   // Store `n_read_counts`.
   n_read_counts_ = n_read_counts;
 
+  // Initialize `match_indices_`.
+  InitializeMatchIndices(ggenes);
+
   // Initialize `vdj_pile_`.
   InitializePile(ggenes);
 };

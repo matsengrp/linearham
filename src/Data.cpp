@@ -150,6 +150,77 @@ Eigen::MatrixXd Data::NTIProbMatrix(const NTInsertion& nti_data,
 };*/
 
 
+// Initialization Functions
+
+
+/// @brief Initializes the map holding match matrix indices (i.e.
+/// `match_indices_`).
+/// @param[in] ggenes
+/// A map holding (germline name, GermlineGene) pairs.
+void Data::InitializeMatchIndices(
+    const std::unordered_map<std::string, GermlineGene>& ggenes) {
+  // Iterate across the relpos map from left to right.
+  for (auto it = relpos_.begin(); it != relpos_.end(); ++it) {
+    // This map has germline gene names as keys and relpos as values.
+    std::string gname = it->first;
+
+    // Cache the match matrix indices.
+    GermlineGene ggene = ggenes.at(gname);
+
+    if (ggene.type == "V") {
+      CacheMatchMatrixIndices(ggene.germ_ptr->length(), gname, "v_l", "v_r");
+    } else if (ggene.type == "D") {
+      CacheMatchMatrixIndices(ggene.germ_ptr->length(), gname, "v_r", "d_r");
+      CacheMatchMatrixIndices(ggene.germ_ptr->length(), gname, "d_l", "d_r");
+    } else {
+      assert(ggene.type == "J");
+      CacheMatchMatrixIndices(ggene.germ_ptr->length(), gname, "d_r", "j_r");
+      CacheMatchMatrixIndices(ggene.germ_ptr->length(), gname, "j_l", "j_r");
+    }
+  }
+};
+
+
+/// @brief Initializes the Pile (i.e. `vdj_pile_`) with full VDJ chains.
+/// @param[in] ggenes
+/// A map holding (germline name, GermlineGene) pairs.
+void Data::InitializePile(
+    const std::unordered_map<std::string, GermlineGene>& ggenes) {
+  std::vector<SmooshablePtrVect> d_smooshables, j_smooshables;
+
+  // Iterate across the relpos map from left to right.
+  for (auto it = relpos_.begin(); it != relpos_.end(); ++it) {
+    // This map has germline gene names as keys and relpos as values.
+    std::string gname = it->first;
+
+    // Construct the proper Smooshable(s).
+    GermlineGene ggene = ggenes.at(gname);
+
+    if (ggene.type == "V") {
+      vdj_pile_.push_back(VSmooshable(ggene.VGermlinePtrCast()));
+    } else if (ggene.type == "D") {
+      SmooshablePtrVect dx_smooshable, dn_smooshables;
+      std::tie(dx_smooshable, dn_smooshables) =
+          DSmooshables(ggene.DGermlinePtrCast());
+
+      d_smooshables.push_back(dx_smooshable);
+      d_smooshables.push_back(dn_smooshables);
+    } else {
+      assert(ggene.type == "J");
+      SmooshablePtrVect jx_smooshable, jn_smooshables;
+      std::tie(jx_smooshable, jn_smooshables) =
+          JSmooshables(ggene.JGermlinePtrCast());
+
+      j_smooshables.push_back(jx_smooshable);
+      j_smooshables.push_back(jn_smooshables);
+    }
+  }
+
+  // Fill `vdj_pile_` with full VDJ chains.
+  vdj_pile_ = vdj_pile_.SmooshRight(d_smooshables).SmooshRight(j_smooshables);
+};
+
+
 // VDJSmooshable Constructor Functions
 
 
@@ -310,56 +381,6 @@ std::pair<SmooshablePtrVect, SmooshablePtrVect> Data::JSmooshables(
                          emission_nmatch_matrix)};
 
   return std::make_pair(jx_smooshable, jn_smooshables);
-};
-
-
-// Pile Functions
-
-
-/// @brief Initializes the Pile (i.e. `vdj_pile_`) with full VDJ chains.
-/// @param[in] ggenes
-/// A map holding (germline name, GermlineGene) pairs.
-void Data::InitializePile(
-    const std::unordered_map<std::string, GermlineGene>& ggenes) {
-  std::vector<SmooshablePtrVect> d_smooshables, j_smooshables;
-
-  // Iterate across the relpos map from left to right.
-  for (auto it = relpos_.begin(); it != relpos_.end(); ++it) {
-    // This map has germline gene names as keys and relpos as values.
-    std::string gname = it->first;
-
-    // Cache the match matrix indices and construct the proper Smooshable(s).
-    GermlineGene ggene = ggenes.at(gname);
-
-    if (ggene.type == "V") {
-      CacheMatchMatrixIndices(ggene.germ_ptr->length(), gname, "v_l", "v_r");
-      vdj_pile_.push_back(VSmooshable(ggene.VGermlinePtrCast()));
-    } else if (ggene.type == "D") {
-      CacheMatchMatrixIndices(ggene.germ_ptr->length(), gname, "v_r", "d_r");
-      CacheMatchMatrixIndices(ggene.germ_ptr->length(), gname, "d_l", "d_r");
-
-      SmooshablePtrVect dx_smooshable, dn_smooshables;
-      std::tie(dx_smooshable, dn_smooshables) =
-          DSmooshables(ggene.DGermlinePtrCast());
-
-      d_smooshables.push_back(dx_smooshable);
-      d_smooshables.push_back(dn_smooshables);
-    } else {
-      assert(ggene.type == "J");
-      CacheMatchMatrixIndices(ggene.germ_ptr->length(), gname, "d_r", "j_r");
-      CacheMatchMatrixIndices(ggene.germ_ptr->length(), gname, "j_l", "j_r");
-
-      SmooshablePtrVect jx_smooshable, jn_smooshables;
-      std::tie(jx_smooshable, jn_smooshables) =
-          JSmooshables(ggene.JGermlinePtrCast());
-
-      j_smooshables.push_back(jx_smooshable);
-      j_smooshables.push_back(jn_smooshables);
-    }
-  }
-
-  // Fill `vdj_pile_` with full VDJ chains.
-  vdj_pile_ = vdj_pile_.SmooshRight(d_smooshables).SmooshRight(j_smooshables);
 };
 
 

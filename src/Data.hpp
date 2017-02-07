@@ -31,6 +31,13 @@ class Data {
                                 std::pair<int, int> right_flexbounds,
                                 int right_relpos) const;
 
+  // Initialization Functions
+  void InitializeMatchIndices(
+      const std::unordered_map<std::string, GermlineGene>& ggenes);
+
+  void InitializePile(
+      const std::unordered_map<std::string, GermlineGene>& ggenes);
+
   // VDJSmooshable Constructor Functions
   SmooshablePtr VSmooshable(VGermlinePtr vgerm_ptr) const;
 
@@ -39,10 +46,6 @@ class Data {
 
   std::pair<SmooshablePtrVect, SmooshablePtrVect> JSmooshables(
       JGermlinePtr jgerm_ptr) const;
-
-  // Pile Functions
-  void InitializePile(
-      const std::unordered_map<std::string, GermlineGene>& ggenes);
 
   // Auxiliary Functions
   void CacheMatchMatrixIndices(int germ_length, std::string gname,
