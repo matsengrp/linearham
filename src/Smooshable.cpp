@@ -62,7 +62,7 @@ void Smooshable::MarkAsClean() {
 
 
 /// @brief If a Smooshable is dirty, store the associated SmooshablePtr.
-/// @param[in] dirty_smooshables
+/// @param[in,out] dirty_smooshables
 /// A vector of SmooshishPtr's storing dirty Smooshables.
 void Smooshable::AuxFindDirtySmooshables(
     std::vector<SmooshishPtr>& dirty_smooshables) {

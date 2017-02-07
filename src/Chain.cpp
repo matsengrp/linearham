@@ -155,7 +155,7 @@ void Chain::MarkAsClean() {
 
 /// @brief If a Chain is dirty, recurse over the upstream Smooshishs looking for
 /// dirty Smooshables.
-/// @param[in] dirty_smooshables
+/// @param[in,out] dirty_smooshables
 /// A vector of SmooshishPtr's storing dirty Smooshables.
 void Chain::AuxFindDirtySmooshables(
     std::vector<SmooshishPtr>& dirty_smooshables) {
