@@ -14,9 +14,16 @@ namespace linearham {
 class PhyloData : public Data {
  private:
   Eigen::MatrixXi msa_;
+  Eigen::MatrixXi xmsa_;
+  Eigen::VectorXi xmsa_rates_;
+  std::map<std::array<std::string, 2>, Eigen::VectorXi> xmsa_indices_;
 
   Eigen::VectorXd EmissionVector(
       GermlinePtr germ_ptr, std::string left_flexbounds_name) const override;
+
+  // Initialization Functions
+  void InitializeXmsaStructs(
+      const std::unordered_map<std::string, GermlineGene>& ggenes);
 
   // Smooshable Functions
   void UpdateMarginal(SmooshishPtr sp) const;
@@ -25,6 +32,11 @@ class PhyloData : public Data {
   void MarkPileAsDirty() const;
 
   void CleanPile() const;
+
+  // Auxiliary Functions
+  void CacheGermlineXmsaIndices(
+      GermlinePtr germ_ptr, std::string left_flexbounds_name,
+      std::map<std::tuple<int, double, int>, int>& xmsa_ids);
 
  public:
   PhyloData(){};

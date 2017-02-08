@@ -6,6 +6,43 @@
 namespace linearham {
 
 
+// Initialization Functions
+
+
+/// @brief Initializes the xMSA (i.e. `xmsa_`), the xMSA per-site rate vector
+/// (i.e. `xmsa_rates_`), and the map holding xMSA index vectors for germline
+/// genes (i.e. `xmsa_indices_`).
+/// @param[in] ggenes
+/// A map holding (germline name, GermlineGene) pairs.
+void PhyloData::InitializeXmsaStructs(
+    const std::unordered_map<std::string, GermlineGene>& ggenes) {
+  // This map holds ({germline base, germline rate, MSA position}, xMSA
+  // position) pairs.
+  // We use this map to keep track of the unique xMSA sites.
+  std::map<std::tuple<int, double, int>, int> xmsa_ids;
+
+  // Iterate across the relpos map from left to right.
+  for (auto it = relpos_.begin(); it != relpos_.end(); ++it) {
+    // This map has germline gene names as keys and relpos as values.
+    std::string gname = it->first;
+
+    // Cache the xMSA index vector for this germline gene.
+    GermlineGene ggene = ggenes.at(gname);
+
+    if (ggene.type == "V") {
+      CacheGermlineXmsaIndices(ggene.germ_ptr, "v_l", xmsa_ids);
+    } else if (ggene.type == "D") {
+      CacheGermlineXmsaIndices(ggene.germ_ptr, "v_r", xmsa_ids);
+      CacheGermlineXmsaIndices(ggene.germ_ptr, "d_l", xmsa_ids);
+    } else {
+      assert(ggene.type == "J");
+      CacheGermlineXmsaIndices(ggene.germ_ptr, "d_r", xmsa_ids);
+      CacheGermlineXmsaIndices(ggene.germ_ptr, "j_l", xmsa_ids);
+    }
+  }
+};
+
+
 // Smooshable Functions
 
 
@@ -80,6 +117,52 @@ void PhyloData::CleanPile() const {
 
 
 // Auxiliary Functions
+
+
+/// @brief Caches the xMSA index vector for a given germline gene.
+/// @param[in] germ_ptr
+/// A pointer to an object of class Germline.
+/// @param[in] left_flexbounds_name
+/// The name of the left flexbounds, which is a 2-tuple of MSA positions
+/// providing the bounds of the germline's left flex region.
+/// @param[in,out] xmsa_ids
+/// A map identifying already cached xMSA site indices.
+void PhyloData::CacheGermlineXmsaIndices(
+    GermlinePtr germ_ptr, std::string left_flexbounds_name,
+    std::map<std::tuple<int, double, int>, int>& xmsa_ids) {
+  // Extract the match indices and relpos.
+  std::array<int, 6> match_indices =
+      match_indices_.at({germ_ptr->name(), left_flexbounds_name});
+  int match_start = match_indices[kMatchStart];
+  int match_end = match_indices[kMatchEnd];
+  int relpos = relpos_.at(germ_ptr->name());
+
+  // Initialize the xMSA index vector.
+  Eigen::VectorXi xmsa_indices(match_end - match_start);
+
+  // Loop over all MSA positions in the germline match region.
+  for (int i = match_start; i < match_end; i++) {
+    auto id = std::make_tuple(germ_ptr->bases()[i - relpos],
+                              germ_ptr->rates()[i - relpos], i);
+
+    // Is the current `id` already in `xmsa_ids`?
+    auto id_iter = xmsa_ids.find(id);
+
+    if (id_iter == xmsa_ids.end()) {
+      // The current `id` is new, cache the xMSA site index.
+      xmsa_indices[i - match_start] = xmsa_ids.size();
+      xmsa_ids.emplace(id, xmsa_ids.size());
+    } else {
+      // The current `id` is already in `xmsa_ids`, look up the xMSA site index.
+      xmsa_indices[i - match_start] = id_iter->second;
+    }
+  }
+
+  // Store the xMSA index vector.
+  xmsa_indices_.emplace(
+      std::array<std::string, 2>({germ_ptr->name(), left_flexbounds_name}),
+      xmsa_indices);
+};
 
 
 /// @brief Finds the dirty Smooshable(s) contained within the supplied
