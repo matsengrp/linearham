@@ -29,13 +29,13 @@ void PhyloData::InitializeXmsaStructs(
     // Cache the xMSA index vector for this germline gene.
     GermlineGene ggene = ggenes.at(gname);
 
-    if (ggene.type == "V") {
+    if (ggene.type == kVType) {
       CacheGermlineXmsaIndices(ggene.germ_ptr, "v_l", xmsa_ids);
-    } else if (ggene.type == "D") {
+    } else if (ggene.type == kDType) {
       CacheGermlineXmsaIndices(ggene.germ_ptr, "v_r", xmsa_ids);
       CacheGermlineXmsaIndices(ggene.germ_ptr, "d_l", xmsa_ids);
     } else {
-      assert(ggene.type == "J");
+      assert(ggene.type == kJType);
       CacheGermlineXmsaIndices(ggene.germ_ptr, "d_r", xmsa_ids);
       CacheGermlineXmsaIndices(ggene.germ_ptr, "j_l", xmsa_ids);
     }
