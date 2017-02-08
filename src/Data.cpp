@@ -167,13 +167,13 @@ void Data::InitializeMatchIndices(
     // Cache the match matrix indices.
     GermlineGene ggene = ggenes.at(gname);
 
-    if (ggene.type == "V") {
+    if (ggene.type == kVType) {
       CacheMatchMatrixIndices(ggene.germ_ptr->length(), gname, "v_l", "v_r");
-    } else if (ggene.type == "D") {
+    } else if (ggene.type == kDType) {
       CacheMatchMatrixIndices(ggene.germ_ptr->length(), gname, "v_r", "d_r");
       CacheMatchMatrixIndices(ggene.germ_ptr->length(), gname, "d_l", "d_r");
     } else {
-      assert(ggene.type == "J");
+      assert(ggene.type == kJType);
       CacheMatchMatrixIndices(ggene.germ_ptr->length(), gname, "d_r", "j_r");
       CacheMatchMatrixIndices(ggene.germ_ptr->length(), gname, "j_l", "j_r");
     }
@@ -196,9 +196,9 @@ void Data::InitializePile(
     // Construct the proper Smooshable(s).
     GermlineGene ggene = ggenes.at(gname);
 
-    if (ggene.type == "V") {
+    if (ggene.type == kVType) {
       vdj_pile_.push_back(VSmooshable(ggene.VGermlinePtrCast()));
-    } else if (ggene.type == "D") {
+    } else if (ggene.type == kDType) {
       SmooshablePtrVect dx_smooshable, dn_smooshables;
       std::tie(dx_smooshable, dn_smooshables) =
           DSmooshables(ggene.DGermlinePtrCast());
@@ -206,7 +206,7 @@ void Data::InitializePile(
       d_smooshables.push_back(dx_smooshable);
       d_smooshables.push_back(dn_smooshables);
     } else {
-      assert(ggene.type == "J");
+      assert(ggene.type == kJType);
       SmooshablePtrVect jx_smooshable, jn_smooshables;
       std::tie(jx_smooshable, jn_smooshables) =
           JSmooshables(ggene.JGermlinePtrCast());

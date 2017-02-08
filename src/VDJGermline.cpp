@@ -7,19 +7,19 @@ namespace linearham {
 
 
 VGermlinePtr GermlineGene::VGermlinePtrCast() const {
-  assert(type == "V");
+  assert(type == kVType);
   return std::static_pointer_cast<VGermline>(germ_ptr);
 };
 
 
 DGermlinePtr GermlineGene::DGermlinePtrCast() const {
-  assert(type == "D");
+  assert(type == kDType);
   return std::static_pointer_cast<DGermline>(germ_ptr);
 };
 
 
 JGermlinePtr GermlineGene::JGermlinePtrCast() const {
-  assert(type == "J");
+  assert(type == kJType);
   return std::static_pointer_cast<JGermline>(germ_ptr);
 };
 
@@ -59,14 +59,14 @@ std::unordered_map<std::string, GermlineGene> CreateGermlineGeneMap(
     // Create the GermlineGene object.
     GermlineGene ggene;
     if (match[2] == "V") {
-      ggene.type = "V";
+      ggene.type = kVType;
       ggene.germ_ptr.reset(new VGermline(root));
     } else if (match[2] == "D") {
-      ggene.type = "D";
+      ggene.type = kDType;
       ggene.germ_ptr.reset(new DGermline(root));
     } else {
       assert(match[2] == "J");
-      ggene.type = "J";
+      ggene.type = kJType;
       ggene.germ_ptr.reset(new JGermline(root));
     }
 

@@ -39,12 +39,16 @@ typedef std::shared_ptr<DGermline> DGermlinePtr;
 typedef std::shared_ptr<JGermline> JGermlinePtr;
 
 
+/// @brief An enumerated type listing the different germline gene types.
+enum GermlineType { kVType, kDType, kJType };
+
+
 /// @brief A common class for the different germline gene types.
 class GermlineGene {
  public:
   GermlineGene(){};
 
-  std::string type;
+  GermlineType type;
   GermlinePtr germ_ptr;
 
   VGermlinePtr VGermlinePtrCast() const;
