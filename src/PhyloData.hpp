@@ -50,6 +50,15 @@ class PhyloData : public Data {
   PhyloData(){};
 
   const Eigen::MatrixXi& msa() const { return msa_; };
+  const Eigen::MatrixXi& xmsa() const { return xmsa_; };
+  const Eigen::VectorXi& xmsa_rates() const { return xmsa_rates_; };
+  const std::map<std::array<std::string, 2>, Eigen::VectorXi>&
+  germ_xmsa_indices() const {
+    return germ_xmsa_indices_;
+  };
+  const std::map<int, Eigen::VectorXi>& nti_xmsa_indices() const {
+    return nti_xmsa_indices_;
+  };
   int length() const override { return msa_.cols(); };
 };
 
