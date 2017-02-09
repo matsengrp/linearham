@@ -16,7 +16,8 @@ class PhyloData : public Data {
   Eigen::MatrixXi msa_;
   Eigen::MatrixXi xmsa_;
   Eigen::VectorXi xmsa_rates_;
-  std::map<std::array<std::string, 2>, Eigen::VectorXi> xmsa_indices_;
+  std::map<std::array<std::string, 2>, Eigen::VectorXi> germ_xmsa_indices_;
+  std::map<int, Eigen::VectorXi> nti_xmsa_indices_;
 
   Eigen::VectorXd EmissionVector(
       GermlinePtr germ_ptr, std::string left_flexbounds_name) const override;
@@ -38,6 +39,11 @@ class PhyloData : public Data {
       GermlinePtr germ_ptr, std::string left_flexbounds_name,
       std::map<std::tuple<int, double, int>, int>& xmsa_ids);
 
+  void CacheNTIXmsaIndices(
+      int alphabet_size, std::string left_flexbounds_name,
+      std::string right_flexbounds_name,
+      std::map<std::tuple<int, double, int>, int>& xmsa_ids);
+
  public:
   PhyloData(){};
 
@@ -50,6 +56,10 @@ typedef std::shared_ptr<PhyloData> PhyloDataPtr;
 
 
 // Auxiliary Functions
+
+void StoreXmsaIndex(std::tuple<int, double, int> id, int pos,
+                    std::map<std::tuple<int, double, int>, int>& xmsa_ids,
+                    Eigen::Ref<Eigen::VectorXi> xmsa_indices);
 
 std::vector<SmooshishPtr> FindDirtySmooshables(SmooshishPtr sp);
 }

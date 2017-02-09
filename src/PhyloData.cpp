@@ -10,15 +10,16 @@ namespace linearham {
 
 
 /// @brief Initializes the xMSA (i.e. `xmsa_`), the xMSA per-site rate vector
-/// (i.e. `xmsa_rates_`), and the map holding xMSA index vectors for germline
-/// genes (i.e. `xmsa_indices_`).
+/// (i.e. `xmsa_rates_`), and the maps holding xMSA index vectors for germline
+/// genes (i.e. `germ_xmsa_indices_`) and NTI regions (i.e.
+/// `nti_xmsa_indices_`).
 /// @param[in] ggenes
 /// A map holding (germline name, GermlineGene) pairs.
 void PhyloData::InitializeXmsaStructs(
     const std::unordered_map<std::string, GermlineGene>& ggenes) {
   // This map holds ({germline base, germline rate, MSA position}, xMSA
   // position) pairs.
-  // We use this map to keep track of the unique xMSA sites.
+  // We use this map to keep track of the unique xMSA site indices.
   std::map<std::tuple<int, double, int>, int> xmsa_ids;
 
   // Iterate across the relpos map from left to right.
@@ -40,6 +41,12 @@ void PhyloData::InitializeXmsaStructs(
       CacheGermlineXmsaIndices(ggene.germ_ptr, "j_l", xmsa_ids);
     }
   }
+
+  // Cache the xMSA index vectors for the V-D and D-J NTI regions.
+  CacheNTIXmsaIndices(ggenes.begin()->second.germ_ptr->alphabet().size(), "v_r",
+                      "d_l", xmsa_ids);
+  CacheNTIXmsaIndices(ggenes.begin()->second.germ_ptr->alphabet().size(), "d_r",
+                      "j_l", xmsa_ids);
 };
 
 
@@ -144,24 +151,75 @@ void PhyloData::CacheGermlineXmsaIndices(
   for (int i = match_start; i < match_end; i++) {
     auto id = std::make_tuple(germ_ptr->bases()[i - relpos],
                               germ_ptr->rates()[i - relpos], i);
-
-    // Is the current `id` already in `xmsa_ids`?
-    auto id_iter = xmsa_ids.find(id);
-
-    if (id_iter == xmsa_ids.end()) {
-      // The current `id` is new, cache the xMSA site index.
-      xmsa_indices[i - match_start] = xmsa_ids.size();
-      xmsa_ids.emplace(id, xmsa_ids.size());
-    } else {
-      // The current `id` is already in `xmsa_ids`, look up the xMSA site index.
-      xmsa_indices[i - match_start] = id_iter->second;
-    }
+    StoreXmsaIndex(id, i - match_start, xmsa_ids, xmsa_indices);
   }
 
   // Store the xMSA index vector.
-  xmsa_indices_.emplace(
+  germ_xmsa_indices_.emplace(
       std::array<std::string, 2>({germ_ptr->name(), left_flexbounds_name}),
       xmsa_indices);
+};
+
+
+/// @brief Caches the xMSA index vectors for a given NTI region.
+/// @param[in] alphabet_size
+/// The size of the nucleotide alphabet.
+/// @param[in] left_flexbounds_name
+/// The name of the left flexbounds, which is a 2-tuple of MSA positions
+/// providing the bounds of the NTI left flex region.
+/// @param[in] right_flexbounds_name
+/// The name of the right flexbounds, which is a 2-tuple of MSA positions
+/// providing the bounds of the NTI right flex region.
+/// @param[in,out] xmsa_ids
+/// A map identifying already cached xMSA site indices.
+void PhyloData::CacheNTIXmsaIndices(
+    int alphabet_size, std::string left_flexbounds_name,
+    std::string right_flexbounds_name,
+    std::map<std::tuple<int, double, int>, int>& xmsa_ids) {
+  // Extract the left/right flexbounds.
+  std::pair<int, int> left_flexbounds = flexbounds_.at(left_flexbounds_name);
+  std::pair<int, int> right_flexbounds = flexbounds_.at(right_flexbounds_name);
+
+  // Loop over all MSA positions in the NTI region.
+  for (int i = left_flexbounds.first; i < right_flexbounds.second; i++) {
+    // Initialize the xMSA index vector.
+    Eigen::VectorXi xmsa_indices(alphabet_size);
+
+    // Iterate over all possible germline bases.
+    for (int j = 0; j < alphabet_size; j++) {
+      auto id = std::make_tuple(j, 1.0, i);
+      StoreXmsaIndex(id, j, xmsa_ids, xmsa_indices);
+    }
+
+    // Store the xMSA index vector.
+    nti_xmsa_indices_.emplace(i, xmsa_indices);
+  }
+};
+
+
+/// @brief Stores a xMSA site index in a xMSA index vector.
+/// @param[in] id
+/// A (germline base, germline rate, MSA position) tuple.
+/// @param[in] pos
+/// The position of the xMSA index vector that will hold the stored site index.
+/// @param[in,out] xmsa_ids
+/// A map identifying already cached xMSA site indices.
+/// @param[in,out] xmsa_indices
+/// The xMSA index vector.
+void StoreXmsaIndex(std::tuple<int, double, int> id, int pos,
+                    std::map<std::tuple<int, double, int>, int>& xmsa_ids,
+                    Eigen::Ref<Eigen::VectorXi> xmsa_indices) {
+  // Is the current `id` already in `xmsa_ids`?
+  auto id_iter = xmsa_ids.find(id);
+
+  if (id_iter == xmsa_ids.end()) {
+    // The current `id` is new, cache the new xMSA site index.
+    xmsa_indices[pos] = xmsa_ids.size();
+    xmsa_ids.emplace(id, xmsa_ids.size());
+  } else {
+    // The current `id` is already in `xmsa_ids`, look up the xMSA site index.
+    xmsa_indices[pos] = id_iter->second;
+  }
 };
 
 
