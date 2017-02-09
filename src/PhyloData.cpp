@@ -47,6 +47,9 @@ void PhyloData::InitializeXmsaStructs(
                       "d_l", xmsa_ids);
   CacheNTIXmsaIndices(ggenes.begin()->second.germ_ptr->alphabet().size(), "d_r",
                       "j_l", xmsa_ids);
+
+  // Build the xMSA and the associated per-site rate vector.
+  BuildXmsa(xmsa_ids);
 };
 
 
@@ -193,6 +196,30 @@ void PhyloData::CacheNTIXmsaIndices(
 
     // Store the xMSA index vector.
     nti_xmsa_indices_.emplace(i, xmsa_indices);
+  }
+};
+
+
+/// @brief Builds the xMSA and the associated per-site rate vector.
+/// @param[in] xmsa_ids
+/// A map identifying already cached xMSA site indices.
+void PhyloData::BuildXmsa(
+    const std::map<std::tuple<int, double, int>, int>& xmsa_ids) {
+  // Initialize `xmsa_` and `xmsa_rates_`.
+  xmsa_.resize(msa_.rows() + 1, xmsa_ids.size());
+  xmsa_rates_.resize(xmsa_ids.size());
+
+  // Iterate across the elements in `xmsa_ids` and incrementally build `xmsa_`
+  // and `xmsa_rates_`.
+  for (auto it = xmsa_ids.begin(); it != xmsa_ids.end(); ++it) {
+    auto id = it->first;
+    int germ_base = std::get<kGermBase>(id);
+    double germ_rate = std::get<kGermRate>(id);
+    int msa_index = std::get<kMsaIndex>(id);
+    int xmsa_index = it->second;
+
+    xmsa_.col(xmsa_index) << germ_base, msa_.col(msa_index);
+    xmsa_rates_[xmsa_index] = germ_rate;
   }
 };
 

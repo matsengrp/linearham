@@ -44,6 +44,8 @@ class PhyloData : public Data {
       std::string right_flexbounds_name,
       std::map<std::tuple<int, double, int>, int>& xmsa_ids);
 
+  void BuildXmsa(const std::map<std::tuple<int, double, int>, int>& xmsa_ids);
+
  public:
   PhyloData(){};
 
@@ -53,6 +55,10 @@ class PhyloData : public Data {
 
 
 typedef std::shared_ptr<PhyloData> PhyloDataPtr;
+
+
+/// @brief An enumerated type listing the different fields in a xMSA ID.
+enum XmsaId { kGermBase, kGermRate, kMsaIndex };
 
 
 // Auxiliary Functions
