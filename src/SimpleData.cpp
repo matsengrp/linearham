@@ -55,7 +55,7 @@ SimpleData::SimpleData(
 /// that could potentially align to this germline gene. This is typically
 /// obtained by the Smith-Waterman alignment step.
 ///
-/// The ith entry of the resulting vector is the probability of emitting
+/// The `i`th entry of the resulting vector is the probability of emitting
 /// the state corresponding to the `match_start + i` entry of the read sequence
 /// from the `match_start - relpos + i` entry of the germline sequence.
 ///
