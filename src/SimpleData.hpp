@@ -16,7 +16,7 @@ class SimpleData : public Data {
   Eigen::VectorXi seq_;
   std::pair<int, int> n_read_counts_;
 
-  Eigen::VectorXd EmissionVector(
+  Eigen::VectorXd GermlineEmissionVector(
       GermlinePtr germ_ptr, std::string left_flexbounds_name) const override;
 
  public:

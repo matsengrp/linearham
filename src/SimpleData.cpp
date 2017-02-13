@@ -41,15 +41,15 @@ SimpleData::SimpleData(
 };
 
 
-/// @brief Creates a vector with per-site emission probabilities for a trimmed
-/// read.
+/// @brief Creates a vector with per-site germline emission probabilities for a
+/// trimmed read.
 /// @param[in] germ_ptr
 /// A pointer to an object of class Germline.
 /// @param[in] left_flexbounds_name
 /// The name of the left flexbounds, which is a 2-tuple of read positions
 /// providing the bounds of the germline's left flex region.
 /// @return
-/// An emission probability vector.
+/// A germline emission probability vector.
 ///
 /// First, note that this is for a "trimmed" read, meaning the part of the read
 /// that could potentially align to this germline gene. This is typically
@@ -62,7 +62,7 @@ SimpleData::SimpleData(
 /// Note that we don't need a "stop" parameter because we can construct the
 /// SimpleData object with a read sequence vector of any length (given the
 /// constraints on maximal length).
-Eigen::VectorXd SimpleData::EmissionVector(
+Eigen::VectorXd SimpleData::GermlineEmissionVector(
     GermlinePtr germ_ptr, std::string left_flexbounds_name) const {
   // Extract the match indices and relpos.
   std::array<int, 6> match_indices =

@@ -20,7 +20,7 @@ class PhyloData : public Data {
   std::map<std::array<std::string, 2>, Eigen::VectorXi> germ_xmsa_indices_;
   std::map<int, Eigen::VectorXi> nti_xmsa_indices_;
 
-  Eigen::VectorXd EmissionVector(
+  Eigen::VectorXd GermlineEmissionVector(
       GermlinePtr germ_ptr, std::string left_flexbounds_name) const override;
 
   // Initialization Functions

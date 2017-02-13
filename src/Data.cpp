@@ -510,7 +510,8 @@ Eigen::MatrixXd Data::EmissionMatchMatrix(
   int col_start = match_indices[kColStart];
 
   // Compute the match matrix (with emission probabilities).
-  Eigen::VectorXd emission = EmissionVector(germ_ptr, left_flexbounds_name);
+  Eigen::VectorXd emission =
+      GermlineEmissionVector(germ_ptr, left_flexbounds_name);
   Eigen::MatrixXd emission_matrix(emission.size(), emission.size());
   /// @todo Inefficient. Shouldn't calculate full match then cut it down.
   SubProductMatrix(emission, emission_matrix);

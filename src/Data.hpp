@@ -14,7 +14,7 @@ namespace linearham {
 /// @brief Abstract base class for SimpleData and PhyloData.
 ///
 /// We can deal with a lot of the common functionality here, given an
-/// implementation of EmissionVector and some smaller things.
+/// implementation of (Germline|NTI)EmissionVector and some smaller things.
 class Data {
  protected:
   std::map<std::string, std::pair<int, int>> flexbounds_;
@@ -62,7 +62,7 @@ class Data {
       const Eigen::Ref<const Eigen::MatrixXd>& match_matrix) const;
 
  private:
-  virtual Eigen::VectorXd EmissionVector(
+  virtual Eigen::VectorXd GermlineEmissionVector(
       GermlinePtr germ_ptr, std::string left_flexbounds_name) const = 0;
 
  public:

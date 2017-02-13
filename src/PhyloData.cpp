@@ -6,15 +6,15 @@
 namespace linearham {
 
 
-/// @brief Creates a vector with per-site emission probabilities for a trimmed
-/// MSA.
+/// @brief Creates a vector with per-site germline emission probabilities for a
+/// trimmed MSA.
 /// @param[in] germ_ptr
 /// A pointer to an object of class Germline.
 /// @param[in] left_flexbounds_name
 /// The name of the left flexbounds, which is a 2-tuple of MSA positions
 /// providing the bounds of the germline's left flex region.
 /// @return
-/// An emission probability vector.
+/// A germline emission probability vector.
 ///
 /// First, note that this is for a "trimmed" MSA, meaning the part of the MSA
 /// that could potentially align to this germline gene. This is typically
@@ -27,7 +27,7 @@ namespace linearham {
 /// Note that we don't need a "stop" parameter because we can construct the
 /// PhyloData object with a MSA matrix of any length (given the constraints on
 /// maximal length).
-Eigen::VectorXd PhyloData::EmissionVector(
+Eigen::VectorXd PhyloData::GermlineEmissionVector(
     GermlinePtr germ_ptr, std::string left_flexbounds_name) const {
   // Extract the xMSA index vector for this germline gene.
   Eigen::VectorXi xmsa_indices =
