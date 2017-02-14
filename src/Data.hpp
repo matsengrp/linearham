@@ -26,10 +26,9 @@ class Data {
       GermlinePtr germ_ptr, std::string left_flexbounds_name,
       std::string right_flexbounds_name) const;
 
-  Eigen::MatrixXd NTIProbMatrix(const NTInsertion& nti_data,
-                                std::pair<int, int> left_flexbounds,
-                                std::pair<int, int> right_flexbounds,
-                                int right_relpos) const;
+  Eigen::MatrixXd NTIProbMatrix(NTInsertionPtr nti_ptr, std::string right_gname,
+                                std::string left_flexbounds_name,
+                                std::string right_flexbounds_name) const;
 
   // Initialization Functions
   void InitializeMatchIndices(
@@ -64,6 +63,9 @@ class Data {
  private:
   virtual Eigen::VectorXd GermlineEmissionVector(
       GermlinePtr germ_ptr, std::string left_flexbounds_name) const = 0;
+
+  virtual Eigen::RowVectorXd NTIEmissionVector(NTInsertionPtr nti_ptr,
+                                               int site_pos) const = 0;
 
  public:
   Data(){};

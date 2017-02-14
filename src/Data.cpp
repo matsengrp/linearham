@@ -84,26 +84,32 @@ Eigen::MatrixXd Data::GermlineTransProbMatrix(
 };
 
 
-/// @brief Creates the matrix with the probabilities of various non-templated
-/// insertion (NTI) regions to the left of a given D or J gene.
-/// @param[in] nti_data
-/// An object of class NTInsertion.
-/// @param[in] left_flexbounds
-/// A 2-tuple of read/MSA positions providing the bounds of the NTI's left flex
-/// region.
-/// @param[in] right_flexbounds
-/// A 2-tuple of read/MSA positions providing the bounds of the NTI's right flex
-/// region.
-/// @param[in] right_relpos
-/// The read/MSA position corresponding to the first base of the germline gene
-/// to the right of the NTI region.
+/// @brief Creates the path probability matrix for the non-templated insertion
+/// (NTI) region to the left of a given D or J gene.
+/// @param[in] nti_ptr
+/// A pointer to an object of class NTInsertion.
+/// @param[in] right_gname
+/// The name of the germline gene to the right of the NTI region.
+/// @param[in] left_flexbounds_name
+/// The name of the left flexbounds, which is a 2-tuple of read/MSA positions
+/// providing the bounds of the NTI left flex region.
+/// @param[in] right_flexbounds_name
+/// The name of the right flexbounds, which is a 2-tuple of read/MSA positions
+/// providing the bounds of the NTI right flex region.
 /// @return
-/// The NTI probability matrix.
-/*
-Eigen::MatrixXd Data::NTIProbMatrix(const NTInsertion& nti_data,
-                                    std::pair<int, int> left_flexbounds,
-                                    std::pair<int, int> right_flexbounds,
-                                    int right_relpos) const {
+/// A NTI path probability matrix.
+///
+/// This function computes the probabilities of NTI paths starting in the left
+/// flexbounds and ending in the right flexbounds.
+Eigen::MatrixXd Data::NTIProbMatrix(NTInsertionPtr nti_ptr,
+                                    std::string right_gname,
+                                    std::string left_flexbounds_name,
+                                    std::string right_flexbounds_name) const {
+  // Extract the left/right flexbounds and relpos.
+  std::pair<int, int> left_flexbounds = flexbounds_.at(left_flexbounds_name);
+  std::pair<int, int> right_flexbounds = flexbounds_.at(right_flexbounds_name);
+  int right_relpos = relpos_.at(right_gname);
+
   assert(left_flexbounds.first <= left_flexbounds.second);
   assert(right_flexbounds.first <= right_flexbounds.second);
   assert(left_flexbounds.first <= right_flexbounds.first);
@@ -114,40 +120,42 @@ Eigen::MatrixXd Data::NTIProbMatrix(const NTInsertion& nti_data,
   assert(0 < left_flexbounds.first);
   assert(right_flexbounds.second < this->length());
 
-  int g_ll, g_lr, g_rl, g_rr;
-  g_ll = left_flexbounds.first;
-  g_lr = left_flexbounds.second;
-  g_rl = right_flexbounds.first;
-  g_rr = right_flexbounds.second;
-  Eigen::MatrixXd cache_mat =
-      Eigen::MatrixXd::Zero(g_lr - g_ll + 1, n_transition_.cols());
-  Eigen::MatrixXd outp =
-      Eigen::MatrixXd::Zero(g_lr - g_ll + 1, g_rr - g_rl + 1);
+  Eigen::MatrixXd cache_matrix =
+      Eigen::MatrixXd::Zero(left_flexbounds.second - left_flexbounds.first + 1,
+                            nti_ptr->n_transition().cols());
+  Eigen::MatrixXd nti_prob_matrix = Eigen::MatrixXd::Zero(
+      left_flexbounds.second - left_flexbounds.first + 1,
+      right_flexbounds.second - right_flexbounds.first + 1);
 
-  // Loop from left to right across the NTI region.
-  for (int i = g_ll; i < g_rr; i++) {
-    // left flex computations
-    if (i <= g_lr) {
-      if (i != g_ll) cache_mat.topRows(i - g_ll) *= n_transition_;
-      cache_mat.row(i - g_ll) = n_landing_in_;
-      RowVecMatCwise(n_emission_matrix_.row(emission_indices[i]),
-                     cache_mat.topRows(i - g_ll + 1),
-                     cache_mat.topRows(i - g_ll + 1));
+  // Loop over all read/MSA positions in the NTI region.
+  for (int i = left_flexbounds.first; i < right_flexbounds.second; i++) {
+    // Compute the emission probability vector.
+    Eigen::RowVectorXd emission = NTIEmissionVector(nti_ptr, i);
+
+    // Are we in the left flex region?
+    if (i <= left_flexbounds.second) {
+      if (i != left_flexbounds.first) {
+        cache_matrix.topRows(i - left_flexbounds.first) *=
+            nti_ptr->n_transition();
+      }
+      cache_matrix.row(i - left_flexbounds.first) = nti_ptr->n_landing_in();
+      RowVecMatCwise(emission,
+                     cache_matrix.topRows(i - left_flexbounds.first + 1),
+                     cache_matrix.topRows(i - left_flexbounds.first + 1));
     } else {
-      // non-flex & right flex computations
-      cache_mat *= n_transition_;
-      RowVecMatCwise(n_emission_matrix_.row(emission_indices[i]), cache_mat,
-                     cache_mat);
+      cache_matrix *= nti_ptr->n_transition();
+      RowVecMatCwise(emission, cache_matrix, cache_matrix);
     }
 
-    // Store final probabilities in output matrix.
-    if (i >= std::max(g_rl, right_relpos) - 1)
-      outp.col(i - (g_rl - 1)) =
-          cache_mat * n_landing_out_.col(i + 1 - right_relpos);
+    // Store the NTI path probabilities in the output matrix.
+    if (i >= std::max(right_flexbounds.first, right_relpos) - 1) {
+      nti_prob_matrix.col(i - (right_flexbounds.first - 1)) =
+          cache_matrix * nti_ptr->n_landing_out().col(i + 1 - right_relpos);
+    }
   }
 
-  return outp;
-};*/
+  return nti_prob_matrix;
+};
 
 
 // Initialization Functions

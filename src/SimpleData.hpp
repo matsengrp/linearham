@@ -19,6 +19,9 @@ class SimpleData : public Data {
   Eigen::VectorXd GermlineEmissionVector(
       GermlinePtr germ_ptr, std::string left_flexbounds_name) const override;
 
+  Eigen::RowVectorXd NTIEmissionVector(NTInsertionPtr nti_ptr,
+                                       int site_pos) const override;
+
  public:
   SimpleData(){};
   SimpleData(const std::string& seq_str, const std::string& flexbounds_str,

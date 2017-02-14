@@ -23,6 +23,9 @@ class PhyloData : public Data {
   Eigen::VectorXd GermlineEmissionVector(
       GermlinePtr germ_ptr, std::string left_flexbounds_name) const override;
 
+  Eigen::RowVectorXd NTIEmissionVector(NTInsertionPtr nti_ptr,
+                                       int site_pos) const override;
+
   // Initialization Functions
   void InitializeXmsaStructs(
       const std::unordered_map<std::string, GermlineGene>& ggenes);

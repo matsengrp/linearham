@@ -43,6 +43,32 @@ Eigen::VectorXd PhyloData::GermlineEmissionVector(
 };
 
 
+/// @brief Creates a vector with NTI emission probabilities for a given MSA
+/// position in the NTI region.
+/// @param[in] nti_ptr
+/// A pointer to an object of class NTInsertion.
+/// @param[in] site_pos
+/// A MSA position in the NTI region.
+/// @return
+/// A NTI emission probability vector.
+///
+/// This function computes the probabilities of emitting the nucleotide sequence
+/// at the `site_pos`th column of the MSA from all possible germline bases.
+Eigen::RowVectorXd PhyloData::NTIEmissionVector(NTInsertionPtr nti_ptr,
+                                                int site_pos) const {
+  // Extract the xMSA index vector for this MSA position.
+  Eigen::VectorXi xmsa_indices = nti_xmsa_indices_.at(site_pos);
+
+  // Compute the emission probability vector.
+  Eigen::VectorXd emission(xmsa_indices.size());
+  for (int i = 0; i < emission.size(); i++) {
+    emission[i] = xmsa_emission_[xmsa_indices[i]];
+  }
+
+  return emission;
+};
+
+
 // Initialization Functions
 
 

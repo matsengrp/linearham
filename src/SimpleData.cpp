@@ -83,6 +83,23 @@ Eigen::VectorXd SimpleData::GermlineEmissionVector(
 };
 
 
+/// @brief Creates a vector with NTI emission probabilities for a given read
+/// position in the NTI region.
+/// @param[in] nti_ptr
+/// A pointer to an object of class NTInsertion.
+/// @param[in] site_pos
+/// A read position in the NTI region.
+/// @return
+/// A NTI emission probability vector.
+///
+/// This function computes the probabilities of emitting the nucleotide at read
+/// position `site_pos` from all possible germline bases.
+Eigen::RowVectorXd SimpleData::NTIEmissionVector(NTInsertionPtr nti_ptr,
+                                                 int site_pos) const {
+  return nti_ptr->n_emission_matrix().row(seq_[site_pos]);
+};
+
+
 /// @brief Builds a vector of SimpleData pointers (each entry corresponding to a
 /// row in the partis CSV file).
 /// @param[in] csv_path

@@ -36,11 +36,14 @@ class NTInsertion {
 
   const Eigen::VectorXd& n_landing_in() const { return n_landing_in_; };
   const Eigen::MatrixXd& n_landing_out() const { return n_landing_out_; };
+  const Eigen::MatrixXd& n_transition() const { return n_transition_; };
   const Eigen::MatrixXd& n_emission_matrix() const {
     return n_emission_matrix_;
   };
-  const Eigen::MatrixXd& n_transition() const { return n_transition_; };
 };
+
+
+typedef std::shared_ptr<NTInsertion> NTInsertionPtr;
 }
 
 #endif  // LINEARHAM_NTINSERTION_
