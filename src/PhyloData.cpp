@@ -60,7 +60,7 @@ Eigen::RowVectorXd PhyloData::NTIEmissionVector(NTInsertionPtr nti_ptr,
   Eigen::VectorXi xmsa_indices = nti_xmsa_indices_.at(site_pos);
 
   // Compute the emission probability vector.
-  Eigen::VectorXd emission(xmsa_indices.size());
+  Eigen::RowVectorXd emission(xmsa_indices.size());
   for (int i = 0; i < emission.size(); i++) {
     emission[i] = xmsa_emission_[xmsa_indices[i]];
   }

@@ -19,8 +19,7 @@ const double LOG_SCALE_FACTOR = log(SCALE_FACTOR);
 
 class Smooshish : public std::enable_shared_from_this<Smooshish> {
  protected:
-  // Although we won't mutate these values in Smooshable, we will in
-  // Chain.
+  // Although we won't mutate these values in Smooshable, we will in Chain.
   mutable int scaler_count_;
   // Does the Smooshish marginal probability matrix need to be recalculated?
   // (i.e. is it "dirty"?)

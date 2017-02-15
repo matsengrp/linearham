@@ -135,7 +135,7 @@ TEST_CASE("BuildTransition", "[core]") {
   REQUIRE(transition.isApprox(correct_transition));
 }
 
-
+/*
 TEST_CASE("SimpleData", "[simpledata]") {
   initialize_global_test_vars();
 
@@ -146,7 +146,7 @@ TEST_CASE("SimpleData", "[simpledata]") {
 }
 
 // Germline tests
-/*
+
 TEST_CASE("Germline", "[germline]") {
   initialize_global_test_vars();
 
