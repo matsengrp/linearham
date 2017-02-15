@@ -20,14 +20,18 @@ class Smooshable : public Smooshish {
  private:
   GermlinePtr germ_ptr_;
   std::string left_flexbounds_name_;
-  // The marginal probability matrix (without emission probabilities).
+  std::array<int, 4> marginal_indices_;
+  // The marginal probability matrix (without emission probabilities and
+  // un-cut).
   Eigen::MatrixXd pre_marginal_;
-  // The marginal probability matrix (with emission probabilities).
+  // The marginal probability matrix (with emission probabilities and possibly
+  // cut).
   Eigen::MatrixXd marginal_;
 
  public:
   Smooshable(){};
   Smooshable(GermlinePtr germ_ptr, std::string left_flexbounds_name,
+             std::array<int, 4> marginal_indices,
              const Eigen::Ref<const Eigen::MatrixXd>& pre_marginal,
              const Eigen::Ref<const Eigen::MatrixXd>& marginal);
 
@@ -36,6 +40,7 @@ class Smooshable : public Smooshish {
 
   GermlinePtr germ_ptr() const { return germ_ptr_; };
   std::string left_flexbounds_name() const { return left_flexbounds_name_; };
+  std::array<int, 4> marginal_indices() const { return marginal_indices_; };
   const Eigen::MatrixXd& pre_marginal() const { return pre_marginal_; };
   // We use override here to make sure that we are overriding the virtual
   // method in Smooshish (rather than defining some other method via a
@@ -53,6 +58,16 @@ class Smooshable : public Smooshish {
 };
 
 
+/// @brief An enumerated type that is used for `marginal_indices_` array
+/// indexing.
+enum MarginalIndices {
+  kMargRowStart,
+  kMargColStart,
+  kMargRowLength,
+  kMargColLength
+};
+
+
 // SmooshablePtr
 
 typedef std::shared_ptr<Smooshable> SmooshablePtr;
@@ -60,6 +75,7 @@ typedef std::vector<SmooshablePtr> SmooshablePtrVect;
 
 SmooshablePtr BuildSmooshablePtr(
     GermlinePtr germ_ptr, std::string left_flexbounds_name,
+    std::array<int, 4> marginal_indices,
     const Eigen::Ref<const Eigen::MatrixXd>& pre_marginal,
     const Eigen::Ref<const Eigen::MatrixXd>& marginal);
 

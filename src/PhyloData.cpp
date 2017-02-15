@@ -134,7 +134,11 @@ void PhyloData::UpdateMarginal(SmooshishPtr sp) const {
   // Smooshable object.
   Eigen::MatrixXd new_marginal =
       EmissionMatchMatrix(sp_cast->germ_ptr(), sp_cast->left_flexbounds_name(),
-                          sp_cast->pre_marginal());
+                          sp_cast->pre_marginal())
+          .block(sp_cast->marginal_indices()[kMargRowStart],
+                 sp_cast->marginal_indices()[kMargColStart],
+                 sp_cast->marginal_indices()[kMargRowLength],
+                 sp_cast->marginal_indices()[kMargColLength]);
   sp_cast->AuxUpdateMarginal(new_marginal);
 };
 

@@ -246,13 +246,6 @@ SmooshablePtr Data::VSmooshable(VGermlinePtr vgerm_ptr) const {
   MultiplyLandingMatchMatrix(vgerm_ptr->landing_out(), vgerm_ptr->name(), "v_l",
                              false, match_matrix);
 
-  // Extract the row that corresponds to the first match starting position with
-  // a germline state.
-  // int start_pos =
-  //     std::max(relpos_.at(vgerm_data.name()) - flexbounds_.at("v_l").first,
-  //     0);
-  // match_matrix = match_matrix.row(start_pos).eval();
-
   // Multiply in the associated gene and padding probabilities.
   match_matrix *= vgerm_ptr->gene_prob();
   // double npadding_prob =
@@ -265,8 +258,15 @@ SmooshablePtr Data::VSmooshable(VGermlinePtr vgerm_ptr) const {
   Eigen::MatrixXd emission_match_matrix =
       EmissionMatchMatrix(vgerm_ptr, "v_l", match_matrix);
 
-  return BuildSmooshablePtr(vgerm_ptr, "v_l", match_matrix,
-                            emission_match_matrix);
+  // Extract the row index that corresponds to the first match starting position
+  // with a germline state.
+  std::array<int, 6> match_indices =
+      match_indices_.at({vgerm_ptr->name(), "v_l"});
+  int marg_row_start = match_indices[kRowStart];
+
+  return BuildSmooshablePtr(vgerm_ptr, "v_l",
+                            {marg_row_start, 0, 1, (int)match_matrix.cols()},
+                            match_matrix, emission_match_matrix);
 };
 
 
@@ -291,12 +291,8 @@ std::pair<SmooshablePtrVect, SmooshablePtrVect> Data::DSmooshables(
 
   // Compute the transition probability portion of the germline match matrix
   // (assuming some left-NTIs).
-  // Eigen::MatrixXd nti_prob_matrix = dgerm_data.NTIProbMatrix(
-  //     flexbounds.at("v_r"), flexbounds.at("d_l"), emission_indices,
-  //     d_relpos);
-  Eigen::MatrixXd nti_matrix = Eigen::MatrixXd::Ones(
-      flexbounds_.at("v_r").second - flexbounds_.at("v_r").first + 1,
-      flexbounds_.at("d_l").second - flexbounds_.at("d_l").first + 1);
+  Eigen::MatrixXd nti_prob_matrix =
+      NTIProbMatrix(dgerm_ptr, dgerm_ptr->name(), "v_r", "d_l");
   Eigen::MatrixXd nmatch_matrix =
       GermlineTransProbMatrix(dgerm_ptr, "d_l", "d_r");
 
@@ -316,11 +312,16 @@ std::pair<SmooshablePtrVect, SmooshablePtrVect> Data::DSmooshables(
 
   // Store Smooshable objects.
   SmooshablePtrVect dx_smooshable = {BuildSmooshablePtr(
-      dgerm_ptr, "v_r", xmatch_matrix, emission_xmatch_matrix)};
+      dgerm_ptr, "v_r",
+      {0, 0, (int)xmatch_matrix.rows(), (int)xmatch_matrix.cols()},
+      xmatch_matrix, emission_xmatch_matrix)};
   SmooshablePtrVect dn_smooshables = {
-      BuildSmooshablePtr(nullptr, "", Eigen::MatrixXd::Zero(0, 0), nti_matrix),
-      BuildSmooshablePtr(dgerm_ptr, "d_l", nmatch_matrix,
-                         emission_nmatch_matrix)};
+      BuildSmooshablePtr(nullptr, "", {0, 0, (int)nti_prob_matrix.rows(),
+                                       (int)nti_prob_matrix.cols()},
+                         Eigen::MatrixXd::Zero(0, 0), nti_prob_matrix),
+      BuildSmooshablePtr(dgerm_ptr, "d_l", {0, 0, (int)nmatch_matrix.rows(),
+                                            (int)nmatch_matrix.cols()},
+                         nmatch_matrix, emission_nmatch_matrix)};
 
   return std::make_pair(dx_smooshable, dn_smooshables);
 };
@@ -347,23 +348,10 @@ std::pair<SmooshablePtrVect, SmooshablePtrVect> Data::JSmooshables(
 
   // Compute the transition probability portion of the germline match matrix
   // (assuming some left-NTIs).
-  // Eigen::MatrixXd nti_prob_matrix = jgerm_data.NTIProbMatrix(
-  //     flexbounds.at("d_r"), flexbounds.at("j_l"), emission_indices,
-  //     j_relpos);
-  Eigen::MatrixXd nti_matrix = Eigen::MatrixXd::Ones(
-      flexbounds_.at("d_r").second - flexbounds_.at("d_r").first + 1,
-      flexbounds_.at("j_l").second - flexbounds_.at("j_l").first + 1);
+  Eigen::MatrixXd nti_prob_matrix =
+      NTIProbMatrix(jgerm_ptr, jgerm_ptr->name(), "d_r", "j_l");
   Eigen::MatrixXd nmatch_matrix =
       GermlineTransProbMatrix(jgerm_ptr, "j_l", "j_r");
-
-  // Extract the column that corresponds to the last match ending position with
-  // a germline state.
-  // int end_pos = std::min(flexbounds_.at("j_r").second,
-  //                        relpos_.at(jgerm_data.name()) + jgerm_data.length())
-  //                        -
-  //               flexbounds_.at("j_r").first;
-  // xmatch_matrix = xmatch_matrix.col(end_pos).eval();
-  // nmatch_matrix = nmatch_matrix.col(end_pos).eval();
 
   // Multiply in the associated gene and padding probabilities.
   xmatch_matrix *= jgerm_ptr->gene_prob();
@@ -380,13 +368,24 @@ std::pair<SmooshablePtrVect, SmooshablePtrVect> Data::JSmooshables(
   Eigen::MatrixXd emission_nmatch_matrix =
       EmissionMatchMatrix(jgerm_ptr, "j_l", nmatch_matrix);
 
+  // Extract the column index that corresponds to the last match ending position
+  // with a germline state.
+  // (Note: We could substitute "j_l" for "d_r" below.)
+  std::array<int, 6> match_indices =
+      match_indices_.at({jgerm_ptr->name(), "d_r"});
+  int marg_col_start = match_indices[kColStart] + match_indices[kRightFlex];
+
   // Store Smooshable objects.
   SmooshablePtrVect jx_smooshable = {BuildSmooshablePtr(
-      jgerm_ptr, "d_r", xmatch_matrix, emission_xmatch_matrix)};
+      jgerm_ptr, "d_r", {0, marg_col_start, (int)xmatch_matrix.rows(), 1},
+      xmatch_matrix, emission_xmatch_matrix)};
   SmooshablePtrVect jn_smooshables = {
-      BuildSmooshablePtr(nullptr, "", Eigen::MatrixXd::Zero(0, 0), nti_matrix),
-      BuildSmooshablePtr(jgerm_ptr, "j_l", nmatch_matrix,
-                         emission_nmatch_matrix)};
+      BuildSmooshablePtr(nullptr, "", {0, 0, (int)nti_prob_matrix.rows(),
+                                       (int)nti_prob_matrix.cols()},
+                         Eigen::MatrixXd::Zero(0, 0), nti_prob_matrix),
+      BuildSmooshablePtr(jgerm_ptr, "j_l",
+                         {0, marg_col_start, (int)nmatch_matrix.rows(), 1},
+                         nmatch_matrix, emission_nmatch_matrix)};
 
   return std::make_pair(jx_smooshable, jn_smooshables);
 };
