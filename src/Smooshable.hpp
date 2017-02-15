@@ -2,6 +2,7 @@
 #define LINEARHAM_SMOOSHABLE_
 
 #include "Germline.hpp"
+#include "NTInsertion.hpp"
 #include "Smooshish.hpp"
 
 /// @file Smooshable.hpp
@@ -19,7 +20,9 @@ namespace linearham {
 class Smooshable : public Smooshish {
  private:
   GermlinePtr germ_ptr_;
+  NTInsertionPtr nti_ptr_;
   std::string left_flexbounds_name_;
+  std::string right_flexbounds_name_;
   std::array<int, 4> marginal_indices_;
   // The marginal probability matrix (without emission probabilities and
   // un-cut).
@@ -30,7 +33,9 @@ class Smooshable : public Smooshish {
 
  public:
   Smooshable(){};
-  Smooshable(GermlinePtr germ_ptr, std::string left_flexbounds_name,
+  Smooshable(GermlinePtr germ_ptr, NTInsertionPtr nti_ptr,
+             std::string left_flexbounds_name,
+             std::string right_flexbounds_name,
              std::array<int, 4> marginal_indices,
              const Eigen::Ref<const Eigen::MatrixXd>& pre_marginal,
              const Eigen::Ref<const Eigen::MatrixXd>& marginal);
@@ -39,7 +44,9 @@ class Smooshable : public Smooshish {
   int right_flex() const override { return marginal_.cols() - 1; };
 
   GermlinePtr germ_ptr() const { return germ_ptr_; };
+  NTInsertionPtr nti_ptr() const { return nti_ptr_; };
   std::string left_flexbounds_name() const { return left_flexbounds_name_; };
+  std::string right_flexbounds_name() const { return right_flexbounds_name_; };
   std::array<int, 4> marginal_indices() const { return marginal_indices_; };
   const Eigen::MatrixXd& pre_marginal() const { return pre_marginal_; };
   // We use override here to make sure that we are overriding the virtual
@@ -74,7 +81,8 @@ typedef std::shared_ptr<Smooshable> SmooshablePtr;
 typedef std::vector<SmooshablePtr> SmooshablePtrVect;
 
 SmooshablePtr BuildSmooshablePtr(
-    GermlinePtr germ_ptr, std::string left_flexbounds_name,
+    GermlinePtr germ_ptr, NTInsertionPtr nti_ptr,
+    std::string left_flexbounds_name, std::string right_flexbounds_name,
     std::array<int, 4> marginal_indices,
     const Eigen::Ref<const Eigen::MatrixXd>& pre_marginal,
     const Eigen::Ref<const Eigen::MatrixXd>& marginal);

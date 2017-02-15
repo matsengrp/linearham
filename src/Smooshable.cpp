@@ -9,9 +9,14 @@ namespace linearham {
 /// @brief Constructor for Smooshable.
 /// @param[in] germ_ptr
 /// A pointer to an object of class Germline.
+/// @param[in] nti_ptr
+/// A pointer to an object of class NTInsertion.
 /// @param[in] left_flexbounds_name
 /// The name of the left flexbounds, which is a 2-tuple of read/MSA positions
-/// providing the bounds of the germline's left flex region.
+/// providing the bounds of the left flex region.
+/// @param[in] right_flexbounds_name
+/// The name of the right flexbounds, which is a 2-tuple of read/MSA positions
+/// providing the bounds of the right flex region.
 /// @param[in] marginal_indices
 /// An array of indices that specifies the marginal probability matrix block of
 /// interest.
@@ -20,17 +25,22 @@ namespace linearham {
 /// @param[in] marginal
 /// A marginal probability matrix (with emission probabilities and un-cut).
 ///
-/// Note that for NTI Smooshables, `germ_ptr` is a `nullptr`,
-/// `left_flexbounds_name` is an empty string, and `pre_marginal` is an empty
-/// matrix.  Also, we note that `marginal_indices` specifies whole marginal
-/// probability matrices for all Smooshables except V/J Smooshables.  For V (J)
-/// Smooshables, we extract a row (column) from the marginal probability matrix.
-Smooshable::Smooshable(GermlinePtr germ_ptr, std::string left_flexbounds_name,
+/// Note that for germline-encoded Smooshables, `nti_ptr` is a `nullptr`, while
+/// for NTI Smooshables, `germ_ptr` points to the Germline object to the right
+/// of the given NTI region and `pre_marginal` is an empty matrix.  Also, we
+/// note that `marginal_indices` specifies whole marginal probability matrices
+/// for all Smooshables except V/J Smooshables.  For V (J) Smooshables, we
+/// extract a row (column) from the marginal probability matrix.
+Smooshable::Smooshable(GermlinePtr germ_ptr, NTInsertionPtr nti_ptr,
+                       std::string left_flexbounds_name,
+                       std::string right_flexbounds_name,
                        std::array<int, 4> marginal_indices,
                        const Eigen::Ref<const Eigen::MatrixXd>& pre_marginal,
                        const Eigen::Ref<const Eigen::MatrixXd>& marginal) {
   germ_ptr_ = germ_ptr;
+  nti_ptr_ = nti_ptr;
   left_flexbounds_name_ = left_flexbounds_name;
+  right_flexbounds_name_ = right_flexbounds_name;
   marginal_indices_ = marginal_indices;
   pre_marginal_ = pre_marginal;
   marginal_ = marginal.block(
@@ -83,10 +93,12 @@ void Smooshable::AuxFindDirtySmooshables(
 
 /// @brief Updates the Smooshable marginal probability matrix.
 /// @param[in] new_marginal
-/// A recomputed and possibly cut marginal probability matrix.
+/// A recomputed, un-cut marginal probability matrix.
 void Smooshable::AuxUpdateMarginal(
     const Eigen::Ref<const Eigen::MatrixXd>& new_marginal) {
-  marginal_ = new_marginal;
+  marginal_ = new_marginal.block(
+      marginal_indices_[kMargRowStart], marginal_indices_[kMargColStart],
+      marginal_indices_[kMargRowLength], marginal_indices_[kMargColLength]);
   scaler_count_ = ScaleMatrix(marginal_);
 };
 
@@ -94,13 +106,14 @@ void Smooshable::AuxUpdateMarginal(
 // SmooshablePtr Functions
 
 SmooshablePtr BuildSmooshablePtr(
-    GermlinePtr germ_ptr, std::string left_flexbounds_name,
+    GermlinePtr germ_ptr, NTInsertionPtr nti_ptr,
+    std::string left_flexbounds_name, std::string right_flexbounds_name,
     std::array<int, 4> marginal_indices,
     const Eigen::Ref<const Eigen::MatrixXd>& pre_marginal,
     const Eigen::Ref<const Eigen::MatrixXd>& marginal) {
-  return std::make_shared<Smooshable>(Smooshable(germ_ptr, left_flexbounds_name,
-                                                 marginal_indices, pre_marginal,
-                                                 marginal));
+  return std::make_shared<Smooshable>(
+      Smooshable(germ_ptr, nti_ptr, left_flexbounds_name, right_flexbounds_name,
+                 marginal_indices, pre_marginal, marginal));
 };
 
 

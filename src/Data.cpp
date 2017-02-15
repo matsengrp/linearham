@@ -264,7 +264,7 @@ SmooshablePtr Data::VSmooshable(VGermlinePtr vgerm_ptr) const {
       match_indices_.at({vgerm_ptr->name(), "v_l"});
   int marg_row_start = match_indices[kRowStart];
 
-  return BuildSmooshablePtr(vgerm_ptr, "v_l",
+  return BuildSmooshablePtr(vgerm_ptr, nullptr, "v_l", "v_r",
                             {marg_row_start, 0, 1, (int)match_matrix.cols()},
                             match_matrix, emission_match_matrix);
 };
@@ -312,16 +312,18 @@ std::pair<SmooshablePtrVect, SmooshablePtrVect> Data::DSmooshables(
 
   // Store Smooshable objects.
   SmooshablePtrVect dx_smooshable = {BuildSmooshablePtr(
-      dgerm_ptr, "v_r",
+      dgerm_ptr, nullptr, "v_r", "d_r",
       {0, 0, (int)xmatch_matrix.rows(), (int)xmatch_matrix.cols()},
       xmatch_matrix, emission_xmatch_matrix)};
   SmooshablePtrVect dn_smooshables = {
-      BuildSmooshablePtr(nullptr, "", {0, 0, (int)nti_prob_matrix.rows(),
-                                       (int)nti_prob_matrix.cols()},
-                         Eigen::MatrixXd::Zero(0, 0), nti_prob_matrix),
-      BuildSmooshablePtr(dgerm_ptr, "d_l", {0, 0, (int)nmatch_matrix.rows(),
-                                            (int)nmatch_matrix.cols()},
-                         nmatch_matrix, emission_nmatch_matrix)};
+      BuildSmooshablePtr(
+          dgerm_ptr, dgerm_ptr, "v_r", "d_l",
+          {0, 0, (int)nti_prob_matrix.rows(), (int)nti_prob_matrix.cols()},
+          Eigen::MatrixXd::Zero(0, 0), nti_prob_matrix),
+      BuildSmooshablePtr(
+          dgerm_ptr, nullptr, "d_l", "d_r",
+          {0, 0, (int)nmatch_matrix.rows(), (int)nmatch_matrix.cols()},
+          nmatch_matrix, emission_nmatch_matrix)};
 
   return std::make_pair(dx_smooshable, dn_smooshables);
 };
@@ -376,14 +378,16 @@ std::pair<SmooshablePtrVect, SmooshablePtrVect> Data::JSmooshables(
   int marg_col_start = match_indices[kColStart] + match_indices[kRightFlex];
 
   // Store Smooshable objects.
-  SmooshablePtrVect jx_smooshable = {BuildSmooshablePtr(
-      jgerm_ptr, "d_r", {0, marg_col_start, (int)xmatch_matrix.rows(), 1},
-      xmatch_matrix, emission_xmatch_matrix)};
+  SmooshablePtrVect jx_smooshable = {
+      BuildSmooshablePtr(jgerm_ptr, nullptr, "d_r", "j_r",
+                         {0, marg_col_start, (int)xmatch_matrix.rows(), 1},
+                         xmatch_matrix, emission_xmatch_matrix)};
   SmooshablePtrVect jn_smooshables = {
-      BuildSmooshablePtr(nullptr, "", {0, 0, (int)nti_prob_matrix.rows(),
-                                       (int)nti_prob_matrix.cols()},
-                         Eigen::MatrixXd::Zero(0, 0), nti_prob_matrix),
-      BuildSmooshablePtr(jgerm_ptr, "j_l",
+      BuildSmooshablePtr(
+          jgerm_ptr, jgerm_ptr, "d_r", "j_l",
+          {0, 0, (int)nti_prob_matrix.rows(), (int)nti_prob_matrix.cols()},
+          Eigen::MatrixXd::Zero(0, 0), nti_prob_matrix),
+      BuildSmooshablePtr(jgerm_ptr, nullptr, "j_l", "j_r",
                          {0, marg_col_start, (int)nmatch_matrix.rows(), 1},
                          nmatch_matrix, emission_nmatch_matrix)};
 

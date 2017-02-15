@@ -130,15 +130,21 @@ void PhyloData::UpdateMarginal(SmooshishPtr sp) const {
   // Downcast the SmooshishPtr to a SmooshablePtr.
   SmooshablePtr sp_cast = std::static_pointer_cast<Smooshable>(sp);
 
-  // Compute the updated marginal probability matrix and store it in the
-  // Smooshable object.
-  Eigen::MatrixXd new_marginal =
-      EmissionMatchMatrix(sp_cast->germ_ptr(), sp_cast->left_flexbounds_name(),
-                          sp_cast->pre_marginal())
-          .block(sp_cast->marginal_indices()[kMargRowStart],
-                 sp_cast->marginal_indices()[kMargColStart],
-                 sp_cast->marginal_indices()[kMargRowLength],
-                 sp_cast->marginal_indices()[kMargColLength]);
+  // Compute the new marginal probability matrix.
+  Eigen::MatrixXd new_marginal;
+
+  // Are we updating a germline-encoded Smooshable or a NTI Smooshable?
+  if (sp_cast->nti_ptr() == nullptr) {
+    new_marginal = EmissionMatchMatrix(sp_cast->germ_ptr(),
+                                       sp_cast->left_flexbounds_name(),
+                                       sp_cast->pre_marginal());
+  } else {
+    new_marginal = NTIProbMatrix(
+        sp_cast->nti_ptr(), sp_cast->germ_ptr()->name(),
+        sp_cast->left_flexbounds_name(), sp_cast->right_flexbounds_name());
+  }
+
+  // Store the new marginal probability matrix in the Smooshable object.
   sp_cast->AuxUpdateMarginal(new_marginal);
 };
 
