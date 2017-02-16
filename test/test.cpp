@@ -3,6 +3,7 @@
 
 #include "catch.hpp"
 #include "SimpleData.hpp"
+#include "PhyloData.hpp"
 
 
 namespace test {
@@ -135,15 +136,6 @@ TEST_CASE("BuildTransition", "[core]") {
   REQUIRE(transition.isApprox(correct_transition));
 }
 
-/*
-TEST_CASE("SimpleData", "[simpledata]") {
-  initialize_global_test_vars();
-
-  std::vector<SimpleDataPtr> simple_data_ptrs =
-      ReadCSVData("data/hmm_input_ex.csv", "data/hmm_params_ex");
-
-  std::cout << simple_data_ptrs[0]->vdj_pile()[0]->marginal() << std::endl;
-}
 
 // Germline tests
 
@@ -155,12 +147,6 @@ TEST_CASE("Germline", "[germline]") {
   V_landing_in << 0.6666666666666666, 0, 0, 0, 0;
   Eigen::VectorXd V_landing_out(5);
   V_landing_out << 0, 0, 0.2, 0.5, 1;
-  Eigen::MatrixXd V_emission_matrix(4,5);
-  V_emission_matrix <<
-  0.79, 0.1, 0.01, 0.55, 0.125,
-  0.07, 0.1, 0.01, 0.15, 0.625,
-  0.07, 0.1, 0.97, 0.15, 0.125,
-  0.07, 0.7, 0.01, 0.15, 0.125;
   Eigen::MatrixXd V_transition(5,5);
   V_transition <<
   1, 1, 1*1, 1*1*0.8, 1*1*0.8*0.5,
@@ -169,40 +155,40 @@ TEST_CASE("Germline", "[germline]") {
   0, 0,   0,       1,         0.5,
   0, 0,   0,       0,           1;
   double V_gene_prob = 0.07;
+  std::vector<std::string> V_alphabet = {"A", "C", "G", "T"};
+  std::unordered_map<std::string, int> V_alphabet_map = {{"A",0}, {"C",1}, {"G",2}, {"T",3}};
+  std::string V_name = "IGHV_ex*01";
+  Eigen::MatrixXd V_emission_matrix(4,5);
+  V_emission_matrix <<
+  0.79, 0.1, 0.01, 0.55, 0.125,
+  0.07, 0.1, 0.01, 0.15, 0.625,
+  0.07, 0.1, 0.97, 0.15, 0.125,
+  0.07, 0.7, 0.01, 0.15, 0.125;
+  Eigen::VectorXi V_bases(5);
+  V_bases << 0, 3, 2, 0, 1;
+  Eigen::VectorXd V_rates(5);
+  V_rates << 1, 1, 1, 1, 1;
+  int V_length = 5;
 
   Germline V_Germline(V_root);
 
   REQUIRE(V_Germline.landing_in() == V_landing_in);
   REQUIRE(V_Germline.landing_out() == V_landing_out);
-  REQUIRE(V_Germline.emission_matrix() == V_emission_matrix);
-  REQUIRE(V_Germline.transition().isApprox(V_transition));
+  REQUIRE(V_Germline.transition() == V_transition);
   REQUIRE(V_Germline.gene_prob() == V_gene_prob);
-  REQUIRE(V_Germline.length() == V_transition.cols());
-
-  int V_relpos = 4;
-  std::pair<int, int> V_left_flexbounds = std::make_pair(3, 5);
-  std::pair<int, int> V_right_flexbounds = std::make_pair(7, 10);
-  Eigen::MatrixXd V_GermlineProbMatrix(3,4);
-  V_GermlineProbMatrix <<
-  // Format is emission * transition * ... * emission
-  0*0*0.07*1*0.1*1*0.01, 0*0*0.07*1*0.1*1*0.01*0.8*0.15, 0*0*0.07*1*0.1*1*0.01*0.8*0.15*0.5*0.625, 0*0*0.07*1*0.1*1*0.01*0.8*0.15*0.5*0.625*0*0,
-      0.07*1*0.1*1*0.01,     0.07*1*0.1*1*0.01*0.8*0.15,     0.07*1*0.1*1*0.01*0.8*0.15*0.5*0.625,     0.07*1*0.1*1*0.01*0.8*0.15*0.5*0.625*0*0,
-             0.1*1*0.01,            0.1*1*0.01*0.8*0.15,            0.1*1*0.01*0.8*0.15*0.5*0.625,            0.1*1*0.01*0.8*0.15*0.5*0.625*0*0;
-
-  REQUIRE(V_Germline.GermlineProbMatrix(V_left_flexbounds, V_right_flexbounds,
-                                        emission_indices, V_relpos).isApprox(V_GermlineProbMatrix));
+  REQUIRE(V_Germline.alphabet() == V_alphabet);
+  REQUIRE(V_Germline.alphabet_map() == V_alphabet_map);
+  REQUIRE(V_Germline.name() == V_name);
+  REQUIRE(V_Germline.emission_matrix() == V_emission_matrix);
+  REQUIRE(V_Germline.bases() == V_bases);
+  REQUIRE(V_Germline.rates() == V_rates);
+  REQUIRE(V_Germline.length() == V_length);
 
   // D tests
   Eigen::VectorXd D_landing_in(5);
   D_landing_in << 0.4, 0.1, 0.05, 0, 0;
   Eigen::VectorXd D_landing_out(5);
   D_landing_out << 0.02, 0.05, 0.4, 0.65, 1;
-  Eigen::MatrixXd D_emission_matrix(4,5);
-  D_emission_matrix <<
-  0.12, 0.07, 0.05, 0.55, 0.01,
-  0.12, 0.07, 0.05, 0.15, 0.97,
-  0.64, 0.79, 0.05, 0.15, 0.01,
-  0.12, 0.07, 0.85, 0.15, 0.01;
   Eigen::MatrixXd D_transition(5,5);
   D_transition <<
   1, 0.98, 0.98*0.95, 0.98*0.95*0.6, 0.98*0.95*0.6*0.35,
@@ -211,49 +197,40 @@ TEST_CASE("Germline", "[germline]") {
   0,    0,         0,             1,               0.35,
   0,    0,         0,             0,                  1;
   double D_gene_prob = 0.035;
+  std::vector<std::string> D_alphabet = {"A", "C", "G", "T"};
+  std::unordered_map<std::string, int> D_alphabet_map = {{"A",0}, {"C",1}, {"G",2}, {"T",3}};
+  std::string D_name = "IGHD_ex*01";
+  Eigen::MatrixXd D_emission_matrix(4,5);
+  D_emission_matrix <<
+  0.12, 0.07, 0.05, 0.55, 0.01,
+  0.12, 0.07, 0.05, 0.15, 0.97,
+  0.64, 0.79, 0.05, 0.15, 0.01,
+  0.12, 0.07, 0.85, 0.15, 0.01;
+  Eigen::VectorXi D_bases(5);
+  D_bases << 2, 2, 3, 0, 1;
+  Eigen::VectorXd D_rates(5);
+  D_rates << 1, 1, 1, 1, 1;
+  int D_length = 5;
 
   Germline D_Germline(D_root);
 
   REQUIRE(D_Germline.landing_in() == D_landing_in);
   REQUIRE(D_Germline.landing_out() == D_landing_out);
-  REQUIRE(D_Germline.emission_matrix() == D_emission_matrix);
-  REQUIRE(D_Germline.transition().isApprox(D_transition));
+  REQUIRE(D_Germline.transition() == D_transition);
   REQUIRE(D_Germline.gene_prob() == D_gene_prob);
-  REQUIRE(D_Germline.length() == D_transition.cols());
-
-  int D_relpos = 2;
-  std::pair<int, int> D_left_flexbounds = std::make_pair(3, 5);
-  std::pair<int, int> D_right_flexbounds = std::make_pair(5, 7);
-  Eigen::MatrixXd D_GermlineProbMatrix(3,3);
-  D_GermlineProbMatrix <<
-  // Format is emission * transition * ... * emission
-  0.79*0.95*0.85, 0.79*0.95*0.85*0.6*0.55, 0.79*0.95*0.85*0.6*0.55*0.35*0.97,
-            0.85,           0.85*0.6*0.55,           0.85*0.6*0.55*0.35*0.97,
-               0,                    0.55,                    0.55*0.35*0.97;
-
-  REQUIRE(D_Germline.GermlineProbMatrix(D_left_flexbounds, D_right_flexbounds,
-                                        emission_indices, D_relpos).isApprox(D_GermlineProbMatrix));
-
-  D_relpos = 6;
-  D_GermlineProbMatrix <<
-  0, 0, 0,
-  0, 0, 0,
-  0, 0, 0;
-
-  REQUIRE(D_Germline.GermlineProbMatrix(D_left_flexbounds, D_right_flexbounds,
-                                        emission_indices, D_relpos) == D_GermlineProbMatrix);
+  REQUIRE(D_Germline.alphabet() == D_alphabet);
+  REQUIRE(D_Germline.alphabet_map() == D_alphabet_map);
+  REQUIRE(D_Germline.name() == D_name);
+  REQUIRE(D_Germline.emission_matrix() == D_emission_matrix);
+  REQUIRE(D_Germline.bases() == D_bases);
+  REQUIRE(D_Germline.rates() == D_rates);
+  REQUIRE(D_Germline.length() == D_length);
 
   // J tests
   Eigen::VectorXd J_landing_in(5);
   J_landing_in << 0.25, 0.05, 0, 0, 0;
   Eigen::VectorXd J_landing_out(5);
   J_landing_out << 0, 0, 0, 0, 0.04;
-  Eigen::MatrixXd J_emission_matrix(4,5);
-  J_emission_matrix <<
-  0.91, 0.1, 0.06, 0.01, 0.08,
-  0.03, 0.1, 0.06, 0.97, 0.08,
-  0.03, 0.1, 0.82, 0.01, 0.76,
-  0.03, 0.7, 0.06, 0.01, 0.08;
   Eigen::MatrixXd J_transition(5,5);
   J_transition <<
   1, 1, 1*1, 1*1*1, 1*1*1*1,
@@ -262,38 +239,37 @@ TEST_CASE("Germline", "[germline]") {
   0, 0,   0,     1,       1,
   0, 0,   0,     0,       1;
   double J_gene_prob = 0.015;
+  std::vector<std::string> J_alphabet = {"A", "C", "G", "T"};
+  std::unordered_map<std::string, int> J_alphabet_map = {{"A",0}, {"C",1}, {"G",2}, {"T",3}};
+  std::string J_name = "IGHJ_ex*01";
+  Eigen::MatrixXd J_emission_matrix(4,5);
+  J_emission_matrix <<
+  0.91, 0.1, 0.06, 0.01, 0.08,
+  0.03, 0.1, 0.06, 0.97, 0.08,
+  0.03, 0.1, 0.82, 0.01, 0.76,
+  0.03, 0.7, 0.06, 0.01, 0.08;
+  Eigen::VectorXi J_bases(5);
+  J_bases << 0, 3, 2, 1, 2;
+  Eigen::VectorXd J_rates(5);
+  J_rates << 1, 1, 1, 1, 1;
+  int J_length = 5;
 
   Germline J_Germline(J_root);
 
   REQUIRE(J_Germline.landing_in() == J_landing_in);
   REQUIRE(J_Germline.landing_out() == J_landing_out);
-  REQUIRE(J_Germline.emission_matrix() == J_emission_matrix);
-  REQUIRE(J_Germline.transition().isApprox(J_transition));
+  REQUIRE(J_Germline.transition() == J_transition);
   REQUIRE(J_Germline.gene_prob() == J_gene_prob);
-  REQUIRE(J_Germline.length() == J_transition.cols());
-
-  int J_relpos = 8;
-  std::pair<int, int> J_left_flexbounds = std::make_pair(8, 9);
-  std::pair<int, int> J_right_flexbounds = std::make_pair(12, 13);
-  Eigen::MatrixXd J_GermlineProbMatrix(2,2);
-  J_GermlineProbMatrix <<
-  // Format is emission * transition * ... * emission
-  0.03*1*0.7*1*0.82*1*0.01, 0.03*1*0.7*1*0.82*1*0.01*1*0.08,
-         0.7*1*0.82*1*0.01,        0.7*1*0.82*1*0.01*1*0.08;
-
-  REQUIRE(J_Germline.GermlineProbMatrix(J_left_flexbounds, J_right_flexbounds,
-                                        emission_indices, J_relpos).isApprox(J_GermlineProbMatrix));
-
-  J_relpos = 11;
-  J_GermlineProbMatrix <<
-  0, 0,
-  0, 0;
-
-  REQUIRE(J_Germline.GermlineProbMatrix(J_left_flexbounds, J_right_flexbounds,
-                                        emission_indices, J_relpos) == J_GermlineProbMatrix);
+  REQUIRE(J_Germline.alphabet() == J_alphabet);
+  REQUIRE(J_Germline.alphabet_map() == J_alphabet_map);
+  REQUIRE(J_Germline.name() == J_name);
+  REQUIRE(J_Germline.emission_matrix() == J_emission_matrix);
+  REQUIRE(J_Germline.bases() == J_bases);
+  REQUIRE(J_Germline.rates() == J_rates);
+  REQUIRE(J_Germline.length() == J_length);
 }
 
-
+/*
 // NTInsertion tests
 
 TEST_CASE("NTInsertion", "[ntinsertion]") {
@@ -714,4 +690,73 @@ TEST_CASE("BCRHam Comparison 1", "[bcrham]") {
     REQUIRE(std::fabs(viterbi_logprobs[i] - log(expected_piles[i][0]->viterbi()(0,0))) <= 1e-3);
   }
 }*/
+
+/* STUFF TO REINSTATE LATER
+TEST_CASE("SimpleData", "[simpledata]") {
+  initialize_global_test_vars();
+
+  std::vector<SimpleDataPtr> simple_data_ptrs =
+      ReadCSVData("data/hmm_input_ex.csv", "data/hmm_params_ex");
+
+  std::cout << simple_data_ptrs[0]->vdj_pile()[0]->marginal() << std::endl;
+}
+
+
+int V_relpos = 4;
+std::pair<int, int> V_left_flexbounds = std::make_pair(3, 5);
+std::pair<int, int> V_right_flexbounds = std::make_pair(7, 10);
+Eigen::MatrixXd V_GermlineProbMatrix(3,4);
+V_GermlineProbMatrix <<
+// Format is emission * transition * ... * emission
+0*0*0.07*1*0.1*1*0.01, 0*0*0.07*1*0.1*1*0.01*0.8*0.15, 0*0*0.07*1*0.1*1*0.01*0.8*0.15*0.5*0.625, 0*0*0.07*1*0.1*1*0.01*0.8*0.15*0.5*0.625*0*0,
+    0.07*1*0.1*1*0.01,     0.07*1*0.1*1*0.01*0.8*0.15,     0.07*1*0.1*1*0.01*0.8*0.15*0.5*0.625,     0.07*1*0.1*1*0.01*0.8*0.15*0.5*0.625*0*0,
+           0.1*1*0.01,            0.1*1*0.01*0.8*0.15,            0.1*1*0.01*0.8*0.15*0.5*0.625,            0.1*1*0.01*0.8*0.15*0.5*0.625*0*0;
+
+REQUIRE(V_Germline.GermlineProbMatrix(V_left_flexbounds, V_right_flexbounds,
+                                      emission_indices, V_relpos).isApprox(V_GermlineProbMatrix));
+
+
+int D_relpos = 2;
+std::pair<int, int> D_left_flexbounds = std::make_pair(3, 5);
+std::pair<int, int> D_right_flexbounds = std::make_pair(5, 7);
+Eigen::MatrixXd D_GermlineProbMatrix(3,3);
+D_GermlineProbMatrix <<
+// Format is emission * transition * ... * emission
+0.79*0.95*0.85, 0.79*0.95*0.85*0.6*0.55, 0.79*0.95*0.85*0.6*0.55*0.35*0.97,
+          0.85,           0.85*0.6*0.55,           0.85*0.6*0.55*0.35*0.97,
+             0,                    0.55,                    0.55*0.35*0.97;
+
+REQUIRE(D_Germline.GermlineProbMatrix(D_left_flexbounds, D_right_flexbounds,
+                                      emission_indices, D_relpos).isApprox(D_GermlineProbMatrix));
+
+D_relpos = 6;
+D_GermlineProbMatrix <<
+0, 0, 0,
+0, 0, 0,
+0, 0, 0;
+
+REQUIRE(D_Germline.GermlineProbMatrix(D_left_flexbounds, D_right_flexbounds,
+                                      emission_indices, D_relpos) == D_GermlineProbMatrix);
+
+
+int J_relpos = 8;
+std::pair<int, int> J_left_flexbounds = std::make_pair(8, 9);
+std::pair<int, int> J_right_flexbounds = std::make_pair(12, 13);
+Eigen::MatrixXd J_GermlineProbMatrix(2,2);
+J_GermlineProbMatrix <<
+// Format is emission * transition * ... * emission
+0.03*1*0.7*1*0.82*1*0.01, 0.03*1*0.7*1*0.82*1*0.01*1*0.08,
+       0.7*1*0.82*1*0.01,        0.7*1*0.82*1*0.01*1*0.08;
+
+REQUIRE(J_Germline.GermlineProbMatrix(J_left_flexbounds, J_right_flexbounds,
+                                      emission_indices, J_relpos).isApprox(J_GermlineProbMatrix));
+
+J_relpos = 11;
+J_GermlineProbMatrix <<
+0, 0,
+0, 0;
+
+REQUIRE(J_Germline.GermlineProbMatrix(J_left_flexbounds, J_right_flexbounds,
+                                      emission_indices, J_relpos) == J_GermlineProbMatrix);
+*/
 }
