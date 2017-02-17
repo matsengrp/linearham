@@ -430,9 +430,9 @@ TEST_CASE("CreateGermlineGeneMap", "[vdjgermline]") {
 }
 
 
-// Smooshable/Chain tests
+// Smooshable/Chain/Pile tests
 
-TEST_CASE("SmooshableChain", "[smooshablechain]") {
+TEST_CASE("SmooshableChainPile", "[smooshablechainpile]") {
   initialize_global_test_vars();
 
   // Make a Chain out of `A` and `B`.
@@ -549,26 +549,30 @@ TEST_CASE("SmooshableChain", "[smooshablechain]") {
   REQUIRE(ps_ABC->is_dirty() == false);
 
 
-  // Obtain the `ABC` Chain using `SmooshVector`.
-  ChainPtr ps_ABC_alt = SmooshVector(ps_A, {ps_B, ps_C});
-
-  // Test `ps_ABC_alt`.
-  REQUIRE(ps_ABC_alt->left_flex() == ps_ABC->left_flex());
-  REQUIRE(ps_ABC_alt->right_flex() == ps_ABC->right_flex());
-
-  REQUIRE(ps_ABC_alt->marginal() == ps_ABC->marginal());
-  REQUIRE(ps_ABC_alt->viterbi() == ps_ABC->viterbi());
-  REQUIRE(ps_ABC_alt->viterbi_idx() == ps_ABC->viterbi_idx());
-  REQUIRE(ps_ABC_alt->ViterbiPaths() == ps_ABC->ViterbiPaths());
-
-  REQUIRE(ps_ABC_alt->scaler_count() == ps_ABC->scaler_count());
-  REQUIRE(ps_ABC_alt->is_dirty() == ps_ABC->is_dirty());
-
-
   // Test the underflow mechanism.
   ps_B->AuxUpdateMarginal(B * SCALE_THRESHOLD);
   REQUIRE(ps_B->scaler_count() == 1);
   REQUIRE(ps_B->marginal() == B.block(0, 1, B.rows(), B.cols() - 1));
+  ps_B->AuxUpdateMarginal(B);
+
+
+  // Make a Pile that holds the `ABC` Chain.
+  Pile p_A = Pile();
+  p_A.push_back(ps_A);
+  Pile p_ABC = p_A.SmooshRight({{ps_B, ps_C}});
+
+  // Test `p_ABC`.
+  for (auto it = p_ABC.begin(); it != p_ABC.end(); ++it) {
+    REQUIRE((*it)->left_flex() == ps_ABC->left_flex());
+    REQUIRE((*it)->right_flex() == ps_ABC->right_flex());
+
+    REQUIRE((*it)->marginal() == ps_ABC->marginal());
+    REQUIRE((*it)->viterbi() == ps_ABC->viterbi());
+    REQUIRE((*it)->viterbi_idx() == ps_ABC->viterbi_idx());
+
+    REQUIRE((*it)->scaler_count() == ps_ABC->scaler_count());
+    REQUIRE((*it)->is_dirty() == ps_ABC->is_dirty());
+  }
 }
 /*
 
@@ -714,20 +718,6 @@ REQUIRE(J_NTInsertion
 
 
 
-// Pile tests.
-Pile p_A = Pile();
-Pile p_B = Pile();
-Pile p_C = Pile();
-Pile p_ABC = Pile();
-p_A.push_back(ps_A);
-p_B.push_back(ps_B);
-p_C.push_back(ps_C);
-p_ABC = p_A.SmooshRight({sv});
-for(auto s = p_ABC.begin(); s != p_ABC.end(); ++s) {
-  REQUIRE((*s)->viterbi() == correct_ABC_viterbi);
-  REQUIRE((*s)->viterbi_idx() == correct_ABC_viterbi_idx);
-}
-
 // FinalViterbiLogProb test. Also, this test exercises the Chain underflow machinery.
 Eigen::MatrixXd Z(1,2);
 // Set up values just above the threshold so they will underflow.
@@ -740,6 +730,8 @@ Pile p_ZC = p_Z.SmooshRight({{ps_C}});
 for(auto s = p_ZC.begin(); s != p_ZC.end(); ++s) {
   REQUIRE((*s)->FinalViterbiLogProb() == -1*LOG_SCALE_FACTOR + log(0.89*1.001));
 }
+
+
 
 // Germline Smooshable tests.
 VGermline vgerm_obj(V_root);
