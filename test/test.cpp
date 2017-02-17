@@ -416,23 +416,37 @@ TEST_CASE("NPadding", "[npadding]") {
 
   REQUIRE(J_NPadding.NPaddingProb(J_flexbounds, emission_indices,
                                   J_read_pos, n_read_counts.second, false) == J_NPaddingProb);
+}*/
+
+
+// VDJGermline tests
+
+TEST_CASE("CreateGermlineGeneMap", "[vdjgermline]") {
+  std::unordered_map<std::string, GermlineGene> ggenes =
+      CreateGermlineGeneMap("data/hmm_params_ex");
+  VGermlinePtr vgene_ptr = ggenes["IGHV_ex*01"].VGermlinePtrCast();
+  DGermlinePtr dgene_ptr = ggenes["IGHD_ex*01"].DGermlinePtrCast();
+  JGermlinePtr jgene_ptr = ggenes["IGHJ_ex*01"].JGermlinePtrCast();
 }
 
 
-// Smooshable tests
+// Smooshable/Chain tests
 
-TEST_CASE("Smooshable", "[smooshable]") {
+TEST_CASE("SmooshableChain", "[smooshablechain]") {
   initialize_global_test_vars();
 
-  Eigen::MatrixXd A(2,3);
+  // Make a Chain out of `A` and `B`.
+  Eigen::MatrixXd A(2,4);
   A <<
-  0.5, 0.71, 0.13,
-  0.29, 0.31, 0.37;
-  Eigen::MatrixXd B(3,2);
+  0.5, 0.71, 0.13, 0.25,
+  0.29, 0.31, 0.37, 0.33;
+  std::array<int, 4> A_marginal_indices = {0, 0, (int)A.rows(), (int)A.cols() - 1};
+  Eigen::MatrixXd B(3,3);
   B <<
-  0.3,  0.37,
-  0.29, 0.41,
-  0.11, 0.97;
+  0.11, 0.3,  0.37,
+  0.09, 0.29, 0.41,
+  0.55, 0.11, 0.97;
+  std::array<int, 4> B_marginal_indices = {0, 1, (int)B.rows(), (int)B.cols() - 1};
 
   Eigen::MatrixXd correct_AB_marginal(2,2);
   correct_AB_marginal <<
@@ -447,187 +461,116 @@ TEST_CASE("Smooshable", "[smooshable]") {
   1,1,
   1,2;
 
-  SmooshablePtr ps_A = BuildSmooshablePtr(A);
-  SmooshablePtr ps_B = BuildSmooshablePtr(B);
+  SmooshablePtr ps_A = BuildSmooshablePtr(nullptr, nullptr, "a_l", "a_r/b_l",
+                                          A_marginal_indices, A, A);
+  SmooshablePtr ps_B = BuildSmooshablePtr(nullptr, nullptr, "a_r/b_l", "b_r/c_l",
+                                          B_marginal_indices, B, B);
   ChainPtr ps_AB = std::make_shared<Chain>(Chain(ps_A, ps_B));
 
-  REQUIRE(ps_A->marginal() == A);
-  REQUIRE(ps_B->marginal() == B);
+  // Test `ps_A` and `ps_B`.
+  REQUIRE(ps_A->left_flex() == 1);
+  REQUIRE(ps_B->left_flex() == 2);
+  REQUIRE(ps_A->right_flex() == 2);
+  REQUIRE(ps_B->right_flex() == 1);
+
+  REQUIRE(ps_A->germ_ptr() == nullptr);
+  REQUIRE(ps_B->germ_ptr() == nullptr);
+  REQUIRE(ps_A->nti_ptr() == nullptr);
+  REQUIRE(ps_B->nti_ptr() == nullptr);
+  REQUIRE(ps_A->left_flexbounds_name() == "a_l");
+  REQUIRE(ps_B->left_flexbounds_name() == "a_r/b_l");
+  REQUIRE(ps_A->right_flexbounds_name() == "a_r/b_l");
+  REQUIRE(ps_B->right_flexbounds_name() == "b_r/c_l");
+  REQUIRE(ps_A->marginal_indices() == A_marginal_indices);
+  REQUIRE(ps_B->marginal_indices() == B_marginal_indices);
+  REQUIRE(ps_A->pre_marginal() == A);
+  REQUIRE(ps_B->pre_marginal() == B);
+  REQUIRE(ps_A->marginal() == A.block(0, 0, A.rows(), A.cols() - 1));
+  REQUIRE(ps_B->marginal() == B.block(0, 1, B.rows(), B.cols() - 1));
+  REQUIRE(ps_A->viterbi() == A.block(0, 0, A.rows(), A.cols() - 1));
+  REQUIRE(ps_B->viterbi() == B.block(0, 1, B.rows(), B.cols() - 1));
+
+  REQUIRE(ps_A->scaler_count() == 0);
+  REQUIRE(ps_B->scaler_count() == 0);
+  REQUIRE(ps_A->is_dirty() == false);
+  REQUIRE(ps_B->is_dirty() == false);
+
+  // Test `ps_AB`.
+  REQUIRE(ps_AB->left_flex() == 1);
+  REQUIRE(ps_AB->right_flex() == 1);
+
   REQUIRE(ps_AB->marginal() == correct_AB_marginal);
   REQUIRE(ps_AB->viterbi() == correct_AB_viterbi);
   REQUIRE(ps_AB->viterbi_idx() == correct_AB_viterbi_idx);
+
   REQUIRE(ps_AB->scaler_count() == 0);
+  REQUIRE(ps_AB->is_dirty() == false);
 
-  // Now let's test for underflow.
-  Smooshable s_AB_uflow = Smooshable(ps_AB->marginal() * SCALE_THRESHOLD);
-  REQUIRE(s_AB_uflow.marginal().isApprox(correct_AB_marginal));
-  REQUIRE(s_AB_uflow.scaler_count() == 1);
 
+  // Let's add `C` to the `AB` Chain.
   Eigen::MatrixXd C(2,1);
   C <<
   0.89,
   0.43;
-  SmooshablePtr ps_C = BuildSmooshablePtr(C);
+  std::array<int, 4> C_marginal_indices = {0, 0, (int)C.rows(), (int)C.cols()};
+
+  Eigen::MatrixXd correct_ABC_marginal(2,1);
+  correct_ABC_marginal <<
+  (0.50*0.3+0.71*0.29+0.13*0.11)*0.89 + (0.50*0.37+0.71*0.41+0.13*0.97)*0.43,
+  (0.29*0.3+0.31*0.29+0.37*0.11)*0.89 + (0.29*0.37+0.31*0.41+0.37*0.97)*0.43;
   Eigen::MatrixXd correct_ABC_viterbi(2,1);
-  Eigen::MatrixXi correct_ABC_viterbi_idx(2,1);
   correct_ABC_viterbi <<
   // 0.71*0.29*0.89 > 0.71*0.41*0.43
   // 0.31*0.29*0.89 < 0.37*0.97*0.43
   0.71*0.29*0.89,
   0.37*0.97*0.43;
-  // So the Viterbi indices are
+  Eigen::MatrixXi correct_ABC_viterbi_idx(2,1);
   correct_ABC_viterbi_idx <<
   0,
   1;
   // This 1 in the second row then gives us the corresponding column index,
   // which contains a 2. So the second path is {2,1}.
-
-  Chain s_ABC = Chain(ps_AB, ps_C);
-  REQUIRE(s_ABC.viterbi() == correct_ABC_viterbi);
-  REQUIRE(s_ABC.viterbi_idx() == correct_ABC_viterbi_idx);
   IntVectorVector correct_viterbi_paths = {{1,0}, {2,1}};
-  REQUIRE(s_ABC.ViterbiPaths() == correct_viterbi_paths);
 
-  // SmooshVector tests.
-  SmooshablePtrVect sv = {ps_B, ps_C};
-  ChainPtr s_ABC_alt = SmooshVector(ps_A, sv);
-  REQUIRE(s_ABC.viterbi() == s_ABC_alt->viterbi());
-  REQUIRE(s_ABC.viterbi_idx() == s_ABC_alt->viterbi_idx());
-  REQUIRE(s_ABC.ViterbiPaths() == s_ABC_alt->ViterbiPaths());
+  SmooshablePtr ps_C = BuildSmooshablePtr(nullptr, nullptr, "b_r/c_l", "c_r",
+                                          C_marginal_indices, C, C);
+  ChainPtr ps_ABC = std::make_shared<Chain>(Chain(ps_AB, ps_C));
 
-  // Pile tests.
-  Pile p_A = Pile();
-  Pile p_B = Pile();
-  Pile p_C = Pile();
-  Pile p_ABC = Pile();
-  p_A.push_back(ps_A);
-  p_B.push_back(ps_B);
-  p_C.push_back(ps_C);
-  p_ABC = p_A.SmooshRight({sv});
-  for(auto s = p_ABC.begin(); s != p_ABC.end(); ++s) {
-    REQUIRE((*s)->viterbi() == correct_ABC_viterbi);
-    REQUIRE((*s)->viterbi_idx() == correct_ABC_viterbi_idx);
-  }
+  // Test `ps_ABC`.
+  REQUIRE(ps_ABC->left_flex() == 1);
+  REQUIRE(ps_ABC->right_flex() == 0);
 
-  // FinalViterbiLogProb test. Also, this test exercises the Chain underflow machinery.
-  Eigen::MatrixXd Z(1,2);
-  // Set up values just above the threshold so they will underflow.
-  Z <<
-  1.001*SCALE_THRESHOLD, 1.002*SCALE_THRESHOLD;
-  SmooshablePtr ps_Z = BuildSmooshablePtr(Z);
-  Pile p_Z = Pile();
-  p_Z.push_back(ps_Z);
-  Pile p_ZC = p_Z.SmooshRight({{ps_C}});
-  for(auto s = p_ZC.begin(); s != p_ZC.end(); ++s) {
-    REQUIRE((*s)->FinalViterbiLogProb() == -1*LOG_SCALE_FACTOR + log(0.89*1.001));
-  }
+  REQUIRE(ps_ABC->marginal() == correct_ABC_marginal);
+  REQUIRE(ps_ABC->viterbi() == correct_ABC_viterbi);
+  REQUIRE(ps_ABC->viterbi_idx() == correct_ABC_viterbi_idx);
+  REQUIRE(ps_ABC->ViterbiPaths() == correct_viterbi_paths);
 
-  // Germline Smooshable tests.
-  VGermline vgerm_obj(V_root);
-  DGermline dgerm_obj(D_root);
-  JGermline jgerm_obj(J_root);
-  std::map<std::string, std::pair<int, int>> flexbounds;
+  REQUIRE(ps_ABC->scaler_count() == 0);
+  REQUIRE(ps_ABC->is_dirty() == false);
 
-  // V tests
-  Eigen::MatrixXd VSmoosh_marginal(1,3);
-  VSmoosh_marginal <<
-  // Format is gene_prob * npadding_prob * emission * transition * ... * emission * landing_out
-  0.07*0.33333333333333337*0.25*0.33333333333333337*0.25*0.33333333333333337*0.25*0.33333333333333337*0.25*0.33333333333333337*0.25*0.6666666666666666*0.79*1*0.1*1*0.01*0.2, 0.07*0.33333333333333337*0.25*0.33333333333333337*0.25*0.33333333333333337*0.25*0.33333333333333337*0.25*0.33333333333333337*0.25*0.6666666666666666*0.79*1*0.1*1*0.01*0.8*0.55*0.5, 0.07*0.33333333333333337*0.25*0.33333333333333337*0.25*0.33333333333333337*0.25*0.33333333333333337*0.25*0.33333333333333337*0.25*0.6666666666666666*0.79*1*0.1*1*0.01*0.8*0.55*0.5*0.625;
 
-  flexbounds["v_l"] = {0,2};
-  flexbounds["v_r"] = {5,7};
-  SmooshablePtr VSmoosh = VSmooshable(vgerm_obj, flexbounds, emission_indices, 2, n_read_counts);
+  // Obtain the `ABC` Chain using `SmooshVector`.
+  ChainPtr ps_ABC_alt = SmooshVector(ps_A, {ps_B, ps_C});
 
-  REQUIRE(VSmoosh->marginal().isApprox(VSmoosh_marginal));
+  // Test `ps_ABC_alt`.
+  REQUIRE(ps_ABC_alt->left_flex() == ps_ABC->left_flex());
+  REQUIRE(ps_ABC_alt->right_flex() == ps_ABC->right_flex());
 
-  // D tests
-  Eigen::MatrixXd DXSmoosh_marginal(2,2);
-  DXSmoosh_marginal <<
-  // Format is gene_prob * landing_in * emission * transition * ... * emission * landing_out
-  0.035*0*0*0*0.12*0.98*0.07*0.95*0.05*0.6*0.15*0.35*0.01, 0.035*0*0*0*0.12*0.98*0.07*0.95*0.05*0.6*0.15*0.35*0.01*0*0,
-    0.035*0.4*0.12*0.98*0.07*0.95*0.05*0.6*0.15*0.35*0.01,   0.035*0.4*0.12*0.98*0.07*0.95*0.05*0.6*0.15*0.35*0.01*0*0;
-  Eigen::MatrixXd DNSmoosh_nti_marginal(2,3);
-  DNSmoosh_nti_marginal <<
-  0.0006875, 8.04375000e-05, 0,
-   0.011875, 1.38937500e-03, 0;
-  Eigen::MatrixXd DNSmoosh_ngerm_marginal(3,2);
-  DNSmoosh_ngerm_marginal <<
-  // Format is gene_prob * emission * transition * ... * emission * landing_out
-  0.035*0.07*0.95*0.05*0.6*0.15*0.35*0.01, 0.035*0.07*0.95*0.05*0.6*0.15*0.35*0.01*0*0,
-            0.035*0.05*0.6*0.15*0.35*0.01,           0.035*0.05*0.6*0.15*0.35*0.01*0*0,
-                     0.035*0.15*0.35*0.01,                    0.035*0.15*0.35*0.01*0*0;
+  REQUIRE(ps_ABC_alt->marginal() == ps_ABC->marginal());
+  REQUIRE(ps_ABC_alt->viterbi() == ps_ABC->viterbi());
+  REQUIRE(ps_ABC_alt->viterbi_idx() == ps_ABC->viterbi_idx());
+  REQUIRE(ps_ABC_alt->ViterbiPaths() == ps_ABC->ViterbiPaths());
 
-  flexbounds["v_r"] = {4,5};
-  flexbounds["d_l"] = {6,8};
-  flexbounds["d_r"] = {10,11};
-  SmooshablePtrVect DXSmoosh(1), DNSmoosh(2);
-  std::tie(DXSmoosh, DNSmoosh) = DSmooshables(dgerm_obj, flexbounds, emission_indices, 5);
+  REQUIRE(ps_ABC_alt->scaler_count() == ps_ABC->scaler_count());
+  REQUIRE(ps_ABC_alt->is_dirty() == ps_ABC->is_dirty());
 
-  REQUIRE(DXSmoosh[0]->marginal().isApprox(DXSmoosh_marginal));
-  REQUIRE(DNSmoosh[0]->marginal().isApprox(DNSmoosh_nti_marginal));
-  REQUIRE(DNSmoosh[1]->marginal().isApprox(DNSmoosh_ngerm_marginal));
 
-  // J tests
-  Eigen::MatrixXd JXSmoosh_marginal(2,1);
-  JXSmoosh_marginal <<
-  // The germline gene has no bases in the left flex region.
-  0,
-  0;
-  Eigen::MatrixXd JNSmoosh_nti_marginal(2,2);
-  JNSmoosh_nti_marginal <<
-  0.00089146, 8.07886e-05,
-    0.011484,  0.00104074;
-  Eigen::MatrixXd JNSmoosh_ngerm_marginal(2,1);
-  JNSmoosh_ngerm_marginal <<
-  // Format is gene_prob * emission * transition * ... * emission * npadding_prob
-  0.015*0.03*1*0.7*1*0.82*1*0.01*1*0.08*0.96*0.25*0.96*0.25*0.04,
-         0.015*0.7*1*0.82*1*0.01*1*0.08*0.96*0.25*0.96*0.25*0.04;
-
-  flexbounds["d_r"] = {5,6};
-  flexbounds["j_l"] = {8,9};
-  flexbounds["j_r"] = {12,13};
-  SmooshablePtrVect JXSmoosh(1), JNSmoosh(2);
-  std::tie(JXSmoosh, JNSmoosh) =
-      JSmooshables(jgerm_obj, flexbounds, emission_indices, 8, n_read_counts);
-
-  REQUIRE(JXSmoosh[0]->marginal().isApprox(JXSmoosh_marginal));
-  REQUIRE(JNSmoosh[0]->marginal().isApprox(JNSmoosh_nti_marginal, 1e-5));
-  REQUIRE(JNSmoosh[1]->marginal().isApprox(JNSmoosh_ngerm_marginal));
-
-  // VDJ Pile tests.
-  flexbounds["v_l"] = {0,2};
-  flexbounds["v_r"] = {4,6};
-  flexbounds["d_l"] = {7,8};
-  flexbounds["d_r"] = {9,10};
-  flexbounds["j_l"] = {11,12};
-  flexbounds["j_r"] = {13,13};
-  VSmoosh = VSmooshable(vgerm_obj, flexbounds, emission_indices, 1, n_read_counts);
-  std::tie(DXSmoosh, DNSmoosh) = DSmooshables(dgerm_obj, flexbounds, emission_indices, 5);
-  std::tie(JXSmoosh, JNSmoosh) = JSmooshables(jgerm_obj, flexbounds, emission_indices, 10, n_read_counts);
-
-  Pile actual_vdj_pile = Pile();
-  actual_vdj_pile.push_back(VSmoosh);
-  actual_vdj_pile = actual_vdj_pile.SmooshRight({DXSmoosh, DNSmoosh}).SmooshRight({JXSmoosh, JNSmoosh});
-
-  std::vector<Pile> expected_vdj_piles =
-      CreateVDJPiles("data/hmm_input_ex.csv", "data/hmm_params_ex");
-
-  REQUIRE(expected_vdj_piles[0][0]->marginal() == actual_vdj_pile[0]->marginal());
-  REQUIRE(expected_vdj_piles[0][1]->marginal() == actual_vdj_pile[1]->marginal());
-  REQUIRE(expected_vdj_piles[0][2]->marginal() == actual_vdj_pile[2]->marginal());
-  REQUIRE(expected_vdj_piles[0][3]->marginal() == actual_vdj_pile[3]->marginal());
+  // Test the underflow mechanism.
+  ps_B->AuxUpdateMarginal(B * SCALE_THRESHOLD);
+  REQUIRE(ps_B->scaler_count() == 1);
+  REQUIRE(ps_B->marginal() == B.block(0, 1, B.rows(), B.cols() - 1));
 }
-
-
-// VDJGermline tests
-
-TEST_CASE("VDJGermline", "[vdjgermline]") {
-  std::unordered_map<std::string, GermlineGene> ggene_map = CreateGermlineGeneMap("data/hmm_params_ex");
-  VGermlinePtr vgene_ptr = ggene_map["IGHV_ex*01"].VGermlinePtr();
-  DGermlinePtr dgene_ptr = ggene_map["IGHD_ex*01"].DGermlinePtr();
-  JGermlinePtr jgene_ptr = ggene_map["IGHJ_ex*01"].JGermlinePtr();
-}
-
+/*
 
 // Partis CSV parsing.
 
@@ -762,5 +705,135 @@ REQUIRE(J_NTInsertion
             .NTIProbMatrix(J_left_flexbounds, J_right_flexbounds,
                            emission_indices, J_right_relpos)
             .isApprox(J_NTIProbMatrix));
+
+
+
+
+///////////PILE STUFF
+
+
+
+
+// Pile tests.
+Pile p_A = Pile();
+Pile p_B = Pile();
+Pile p_C = Pile();
+Pile p_ABC = Pile();
+p_A.push_back(ps_A);
+p_B.push_back(ps_B);
+p_C.push_back(ps_C);
+p_ABC = p_A.SmooshRight({sv});
+for(auto s = p_ABC.begin(); s != p_ABC.end(); ++s) {
+  REQUIRE((*s)->viterbi() == correct_ABC_viterbi);
+  REQUIRE((*s)->viterbi_idx() == correct_ABC_viterbi_idx);
+}
+
+// FinalViterbiLogProb test. Also, this test exercises the Chain underflow machinery.
+Eigen::MatrixXd Z(1,2);
+// Set up values just above the threshold so they will underflow.
+Z <<
+1.001*SCALE_THRESHOLD, 1.002*SCALE_THRESHOLD;
+SmooshablePtr ps_Z = BuildSmooshablePtr(Z);
+Pile p_Z = Pile();
+p_Z.push_back(ps_Z);
+Pile p_ZC = p_Z.SmooshRight({{ps_C}});
+for(auto s = p_ZC.begin(); s != p_ZC.end(); ++s) {
+  REQUIRE((*s)->FinalViterbiLogProb() == -1*LOG_SCALE_FACTOR + log(0.89*1.001));
+}
+
+// Germline Smooshable tests.
+VGermline vgerm_obj(V_root);
+DGermline dgerm_obj(D_root);
+JGermline jgerm_obj(J_root);
+std::map<std::string, std::pair<int, int>> flexbounds;
+
+// V tests
+Eigen::MatrixXd VSmoosh_marginal(1,3);
+VSmoosh_marginal <<
+// Format is gene_prob * npadding_prob * emission * transition * ... * emission * landing_out
+0.07*0.33333333333333337*0.25*0.33333333333333337*0.25*0.33333333333333337*0.25*0.33333333333333337*0.25*0.33333333333333337*0.25*0.6666666666666666*0.79*1*0.1*1*0.01*0.2, 0.07*0.33333333333333337*0.25*0.33333333333333337*0.25*0.33333333333333337*0.25*0.33333333333333337*0.25*0.33333333333333337*0.25*0.6666666666666666*0.79*1*0.1*1*0.01*0.8*0.55*0.5, 0.07*0.33333333333333337*0.25*0.33333333333333337*0.25*0.33333333333333337*0.25*0.33333333333333337*0.25*0.33333333333333337*0.25*0.6666666666666666*0.79*1*0.1*1*0.01*0.8*0.55*0.5*0.625;
+
+flexbounds["v_l"] = {0,2};
+flexbounds["v_r"] = {5,7};
+SmooshablePtr VSmoosh = VSmooshable(vgerm_obj, flexbounds, emission_indices, 2, n_read_counts);
+
+REQUIRE(VSmoosh->marginal().isApprox(VSmoosh_marginal));
+
+// D tests
+Eigen::MatrixXd DXSmoosh_marginal(2,2);
+DXSmoosh_marginal <<
+// Format is gene_prob * landing_in * emission * transition * ... * emission * landing_out
+0.035*0*0*0*0.12*0.98*0.07*0.95*0.05*0.6*0.15*0.35*0.01, 0.035*0*0*0*0.12*0.98*0.07*0.95*0.05*0.6*0.15*0.35*0.01*0*0,
+  0.035*0.4*0.12*0.98*0.07*0.95*0.05*0.6*0.15*0.35*0.01,   0.035*0.4*0.12*0.98*0.07*0.95*0.05*0.6*0.15*0.35*0.01*0*0;
+Eigen::MatrixXd DNSmoosh_nti_marginal(2,3);
+DNSmoosh_nti_marginal <<
+0.0006875, 8.04375000e-05, 0,
+ 0.011875, 1.38937500e-03, 0;
+Eigen::MatrixXd DNSmoosh_ngerm_marginal(3,2);
+DNSmoosh_ngerm_marginal <<
+// Format is gene_prob * emission * transition * ... * emission * landing_out
+0.035*0.07*0.95*0.05*0.6*0.15*0.35*0.01, 0.035*0.07*0.95*0.05*0.6*0.15*0.35*0.01*0*0,
+          0.035*0.05*0.6*0.15*0.35*0.01,           0.035*0.05*0.6*0.15*0.35*0.01*0*0,
+                   0.035*0.15*0.35*0.01,                    0.035*0.15*0.35*0.01*0*0;
+
+flexbounds["v_r"] = {4,5};
+flexbounds["d_l"] = {6,8};
+flexbounds["d_r"] = {10,11};
+SmooshablePtrVect DXSmoosh(1), DNSmoosh(2);
+std::tie(DXSmoosh, DNSmoosh) = DSmooshables(dgerm_obj, flexbounds, emission_indices, 5);
+
+REQUIRE(DXSmoosh[0]->marginal().isApprox(DXSmoosh_marginal));
+REQUIRE(DNSmoosh[0]->marginal().isApprox(DNSmoosh_nti_marginal));
+REQUIRE(DNSmoosh[1]->marginal().isApprox(DNSmoosh_ngerm_marginal));
+
+// J tests
+Eigen::MatrixXd JXSmoosh_marginal(2,1);
+JXSmoosh_marginal <<
+// The germline gene has no bases in the left flex region.
+0,
+0;
+Eigen::MatrixXd JNSmoosh_nti_marginal(2,2);
+JNSmoosh_nti_marginal <<
+0.00089146, 8.07886e-05,
+  0.011484,  0.00104074;
+Eigen::MatrixXd JNSmoosh_ngerm_marginal(2,1);
+JNSmoosh_ngerm_marginal <<
+// Format is gene_prob * emission * transition * ... * emission * npadding_prob
+0.015*0.03*1*0.7*1*0.82*1*0.01*1*0.08*0.96*0.25*0.96*0.25*0.04,
+       0.015*0.7*1*0.82*1*0.01*1*0.08*0.96*0.25*0.96*0.25*0.04;
+
+flexbounds["d_r"] = {5,6};
+flexbounds["j_l"] = {8,9};
+flexbounds["j_r"] = {12,13};
+SmooshablePtrVect JXSmoosh(1), JNSmoosh(2);
+std::tie(JXSmoosh, JNSmoosh) =
+    JSmooshables(jgerm_obj, flexbounds, emission_indices, 8, n_read_counts);
+
+REQUIRE(JXSmoosh[0]->marginal().isApprox(JXSmoosh_marginal));
+REQUIRE(JNSmoosh[0]->marginal().isApprox(JNSmoosh_nti_marginal, 1e-5));
+REQUIRE(JNSmoosh[1]->marginal().isApprox(JNSmoosh_ngerm_marginal));
+
+// VDJ Pile tests.
+flexbounds["v_l"] = {0,2};
+flexbounds["v_r"] = {4,6};
+flexbounds["d_l"] = {7,8};
+flexbounds["d_r"] = {9,10};
+flexbounds["j_l"] = {11,12};
+flexbounds["j_r"] = {13,13};
+VSmoosh = VSmooshable(vgerm_obj, flexbounds, emission_indices, 1, n_read_counts);
+std::tie(DXSmoosh, DNSmoosh) = DSmooshables(dgerm_obj, flexbounds, emission_indices, 5);
+std::tie(JXSmoosh, JNSmoosh) = JSmooshables(jgerm_obj, flexbounds, emission_indices, 10, n_read_counts);
+
+Pile actual_vdj_pile = Pile();
+actual_vdj_pile.push_back(VSmoosh);
+actual_vdj_pile = actual_vdj_pile.SmooshRight({DXSmoosh, DNSmoosh}).SmooshRight({JXSmoosh, JNSmoosh});
+
+std::vector<Pile> expected_vdj_piles =
+    CreateVDJPiles("data/hmm_input_ex.csv", "data/hmm_params_ex");
+
+REQUIRE(expected_vdj_piles[0][0]->marginal() == actual_vdj_pile[0]->marginal());
+REQUIRE(expected_vdj_piles[0][1]->marginal() == actual_vdj_pile[1]->marginal());
+REQUIRE(expected_vdj_piles[0][2]->marginal() == actual_vdj_pile[2]->marginal());
+REQUIRE(expected_vdj_piles[0][3]->marginal() == actual_vdj_pile[3]->marginal());
 */
 }
