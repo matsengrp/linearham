@@ -13,15 +13,12 @@ using namespace linearham;
 // Global test variables
 
 YAML::Node V_root, D_root, J_root;
-Eigen::VectorXi emission_indices(13);
-std::pair<int, int> n_read_counts;
+
 
 void initialize_global_test_vars() {
   V_root = YAML::LoadFile("data/hmm_params_ex/IGHV_ex_star_01.yaml");
   D_root = YAML::LoadFile("data/hmm_params_ex/IGHD_ex_star_01.yaml");
   J_root = YAML::LoadFile("data/hmm_params_ex/IGHJ_ex_star_01.yaml");
-  emission_indices << 0, 1, 0, 2, 3, 0, 1, 1, 1, 3, 2, 3, 3;
-  n_read_counts = {3,2};
 }
 
 
@@ -433,8 +430,6 @@ TEST_CASE("CreateGermlineGeneMap", "[vdjgermline]") {
 // Smooshable/Chain/Pile tests
 
 TEST_CASE("SmooshableChainPile", "[smooshablechainpile]") {
-  initialize_global_test_vars();
-
   // Make a Chain out of `A` and `B`.
   Eigen::MatrixXd A(2,4);
   A <<
@@ -574,6 +569,42 @@ TEST_CASE("SmooshableChainPile", "[smooshablechainpile]") {
     REQUIRE((*it)->is_dirty() == ps_ABC->is_dirty());
   }
 }
+
+
+// SimpleData tests
+
+TEST_CASE("SimpleData", "[simpledata]") {
+  initialize_global_test_vars();
+
+  std::vector<SimpleDataPtr> simple_data_ptrs =
+      ReadCSVData("data/hmm_input_ex.csv", "data/hmm_params_ex");
+
+  /// @todo MAKE PICTURE FOR THIS SCENARIO!!!!!
+
+  std::map<std::string, std::pair<int, int>> VDJ_flexbounds = {
+      {"v_l", {0, 2}},  {"v_r", {4, 6}},   {"d_l", {7, 8}},
+      {"d_r", {9, 10}}, {"j_l", {11, 12}}, {"j_r", {13, 13}}};
+  std::map<std::string, int> VDJ_relpos = {
+      {"IGHV_ex*01", 1}, {"IGHD_ex*01", 5}, {"IGHJ_ex*01", 10}};
+  std::map<std::array<std::string, 2>, std::array<int, 6>> VDJ_match_indices = {
+      {{"IGHV_ex*01", "v_l"}, {1, 6, 1, 2, 1, 0}},
+      {{"IGHD_ex*01", "v_r"}, {5, 10, 1, 1, 1, 0}},
+      {{"IGHD_ex*01", "d_l"}, {7, 10, 1, 1, 0, 0}},
+      {{"IGHJ_ex*01", "d_r"}, {10, 13, 0, 0, 1, 0}},
+      {{"IGHJ_ex*01", "j_l"}, {11, 13, 1, 0, 0, 0}}};
+  Eigen::VectorXi VDJ_seq(13);
+  VDJ_seq << 0, 1, 0, 2, 3, 0, 1, 1, 1, 3, 2, 3, 3;
+  std::pair<int, int> VDJ_n_read_counts = {3,2};
+
+  REQUIRE(simple_data_ptrs[0]->flexbounds() == VDJ_flexbounds);
+  REQUIRE(simple_data_ptrs[0]->relpos() == VDJ_relpos);
+  REQUIRE(simple_data_ptrs[0]->match_indices() == VDJ_match_indices);
+  REQUIRE(simple_data_ptrs[0]->seq() == VDJ_seq);
+  REQUIRE(simple_data_ptrs[0]->n_read_counts() == VDJ_n_read_counts);
+  REQUIRE(simple_data_ptrs[0]->length() == VDJ_seq.size());
+}
+
+
 /*
 
 // Partis CSV parsing.
@@ -613,14 +644,7 @@ TEST_CASE("BCRHam Comparison 1", "[bcrham]") {
 }*/
 
 /* STUFF TO REINSTATE LATER
-TEST_CASE("SimpleData", "[simpledata]") {
-  initialize_global_test_vars();
 
-  std::vector<SimpleDataPtr> simple_data_ptrs =
-      ReadCSVData("data/hmm_input_ex.csv", "data/hmm_params_ex");
-
-  std::cout << simple_data_ptrs[0]->vdj_pile()[0]->marginal() << std::endl;
-}
 
 /////////GERMLINE STUFF
 
