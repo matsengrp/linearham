@@ -141,7 +141,7 @@ TEST_CASE("Germline", "[germline]") {
 
   // V tests
   Eigen::VectorXd V_landing_in(5);
-  V_landing_in << 0.6666666666666666, 0, 0, 0, 0;
+  V_landing_in << 0.66, 0, 0, 0, 0;
   Eigen::VectorXd V_landing_out(5);
   V_landing_out << 0, 0, 0.2, 0.5, 1;
   Eigen::MatrixXd V_transition(5,5);
@@ -574,8 +574,6 @@ TEST_CASE("SmooshableChainPile", "[smooshablechainpile]") {
 // SimpleData tests
 
 TEST_CASE("SimpleData", "[simpledata]") {
-  initialize_global_test_vars();
-
   std::vector<SimpleDataPtr> simple_data_ptrs =
       ReadCSVData("data/hmm_input_ex.csv", "data/hmm_params_ex");
 
@@ -602,27 +600,50 @@ TEST_CASE("SimpleData", "[simpledata]") {
   REQUIRE(simple_data_ptrs[0]->seq() == VDJ_seq);
   REQUIRE(simple_data_ptrs[0]->n_read_counts() == VDJ_n_read_counts);
   REQUIRE(simple_data_ptrs[0]->length() == VDJ_seq.size());
+
+  Eigen::MatrixXd V_marginal(1,3);
+  V_marginal <<
+  // Format is gene_prob * npadding_prob * emission * transition * ... * emission * landing_out
+  0.07*0.07*1*0.1*1*0.97*0.2, 0.07*0.07*1*0.1*1*0.97*0.8*0.15*0.5, 0.07*0.07*1*0.1*1*0.97*0.8*0.15*0.5*0.125*1;
+  Eigen::MatrixXd DX_marginal(3,2);
+  DX_marginal <<
+  // Format is gene_prob * landing_in * emission * transition * ... * emission * landing_out
+                                                 0,                                                       0,
+  0.035*0.4*0.12*0.98*0.07*0.95*0.05*0.6*0.15*0.65, 0.035*0.4*0.12*0.98*0.07*0.95*0.05*0.6*0.15*0.35*0.01*1,
+            0.035*0.1*0.07*0.95*0.05*0.6*0.15*0.65,           0.035*0.1*0.07*0.95*0.05*0.6*0.15*0.35*0.01*1;
+  Eigen::MatrixXd DN_nti_marginal(3,2);
+  DN_nti_marginal <<
+  8.04375e-05, 0,
+   0.00138937, 0,
+       0.0175, 0;
+  Eigen::MatrixXd DN_germ_marginal(2,2);
+  DN_germ_marginal <<
+  // Format is gene_prob * emission * transition * ... * emission * landing_out
+  0.035*0.05*0.6*0.15*0.65, 0.035*0.05*0.6*0.15*0.35*0.01*1,
+           0.035*0.15*0.65,          0.035*0.15*0.35*0.01*1;
+  Eigen::MatrixXd JX_marginal(2,1);
+  JX_marginal <<
+  // Format is gene_prob * landing_in * emission * transition * ... * emission * npadding_prob
+                             0,
+  0.015*0.25*0.03*1*0.7*1*0.06;
+  Eigen::MatrixXd JN_nti_marginal(2,2);
+  JN_nti_marginal <<
+  0.003762, 0,
+    0.0495, 0;
+  Eigen::MatrixXd JN_germ_marginal(2,1);
+  JN_germ_marginal <<
+  // Format is gene_prob * emission * transition * ... * emission * npadding_prob
+  0.015*0.7*1*0.06,
+        0.015*0.06;
+
+  REQUIRE(simple_data_ptrs[0]->vdj_pile()[0]->marginal().isApprox(V_marginal * DX_marginal * JX_marginal, 1e-5));
+  REQUIRE(simple_data_ptrs[0]->vdj_pile()[1]->marginal().isApprox(V_marginal * DX_marginal * JN_nti_marginal * JN_germ_marginal, 1e-5));
+  REQUIRE(simple_data_ptrs[0]->vdj_pile()[2]->marginal().isApprox(V_marginal * DN_nti_marginal * DN_germ_marginal * JX_marginal, 1e-5));
+  REQUIRE(simple_data_ptrs[0]->vdj_pile()[3]->marginal().isApprox(V_marginal * DN_nti_marginal * DN_germ_marginal * JN_nti_marginal * JN_germ_marginal, 1e-5));
 }
 
 
 /*
-
-// Partis CSV parsing.
-
-TEST_CASE("CSV", "[io]") {
-  std::vector<Query> queries = ReadQueries("data/hmm_input_real.csv");
-  std::string correct_seq = "CAGGTGCAGCTGGTGCAGTCTGGGGCTGAGGTGAAGAAGCCTGGGGCCTCAGTGAAGGTCTCCTGCAAGGCTTCTGGATACACCTTCACCGGCTACTATATGCACTGGGTGCGACAGGCCCCTGGACAAGGGCTTGAGTGGATGGGATGGATCAACCCTAACAGTGGTGGCACAAACTATGCACAGAAGTTTCAGGGCTGGGTCACCATGACCAGGGACACGTCCATCAGCACAGCCTACATGGAGCTGAGCAGGCTGAGATCTGACGACACGGCCGTGTATTACTGTGCGAGAGATTTTTTATATTGTAGTGGTGGTAGCTGCTACTCCGGGGGGACTACTACTACTACGGTATGGACGTCTGGGGGCAAGGGACCACGGTCACCGTCTCCTCA";
-  std::vector<std::pair<int, int>> n_read_counts = {{0,0}, {2,3}};
-
-  REQUIRE(queries[0].n_read_counts() == n_read_counts[0]);
-  REQUIRE(queries[0].relpos().at("IGHJ6*02") == 333);
-  REQUIRE(queries[0].relpos().at("IGHD2-15*01") == 299);
-  REQUIRE(queries[1].seq() == correct_seq);
-  REQUIRE(queries[1].n_read_counts() == n_read_counts[1]);
-  REQUIRE(queries[1].flexbounds().at("v_l").second == 2);
-  REQUIRE(queries[1].flexbounds().at("d_r").first == 328);
-}
-
 
 // BCRHam comparison tests
 
