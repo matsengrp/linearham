@@ -659,4 +659,72 @@ TEST_CASE("SimpleData", "[simpledata]") {
   //   REQUIRE(std::fabs(bcrham_simple_data_ptrs[i]->vdj_pile()[0]->FinalViterbiLogProb() - viterbi_logprobs[i]) <= 1e-3);
   // }
 }
+
+
+// PhyloData tests
+
+TEST_CASE("PhyloData", "[phylodata]") {
+  Eigen::MatrixXi VDJ_msa(3,13);
+  VDJ_msa << 0, 1, 0, 2, 3, 0, 1, 1, 1, 3, 2, 3, 3,
+             1, 2, 1, 2, 0, 3, 2, 0, 1, 0, 2, 3, 3,
+             1, 2, 1, 2, 3, 3, 0, 0, 1, 2, 0, 2, 3;
+
+  // Test the PhyloData class using the example HMM files.
+  PhyloDataPtr phylo_data_ptr =
+      ReadCSVData(VDJ_msa, "data/hmm_input_ex.csv", "data/hmm_params_ex");
+
+  REQUIRE(phylo_data_ptr->msa() == VDJ_msa);
+  REQUIRE(phylo_data_ptr->length() == VDJ_msa.cols());
+
+  Eigen::MatrixXi VDJ_xmsa(4,33);
+  VDJ_xmsa <<
+  2, 2, 3, 0, 1, 0, 3, 2, 0, 3, 2, 0, 1, 1, 2, 3, 0, 3, 0, 1, 3, 0, 1, 2, 0, 2, 3, 1, 2, 3, 0, 1, 2,
+  0, 1, 1, 1, 3, 2, 3, 3, 1, 0, 2, 3, 0, 3, 3, 3, 0, 0, 1, 1, 1, 1, 1, 1, 3, 3, 3, 2, 2, 2, 3, 3, 3,
+  3, 2, 0, 1, 0, 2, 3, 3, 2, 1, 2, 0, 3, 0, 0, 0, 3, 3, 2, 2, 2, 0, 0, 0, 0, 0, 0, 2, 2, 2, 3, 3, 3,
+  3, 0, 0, 1, 2, 0, 2, 3, 2, 1, 2, 3, 3, 3, 3, 3, 3, 3, 0, 0, 0, 0, 0, 0, 2, 2, 2, 0, 0, 0, 2, 2, 2;
+  Eigen::VectorXd VDJ_xmsa_rates(33);
+  VDJ_xmsa_rates << 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1;
+  std::map<std::array<std::string, 2>, Eigen::VectorXi> VDJ_germ_xmsa_indices;
+  Eigen::VectorXi xmsa_indices(5);
+  xmsa_indices << 8, 9, 10, 11, 12;
+  VDJ_germ_xmsa_indices.emplace(
+      std::array<std::string, 2>({"IGHV_ex*01", "v_l"}), xmsa_indices);
+  xmsa_indices.resize(5);
+  xmsa_indices << 0, 1, 2, 3, 4;
+  VDJ_germ_xmsa_indices.emplace(
+      std::array<std::string, 2>({"IGHD_ex*01", "v_r"}), xmsa_indices);
+  xmsa_indices.resize(3);
+  xmsa_indices << 2, 3, 4;
+  VDJ_germ_xmsa_indices.emplace(
+      std::array<std::string, 2>({"IGHD_ex*01", "d_l"}), xmsa_indices);
+  xmsa_indices.resize(3);
+  xmsa_indices << 5, 6, 7;
+  VDJ_germ_xmsa_indices.emplace(
+      std::array<std::string, 2>({"IGHJ_ex*01", "d_r"}), xmsa_indices);
+  xmsa_indices.resize(2);
+  xmsa_indices << 6, 7;
+  VDJ_germ_xmsa_indices.emplace(
+      std::array<std::string, 2>({"IGHJ_ex*01", "j_l"}), xmsa_indices);
+  std::map<int, Eigen::VectorXi> VDJ_nti_xmsa_indices;
+  xmsa_indices.resize(4);
+  xmsa_indices << 11, 13, 14, 15;
+  VDJ_nti_xmsa_indices.emplace(4, xmsa_indices);
+  xmsa_indices << 16, 12, 0, 17;
+  VDJ_nti_xmsa_indices.emplace(5, xmsa_indices);
+  xmsa_indices << 18, 19, 1, 20;
+  VDJ_nti_xmsa_indices.emplace(6, xmsa_indices);
+  xmsa_indices << 21, 22, 23, 2;
+  VDJ_nti_xmsa_indices.emplace(7, xmsa_indices);
+  xmsa_indices << 24, 4, 25, 26;
+  VDJ_nti_xmsa_indices.emplace(9, xmsa_indices);
+  xmsa_indices << 5, 27, 28, 29;
+  VDJ_nti_xmsa_indices.emplace(10, xmsa_indices);
+  xmsa_indices << 30, 31, 32, 6;
+  VDJ_nti_xmsa_indices.emplace(11, xmsa_indices);
+
+  REQUIRE(phylo_data_ptr->xmsa() == VDJ_xmsa);
+  REQUIRE(phylo_data_ptr->xmsa_rates() == VDJ_xmsa_rates);
+  REQUIRE(phylo_data_ptr->germ_xmsa_indices() == VDJ_germ_xmsa_indices);
+  REQUIRE(phylo_data_ptr->nti_xmsa_indices() == VDJ_nti_xmsa_indices);
+}
 }

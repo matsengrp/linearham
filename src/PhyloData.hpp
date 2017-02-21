@@ -52,6 +52,9 @@ class PhyloData : public Data {
 
  public:
   PhyloData(){};
+  PhyloData(const Eigen::Ref<const Eigen::MatrixXi>& msa,
+            const std::string& flexbounds_str, const std::string& relpos_str,
+            const std::unordered_map<std::string, GermlineGene>& ggenes);
 
   const Eigen::MatrixXi& msa() const { return msa_; };
   const Eigen::MatrixXi& xmsa() const { return xmsa_; };
@@ -82,6 +85,12 @@ void StoreXmsaIndex(std::tuple<int, double, int> id, int pos,
                     Eigen::Ref<Eigen::VectorXi> xmsa_indices);
 
 std::vector<SmooshishPtr> FindDirtySmooshables(SmooshishPtr sp);
+
+
+// PhyloDataPtr Function
+
+PhyloDataPtr ReadCSVData(const Eigen::Ref<const Eigen::MatrixXi>& msa,
+                         std::string csv_path, std::string dir_path);
 }
 
 #endif  // LINEARHAM_PHYLODATA_

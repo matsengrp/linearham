@@ -6,6 +6,38 @@
 namespace linearham {
 
 
+/// @brief Constructor for PhyloData.
+/// @param[in] msa
+/// The multiple sequence alignment.
+/// @param[in] flexbounds_str
+/// The JSON string with the flexbounds map.
+/// @param[in] relpos_str
+/// The JSON string with the relpos map.
+/// @param[in] ggenes
+/// A map holding (germline name, GermlineGene) pairs.
+PhyloData::PhyloData(
+    const Eigen::Ref<const Eigen::MatrixXi>& msa,
+    const std::string& flexbounds_str, const std::string& relpos_str,
+    const std::unordered_map<std::string, GermlineGene>& ggenes)
+    : Data(flexbounds_str, relpos_str) {
+  // Initialize `msa_`.
+  msa_ = msa;
+
+  // Initialize `match_indices_`.
+  InitializeMatchIndices(ggenes);
+
+  // Initialize `xmsa_`, `xmsa_rates_`, `germ_xmsa_indices_`, and
+  // `nti_xmsa_indices_`.
+  InitializeXmsaStructs(ggenes);
+
+  // Initialize `xmsa_emission_`.
+  xmsa_emission_.setConstant(xmsa_.cols(), 0.5);
+
+  // Initialize `vdj_pile_`.
+  InitializePile(ggenes);
+};
+
+
 /// @brief Creates a vector with per-site germline emission probabilities for a
 /// trimmed MSA.
 /// @param[in] germ_ptr
@@ -343,5 +375,40 @@ std::vector<SmooshishPtr> FindDirtySmooshables(SmooshishPtr sp) {
   sp->AuxFindDirtySmooshables(dirty_smooshables);
 
   return dirty_smooshables;
+};
+
+
+// PhyloDataPtr Function
+
+
+/// @brief Builds a PhyloData pointer (from the single-row partis CSV file).
+/// @param[in] msa
+/// The multiple sequence alignment.
+/// @param[in] csv_path
+/// Path to a partis "CSV" file, which is actually space-delimited.
+/// @param[in] dir_path
+/// Path to a directory of germline gene HMM YAML files.
+/// @return
+/// A PhyloData pointer.
+PhyloDataPtr ReadCSVData(const Eigen::Ref<const Eigen::MatrixXi>& msa,
+                         std::string csv_path, std::string dir_path) {
+  // Create the GermlineGene map needed for the PhyloData constructor.
+  std::unordered_map<std::string, GermlineGene> ggenes =
+      CreateGermlineGeneMap(dir_path);
+
+  // Initialize CSV parser and associated variables.
+  assert(csv_path.substr(csv_path.length() - 3, 3) == "csv");
+  io::CSVReader<2, io::trim_chars<>, io::double_quote_escape<' ', '\"'>> in(
+      csv_path);
+  in.read_header(io::ignore_extra_column, "flexbounds", "relpos");
+
+  std::string flexbounds_str, relpos_str;
+
+  in.read_row(flexbounds_str, relpos_str);
+  PhyloDataPtr phylo_data_ptr =
+      std::make_shared<PhyloData>(msa, flexbounds_str, relpos_str, ggenes);
+  assert(!in.read_row(flexbounds_str, relpos_str));
+
+  return phylo_data_ptr;
 };
 }

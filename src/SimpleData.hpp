@@ -37,6 +37,8 @@ class SimpleData : public Data {
 typedef std::shared_ptr<SimpleData> SimpleDataPtr;
 
 
+// SimpleDataPtr Function
+
 std::vector<SimpleDataPtr> ReadCSVData(std::string csv_path,
                                        std::string dir_path);
 }

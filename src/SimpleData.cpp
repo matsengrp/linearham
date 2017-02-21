@@ -100,6 +100,9 @@ Eigen::RowVectorXd SimpleData::NTIEmissionVector(NTInsertionPtr nti_ptr,
 };
 
 
+// SimpleDataPtr Function
+
+
 /// @brief Builds a vector of SimpleData pointers (each entry corresponding to a
 /// row in the partis CSV file).
 /// @param[in] csv_path
