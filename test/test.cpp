@@ -574,7 +574,8 @@ TEST_CASE("SmooshableChainPile", "[smooshablechainpile]") {
 // SimpleData tests
 
 TEST_CASE("SimpleData", "[simpledata]") {
-  std::vector<SimpleDataPtr> simple_data_ptrs =
+  // Test the SimpleData class using the example HMM files.
+  std::vector<SimpleDataPtr> ex_simple_data_ptrs =
       ReadCSVData("data/hmm_input_ex.csv", "data/hmm_params_ex");
 
   /// @todo MAKE PICTURE FOR THIS SCENARIO!!!!!
@@ -594,12 +595,12 @@ TEST_CASE("SimpleData", "[simpledata]") {
   VDJ_seq << 0, 1, 0, 2, 3, 0, 1, 1, 1, 3, 2, 3, 3;
   std::pair<int, int> VDJ_n_read_counts = {3,2};
 
-  REQUIRE(simple_data_ptrs[0]->flexbounds() == VDJ_flexbounds);
-  REQUIRE(simple_data_ptrs[0]->relpos() == VDJ_relpos);
-  REQUIRE(simple_data_ptrs[0]->match_indices() == VDJ_match_indices);
-  REQUIRE(simple_data_ptrs[0]->seq() == VDJ_seq);
-  REQUIRE(simple_data_ptrs[0]->n_read_counts() == VDJ_n_read_counts);
-  REQUIRE(simple_data_ptrs[0]->length() == VDJ_seq.size());
+  REQUIRE(ex_simple_data_ptrs[0]->flexbounds() == VDJ_flexbounds);
+  REQUIRE(ex_simple_data_ptrs[0]->relpos() == VDJ_relpos);
+  REQUIRE(ex_simple_data_ptrs[0]->match_indices() == VDJ_match_indices);
+  REQUIRE(ex_simple_data_ptrs[0]->seq() == VDJ_seq);
+  REQUIRE(ex_simple_data_ptrs[0]->n_read_counts() == VDJ_n_read_counts);
+  REQUIRE(ex_simple_data_ptrs[0]->length() == VDJ_seq.size());
 
   Eigen::MatrixXd V_marginal(1,3);
   V_marginal <<
@@ -636,33 +637,31 @@ TEST_CASE("SimpleData", "[simpledata]") {
   0.015*0.7*1*0.06,
         0.015*0.06;
 
-  REQUIRE(simple_data_ptrs[0]->vdj_pile()[0]->marginal().isApprox(V_marginal * DX_marginal * JX_marginal, 1e-5));
-  REQUIRE(simple_data_ptrs[0]->vdj_pile()[1]->marginal().isApprox(V_marginal * DX_marginal * JN_nti_marginal * JN_germ_marginal, 1e-5));
-  REQUIRE(simple_data_ptrs[0]->vdj_pile()[2]->marginal().isApprox(V_marginal * DN_nti_marginal * DN_germ_marginal * JX_marginal, 1e-5));
-  REQUIRE(simple_data_ptrs[0]->vdj_pile()[3]->marginal().isApprox(V_marginal * DN_nti_marginal * DN_germ_marginal * JN_nti_marginal * JN_germ_marginal, 1e-5));
+  REQUIRE(ex_simple_data_ptrs[0]->vdj_pile()[0]->marginal().isApprox(V_marginal * DX_marginal * JX_marginal, 1e-5));
+  REQUIRE(ex_simple_data_ptrs[0]->vdj_pile()[1]->marginal().isApprox(V_marginal * DX_marginal * JN_nti_marginal * JN_germ_marginal, 1e-5));
+  REQUIRE(ex_simple_data_ptrs[0]->vdj_pile()[2]->marginal().isApprox(V_marginal * DN_nti_marginal * DN_germ_marginal * JX_marginal, 1e-5));
+  REQUIRE(ex_simple_data_ptrs[0]->vdj_pile()[3]->marginal().isApprox(V_marginal * DN_nti_marginal * DN_germ_marginal * JN_nti_marginal * JN_germ_marginal, 1e-5));
+
+  // Test the SimpleData class using the BCRHam HMM files.
+  // io::CSVReader<1, io::trim_chars<>, io::double_quote_escape<',', '\"'>> in(
+  //     "data/bcrham_compare/hmm_output.csv");
+  // in.read_header(io::ignore_extra_column, "logprob");
+  // double logprob;
+  // std::vector<double> viterbi_logprobs;
+  // while (in.read_row(logprob)) {
+  //   viterbi_logprobs.push_back(logprob);
+  // }
+  //
+  // std::vector<SimpleDataPtr> bcrham_simple_data_ptrs =
+  //     ReadCSVData("data/bcrham_compare/hmm_input.csv", "data/hmm_params_bcrham");
+  //
+  // for (int i = 0; i < viterbi_logprobs.size(); i++) {
+  //   REQUIRE(std::fabs(bcrham_simple_data_ptrs[i]->vdj_pile()[0]->FinalViterbiLogProb() - viterbi_logprobs[i]) <= 1e-3);
+  // }
 }
 
 
-/*
 
-// BCRHam comparison tests
-
-TEST_CASE("BCRHam Comparison 1", "[bcrham]") {
-  io::CSVReader<1, io::trim_chars<>, io::double_quote_escape<',','\"'>> in(
-      "data/bcrham_compare/hmm_output.csv");
-  in.read_header(io::ignore_extra_column, "logprob");
-  double logprob;
-  std::vector<double> viterbi_logprobs;
-  while (in.read_row(logprob)) {
-    viterbi_logprobs.push_back(logprob);
-  }
-
-  std::vector<Pile> expected_piles = CreateVDJPiles("data/bcrham_compare/hmm_input.csv", "data/hmm_params_bcrham");
-
-  for (int i = 0; i < viterbi_logprobs.size(); i++) {
-    REQUIRE(std::fabs(viterbi_logprobs[i] - log(expected_piles[i][0]->viterbi()(0,0))) <= 1e-3);
-  }
-}*/
 
 /* STUFF TO REINSTATE LATER
 
