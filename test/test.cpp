@@ -4,7 +4,8 @@
 #include "catch.hpp"
 #include "SimpleData.hpp"
 #include "PhyloData.hpp"
-
+ #include <pll-utils.hpp>
+ #include <pll_partition.hpp>
 
 namespace test {
 
@@ -726,5 +727,32 @@ TEST_CASE("PhyloData", "[phylodata]") {
   REQUIRE(phylo_data_ptr->xmsa_rates() == VDJ_xmsa_rates);
   REQUIRE(phylo_data_ptr->germ_xmsa_indices() == VDJ_germ_xmsa_indices);
   REQUIRE(phylo_data_ptr->nti_xmsa_indices() == VDJ_nti_xmsa_indices);
+}
+
+
+
+
+
+
+
+
+
+
+TEST_CASE("test","[test]") {
+  std::string newick_path("lib/pt/test/test-data/tiny/newton.tre");
+  std::string fasta_path("lib/pt/test/test-data/tiny/newton.fasta");
+  std::string raxml_path("lib/pt/test/test-data/tiny/RAxML_info.newton");
+
+  unsigned int tip_node_count;
+  pll_utree_t* tree = pll_utree_parse_newick(newick_path.c_str(),
+                                             &tip_node_count);
+
+  std::vector<std::string> labels;
+  std::vector<std::string> sequences;
+  pt::ParseFasta(fasta_path, tip_node_count, labels, sequences);
+
+  pt::pll::ModelParameters parameters = pt::pll::ParseRaxmlInfo(raxml_path);
+
+  pt::pll::Partition partition(tree, tip_node_count, parameters, labels, sequences);
 }
 }
