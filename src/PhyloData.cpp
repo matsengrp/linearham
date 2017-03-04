@@ -323,9 +323,7 @@ void PhyloData::BuildXmsa(
     int msa_index = std::get<kMsaIndex>(id);
     int xmsa_index = it->second;
 
-    xmsa_.col(xmsa_index) << msa_.col(msa_index).segment(0, root_index),
-        germ_base,
-        msa_.col(msa_index).segment(root_index, msa_.rows() - root_index);
+    xmsa_.col(xmsa_index) << germ_base, msa_.col(msa_index);
     xmsa_rates_[xmsa_index] = germ_rate;
   }
 };
