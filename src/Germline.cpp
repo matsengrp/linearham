@@ -96,15 +96,16 @@ Germline::Germline(const YAML::Node& root) {
     // Parse germline emission data.
     std::tie(state_names, probs) =
         ParseStringProbMap(gstate["emissions"]["probs"]);
-    assert(IsEqualStringVecs(state_names, alphabet_));
+    assert(IsEqualStrings(
+        std::accumulate(state_names.begin(), state_names.end(), std::string()),
+        alphabet_));
 
     for (unsigned int j = 0; j < state_names.size(); j++) {
-      emission_matrix_(alphabet_map_[state_names[j]], gindex) = probs[j];
+      emission_matrix_(alphabet_map_[state_names[j][0]], gindex) = probs[j];
     }
 
     // Parse germline bases and rates.
-    bases_[gindex] =
-        alphabet_map_[gstate["extras"]["germline"].as<std::string>()];
+    bases_[gindex] = alphabet_map_[gstate["extras"]["germline"].as<char>()];
     // `rates_` should be a vector of 1's because we utilize a 4-rate discrete
     // gamma model through libpll.
     rates_[gindex] = 1;

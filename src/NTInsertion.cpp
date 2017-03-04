@@ -12,8 +12,8 @@ namespace linearham {
 NTInsertion::NTInsertion(const YAML::Node& root) {
   // Store alphabet-map and germline name.
   // For the rest of this function, g[something] means germline_[something].
-  std::vector<std::string> alphabet;
-  std::unordered_map<std::string, int> alphabet_map;
+  std::string alphabet;
+  std::unordered_map<char, int> alphabet_map;
   std::tie(alphabet, alphabet_map) = GetAlphabet(root);
   std::string gname = root["name"].as<std::string>();
 
@@ -53,7 +53,7 @@ NTInsertion::NTInsertion(const YAML::Node& root) {
   // The init state has landing-in probabilities in each of the NTI states.
   for (unsigned int i = 0; i < state_names.size(); i++) {
     if (std::regex_match(state_names[i], match, nrgx)) {
-      n_landing_in_[alphabet_map[match[1]]] = probs[i];
+      n_landing_in_[alphabet_map[match.str(1)[0]]] = probs[i];
     } else {
       // If the init state does not land in a NTI state, it must land in the
       // germline gene.
@@ -62,11 +62,11 @@ NTInsertion::NTInsertion(const YAML::Node& root) {
   }
 
   // Parse insert_left_[base] states.
-  for (unsigned int i = 1; i < (alphabet.size() + 1); i++) {
+  for (unsigned int i = 1; i < alphabet.size() + 1; i++) {
     YAML::Node nstate = root["states"][i];
     std::string nname = nstate["name"].as<std::string>();
     assert(std::regex_match(nname, match, nrgx));
-    int alphabet_ind = alphabet_map[match[1]];
+    int alphabet_ind = alphabet_map[match.str(1)[0]];
 
     std::tie(state_names, probs) = ParseStringProbMap(nstate["transitions"]);
 
@@ -77,16 +77,19 @@ NTInsertion::NTInsertion(const YAML::Node& root) {
       } else {
         // Get probabilities of going between NTI states.
         assert(std::regex_match(state_names[j], match, nrgx));
-        n_transition_(alphabet_ind, alphabet_map[match[1]]) = probs[j];
+        n_transition_(alphabet_ind, alphabet_map[match.str(1)[0]]) = probs[j];
       }
     }
 
     std::tie(state_names, probs) =
         ParseStringProbMap(nstate["emissions"]["probs"]);
-    assert(IsEqualStringVecs(state_names, alphabet));
+    assert(IsEqualStrings(
+        std::accumulate(state_names.begin(), state_names.end(), std::string()),
+        alphabet));
 
     for (unsigned int j = 0; j < state_names.size(); j++) {
-      n_emission_matrix_(alphabet_map[state_names[j]], alphabet_ind) = probs[j];
+      n_emission_matrix_(alphabet_map[state_names[j][0]], alphabet_ind) =
+          probs[j];
     }
   }
 };

@@ -4,8 +4,7 @@
 #include "catch.hpp"
 #include "SimpleData.hpp"
 #include "PhyloData.hpp"
- #include <pll-utils.hpp>
- #include <pll_partition.hpp>
+
 
 namespace test {
 
@@ -153,8 +152,8 @@ TEST_CASE("Germline", "[germline]") {
   0, 0,   0,       1,         0.5,
   0, 0,   0,       0,           1;
   double V_gene_prob = 0.07;
-  std::vector<std::string> V_alphabet = {"A", "C", "G", "T"};
-  std::unordered_map<std::string, int> V_alphabet_map = {{"A",0}, {"C",1}, {"G",2}, {"T",3}};
+  std::string V_alphabet = "ACGT";
+  std::unordered_map<char, int> V_alphabet_map = {{'A',0}, {'C',1}, {'G',2}, {'T',3}};
   std::string V_name = "IGHV_ex*01";
   Eigen::MatrixXd V_emission_matrix(4,5);
   V_emission_matrix <<
@@ -195,8 +194,8 @@ TEST_CASE("Germline", "[germline]") {
   0,    0,         0,             1,               0.35,
   0,    0,         0,             0,                  1;
   double D_gene_prob = 0.035;
-  std::vector<std::string> D_alphabet = {"A", "C", "G", "T"};
-  std::unordered_map<std::string, int> D_alphabet_map = {{"A",0}, {"C",1}, {"G",2}, {"T",3}};
+  std::string D_alphabet = "ACGT";
+  std::unordered_map<char, int> D_alphabet_map = {{'A',0}, {'C',1}, {'G',2}, {'T',3}};
   std::string D_name = "IGHD_ex*01";
   Eigen::MatrixXd D_emission_matrix(4,5);
   D_emission_matrix <<
@@ -237,8 +236,8 @@ TEST_CASE("Germline", "[germline]") {
   0, 0,   0,     1,       1,
   0, 0,   0,     0,       1;
   double J_gene_prob = 0.015;
-  std::vector<std::string> J_alphabet = {"A", "C", "G", "T"};
-  std::unordered_map<std::string, int> J_alphabet_map = {{"A",0}, {"C",1}, {"G",2}, {"T",3}};
+  std::string J_alphabet = "ACGT";
+  std::unordered_map<char, int> J_alphabet_map = {{'A',0}, {'C',1}, {'G',2}, {'T',3}};
   std::string J_name = "IGHJ_ex*01";
   Eigen::MatrixXd J_emission_matrix(4,5);
   J_emission_matrix <<
@@ -577,7 +576,7 @@ TEST_CASE("SmooshableChainPile", "[smooshablechainpile]") {
 TEST_CASE("SimpleData", "[simpledata]") {
   // Test the SimpleData class using the example HMM files.
   std::vector<SimpleDataPtr> ex_simple_data_ptrs =
-      ReadCSVData("data/hmm_input_ex.csv", "data/hmm_params_ex");
+      ReadSimpleData("data/hmm_input_ex.csv", "data/hmm_params_ex");
 
   /// @todo MAKE PICTURE FOR THIS SCENARIO!!!!!
 

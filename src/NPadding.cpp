@@ -12,8 +12,8 @@ namespace linearham {
 NPadding::NPadding(const YAML::Node& root) {
   // Store alphabet-map and germline name.
   // For the rest of this function, g[something] means germline_[something].
-  std::vector<std::string> alphabet;
-  std::unordered_map<std::string, int> alphabet_map;
+  std::string alphabet;
+  std::unordered_map<char, int> alphabet_map;
   std::tie(alphabet, alphabet_map) = GetAlphabet(root);
   std::string gname = root["name"].as<std::string>();
 
@@ -81,17 +81,21 @@ NPadding::NPadding(const YAML::Node& root) {
 
   std::tie(state_names, probs) =
       ParseStringProbMap(nstate["emissions"]["probs"]);
-  assert(IsEqualStringVecs(state_names, alphabet));
+  assert(IsEqualStrings(
+      std::accumulate(state_names.begin(), state_names.end(), std::string()),
+      alphabet));
 
   for (unsigned int j = 0; j < state_names.size(); j++) {
     assert(probs[j] == 0.25);
-    n_emission_vector_[alphabet_map[state_names[j]]] = probs[j];
+    n_emission_vector_[alphabet_map[state_names[j][0]]] = probs[j];
   }
 
-  // Store the ambiguous emission probability for the "insert_[left|right]_N" state.
-  assert(nstate["extras"]["germline"].as<std::string>() == "N");
+  // Store the ambiguous emission probability for the "insert_[left|right]_N"
+  // state.
+  assert(nstate["extras"]["germline"].as<char>() == 'N');
   assert(nstate["extras"]["ambiguous_emission_prob"].as<double>() == 0.25);
-  ambig_emission_prob_ = nstate["extras"]["ambiguous_emission_prob"].as<double>();
+  ambig_emission_prob_ =
+      nstate["extras"]["ambiguous_emission_prob"].as<double>();
 };
 
 

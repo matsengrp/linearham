@@ -74,7 +74,7 @@ std::unordered_map<std::string, GermlineGene> CreateGermlineGeneMap(
     ggenes.emplace(gname, ggene);
   }
 
-  // All Germline alphabet maps (and hence alphabets) should be identical.
+  // All Germline alphabet-maps (and hence alphabets) should be identical.
   // (Note: `ggenes` only has forward iterators, so we cannot end at
   // `std::prev(ggenes.end())`.)
   for (auto it = ggenes.begin(),

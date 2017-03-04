@@ -97,6 +97,15 @@ enum MatchIndices {
   kRowStart,
   kColStart
 };
+
+
+// Auxiliary Functions
+
+Eigen::VectorXi ConvertSeqToInts(
+    const std::string& seq, const std::unordered_map<char, int>& alphabet_map);
+
+std::string ConvertIntsToSeq(const Eigen::Ref<const Eigen::VectorXi>& seq_ints,
+                             const std::string& alphabet);
 }
 
 #endif  // LINEARHAM_DATA_

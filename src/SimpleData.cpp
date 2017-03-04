@@ -23,12 +23,9 @@ SimpleData::SimpleData(
     const std::unordered_map<std::string, GermlineGene>& ggenes)
     : Data(flexbounds_str, relpos_str) {
   // Convert the read sequence string to a vector of integers (according to the
-  // alphabet map).
-  seq_.resize(seq_str.size());
-  for (std::size_t i = 0; i < seq_str.size(); i++) {
-    seq_[i] = ggenes.begin()->second.germ_ptr->alphabet_map().at(
-        std::string{seq_str[i]});
-  }
+  // alphabet-map).
+  seq_ = ConvertSeqToInts(seq_str,
+                          ggenes.begin()->second.germ_ptr->alphabet_map());
 
   // Store `n_read_counts`.
   n_read_counts_ = n_read_counts;
@@ -111,8 +108,8 @@ Eigen::RowVectorXd SimpleData::NTIEmissionVector(NTInsertionPtr nti_ptr,
 /// Path to a directory of germline gene HMM YAML files.
 /// @return
 /// A vector of SimpleData pointers.
-std::vector<SimpleDataPtr> ReadCSVData(std::string csv_path,
-                                       std::string dir_path) {
+std::vector<SimpleDataPtr> ReadSimpleData(std::string csv_path,
+                                          std::string dir_path) {
   // Create the GermlineGene map needed for the SimpleData constructor.
   std::unordered_map<std::string, GermlineGene> ggenes =
       CreateGermlineGeneMap(dir_path);
@@ -129,12 +126,8 @@ std::vector<SimpleDataPtr> ReadCSVData(std::string csv_path,
 
   // This regex is used to count the numbers of N's on both sides of the read
   // sequences.
-  std::regex nrgx(
-      "^(N*)([" +
-      std::accumulate(ggenes.begin()->second.germ_ptr->alphabet().begin(),
-                      ggenes.begin()->second.germ_ptr->alphabet().end(),
-                      std::string()) +
-      "]+)(N*)$");
+  std::regex nrgx("^(N*)([" + ggenes.begin()->second.germ_ptr->alphabet() +
+                  "]+)(N*)$");
   std::smatch match;
 
   while (in.read_row(seq_str, flexbounds_str, relpos_str)) {

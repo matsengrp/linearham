@@ -39,8 +39,8 @@ typedef std::shared_ptr<SimpleData> SimpleDataPtr;
 
 // SimpleDataPtr Function
 
-std::vector<SimpleDataPtr> ReadCSVData(std::string csv_path,
-                                       std::string dir_path);
+std::vector<SimpleDataPtr> ReadSimpleData(std::string csv_path,
+                                          std::string dir_path);
 }
 
 #endif  // LINEARHAM_SIMPLEDATA_

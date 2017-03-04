@@ -537,4 +537,42 @@ Eigen::MatrixXd Data::EmissionMatchMatrix(
 
   return emission_match_matrix;
 };
+
+
+/// @brief Converts a string sequence to an integer sequence according to the
+/// alphabet-map.
+/// @param[in] seq
+/// The string sequence.
+/// @param[in] alphabet_map
+/// The string-integer alphabet-map.
+/// @return
+/// The integer sequence.
+Eigen::VectorXi ConvertSeqToInts(
+    const std::string& seq, const std::unordered_map<char, int>& alphabet_map) {
+  Eigen::VectorXi seq_ints(seq.size());
+  for (std::size_t i = 0; i < seq.size(); i++) {
+    seq_ints[i] = alphabet_map.at(seq[i]);
+  }
+
+  return seq_ints;
+};
+
+
+/// @brief Converts an integer sequence to a string sequence according to the
+/// alphabet.
+/// @param[in] seq_ints
+/// The integer sequence.
+/// @param[in] alphabet
+/// The nucleotide alphabet.
+/// @return
+/// The string sequence.
+std::string ConvertIntsToSeq(const Eigen::Ref<const Eigen::VectorXi>& seq_ints,
+                             const std::string& alphabet) {
+  std::string seq(seq_ints.size(), ' ');
+  for (std::size_t i = 0; i < seq_ints.size(); i++) {
+    seq[i] = alphabet.at(seq_ints[i]);
+  }
+
+  return seq;
+};
 }

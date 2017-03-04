@@ -259,7 +259,7 @@ void PhyloData::CacheGermlineXmsaIndices(
   for (int i = match_start; i < match_end; i++) {
     auto id = std::make_tuple(germ_ptr->bases()[i - relpos],
                               germ_ptr->rates()[i - relpos], i);
-    StoreXmsaIndex(id, i - match_start, xmsa_ids, xmsa_indices);
+    StoreXmsaIndex(id, xmsa_ids, xmsa_indices[i - match_start]);
   }
 
   // Store the xMSA index vector.
@@ -296,7 +296,7 @@ void PhyloData::CacheNTIXmsaIndices(
     // Iterate over all possible germline bases.
     for (int j = 0; j < alphabet_size; j++) {
       auto id = std::make_tuple(j, 1.0, i);
-      StoreXmsaIndex(id, j, xmsa_ids, xmsa_indices);
+      StoreXmsaIndex(id, xmsa_ids, xmsa_indices[j]);
     }
 
     // Store the xMSA index vector.
@@ -323,34 +323,34 @@ void PhyloData::BuildXmsa(
     int msa_index = std::get<kMsaIndex>(id);
     int xmsa_index = it->second;
 
-    xmsa_.col(xmsa_index) << germ_base, msa_.col(msa_index);
+    xmsa_.col(xmsa_index) << msa_.col(msa_index).segment(0, root_index),
+        germ_base,
+        msa_.col(msa_index).segment(root_index, msa_.rows() - root_index);
     xmsa_rates_[xmsa_index] = germ_rate;
   }
 };
 
 
-/// @brief Stores a xMSA site index in a xMSA index vector.
+/// @brief Stores a xMSA site index.
 /// @param[in] id
 /// A (germline base, germline rate, MSA position) tuple.
-/// @param[in] pos
-/// The position of the xMSA index vector that will hold the stored site index.
 /// @param[in,out] xmsa_ids
 /// A map identifying already cached xMSA site indices.
-/// @param[in,out] xmsa_indices
-/// The xMSA index vector.
-void StoreXmsaIndex(std::tuple<int, double, int> id, int pos,
+/// @param[out] xmsa_index
+/// Storage for the xMSA site index.
+void StoreXmsaIndex(std::tuple<int, double, int> id,
                     std::map<std::tuple<int, double, int>, int>& xmsa_ids,
-                    Eigen::Ref<Eigen::VectorXi> xmsa_indices) {
+                    int& xmsa_index) {
   // Is the current `id` already in `xmsa_ids`?
   auto id_iter = xmsa_ids.find(id);
 
   if (id_iter == xmsa_ids.end()) {
     // The current `id` is new, cache the new xMSA site index.
-    xmsa_indices[pos] = xmsa_ids.size();
+    xmsa_index = xmsa_ids.size();
     xmsa_ids.emplace(id, xmsa_ids.size());
   } else {
     // The current `id` is already in `xmsa_ids`, look up the xMSA site index.
-    xmsa_indices[pos] = id_iter->second;
+    xmsa_index = id_iter->second;
   }
 };
 

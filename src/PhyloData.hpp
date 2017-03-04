@@ -1,6 +1,8 @@
 #ifndef LINEARHAM_PHYLODATA_
 #define LINEARHAM_PHYLODATA_
 
+#include <pll-utils.hpp>
+#include <pll_partition.hpp>
 #include "Data.hpp"
 
 /// @file PhyloData.hpp
@@ -80,9 +82,9 @@ enum XmsaId { kGermBase, kGermRate, kMsaIndex };
 
 // Auxiliary Functions
 
-void StoreXmsaIndex(std::tuple<int, double, int> id, int pos,
+void StoreXmsaIndex(std::tuple<int, double, int> id,
                     std::map<std::tuple<int, double, int>, int>& xmsa_ids,
-                    Eigen::Ref<Eigen::VectorXi> xmsa_indices);
+                    int& xmsa_index);
 
 std::vector<SmooshishPtr> FindDirtySmooshables(SmooshishPtr sp);
 
