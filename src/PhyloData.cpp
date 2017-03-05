@@ -7,28 +7,43 @@ namespace linearham {
 
 
 /// @brief Constructor for PhyloData.
-/// @param[in] msa
-/// The multiple sequence alignment.
 /// @param[in] flexbounds_str
 /// The JSON string with the flexbounds map.
 /// @param[in] relpos_str
 /// The JSON string with the relpos map.
 /// @param[in] ggenes
 /// A map holding (germline name, GermlineGene) pairs.
+/// @param[in] newick_path
+/// Path to a Newick tree file.
+/// @param[in] fasta_path
+/// Path to a FASTA file with sequences.
+/// @param[in] raxml_path
+/// Path to a RAxML parameter file.
 PhyloData::PhyloData(
-    const Eigen::Ref<const Eigen::MatrixXi>& msa,
     const std::string& flexbounds_str, const std::string& relpos_str,
-    const std::unordered_map<std::string, GermlineGene>& ggenes)
+    const std::unordered_map<std::string, GermlineGene>& ggenes,
+    std::string newick_path, std::string fasta_path, std::string raxml_path)
     : Data(flexbounds_str, relpos_str) {
+  // Initialize `tree_`.
+  unsigned int tip_node_count;
+  tree_ = pll_utree_parse_newick(newick_path.c_str(), &tip_node_count);
+
+  // Initialize `xmsa_labels_`.
+  std::vector<std::string> msa_seqs;
+  unsigned int sites =
+      pt::ParseFasta(fasta_path, tip_node_count, xmsa_labels_, msa_seqs);
+
   // Initialize `msa_`.
-  msa_ = msa;
+  int root_index;
+  InitializeMsa(msa_seqs, tip_node_count, sites,
+                ggenes.begin()->second.germ_ptr->alphabet_map(), root_index);
 
   // Initialize `match_indices_`.
   InitializeMatchIndices(ggenes);
 
-  // Initialize `xmsa_`, `xmsa_rates_`, `germ_xmsa_indices_`, and
+  // Initialize `xmsa_`, `xmsa_seqs_`, `xmsa_rates_`, `germ_xmsa_indices_`, and
   // `nti_xmsa_indices_`.
-  InitializeXmsaStructs(ggenes);
+  InitializeXmsaStructs(ggenes, root_index);
 
   // Initialize `xmsa_emission_`.
   xmsa_emission_.setConstant(xmsa_.cols(), 0.5);
@@ -104,14 +119,49 @@ Eigen::RowVectorXd PhyloData::NTIEmissionVector(NTInsertionPtr nti_ptr,
 // Initialization Functions
 
 
-/// @brief Initializes the xMSA (i.e. `xmsa_`), the xMSA per-site rate vector
-/// (i.e. `xmsa_rates_`), and the maps holding xMSA index vectors for germline
-/// genes (i.e. `germ_xmsa_indices_`) and NTI regions (i.e.
-/// `nti_xmsa_indices_`).
+/// @brief Initializes the MSA (i.e. `msa_`) from the vector of MSA sequence
+/// strings.
+/// @param[in] msa_seqs
+/// The vector of MSA sequence strings.
+/// @param[in] tip_node_count
+/// The number of tip nodes (including the germline root).
+/// @param[in] sites
+/// The number of sites in the sequence strings.
+/// @param[in] alphabet_map
+/// The string-integer alphabet-map.
+/// @param[out] root_index
+/// The xMSA row index of the germline root sequence.
+void PhyloData::InitializeMsa(const std::vector<std::string>& msa_seqs,
+                              unsigned int tip_node_count, unsigned int sites,
+                              const std::unordered_map<char, int>& alphabet_map,
+                              int& root_index) {
+  assert(msa_seqs.size() == tip_node_count);
+  assert(msa_seqs[0].size() == sites);
+
+  msa_.resize(tip_node_count - 1, sites);
+  int row_index = 0;
+  for (int i = 0; i < msa_seqs.size(); i++) {
+    if (xmsa_labels_[i] != "root") {
+      msa_.row(row_index++) =
+          ConvertSeqToInts(msa_seqs[i], alphabet_map).transpose();
+    } else {
+      root_index = i;
+    }
+  }
+};
+
+
+/// @brief Initializes the xMSA (i.e. `xmsa_`), the vector of xMSA sequence
+/// strings (i.e. `xmsa_seqs_`), the xMSA per-site rate vector (i.e.
+/// `xmsa_rates_`), and the maps holding xMSA index vectors for germline genes
+/// (i.e. `germ_xmsa_indices_`) and NTI regions (i.e. `nti_xmsa_indices_`).
 /// @param[in] ggenes
 /// A map holding (germline name, GermlineGene) pairs.
+/// @param[in] root_index
+/// The xMSA row index of the germline root sequence.
 void PhyloData::InitializeXmsaStructs(
-    const std::unordered_map<std::string, GermlineGene>& ggenes) {
+    const std::unordered_map<std::string, GermlineGene>& ggenes,
+    int root_index) {
   // This map holds ({germline base, germline rate, MSA position}, xMSA
   // position) pairs.
   // We use this map to keep track of the unique xMSA site indices.
@@ -143,8 +193,9 @@ void PhyloData::InitializeXmsaStructs(
   CacheNTIXmsaIndices(ggenes.begin()->second.germ_ptr->alphabet().size(), "d_r",
                       "j_l", xmsa_ids);
 
-  // Build the xMSA and the associated per-site rate vector.
-  BuildXmsa(xmsa_ids);
+  // Build the xMSA, the associated per-site rate vector, and the vector of xMSA
+  // sequence strings.
+  BuildXmsa(xmsa_ids, ggenes.begin()->second.germ_ptr->alphabet(), root_index);
 };
 
 
@@ -305,14 +356,21 @@ void PhyloData::CacheNTIXmsaIndices(
 };
 
 
-/// @brief Builds the xMSA and the associated per-site rate vector.
+/// @brief Builds the xMSA, the associated per-site rate vector, and the vector
+/// of xMSA sequence strings.
 /// @param[in] xmsa_ids
 /// A map identifying already cached xMSA site indices.
+/// @param[in] alphabet
+/// The nucleotide alphabet.
+/// @param[in] root_index
+/// The xMSA row index of the germline root sequence.
 void PhyloData::BuildXmsa(
-    const std::map<std::tuple<int, double, int>, int>& xmsa_ids) {
-  // Initialize `xmsa_` and `xmsa_rates_`.
+    const std::map<std::tuple<int, double, int>, int>& xmsa_ids,
+    const std::string& alphabet, int root_index) {
+  // Initialize `xmsa_`, `xmsa_rates_`, and `xmsa_seqs_`.
   xmsa_.resize(msa_.rows() + 1, xmsa_ids.size());
   xmsa_rates_.resize(xmsa_ids.size());
+  xmsa_seqs_.resize(msa_.rows() + 1);
 
   // Iterate across the elements in `xmsa_ids` and incrementally build `xmsa_`
   // and `xmsa_rates_`.
@@ -323,8 +381,15 @@ void PhyloData::BuildXmsa(
     int msa_index = std::get<kMsaIndex>(id);
     int xmsa_index = it->second;
 
-    xmsa_.col(xmsa_index) << germ_base, msa_.col(msa_index);
+    xmsa_.col(xmsa_index) << msa_.col(msa_index).segment(0, root_index),
+        germ_base,
+        msa_.col(msa_index).segment(root_index, msa_.rows() - root_index);
     xmsa_rates_[xmsa_index] = germ_rate;
+  }
+
+  // Fill `xmsa_seqs_` with the xMSA sequence strings.
+  for (int i = 0; i < xmsa_.rows(); i++) {
+    xmsa_seqs_[i] = ConvertIntsToSeq(xmsa_.row(i), alphabet);
   }
 };
 
@@ -379,17 +444,23 @@ std::vector<SmooshishPtr> FindDirtySmooshables(SmooshishPtr sp) {
 // PhyloDataPtr Function
 
 
-/// @brief Builds a PhyloData pointer (from the single-row partis CSV file).
-/// @param[in] msa
-/// The multiple sequence alignment.
+/// @brief Builds a PhyloData pointer (corresponding to the single-row in the
+/// partis CSV file).
 /// @param[in] csv_path
 /// Path to a partis "CSV" file, which is actually space-delimited.
 /// @param[in] dir_path
 /// Path to a directory of germline gene HMM YAML files.
+/// @param[in] newick_path
+/// Path to a Newick tree file.
+/// @param[in] fasta_path
+/// Path to a FASTA file with sequences.
+/// @param[in] raxml_path
+/// Path to a RAxML parameter file.
 /// @return
 /// A PhyloData pointer.
-PhyloDataPtr ReadCSVData(const Eigen::Ref<const Eigen::MatrixXi>& msa,
-                         std::string csv_path, std::string dir_path) {
+PhyloDataPtr ReadPhyloData(std::string csv_path, std::string dir_path,
+                           std::string newick_path, std::string fasta_path,
+                           std::string raxml_path) {
   // Create the GermlineGene map needed for the PhyloData constructor.
   std::unordered_map<std::string, GermlineGene> ggenes =
       CreateGermlineGeneMap(dir_path);
@@ -403,8 +474,8 @@ PhyloDataPtr ReadCSVData(const Eigen::Ref<const Eigen::MatrixXi>& msa,
   std::string flexbounds_str, relpos_str;
 
   in.read_row(flexbounds_str, relpos_str);
-  PhyloDataPtr phylo_data_ptr =
-      std::make_shared<PhyloData>(msa, flexbounds_str, relpos_str, ggenes);
+  PhyloDataPtr phylo_data_ptr = std::make_shared<PhyloData>(
+      flexbounds_str, relpos_str, ggenes, newick_path, fasta_path, raxml_path);
   assert(!in.read_row(flexbounds_str, relpos_str));
 
   return phylo_data_ptr;
