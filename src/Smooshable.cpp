@@ -111,9 +111,9 @@ SmooshablePtr BuildSmooshablePtr(
     std::array<int, 4> marginal_indices,
     const Eigen::Ref<const Eigen::MatrixXd>& pre_marginal,
     const Eigen::Ref<const Eigen::MatrixXd>& marginal) {
-  return std::make_shared<Smooshable>(
-      Smooshable(germ_ptr, nti_ptr, left_flexbounds_name, right_flexbounds_name,
-                 marginal_indices, pre_marginal, marginal));
+  return std::make_shared<Smooshable>(germ_ptr, nti_ptr, left_flexbounds_name,
+                                      right_flexbounds_name, marginal_indices,
+                                      pre_marginal, marginal);
 };
 
 
