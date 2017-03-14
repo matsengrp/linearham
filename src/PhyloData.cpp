@@ -45,12 +45,24 @@ PhyloData::PhyloData(
   // `nti_xmsa_indices_`.
   InitializeXmsaStructs(ggenes, root_index);
 
+  // Initialize `partition_`.
+  pt::pll::ModelParameters parameters = pt::pll::ParseRaxmlInfo(raxml_path);
+  partition_ = pt::pll::Partition(tree_, tip_node_count, parameters,
+                                  xmsa_labels_, xmsa_seqs_);
+
   // Initialize `xmsa_emission_`.
-  xmsa_emission_.setConstant(xmsa_.cols(), 0.5);
+  xmsa_emission_.resize(xmsa_.cols());
+  partition_.TraversalUpdate(tree_, pt::pll::TraversalType::FULL);
+  partition_.LogLikelihood(tree_, xmsa_emission_.data());
+  xmsa_emission_.array() = xmsa_emission_.array().exp();
 
   // Initialize `vdj_pile_`.
   InitializePile(ggenes);
 };
+
+
+/// @brief Destructor for PhyloData.
+PhyloData::~PhyloData() { pll_utree_destroy(tree_); };
 
 
 /// @brief Creates a vector with per-site germline emission probabilities for a

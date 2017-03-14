@@ -664,26 +664,45 @@ TEST_CASE("SimpleData", "[simpledata]") {
 // PhyloData tests
 
 TEST_CASE("PhyloData", "[phylodata]") {
+  // Test the PhyloData class using the example files.
+  std::string csv_path = "data/hmm_input_ex.csv";
+  std::string dir_path = "data/hmm_params_ex";
+  std::string newick_path = "data/phylodata_ex/newton.tre";
+  std::string fasta_path = "data/phylodata_ex/newton.fasta";
+  std::string raxml_path = "data/phylodata_ex/RAxML_info.newton";
+  PhyloDataPtr ex_phylo_data_ptr =
+      ReadPhyloData(csv_path, dir_path, newick_path, fasta_path, raxml_path);
+
+  std::map<std::string, std::pair<int, int>> VDJ_flexbounds = {
+      {"v_l", {0, 2}},  {"v_r", {4, 6}},   {"d_l", {7, 8}},
+      {"d_r", {9, 10}}, {"j_l", {11, 12}}, {"j_r", {13, 13}}};
+  std::map<std::string, int> VDJ_relpos = {
+      {"IGHV_ex*01", 1}, {"IGHD_ex*01", 5}, {"IGHJ_ex*01", 10}};
+  std::map<std::array<std::string, 2>, std::array<int, 6>> VDJ_match_indices = {
+      {{"IGHV_ex*01", "v_l"}, {1, 6, 1, 2, 1, 0}},
+      {{"IGHD_ex*01", "v_r"}, {5, 10, 1, 1, 1, 0}},
+      {{"IGHD_ex*01", "d_l"}, {7, 10, 1, 1, 0, 0}},
+      {{"IGHJ_ex*01", "d_r"}, {10, 13, 0, 0, 1, 0}},
+      {{"IGHJ_ex*01", "j_l"}, {11, 13, 1, 0, 0, 0}}};
   Eigen::MatrixXi VDJ_msa(3,13);
-  VDJ_msa << 0, 1, 0, 2, 3, 0, 1, 1, 1, 3, 2, 3, 3,
-             1, 2, 1, 2, 0, 3, 2, 0, 1, 0, 2, 3, 3,
-             1, 2, 1, 2, 3, 3, 0, 0, 1, 2, 0, 2, 3;
-
-  // Test the PhyloData class using the example HMM files.
-  PhyloDataPtr phylo_data_ptr =
-      ReadCSVData(VDJ_msa, "data/hmm_input_ex.csv", "data/hmm_params_ex");
-
-  REQUIRE(phylo_data_ptr->msa() == VDJ_msa);
-  REQUIRE(phylo_data_ptr->length() == VDJ_msa.cols());
-
+  VDJ_msa <<
+  3, 0, 0, 0, 0, 2, 0, 3, 1, 0, 0, 3, 3,
+  1, 0, 1, 0, 1, 2, 3, 3, 1, 2, 0, 2, 3,
+  1, 2, 3, 0, 2, 3, 0, 2, 2, 0, 1, 3, 1;
   Eigen::MatrixXi VDJ_xmsa(4,33);
   VDJ_xmsa <<
+  2, 0, 3, 1, 0, 0, 3, 3, 0, 0, 0, 0, 2, 0, 0, 0, 2, 2, 0, 0, 0, 3, 3, 3, 0, 0, 0, 0, 0, 0, 3, 3, 3,
+  2, 3, 3, 1, 2, 0, 2, 3, 0, 1, 0, 1, 2, 1, 1, 1, 2, 2, 3, 3, 3, 3, 3, 3, 2, 2, 2, 0, 0, 0, 2, 2, 2,
   2, 2, 3, 0, 1, 0, 3, 2, 0, 3, 2, 0, 1, 1, 2, 3, 0, 3, 0, 1, 3, 0, 1, 2, 0, 2, 3, 1, 2, 3, 0, 1, 2,
-  0, 1, 1, 1, 3, 2, 3, 3, 1, 0, 2, 3, 0, 3, 3, 3, 0, 0, 1, 1, 1, 1, 1, 1, 3, 3, 3, 2, 2, 2, 3, 3, 3,
-  3, 2, 0, 1, 0, 2, 3, 3, 2, 1, 2, 0, 3, 0, 0, 0, 3, 3, 2, 2, 2, 0, 0, 0, 0, 0, 0, 2, 2, 2, 3, 3, 3,
-  3, 0, 0, 1, 2, 0, 2, 3, 2, 1, 2, 3, 3, 3, 3, 3, 3, 3, 0, 0, 0, 0, 0, 0, 2, 2, 2, 0, 0, 0, 2, 2, 2;
+  3, 0, 2, 2, 0, 1, 3, 1, 2, 3, 0, 2, 3, 2, 2, 2, 3, 3, 0, 0, 0, 2, 2, 2, 0, 0, 0, 1, 1, 1, 3, 3, 3;
+  std::vector<std::string> VDJ_xmsa_labels = {"0", "1", "root", "3"};
+  std::vector<std::string> VDJ_xmsa_seqs = {
+      "GATCAATTAAAAGAAAGGAAATTTAAAAAATTT", "GTTCGAGTACACGCCCGGTTTTTTGGGAAAGGG",
+      "GGTACATGATGACCGTATACTACGAGTCGTACG", "TAGGACTCGTAGTGGGTTAAAGGGAAACCCTTT"};
   Eigen::VectorXd VDJ_xmsa_rates(33);
   VDJ_xmsa_rates << 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1;
+  Eigen::VectorXd VDJ_xmsa_emission(33);
+  VDJ_xmsa_emission << 0.0111546, 0.000997593, 0.0156026, 0.00133163, 0.000486007, 0.00301193, 0.0125605, 0.00408875, 0.00396307, 0.00219854, 0.00269666, 0.000582657, 0.00336507, 0.000514242, 0.00109387, 0.000878756, 0.00301085, 0.015862, 0.004757, 0.000758171, 0.00167646, 0.00365835, 0.00408875, 0.0152315, 0.00304936, 0.000716547, 0.000997593, 0.00377454, 0.00128657, 0.00200704, 0.0020151, 0.00225217, 0.00336897;
   std::map<std::array<std::string, 2>, Eigen::VectorXi> VDJ_germ_xmsa_indices;
   Eigen::VectorXi xmsa_indices(5);
   xmsa_indices << 8, 9, 10, 11, 12;
@@ -722,36 +741,19 @@ TEST_CASE("PhyloData", "[phylodata]") {
   xmsa_indices << 30, 31, 32, 6;
   VDJ_nti_xmsa_indices.emplace(11, xmsa_indices);
 
-  REQUIRE(phylo_data_ptr->xmsa() == VDJ_xmsa);
-  REQUIRE(phylo_data_ptr->xmsa_rates() == VDJ_xmsa_rates);
-  REQUIRE(phylo_data_ptr->germ_xmsa_indices() == VDJ_germ_xmsa_indices);
-  REQUIRE(phylo_data_ptr->nti_xmsa_indices() == VDJ_nti_xmsa_indices);
-}
+  REQUIRE(ex_phylo_data_ptr->flexbounds() == VDJ_flexbounds);
+  REQUIRE(ex_phylo_data_ptr->relpos() == VDJ_relpos);
+  REQUIRE(ex_phylo_data_ptr->match_indices() == VDJ_match_indices);
+  REQUIRE(ex_phylo_data_ptr->msa() == VDJ_msa);
+  REQUIRE(ex_phylo_data_ptr->xmsa() == VDJ_xmsa);
+  REQUIRE(ex_phylo_data_ptr->xmsa_labels() == VDJ_xmsa_labels);
+  REQUIRE(ex_phylo_data_ptr->xmsa_seqs() == VDJ_xmsa_seqs);
+  REQUIRE(ex_phylo_data_ptr->xmsa_rates() == VDJ_xmsa_rates);
+  REQUIRE(ex_phylo_data_ptr->xmsa_emission().isApprox(VDJ_xmsa_emission, 1e-5));
+  REQUIRE(ex_phylo_data_ptr->germ_xmsa_indices() == VDJ_germ_xmsa_indices);
+  REQUIRE(ex_phylo_data_ptr->nti_xmsa_indices() == VDJ_nti_xmsa_indices);
+  REQUIRE(ex_phylo_data_ptr->length() == VDJ_msa.cols());
 
-
-
-
-
-
-
-
-
-
-TEST_CASE("test","[test]") {
-  std::string newick_path("lib/pt/test/test-data/tiny/newton.tre");
-  std::string fasta_path("lib/pt/test/test-data/tiny/newton.fasta");
-  std::string raxml_path("lib/pt/test/test-data/tiny/RAxML_info.newton");
-
-  unsigned int tip_node_count;
-  pll_utree_t* tree = pll_utree_parse_newick(newick_path.c_str(),
-                                             &tip_node_count);
-
-  std::vector<std::string> labels;
-  std::vector<std::string> sequences;
-  pt::ParseFasta(fasta_path, tip_node_count, labels, sequences);
-
-  pt::pll::ModelParameters parameters = pt::pll::ParseRaxmlInfo(raxml_path);
- 
-  pt::pll::Partition partition(tree, tip_node_count, parameters, labels, sequences);
+  // DO PILE TESTS!!!!!!
 }
 }

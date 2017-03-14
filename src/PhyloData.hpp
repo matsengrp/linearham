@@ -24,6 +24,7 @@ class PhyloData : public Data {
   std::map<std::array<std::string, 2>, Eigen::VectorXi> germ_xmsa_indices_;
   std::map<int, Eigen::VectorXi> nti_xmsa_indices_;
   pll_utree_t* tree_;
+  pt::pll::Partition partition_;
 
   Eigen::VectorXd GermlineEmissionVector(
       GermlinePtr germ_ptr, std::string left_flexbounds_name) const override;
@@ -68,6 +69,7 @@ class PhyloData : public Data {
             const std::unordered_map<std::string, GermlineGene>& ggenes,
             std::string newick_path, std::string fasta_path,
             std::string raxml_path);
+  ~PhyloData();
 
   const Eigen::MatrixXi& msa() const { return msa_; };
   const Eigen::MatrixXi& xmsa() const { return xmsa_; };
@@ -83,6 +85,7 @@ class PhyloData : public Data {
     return nti_xmsa_indices_;
   };
   pll_utree_t* tree() const { return tree_; };
+  const pt::pll::Partition& partition() const { return partition_; };
   int length() const override { return msa_.cols(); };
 };
 
