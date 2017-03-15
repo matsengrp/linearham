@@ -754,6 +754,44 @@ TEST_CASE("PhyloData", "[phylodata]") {
   REQUIRE(ex_phylo_data_ptr->nti_xmsa_indices() == VDJ_nti_xmsa_indices);
   REQUIRE(ex_phylo_data_ptr->length() == VDJ_msa.cols());
 
-  // DO PILE TESTS!!!!!!
+  Eigen::MatrixXd V_marginal(1,3);
+  V_marginal <<
+  // Format is gene_prob * npadding_prob * emission * transition * ... * emission * landing_out
+  0.07*0.00396307*1*0.00219854*1*0.00269666*0.2, 0.07*0.00396307*1*0.00219854*1*0.00269666*0.8*0.000582657*0.5, 0.07*0.00396307*1*0.00219854*1*0.00269666*0.8*0.000582657*0.5*0.00336507*1;
+  Eigen::MatrixXd DX_marginal(3,2);
+  DX_marginal <<
+  // Format is gene_prob * landing_in * emission * transition * ... * emission * landing_out
+                                                                        0,                                                                                     0,
+  0.035*0.4*0.0111546*0.98*0.000997593*0.95*0.0156026*0.6*0.00133163*0.65, 0.035*0.4*0.0111546*0.98*0.000997593*0.95*0.0156026*0.6*0.00133163*0.35*0.000486007*1,
+                 0.035*0.1*0.000997593*0.95*0.0156026*0.6*0.00133163*0.65,                0.035*0.1*0.000997593*0.95*0.0156026*0.6*0.00133163*0.35*0.000486007*1;
+  Eigen::MatrixXd DN_nti_marginal(3,2);
+  DN_nti_marginal <<
+  3.23311e-11, 0,
+  1.67553e-07, 0,
+  8.10917e-05, 0;
+  Eigen::MatrixXd DN_germ_marginal(2,2);
+  DN_germ_marginal <<
+  // Format is gene_prob * emission * transition * ... * emission * landing_out
+  0.035*0.0156026*0.6*0.00133163*0.65, 0.035*0.0156026*0.6*0.00133163*0.35*0.000486007*1,
+                0.035*0.00133163*0.65,               0.035*0.00133163*0.35*0.000486007*1;
+  Eigen::MatrixXd JX_marginal(2,1);
+  JX_marginal <<
+  // Format is gene_prob * landing_in * emission * transition * ... * emission * npadding_prob
+                                               0,
+  0.015*0.25*0.00301193*1*0.0125605*1*0.00408875;
+  Eigen::MatrixXd JN_nti_marginal(2,2);
+  JN_nti_marginal <<
+  1.79499e-07, 0,
+  0.000428706, 0;
+  Eigen::MatrixXd JN_germ_marginal(2,1);
+  JN_germ_marginal <<
+  // Format is gene_prob * emission * transition * ... * emission * npadding_prob
+  0.015*0.0125605*1*0.00408875,
+              0.015*0.00408875;
+
+  REQUIRE(ex_phylo_data_ptr->vdj_pile()[0]->marginal().isApprox(V_marginal * DX_marginal * JX_marginal, 1e-5));
+  REQUIRE(ex_phylo_data_ptr->vdj_pile()[1]->marginal().isApprox(V_marginal * DX_marginal * JN_nti_marginal * JN_germ_marginal, 1e-5));
+  REQUIRE(ex_phylo_data_ptr->vdj_pile()[2]->marginal().isApprox(V_marginal * DN_nti_marginal * DN_germ_marginal * JX_marginal, 1e-5));
+  REQUIRE(ex_phylo_data_ptr->vdj_pile()[3]->marginal().isApprox(V_marginal * DN_nti_marginal * DN_germ_marginal * JN_nti_marginal * JN_germ_marginal, 1e-5));
 }
 }
