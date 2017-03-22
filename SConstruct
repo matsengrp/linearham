@@ -9,6 +9,11 @@ yaml_cpp_env.Command('_build/yaml-cpp/libyaml-cpp.a', '', 'cd _build/yaml-cpp &&
 pt_env = env.Clone()
 pt_env.Command('_build/pt/libpt.a', '', 'cp -r lib/pt _build && cd _build/pt && make && mv _build/src/libpt.a .')
 
+brent_env = env.Clone()
+brent_env.VariantDir('_build/brent', 'lib/brent', duplicate=0)
+brent_env.StaticLibrary(target='_build/brent/brent',
+                        source='_build/brent/brent.cpp')
+
 ## linearham ##
 
 common_env = env.Clone()
