@@ -17,10 +17,10 @@ brent_env.StaticLibrary(target='_build/brent/brent',
 ## linearham ##
 
 common_env = env.Clone()
-common_env.Append(CPPPATH=['lib/eigen', 'lib/yaml-cpp/include', 'lib/fast-cpp-csv-parser', 'lib/pt/src'])
+common_env.Append(CPPPATH=['lib/eigen', 'lib/yaml-cpp/include', 'lib/fast-cpp-csv-parser', 'lib/pt/src', 'lib/brent'])
 common_env.Append(CCFLAGS=['-pthread', '-std=c++11', '-g'])
-common_env.Append(LIBPATH=['_build/yaml-cpp', '_build/pt'])
-common_env.Append(LIBS=['pt', 'pll', 'yaml-cpp', 'pthread'])
+common_env.Append(LIBPATH=['_build/yaml-cpp', '_build/pt', '_build/brent'])
+common_env.Append(LIBS=['pt', 'pll', 'yaml-cpp', 'pthread', 'brent'])
 common_env.Append(LINKFLAGS=['-g'])
 
 # Doubles compilation time.
