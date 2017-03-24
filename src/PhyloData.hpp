@@ -4,7 +4,7 @@
 #include <pll-utils.hpp>
 #include <pll_partition.hpp>
 #include "Data.hpp"
-#include "branch_optim_func.hpp"
+#include "brent_func.hpp"
 
 /// @file PhyloData.hpp
 /// @brief Header for the PhyloData class.
@@ -27,7 +27,7 @@ class PhyloData : public Data {
   pll_utree_t* tree_;
   std::unique_ptr<pt::pll::Partition> partition_;
 
-  // Branch Length Optimization Functor
+  // Brent Optimization Functor
   brent::member_func_wrapper<PhyloData> f_;
 
   Eigen::VectorXd GermlineEmissionVector(

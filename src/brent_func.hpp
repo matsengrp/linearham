@@ -1,9 +1,9 @@
-#ifndef BRENT_BRANCH_OPTIM_FUNC_
-#define BRENT_BRANCH_OPTIM_FUNC_
+#ifndef BRENT_FUNC_
+#define BRENT_FUNC_
 
 #include <brent.hpp>
 
-/// @file branch_optim_func.hpp
+/// @file brent_func.hpp
 /// @brief Header for the Brent optimization functor template.
 
 namespace brent {
@@ -29,4 +29,4 @@ class member_func_wrapper : public func_base {
 };
 }
 
-#endif  // BRENT_BRANCH_OPTIM_FUNC_
+#endif  // BRENT_FUNC_
