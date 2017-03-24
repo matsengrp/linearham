@@ -4,6 +4,7 @@
 #include <pll-utils.hpp>
 #include <pll_partition.hpp>
 #include "Data.hpp"
+#include "branch_optim_func.hpp"
 
 /// @file PhyloData.hpp
 /// @brief Header for the PhyloData class.
@@ -24,7 +25,10 @@ class PhyloData : public Data {
   std::map<std::array<std::string, 2>, Eigen::VectorXi> germ_xmsa_indices_;
   std::map<int, Eigen::VectorXi> nti_xmsa_indices_;
   pll_utree_t* tree_;
-  pt::pll::Partition partition_;
+  std::unique_ptr<pt::pll::Partition> partition_;
+
+  // Branch Length Optimization Functor
+  brent::member_func_wrapper<PhyloData> f_;
 
   Eigen::VectorXd GermlineEmissionVector(
       GermlinePtr germ_ptr, std::string left_flexbounds_name) const override;
@@ -85,7 +89,7 @@ class PhyloData : public Data {
     return nti_xmsa_indices_;
   };
   pll_utree_t* tree() const { return tree_; };
-  const pt::pll::Partition& partition() const { return partition_; };
+  const pt::pll::Partition& partition() const { return *partition_; };
   int length() const override { return msa_.cols(); };
 };
 

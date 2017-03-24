@@ -23,6 +23,7 @@ class member_func_wrapper : public func_base {
   DDMemFnPtr<T> func_;
 
  public:
+  member_func_wrapper(){};
   member_func_wrapper(T* obj, DDMemFnPtr<T> func) : obj_(obj), func_(func){};
   double operator()(double x) override { return (obj_->*func_)(x); };
 };
