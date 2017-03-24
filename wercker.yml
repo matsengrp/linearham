@@ -6,6 +6,8 @@ build:
             name: initialize git submodules
             code: |
                 git submodule update --init --recursive
+        - install-packages:
+                packages: cmake
         - script:
             name: build
             code: scons
