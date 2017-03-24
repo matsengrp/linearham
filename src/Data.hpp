@@ -82,6 +82,9 @@ class Data {
   };
   const Pile& vdj_pile() const { return vdj_pile_; };
   virtual int length() const = 0;
+
+  // Likelihood Functions
+  double MarginalLogLikelihood() const;
 };
 
 

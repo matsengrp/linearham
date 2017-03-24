@@ -539,6 +539,34 @@ Eigen::MatrixXd Data::EmissionMatchMatrix(
 };
 
 
+// Likelihood Functions
+
+
+/// @brief Computes the marginal log-likelihood by summing all marginal path
+/// probabilities.
+/// @return
+/// The marginal log-likelihood.
+///
+/// Note that `vdj_pile_` will always have at least one Smooshish (so
+/// `likelihood` will never be 0).
+double Data::MarginalLogLikelihood() const {
+  double likelihood = 0;
+
+  for (std::size_t i = 0; i < vdj_pile_.size(); i++) {
+    // Each Smooshish must be fully smooshed.
+    assert(vdj_pile_[i]->left_flex() == 0 && vdj_pile_[i]->right_flex() == 0);
+
+    likelihood += vdj_pile_[i]->marginal()(0, 0) *
+                  pow(SCALE_FACTOR, -vdj_pile_[i]->scaler_count());
+  }
+
+  return log(likelihood);
+};
+
+
+// Auxiliary Functions
+
+
 /// @brief Converts a string sequence to an integer sequence according to the
 /// alphabet-map.
 /// @param[in] seq

@@ -641,6 +641,7 @@ TEST_CASE("SimpleData", "[simpledata]") {
   REQUIRE(ex_simple_data_ptrs[0]->vdj_pile()[1]->marginal().isApprox(V_marginal * DX_marginal * JN_nti_marginal * JN_germ_marginal, 1e-5));
   REQUIRE(ex_simple_data_ptrs[0]->vdj_pile()[2]->marginal().isApprox(V_marginal * DN_nti_marginal * DN_germ_marginal * JX_marginal, 1e-5));
   REQUIRE(ex_simple_data_ptrs[0]->vdj_pile()[3]->marginal().isApprox(V_marginal * DN_nti_marginal * DN_germ_marginal * JN_nti_marginal * JN_germ_marginal, 1e-5));
+  REQUIRE(ex_simple_data_ptrs[0]->MarginalLogLikelihood() == Approx(-37.3790770807));
 
   // Test the SimpleData class using the BCRHam HMM files.
   // io::CSVReader<1, io::trim_chars<>, io::double_quote_escape<',', '\"'>> in(
@@ -793,5 +794,6 @@ TEST_CASE("PhyloData", "[phylodata]") {
   REQUIRE(ex_phylo_data_ptr->vdj_pile()[1]->marginal().isApprox(V_marginal * DX_marginal * JN_nti_marginal * JN_germ_marginal, 1e-5));
   REQUIRE(ex_phylo_data_ptr->vdj_pile()[2]->marginal().isApprox(V_marginal * DN_nti_marginal * DN_germ_marginal * JX_marginal, 1e-5));
   REQUIRE(ex_phylo_data_ptr->vdj_pile()[3]->marginal().isApprox(V_marginal * DN_nti_marginal * DN_germ_marginal * JN_nti_marginal * JN_germ_marginal, 1e-5));
+  REQUIRE(ex_phylo_data_ptr->MarginalLogLikelihood() == Approx(-84.493389669));
 }
 }
