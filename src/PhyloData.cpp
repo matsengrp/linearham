@@ -31,7 +31,7 @@ PhyloData::PhyloData(
   // Initialize `xmsa_labels_`.
   std::vector<std::string> msa_seqs;
   unsigned int sites =
-      pt::ParseFasta(fasta_path, tip_node_count, xmsa_labels_, msa_seqs);
+      pt::pll::ParseFasta(fasta_path, tip_node_count, xmsa_labels_, msa_seqs);
 
   // Initialize `msa_`.
   int root_index;
