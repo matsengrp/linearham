@@ -553,8 +553,9 @@ double Data::MarginalLogLikelihood() const {
   double likelihood = 0;
 
   for (std::size_t i = 0; i < vdj_pile_.size(); i++) {
-    // Each Smooshish must be fully smooshed.
+    // Each Smooshish must be fully smooshed and clean.
     assert(vdj_pile_[i]->left_flex() == 0 && vdj_pile_[i]->right_flex() == 0);
+    assert(!vdj_pile_[i]->is_dirty());
 
     likelihood += vdj_pile_[i]->marginal()(0, 0) *
                   pow(SCALE_FACTOR, -vdj_pile_[i]->scaler_count());
