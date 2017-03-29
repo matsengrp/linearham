@@ -45,6 +45,10 @@ PhyloData::PhyloData(
   // `nti_xmsa_indices_`.
   InitializeXmsaStructs(ggenes, root_index);
 
+  // Initialize `f_`.
+  f_ = brent::member_func_wrapper<PhyloData>(
+      this, &PhyloData::BranchLengthLogLikelihood);
+
   // Initialize `partition_`.
   pt::pll::ModelParameters parameters = pt::pll::ParseRaxmlInfo(raxml_path);
   partition_.reset(new pt::pll::Partition(tree_, tip_node_count, parameters,
@@ -208,6 +212,43 @@ void PhyloData::InitializeXmsaStructs(
   // Build the xMSA, the associated per-site rate vector, and the vector of xMSA
   // sequence strings.
   BuildXmsa(xmsa_ids, ggenes.begin()->second.germ_ptr->alphabet(), root_index);
+};
+
+
+// Optimization Functions
+
+
+/// @brief Modifies a branch length on the tree and computes the updated
+/// (negative) log-likelihood.
+/// @param[in] length
+/// A new branch length.
+/// @return
+/// The updated (negative) marginal log-likelihood.
+///
+/// Note that we compute the negative log-likelihood because we are using
+/// Brent's method for minimization to optimize branch lengths.
+///
+/// In addition, `tree_` determines the branch length that will be optimized.
+/// This node will change as we traverse the tree.
+double PhyloData::BranchLengthLogLikelihood(double length) {
+  UpdateBranchLength(tree_, length);
+  return -MarginalLogLikelihood();
+};
+
+
+/// @brief Optimizes the branch length associated with the input tree node.
+/// @param[in] node
+/// A tree node.
+void PhyloData::OptimizeBranch(pll_utree_t* node) {
+  // Store the current tree node pointer in PhyloData.
+  // This step is required so that our optimization functor `f_` can compute the
+  // proper likelihood values within Brent's method.
+  tree_ = node;
+
+  // Optimize the current branch length.
+  double len;
+  brent::local_min(0, 1e5, 1.0e-10, f_, len);
+  UpdateBranchLength(tree_, len);
 };
 
 
@@ -403,6 +444,27 @@ void PhyloData::BuildXmsa(
   for (int i = 0; i < xmsa_.rows(); i++) {
     xmsa_seqs_[i] = ConvertIntsToSeq(xmsa_.row(i), alphabet);
   }
+};
+
+
+/// @brief Modifies the branch length associated with the input tree node and
+/// updates the xMSA emission vector and Pile.
+/// @param[in] node
+/// A tree node.
+/// @param[in] length
+/// A new branch length.
+void PhyloData::UpdateBranchLength(pll_utree_t* node, double length) {
+  // Modify the specified branch length.
+  partition_->UpdateBranchLength(node, length);
+
+  // Compute the updated per-site phylogenetic "emission" likelihoods.
+  partition_->LogLikelihood(node, xmsa_emission_.data());
+  xmsa_emission_.array() = xmsa_emission_.array().exp();
+
+  // Update the Smooshish marginal/viterbi probability matrices in `vdj_pile_`
+  // to reflect the changes in the "emission" probabilities.
+  MarkPileAsDirty();
+  CleanPile();
 };
 
 

@@ -46,6 +46,11 @@ class PhyloData : public Data {
       const std::unordered_map<std::string, GermlineGene>& ggenes,
       int root_index);
 
+  // Optimization Functions
+  double BranchLengthLogLikelihood(double length);
+
+  void OptimizeBranch(pll_utree_t* node);
+
   // Smooshable Functions
   void UpdateMarginal(SmooshishPtr sp) const;
 
@@ -66,6 +71,8 @@ class PhyloData : public Data {
 
   void BuildXmsa(const std::map<std::tuple<int, double, int>, int>& xmsa_ids,
                  const std::string& alphabet, int root_index);
+
+  void UpdateBranchLength(pll_utree_t* node, double length);
 
  public:
   PhyloData(){};
