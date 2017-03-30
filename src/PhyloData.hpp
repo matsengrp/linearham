@@ -53,6 +53,8 @@ class PhyloData : public Data {
 
   void OptimizeAllBranchesOnce();
 
+  void OptimizeAllBranches();
+
   // Smooshable Functions
   void UpdateMarginal(SmooshishPtr sp) const;
 
