@@ -51,6 +51,8 @@ class PhyloData : public Data {
 
   void OptimizeBranch(pll_utree_t* node);
 
+  void OptimizeAllBranchesOnce();
+
   // Smooshable Functions
   void UpdateMarginal(SmooshishPtr sp) const;
 

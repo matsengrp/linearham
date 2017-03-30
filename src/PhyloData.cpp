@@ -248,7 +248,42 @@ void PhyloData::OptimizeBranch(pll_utree_t* node) {
   // Optimize the current branch length.
   double len;
   brent::local_min(0, 1e5, 1.0e-10, f_, len);
-  UpdateBranchLength(tree_, len);
+  UpdateBranchLength(node, len);
+};
+
+
+/// @brief Performs a post-order tree traversal and optimizes the branch length
+/// at each edge.
+///
+/// This function is adapted from a similar function found in the libptpll
+/// library.  Note that this function optimizes the initial branch length twice
+/// per traversal.
+void PhyloData::OptimizeAllBranchesOnce() {
+  std::vector<pll_utree_t*> nodes(partition_->node_count(), nullptr);
+  unsigned int nodes_found;
+
+  // Traverse the entire tree and collect nodes using a callback
+  // function that returns 1 for every node visited. Some of these
+  // nodes will be tips, in which case we operate on node->back (the
+  // tip's parent) instead of node; see below.
+  if (!pll_utree_traverse(tree_, [](pll_utree_t*) { return 1; }, nodes.data(),
+                          &nodes_found)) {
+    throw std::invalid_argument("OptimizeAllBranches() requires an inner node");
+  }
+
+  if (nodes_found != nodes.size()) {
+    throw std::invalid_argument("Unexpected number of nodes");
+  }
+
+  for (auto node : nodes) {
+    // If this is a tip node, operate on its parent instead.
+    if (!node->next) {
+      node = node->back;
+    }
+
+    partition_->TraversalUpdate(node, pt::pll::TraversalType::PARTIAL);
+    OptimizeBranch(node);
+  }
 };
 
 
