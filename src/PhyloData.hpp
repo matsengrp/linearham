@@ -11,6 +11,9 @@
 
 namespace linearham {
 
+/// @brief A scalar used to compute the Brent optimization upper bound.
+const unsigned int BRENT_SCALAR = 5;
+
 
 /// @brief This class holds data used to compute HMM emission probabilities
 /// under a standard phylogenetic tree model.
@@ -30,6 +33,9 @@ class PhyloData : public Data {
   // Brent Optimization Functor
   brent::member_func_wrapper<PhyloData> f_;
 
+  // Brent Optimization Upper Bound
+  double b_;
+
   Eigen::VectorXd GermlineEmissionVector(
       GermlinePtr germ_ptr, std::string left_flexbounds_name) const override;
 
@@ -45,6 +51,8 @@ class PhyloData : public Data {
   void InitializeXmsaStructs(
       const std::unordered_map<std::string, GermlineGene>& ggenes,
       int root_index);
+
+  void InitializeBrentUpperBound();
 
   // Optimization Functions
   double BranchLengthLogLikelihood(double length);

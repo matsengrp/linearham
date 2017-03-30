@@ -54,6 +54,9 @@ PhyloData::PhyloData(
   partition_.reset(new pt::pll::Partition(tree_, tip_node_count, parameters,
                                           xmsa_labels_, xmsa_seqs_));
 
+  // Initialize `b_`.
+  InitializeBrentUpperBound();
+
   // Initialize `xmsa_emission_`.
   xmsa_emission_.resize(xmsa_.cols());
   partition_->TraversalUpdate(tree_, pt::pll::TraversalType::FULL);
@@ -215,6 +218,28 @@ void PhyloData::InitializeXmsaStructs(
 };
 
 
+/// @brief Initializes the Brent optimization upper bound (i.e. `b_`) to be a
+/// scalar multiple of the longest branch length on the initial tree.
+void PhyloData::InitializeBrentUpperBound() {
+  // Extract the tree nodes.
+  std::vector<pll_utree_t*> nodes(partition_->node_count(), nullptr);
+  unsigned int nodes_found;
+  assert(pll_utree_traverse(tree_, [](pll_utree_t*) { return 1; }, nodes.data(),
+                            &nodes_found));
+
+  // Find the longest branch length.
+  b_ = 0;
+  for (int i = 0; i < nodes.size(); i++) {
+    if (b_ < nodes[i]->length) {
+      b_ = nodes[i]->length;
+    }
+  }
+
+  // Multiply in the scalar.
+  b_ *= BRENT_SCALAR;
+};
+
+
 // Optimization Functions
 
 
@@ -247,7 +272,7 @@ void PhyloData::OptimizeBranch(pll_utree_t* node) {
 
   // Optimize the current branch length.
   double len;
-  brent::local_min(0, 1e5, 1.0e-10, f_, len);
+  brent::local_min(0, b_, 1.0e-10, f_, len);
   UpdateBranchLength(node, len);
 };
 
