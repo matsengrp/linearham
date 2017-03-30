@@ -4,10 +4,9 @@ build:
     steps:
         - script:
             name: tmp
-            code: |
-                apt-cache policy cmake
+            code: apt-cache policy cmake
         - install-packages:
-                packages: cmake
+            packages: cmake
         - script:
             name: initialize git submodules
             code: |
