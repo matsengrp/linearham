@@ -3,7 +3,7 @@ box: matsengrp/cpp
 build:
     steps:
         - install-packages:
-                packages: cmake=3.5.1-1ubuntu3
+                packages: cmake
         - script:
             name: initialize git submodules
             code: |
