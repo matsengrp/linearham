@@ -3,11 +3,6 @@ box: matsengrp/cpp
 build:
     steps:
         - script:
-            name: tmp
-            code: apt-cache policy cmake
-        - install-packages:
-            packages: cmake
-        - script:
             name: initialize git submodules
             code: |
                 git submodule update --init --recursive
