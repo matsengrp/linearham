@@ -532,7 +532,7 @@ void PhyloData::UpdateBranchLength(pll_utree_t* node, double length) {
 
 
 /// @brief Optimizes all the branch lengths on the tree until the log-likelihood
-/// changes are small or the maximum iteration number is reached.
+/// changes are small or the maximum number of iterations is reached.
 ///
 /// This function is adapted from a similar function found in the libptpll
 /// library.
@@ -544,7 +544,7 @@ void PhyloData::OptimizeAllBranches() {
 
   // Continue the branch length optimization.
   unsigned int i = 0;
-  while (loglike - loglike_prev > pt::pll::EPSILON && i < pt::pll::MAX_ITER) {
+  while (loglike - loglike_prev > EPS_LOGLIK && i < MAX_ITER) {
     loglike_prev = loglike;
     OptimizeAllBranchesOnce();
     loglike = MarginalLogLikelihood();

@@ -15,6 +15,15 @@ namespace linearham {
 const unsigned int BRENT_SCALAR = 5;
 
 
+/// @brief The maximum number of iterations allowed during branch length
+/// optimization.
+const unsigned int MAX_ITER = 100;
+
+
+/// @brief The log-likelihood optimization convergence threshold.
+const double EPS_LOGLIK = 1e-5;
+
+
 /// @brief This class holds data used to compute HMM emission probabilities
 /// under a standard phylogenetic tree model.
 class PhyloData : public Data {
