@@ -272,7 +272,7 @@ void PhyloData::OptimizeBranch(pll_utree_t* node) {
 
   // Optimize the current branch length.
   double len;
-  brent::local_min(0, b_, 1.0e-10, f_, len);
+  brent::local_min(1.0e-10, b_, 1.0e-10, f_, len);
   UpdateBranchLength(node, len);
 };
 
@@ -308,28 +308,6 @@ void PhyloData::OptimizeAllBranchesOnce() {
 
     partition_->TraversalUpdate(node, pt::pll::TraversalType::PARTIAL);
     OptimizeBranch(node);
-  }
-};
-
-
-/// @brief Optimizes all the branch lengths on the tree until the log-likelihood
-/// changes are small or the maximum iteration number is reached.
-///
-/// This function is adapted from a similar function found in the libptpll
-/// library.
-void PhyloData::OptimizeAllBranches() {
-  // Compute the initial log-likelihood values.
-  double loglike_prev = MarginalLogLikelihood();
-  OptimizeAllBranchesOnce();
-  double loglike = MarginalLogLikelihood();
-
-  // Continue the branch length optimization.
-  unsigned int i = 0;
-  while (loglike - loglike_prev > pt::pll::EPSILON && i < pt::pll::MAX_ITER) {
-    loglike_prev = loglike;
-    OptimizeAllBranchesOnce();
-    loglike = MarginalLogLikelihood();
-    i++;
   }
 };
 
@@ -548,6 +526,34 @@ void PhyloData::UpdateBranchLength(pll_utree_t* node, double length) {
   MarkPileAsDirty();
   CleanPile();
 };
+
+
+// Optimization Functions
+
+
+/// @brief Optimizes all the branch lengths on the tree until the log-likelihood
+/// changes are small or the maximum iteration number is reached.
+///
+/// This function is adapted from a similar function found in the libptpll
+/// library.
+void PhyloData::OptimizeAllBranches() {
+  // Compute the initial log-likelihood values.
+  double loglike_prev = MarginalLogLikelihood();
+  OptimizeAllBranchesOnce();
+  double loglike = MarginalLogLikelihood();
+
+  // Continue the branch length optimization.
+  unsigned int i = 0;
+  while (loglike - loglike_prev > pt::pll::EPSILON && i < pt::pll::MAX_ITER) {
+    loglike_prev = loglike;
+    OptimizeAllBranchesOnce();
+    loglike = MarginalLogLikelihood();
+    i++;
+  }
+};
+
+
+// Auxiliary Functions
 
 
 /// @brief Stores a xMSA site index.

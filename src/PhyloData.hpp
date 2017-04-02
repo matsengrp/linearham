@@ -61,8 +61,6 @@ class PhyloData : public Data {
 
   void OptimizeAllBranchesOnce();
 
-  void OptimizeAllBranches();
-
   // Smooshable Functions
   void UpdateMarginal(SmooshishPtr sp) const;
 
@@ -110,6 +108,9 @@ class PhyloData : public Data {
   pll_utree_t* tree() const { return tree_; };
   const pt::pll::Partition& partition() const { return *partition_; };
   int length() const override { return msa_.cols(); };
+
+  // Optimization Functions
+  void OptimizeAllBranches();
 };
 
 
