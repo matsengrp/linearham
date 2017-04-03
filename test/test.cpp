@@ -16,9 +16,9 @@ YAML::Node V_root, D_root, J_root;
 
 
 void initialize_global_test_vars() {
-  V_root = YAML::LoadFile("data/hmm_params_ex/IGHV_ex_star_01.yaml");
-  D_root = YAML::LoadFile("data/hmm_params_ex/IGHD_ex_star_01.yaml");
-  J_root = YAML::LoadFile("data/hmm_params_ex/IGHJ_ex_star_01.yaml");
+  V_root = YAML::LoadFile("data/example_data/hmm_params/IGHV_ex_star_01.yaml");
+  D_root = YAML::LoadFile("data/example_data/hmm_params/IGHD_ex_star_01.yaml");
+  J_root = YAML::LoadFile("data/example_data/hmm_params/IGHJ_ex_star_01.yaml");
 }
 
 
@@ -420,7 +420,7 @@ TEST_CASE("NPadding", "[npadding]") {
 
 TEST_CASE("CreateGermlineGeneMap", "[vdjgermline]") {
   std::unordered_map<std::string, GermlineGene> ggenes =
-      CreateGermlineGeneMap("data/hmm_params_ex");
+      CreateGermlineGeneMap("data/example_data/hmm_params");
   VGermlinePtr vgene_ptr = ggenes["IGHV_ex*01"].VGermlinePtrCast();
   DGermlinePtr dgene_ptr = ggenes["IGHD_ex*01"].DGermlinePtrCast();
   JGermlinePtr jgene_ptr = ggenes["IGHJ_ex*01"].JGermlinePtrCast();
@@ -575,8 +575,8 @@ TEST_CASE("SmooshableChainPile", "[smooshablechainpile]") {
 
 TEST_CASE("SimpleData", "[simpledata]") {
   // Test the SimpleData class using the example HMM files.
-  std::vector<SimpleDataPtr> ex_simple_data_ptrs =
-      ReadSimpleData("data/hmm_input_ex.csv", "data/hmm_params_ex");
+  std::vector<SimpleDataPtr> ex_simple_data_ptrs = ReadSimpleData(
+      "data/example_data/hmm_input.csv", "data/example_data/hmm_params");
 
   /// @todo MAKE PICTURE FOR THIS SCENARIO!!!!!
 
@@ -666,12 +666,12 @@ TEST_CASE("SimpleData", "[simpledata]") {
 
 TEST_CASE("PhyloData", "[phylodata]") {
   // Test the PhyloData class using the example files.
-  std::string csv_path = "data/hmm_input_ex.csv";
-  std::string dir_path = "data/hmm_params_ex";
+  std::string csv_path = "data/example_data/hmm_input.csv";
+  std::string dir_path = "data/example_data/hmm_params";
   std::string newick_path = "data/phylodata_ex/newton.tre";
   std::string fasta_path = "data/phylodata_ex/newton.fasta";
   std::string raxml_path = "data/phylodata_ex/RAxML_info.newton";
-  PhyloDataPtr ex_phylo_data_ptr =
+  PhyloDataPtr phylo_data_ptr =
       ReadPhyloData(csv_path, dir_path, newick_path, fasta_path, raxml_path);
 
   std::map<std::string, std::pair<int, int>> VDJ_flexbounds = {
@@ -742,18 +742,18 @@ TEST_CASE("PhyloData", "[phylodata]") {
   xmsa_indices << 30, 31, 32, 6;
   VDJ_nti_xmsa_indices.emplace(11, xmsa_indices);
 
-  REQUIRE(ex_phylo_data_ptr->flexbounds() == VDJ_flexbounds);
-  REQUIRE(ex_phylo_data_ptr->relpos() == VDJ_relpos);
-  REQUIRE(ex_phylo_data_ptr->match_indices() == VDJ_match_indices);
-  REQUIRE(ex_phylo_data_ptr->msa() == VDJ_msa);
-  REQUIRE(ex_phylo_data_ptr->xmsa() == VDJ_xmsa);
-  REQUIRE(ex_phylo_data_ptr->xmsa_labels() == VDJ_xmsa_labels);
-  REQUIRE(ex_phylo_data_ptr->xmsa_seqs() == VDJ_xmsa_seqs);
-  REQUIRE(ex_phylo_data_ptr->xmsa_rates() == VDJ_xmsa_rates);
-  REQUIRE(ex_phylo_data_ptr->xmsa_emission().isApprox(VDJ_xmsa_emission, 1e-5));
-  REQUIRE(ex_phylo_data_ptr->germ_xmsa_indices() == VDJ_germ_xmsa_indices);
-  REQUIRE(ex_phylo_data_ptr->nti_xmsa_indices() == VDJ_nti_xmsa_indices);
-  REQUIRE(ex_phylo_data_ptr->length() == VDJ_msa.cols());
+  REQUIRE(phylo_data_ptr->flexbounds() == VDJ_flexbounds);
+  REQUIRE(phylo_data_ptr->relpos() == VDJ_relpos);
+  REQUIRE(phylo_data_ptr->match_indices() == VDJ_match_indices);
+  REQUIRE(phylo_data_ptr->msa() == VDJ_msa);
+  REQUIRE(phylo_data_ptr->xmsa() == VDJ_xmsa);
+  REQUIRE(phylo_data_ptr->xmsa_labels() == VDJ_xmsa_labels);
+  REQUIRE(phylo_data_ptr->xmsa_seqs() == VDJ_xmsa_seqs);
+  REQUIRE(phylo_data_ptr->xmsa_rates() == VDJ_xmsa_rates);
+  REQUIRE(phylo_data_ptr->xmsa_emission().isApprox(VDJ_xmsa_emission, 1e-5));
+  REQUIRE(phylo_data_ptr->germ_xmsa_indices() == VDJ_germ_xmsa_indices);
+  REQUIRE(phylo_data_ptr->nti_xmsa_indices() == VDJ_nti_xmsa_indices);
+  REQUIRE(phylo_data_ptr->length() == VDJ_msa.cols());
 
   Eigen::MatrixXd V_marginal(1,3);
   V_marginal <<
@@ -790,10 +790,30 @@ TEST_CASE("PhyloData", "[phylodata]") {
   0.015*0.0125605*1*0.00408875,
               0.015*0.00408875;
 
-  REQUIRE(ex_phylo_data_ptr->vdj_pile()[0]->marginal().isApprox(V_marginal * DX_marginal * JX_marginal, 1e-5));
-  REQUIRE(ex_phylo_data_ptr->vdj_pile()[1]->marginal().isApprox(V_marginal * DX_marginal * JN_nti_marginal * JN_germ_marginal, 1e-5));
-  REQUIRE(ex_phylo_data_ptr->vdj_pile()[2]->marginal().isApprox(V_marginal * DN_nti_marginal * DN_germ_marginal * JX_marginal, 1e-5));
-  REQUIRE(ex_phylo_data_ptr->vdj_pile()[3]->marginal().isApprox(V_marginal * DN_nti_marginal * DN_germ_marginal * JN_nti_marginal * JN_germ_marginal, 1e-5));
-  REQUIRE(ex_phylo_data_ptr->MarginalLogLikelihood() == Approx(-84.493389669));
+  REQUIRE(phylo_data_ptr->vdj_pile()[0]->marginal().isApprox(V_marginal * DX_marginal * JX_marginal, 1e-5));
+  REQUIRE(phylo_data_ptr->vdj_pile()[1]->marginal().isApprox(V_marginal * DX_marginal * JN_nti_marginal * JN_germ_marginal, 1e-5));
+  REQUIRE(phylo_data_ptr->vdj_pile()[2]->marginal().isApprox(V_marginal * DN_nti_marginal * DN_germ_marginal * JX_marginal, 1e-5));
+  REQUIRE(phylo_data_ptr->vdj_pile()[3]->marginal().isApprox(V_marginal * DN_nti_marginal * DN_germ_marginal * JN_nti_marginal * JN_germ_marginal, 1e-5));
+  REQUIRE(phylo_data_ptr->MarginalLogLikelihood() == Approx(-84.493389669));
+}
+
+
+TEST_CASE("OptimizeAllBranches", "[phylodata]") {
+  // Test the branch length optimization in the PhyloData class.
+  std::string csv_path = "data/phylodata_ex/brlen_optim_ex/hmm_input.csv";
+  std::string dir_path = "data/phylodata_ex/brlen_optim_ex/hmm_params";
+  std::string newick_path = "data/phylodata_ex/newton_phyml.tre";
+  std::string fasta_path = "data/phylodata_ex/newton.fasta";
+  std::string raxml_path = "data/phylodata_ex/RAxML_info.newton";
+  PhyloDataPtr phylo_data_ptr =
+      ReadPhyloData(csv_path, dir_path, newick_path, fasta_path, raxml_path);
+  phylo_data_ptr->OptimizeAllBranches();
+
+  std::string test_newick_path = "data/phylodata_ex/brlen_optim_ex/newton_optim_phyml.tre";
+  PhyloDataPtr test_ptr =
+      ReadPhyloData(csv_path, dir_path, test_newick_path, fasta_path, raxml_path);
+
+  REQUIRE(phylo_data_ptr->MarginalLogLikelihood() ==
+          Approx(test_ptr->MarginalLogLikelihood()).epsilon(1e-3));
 }
 }
