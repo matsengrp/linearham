@@ -7,6 +7,9 @@ build:
             code: |
                 git submodule update --init --recursive
         - script:
+            name: flex install
+            code: apt-get install flex
+        - script:
             name: libpll install
             code: |
                 git clone https://github.com/xflouris/libpll.git
