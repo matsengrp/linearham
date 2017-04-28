@@ -6,9 +6,8 @@ build:
             name: initialize git submodules
             code: |
                 git submodule update --init --recursive
-        - script:
-            name: flex install
-            code: apt-get install flex
+        - install-packages:
+            packages: flex
         - script:
             name: libpll install
             code: |
