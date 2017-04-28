@@ -7,6 +7,15 @@ build:
             code: |
                 git submodule update --init --recursive
         - script:
+            name: libpll install
+            code: |
+                git clone https://github.com/xflouris/libpll.git
+                cd libpll
+                ./autogen.sh
+                ./configure
+                make
+                make install
+        - script:
             name: build
             code: scons
         - script:
