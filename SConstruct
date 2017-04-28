@@ -20,7 +20,7 @@ common_env = env.Clone()
 common_env.Append(CPPPATH=['lib/eigen', 'lib/yaml-cpp/include', 'lib/fast-cpp-csv-parser', 'lib/libptpll/src', 'lib/brent'])
 common_env.Append(CCFLAGS=['-pthread', '-std=c++11', '-g'])
 common_env.Append(LIBPATH=['_build/yaml-cpp', '_build/libptpll', '_build/brent'])
-common_env.Append(LIBS=['ptpll_static', 'pll', 'yaml-cpp', 'pthread', 'brent'])
+common_env.Append(LIBS=['ptpll_static', 'libpll.a', 'yaml-cpp', 'pthread', 'brent'])
 common_env.Append(LINKFLAGS=['-g'])
 
 # Doubles compilation time.
@@ -34,7 +34,7 @@ linearham_env.StaticLibrary(target='_build/linearham/linearham',
 test_env = common_env.Clone()
 test_env.VariantDir('_build/test', 'test')
 test_env.Append(CPPPATH=['src'])
-test_env.Append(LIBPATH=['_build/linearham','/usr/local/lib'])
+test_env.Append(LIBPATH=['_build/linearham'])
 test_env.Prepend(LIBS=['linearham'])
 test_env.Program(target='_build/test/test',
                  source=Glob('_build/test/*.cpp'))
