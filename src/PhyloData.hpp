@@ -63,7 +63,7 @@ class PhyloData : public Data {
 
   void InitializeBrentUpperBound();
 
-  // Optimization Functions
+  // Branch Length Optimization Functions
   double BranchLengthLogLikelihood(double length);
 
   void OptimizeBranch(pll_utree_t* node);
@@ -118,7 +118,7 @@ class PhyloData : public Data {
   const pt::pll::Partition& partition() const { return *partition_; };
   int length() const override { return msa_.cols(); };
 
-  // Optimization Functions
+  // Branch Length Optimization Functions
   void OptimizeAllBranches();
 };
 
@@ -137,6 +137,11 @@ void StoreXmsaIndex(std::tuple<int, double, int> id,
                     int& xmsa_index);
 
 std::vector<SmooshishPtr> FindDirtySmooshables(SmooshishPtr sp);
+
+void AuxFindSPRRegraftBranches(pll_utree_t* p_aux,
+                               std::vector<pll_utree_t*>& regraft_nodes);
+
+std::vector<pll_utree_t*> FindSPRRegraftBranches(pll_utree_t* p);
 
 
 // PhyloDataPtr Function

@@ -240,7 +240,7 @@ void PhyloData::InitializeBrentUpperBound() {
 };
 
 
-// Optimization Functions
+// Branch Length Optimization Functions
 
 
 /// @brief Modifies a branch length on the tree and computes the updated
@@ -528,7 +528,7 @@ void PhyloData::UpdateBranchLength(pll_utree_t* node, double length) {
 };
 
 
-// Optimization Functions
+// Branch Length Optimization Functions
 
 
 /// @brief Optimizes all the branch lengths on the tree until the log-likelihood
@@ -600,6 +600,61 @@ std::vector<SmooshishPtr> FindDirtySmooshables(SmooshishPtr sp) {
   sp->AuxFindDirtySmooshables(dirty_smooshables);
 
   return dirty_smooshables;
+};
+
+
+/// @brief A recursive auxiliary function that finds all possible regraft
+/// branches for an SPR tree move.
+/// @param[in] p_aux
+/// A subtree root node.
+/// @param[in,out] regraft_nodes
+/// A vector of tree nodes corresponding to the possible regraft branches.
+void AuxFindSPRRegraftBranches(pll_utree_t* p_aux,
+                               std::vector<pll_utree_t*>& regraft_nodes) {
+  // Store the root node.
+  regraft_nodes.push_back(p_aux);
+
+  // Is `p_aux` an internal node?
+  if (p_aux->next) {
+    AuxFindSPRRegraftBranches(p_aux->next->back, regraft_nodes);
+    AuxFindSPRRegraftBranches(p_aux->next->next->back, regraft_nodes);
+  }
+};
+
+
+/// @brief Finds all possible regraft branches for an SPR tree move.
+/// @param[in] p
+/// The tree node opposite the root node of the subtree to be pruned.
+/// @return
+/// A vector of tree nodes corresponding to all possible regraft branches.
+///
+/// Note that the subtree to be pruned, specified by the tree node `p`, is named
+/// according to conventions found in libpll (see function `pll_utree_spr()` at
+/// https://github.com/xflouris/libpll/blob/master/src/utree_moves.c).
+std::vector<pll_utree_t*> FindSPRRegraftBranches(pll_utree_t* p) {
+  // The vector has at most `partition_->branch_count() - 3` entries (i.e. a
+  // pruned subtree with only a single tip node).
+  std::vector<pll_utree_t*> regraft_nodes;
+  regraft_nodes.reserve(partition_->branch_count() - 3);
+
+  // Below, the first and second subtrees correspond to the subtrees rooted
+  // opposite `p->next` and `p->next->next`, respectively.
+  pll_utree_t* subtree1 = p->next->back;
+  pll_utree_t* subtree2 = p->next->next->back;
+
+  // Does the first subtree consist of more than a single tip node?
+  if (subtree1->next) {
+    AuxFindSPRRegraftBranches(subtree1->next->back, regraft_nodes);
+    AuxFindSPRRegraftBranches(subtree1->next->next->back, regraft_nodes);
+  }
+
+  // Does the second subtree consist of more than a single tip node?
+  if (subtree2->next) {
+    AuxFindSPRRegraftBranches(subtree2->next->back, regraft_nodes);
+    AuxFindSPRRegraftBranches(subtree2->next->next->back, regraft_nodes);
+  }
+
+  return regraft_nodes;
 };
 
 
