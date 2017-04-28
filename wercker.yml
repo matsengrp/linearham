@@ -22,7 +22,14 @@ build:
             code: scons
         - script:
             name: test
-            code: _build/test/test
+            code: |
+                git clone https://github.com/xflouris/libpll.git
+                cd libpll
+                ./autogen.sh
+                ./configure
+                make
+                make install
+                _build/test/test
         - script:
             name: copy
             code: cp -r Doxyfile src/ $WERCKER_OUTPUT_DIR
