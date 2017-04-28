@@ -20,7 +20,7 @@ common_env = env.Clone()
 common_env.Append(CPPPATH=['lib/eigen', 'lib/yaml-cpp/include', 'lib/fast-cpp-csv-parser', 'lib/libptpll/src', 'lib/brent'])
 common_env.Append(CCFLAGS=['-pthread', '-std=c++11', '-g'])
 common_env.Append(LIBPATH=['_build/yaml-cpp', '_build/libptpll', '_build/brent'])
-common_env.Append(LIBS=['ptpll_static', File('libpll.a'), 'yaml-cpp', 'pthread', 'brent'])
+common_env.Append(LIBS=['ptpll_static', File('/usr/local/lib/libpll.a'), 'yaml-cpp', 'pthread', 'brent'])
 common_env.Append(LINKFLAGS=['-g'])
 
 # Doubles compilation time.
