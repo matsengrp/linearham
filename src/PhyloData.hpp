@@ -141,7 +141,8 @@ std::vector<SmooshishPtr> FindDirtySmooshables(SmooshishPtr sp);
 void AuxFindSPRRegraftBranches(pll_utree_t* p_aux,
                                std::vector<pll_utree_t*>& regraft_nodes);
 
-std::vector<pll_utree_t*> FindSPRRegraftBranches(pll_utree_t* p);
+std::vector<pll_utree_t*> FindSPRRegraftBranches(pll_utree_t* p,
+                                                 int branch_count);
 
 
 // PhyloDataPtr Function

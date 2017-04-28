@@ -625,17 +625,20 @@ void AuxFindSPRRegraftBranches(pll_utree_t* p_aux,
 /// @brief Finds all possible regraft branches for an SPR tree move.
 /// @param[in] p
 /// The tree node opposite the root node of the subtree to be pruned.
+/// @param[in] branch_count
+/// The number of branches in the tree.
 /// @return
 /// A vector of tree nodes corresponding to all possible regraft branches.
 ///
 /// Note that the subtree to be pruned, specified by the tree node `p`, is named
 /// according to conventions found in libpll (see function `pll_utree_spr()` at
 /// https://github.com/xflouris/libpll/blob/master/src/utree_moves.c).
-std::vector<pll_utree_t*> FindSPRRegraftBranches(pll_utree_t* p) {
-  // The vector has at most `partition_->branch_count() - 3` entries (i.e. a
+std::vector<pll_utree_t*> FindSPRRegraftBranches(pll_utree_t* p,
+                                                 int branch_count) {
+  // The vector has at most `branch_count - 3` entries (i.e. a
   // pruned subtree with only a single tip node).
   std::vector<pll_utree_t*> regraft_nodes;
-  regraft_nodes.reserve(partition_->branch_count() - 3);
+  regraft_nodes.reserve(branch_count - 3);
 
   // Below, the first and second subtrees correspond to the subtrees rooted
   // opposite `p->next` and `p->next->next`, respectively.
