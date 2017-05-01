@@ -10,3 +10,6 @@
 [submodule "lib/libptpll"]
 	path = lib/libptpll
 	url = https://github.com/matsengrp/libptpll.git
+[submodule "lib/raxml-ng"]
+	path = lib/raxml-ng
+	url = https://github.com/amkozlov/raxml-ng
