@@ -1,7 +1,10 @@
 #ifndef LINEARHAM_GERMLINE_
 #define LINEARHAM_GERMLINE_
 
-#include "yaml_utils.hpp"
+#include <yaml-cpp/yaml.h>
+#include <Eigen/Dense>
+#include <memory>
+#include <string>
 
 /// @file Germline.hpp
 /// @brief Header for the Germline class.
@@ -22,9 +25,8 @@ class Germline {
   Eigen::MatrixXd transition_;   // A germline transition probability matrix.
   double gene_prob_;  // The probability of selecting the germline gene.
 
-  std::string alphabet_;                        // The nucleotide alphabet.
-  std::unordered_map<char, int> alphabet_map_;  // The nucleotide-integer map.
-  std::string name_;                            // The germline gene name.
+  std::string alphabet_;  // The nucleotide alphabet.
+  std::string name_;      // The germline gene name.
 
   // Germline information for SimpleData
   Eigen::MatrixXd emission_matrix_;  // A matrix of HMM emission probabilities.
@@ -45,10 +47,7 @@ class Germline {
   const Eigen::MatrixXd& transition() const { return transition_; };
   double gene_prob() const { return gene_prob_; };
   const std::string& alphabet() const { return alphabet_; };
-  const std::unordered_map<char, int>& alphabet_map() const {
-    return alphabet_map_;
-  };
-  std::string name() const { return name_; };
+  const std::string& name() const { return name_; };
   const Eigen::MatrixXd& emission_matrix() const { return emission_matrix_; };
   const Eigen::VectorXi& bases() const { return bases_; };
   const Eigen::VectorXd& rates() const { return rates_; };
@@ -57,6 +56,13 @@ class Germline {
 
 
 typedef std::shared_ptr<Germline> GermlinePtr;
-}
+
+
+// Germline transition probability matrix constructor
+Eigen::MatrixXd BuildTransition(
+    const Eigen::Ref<const Eigen::VectorXd>& next_transition);
+
+
+}  // namespace linearham
 
 #endif  // LINEARHAM_GERMLINE_

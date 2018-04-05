@@ -1,9 +1,13 @@
-#include "yaml_utils.hpp"
+#include "utils.hpp"
 
-/// @file yaml_utils.cpp
-/// @brief Utilities for parsing YAML.
+#include <algorithm>
+#include <cmath>
+
+/// @file utils.cpp
+/// @brief Utility functions used in linearham.
 
 namespace linearham {
+
 
 // "Zero" for parsing YAML files.
 const double EPS_PARSE = 1e-5;
@@ -36,52 +40,65 @@ std::pair<std::vector<std::string>, Eigen::VectorXd> ParseStringProbMap(
   Eigen::VectorXd probs(node.size());
   int i = 0;
 
-  for (YAML::const_iterator it = node.begin(); it != node.end(); ++it) {
+  for (auto it = node.begin(); it != node.end(); ++it) {
     state_names[i] = it->first.as<std::string>();
     probs[i] = it->second.as<double>();
-    i++;
+    ++i;
   }
 
-  assert(fabs(probs.sum() - 1) <= EPS_PARSE);
-  return std::make_pair(state_names, probs);
+  assert(std::fabs(probs.sum() - 1) <= EPS_PARSE);
+  return {state_names, probs};
 };
 
 
-/// @brief Extract the alphabet and alphabet-map from a YAML file.
+/// @brief Extract the nucleotide alphabet from a YAML file.
 /// @param[in] root
 /// A YAML root node.
 /// @return
-/// A 2-tuple containing the alphabet and alphabet-map.
-std::pair<std::string, std::unordered_map<char, int>> GetAlphabet(
-    const YAML::Node& root) {
+/// The alphabet.
+std::string GetAlphabet(const YAML::Node& root) {
   assert(root.IsMap());
   std::vector<char> alphabet_chars =
       root["tracks"]["nukes"].as<std::vector<char>>();
-  std::string alphabet = std::accumulate(alphabet_chars.begin(),
-                                         alphabet_chars.end(), std::string());
-  std::sort(alphabet.begin(), alphabet.end());
-  std::unordered_map<char, int> alphabet_map;
-  for (unsigned int i = 0; i < alphabet.size(); i++) {
-    alphabet_map[alphabet[i]] = i;
-  }
+  std::sort(alphabet_chars.begin(), alphabet_chars.end());
 
-  return std::make_pair(alphabet, alphabet_map);
+  return std::accumulate(alphabet_chars.begin(), alphabet_chars.end(),
+                         std::string());
 };
 
-/// @brief Create the regex's that are used to extract germline and NTI state
-/// labels.
+
+/// @brief Find the alphabet index of the input nucleotide base.
+/// @param[in] alphabet
+/// The nucleotide alphabet.
+/// @param[in] base
+/// The nucleotide base.
+/// @return
+/// The alphabet index.
+int GetAlphabetIndex(const std::string& alphabet, char base) {
+  auto it = std::find(alphabet.begin(), alphabet.end(), base);
+  assert(it != alphabet.end());
+
+  return it - alphabet.begin();
+};
+
+
+/// @brief Create the regex used to extract germline state labels.
 /// @param[in] gname
 /// The germline name.
+/// @return
+/// The germline regex.
+std::regex GetGermlineStateRegex(const std::string& gname) {
+  return std::regex("^" + gname + "_([0-9]+)$");
+};
+
+
+/// @brief Create the regex used to extract NTI state labels.
 /// @param[in] alphabet
 /// The nucleotide alphabet.
 /// @return
-/// A 2-tuple containing the regex's.
-std::pair<std::regex, std::regex> GetStateRegex(const std::string& gname,
-                                                const std::string& alphabet) {
-  std::regex grgx("^" + gname + "_([0-9]+)$");
-  std::regex nrgx("^insert_left_([" + alphabet + "])$");
-
-  return std::make_pair(grgx, nrgx);
+/// The NTI regex.
+std::regex GetNTIStateRegex(const std::string& alphabet) {
+  return std::regex("^insert_left_([" + alphabet + "])$");
 };
 
 
@@ -96,7 +113,9 @@ std::pair<std::regex, std::regex> GetStateRegex(const std::string& gname,
 std::pair<int, int> FindGermlineStartEnd(const YAML::Node& root,
                                          const std::string& gname) {
   assert(root.IsMap());
-  int gstart = 0, gend = root["states"].size() - 1;
+  int gstart = 0;
+  int gend = root["states"].size() - 1;
+
   while (root["states"][gstart]["name"].as<std::string>().find(gname) ==
          std::string::npos) {
     gstart++;
@@ -106,6 +125,8 @@ std::pair<int, int> FindGermlineStartEnd(const YAML::Node& root,
     gend--;
   }
 
-  return std::make_pair(gstart, gend);
+  return {gstart, gend};
 };
-}
+
+
+}  // namespace linearham

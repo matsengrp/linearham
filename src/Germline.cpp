@@ -1,27 +1,31 @@
 #include "Germline.hpp"
 
+#include <cstddef>
+#include <regex>
+#include <tuple>
+#include <vector>
+#include "linalg.hpp"
+#include "utils.hpp"
+
 /// @file Germline.cpp
 /// @brief Implementation of the Germline class.
 
 namespace linearham {
 
 
-/// @brief Constructor for Germline starting from a YAML file.
+/// @brief Constructor for Germline starting from a partis YAML file.
 /// @param[in] root
-/// A root node associated with a germline YAML file.
+/// A root node associated with a partis YAML file.
 Germline::Germline(const YAML::Node& root) {
-  // Store alphabet-map and germline name.
+  // Store the alphabet and germline name.
   // For the rest of this function, g[something] means germline_[something].
-  std::tie(alphabet_, alphabet_map_) = GetAlphabet(root);
+  alphabet_ = GetAlphabet(root);
   name_ = root["name"].as<std::string>();
 
   // In the YAML file, states of the germline gene are denoted
-  // [germline name]_[position]. The vector of probabilities of various
-  // insertions on the left of this germline gene are denoted
-  // insert_left_[base].
-  // The regex's obtained below extract the corresponding position and base.
-  std::regex grgx, nrgx;
-  std::tie(grgx, nrgx) = GetStateRegex(name_, alphabet_);
+  // [germline name]_[position].  The regex obtained below extracts the position
+  // of each state.
+  std::regex grgx = GetGermlineStateRegex(name_);
   std::smatch match;
 
   // The HMM YAML has insert_left states (perhaps), germline-encoded states,
@@ -29,15 +33,15 @@ Germline::Germline(const YAML::Node& root) {
   // Here we step through the insert states to get to the germline states.
   int gstart, gend;
   std::tie(gstart, gend) = FindGermlineStartEnd(root, name_);
-  assert((gstart == 2) ^ (gstart == (alphabet_.size() + 1)));
-  assert((gend == (root["states"].size() - 1)) ^
-         (gend == (root["states"].size() - 2)));
+  assert(gstart == 2 || gstart == (alphabet_.size() + 1));
+  assert(gend == (root["states"].size() - 1) ||
+         gend == (root["states"].size() - 2));
   int gcount = gend - gstart + 1;
 
   // Fix germline gene name.
   name_ = std::regex_replace(name_, std::regex("_star_"), "*");
 
-  // Create the Germline data structures.
+  // Initialize the Germline data structures.
   landing_in_.setZero(gcount);
   landing_out_.setZero(gcount);
   emission_matrix_.setZero(alphabet_.size(), gcount);
@@ -58,7 +62,7 @@ Germline::Germline(const YAML::Node& root) {
 
   // The init state has landing-in probabilities in some of the germline
   // gene positions.
-  for (unsigned int i = 0; i < state_names.size(); i++) {
+  for (std::size_t i = 0; i < state_names.size(); i++) {
     if (std::regex_match(state_names[i], match, grgx)) {
       landing_in_[std::stoi(match[1])] = probs[i];
     } else {
@@ -79,9 +83,9 @@ Germline::Germline(const YAML::Node& root) {
     // Parse germline transition data.
     std::tie(state_names, probs) = ParseStringProbMap(gstate["transitions"]);
 
-    for (unsigned int j = 0; j < state_names.size(); j++) {
+    for (std::size_t j = 0; j < state_names.size(); j++) {
       if (std::regex_match(state_names[j], match, grgx)) {
-        // We can only transition to the next germline base...
+        // We can transition to the next germline base...
         assert(std::stoi(match[1]) == (gindex + 1));
         next_transition[gindex] = probs[j];
       } else if (state_names[j] == "end") {
@@ -96,24 +100,54 @@ Germline::Germline(const YAML::Node& root) {
     // Parse germline emission data.
     std::tie(state_names, probs) =
         ParseStringProbMap(gstate["emissions"]["probs"]);
-    assert(IsEqualStrings(
-        std::accumulate(state_names.begin(), state_names.end(), std::string()),
-        alphabet_));
+    assert(gstate["emissions"]["track"].as<std::string>() == "nukes");
 
-    for (unsigned int j = 0; j < state_names.size(); j++) {
-      emission_matrix_(alphabet_map_[state_names[j][0]], gindex) = probs[j];
+    for (std::size_t j = 0; j < state_names.size(); j++) {
+      int base = GetAlphabetIndex(alphabet_, state_names[j][0]);
+      emission_matrix_(base, gindex) = probs[j];
     }
 
-    // Parse germline bases and rates.
-    bases_[gindex] = alphabet_map_[gstate["extras"]["germline"].as<char>()];
+    // Parse the germline base and rate.
+    bases_[gindex] =
+        GetAlphabetIndex(alphabet_, gstate["extras"]["germline"].as<char>());
     // `rates_` should be a vector of 1's because we utilize a 4-rate discrete
     // gamma model through libpll.
     rates_[gindex] = 1;
   }
 
-  // Build the Germline transition matrix.
+  // Build the germline transition probability matrix.
   transition_ = BuildTransition(next_transition);
   assert(transition_.rows() == transition_.cols());
   assert(transition_.cols() == emission_matrix_.cols());
 };
-}
+
+
+/// @brief Makes the Germline match transition probability matrix.
+/// @param[in] next_transition
+/// Vector of probabilities of transitioning to the next match state.
+/// @return
+/// Matrix of match probabilities just in terms of the transitions in
+/// and along a germline segment.
+///
+/// Here a "match" is a specific path through the hidden states of the HMM.
+///
+/// If next_transition is of length \f$\ell-1\f$, then make an \f$\ell \times
+/// \ell\f$ matrix M with the part of the match probability coming from the
+/// transitions. If \f$a\f$ is next_transition,
+/// \f[
+/// M_{i,j} := \prod_{k=i}^{j-1} a_k
+/// \f]
+/// is the cumulative transition probability of having a match start at i and
+/// end at j, ignoring the transitions into and out of the match.
+Eigen::MatrixXd BuildTransition(
+    const Eigen::Ref<const Eigen::VectorXd>& next_transition) {
+  int ell = next_transition.size() + 1;
+  Eigen::MatrixXd transition = Eigen::MatrixXd::Ones(ell, ell);
+  SubProductMatrix(next_transition, transition.block(0, 1, ell - 1, ell - 1));
+  transition.triangularView<Eigen::StrictlyLower>().setZero();
+
+  return transition;
+};
+
+
+}  // namespace linearham
