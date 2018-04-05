@@ -43,7 +43,7 @@ std::pair<std::vector<std::string>, Eigen::VectorXd> ParseStringProbMap(
   for (auto it = node.begin(); it != node.end(); ++it) {
     state_names[i] = it->first.as<std::string>();
     probs[i] = it->second.as<double>();
-    ++i;
+    i++;
   }
 
   assert(std::fabs(probs.sum() - 1) <= EPS_PARSE);
