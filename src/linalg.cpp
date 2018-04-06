@@ -132,4 +132,6 @@ void BinaryMax(const Eigen::Ref<const Eigen::MatrixXd>& A,
     }
   }
 }
-}
+
+
+}  // namespace linearham

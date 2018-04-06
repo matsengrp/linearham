@@ -2,7 +2,6 @@
 #define LINEARHAM_LINALG_
 
 #include <Eigen/Dense>
-#include <iostream>
 
 /// @file linalg.hpp
 /// @brief Linear algebra routines.
@@ -29,6 +28,8 @@ void BinaryMax(const Eigen::Ref<const Eigen::MatrixXd>& A,
                const Eigen::Ref<const Eigen::MatrixXd>& B,
                Eigen::Ref<Eigen::MatrixXd> C,
                Eigen::Ref<Eigen::MatrixXi> C_idx);
-}
+
+
+}  // namespace linearham
 
 #endif  // LINEARHAM_LINALG_

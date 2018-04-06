@@ -6,6 +6,7 @@
 #include "catch.hpp"
 #include "linalg.hpp"
 #include "Germline.hpp"
+#include "NTInsertion.hpp"
 
 
 namespace test {
@@ -259,74 +260,74 @@ TEST_CASE("Germline", "[germline]") {
   REQUIRE(J_Germline.rates() == J_rates);
   REQUIRE(J_Germline.length() == J_length);
 }
-//
-//
-// // NTInsertion tests
-//
-// TEST_CASE("NTInsertion", "[ntinsertion]") {
-//   initialize_global_test_vars();
-//
-//   // V genes can't initialize NTInsertion objects.
-//   // NTInsertion V_NTInsertion = NTInsertion(V_root);
-//
-//   // D tests
-//   Eigen::VectorXd D_n_landing_in(4);
-//   D_n_landing_in << 0.1, 0.2, 0.1, 0.05;
-//   Eigen::MatrixXd D_n_landing_out(4,5);
-//   D_n_landing_out <<
-//   0.45, 0.125, 0.1, 0, 0,
-//   0.45, 0.125, 0.1, 0, 0,
-//   0.45, 0.125, 0.1, 0, 0,
-//   0.45, 0.125, 0.1, 0, 0;
-//   Eigen::MatrixXd D_n_transition(4,4);
-//   D_n_transition <<
-//   0.075, 0.175, 0.05, 0.025,
-//   0.075, 0.175, 0.05, 0.025,
-//   0.075, 0.175, 0.05, 0.025,
-//   0.075, 0.175, 0.05, 0.025;
-//   Eigen::MatrixXd D_n_emission_matrix(4,4);
-//   D_n_emission_matrix <<
-//   0.7, 0.05, 0.1, 0.1,
-//   0.1, 0.75, 0.1, 0.1,
-//   0.1, 0.1,  0.7, 0.,
-//   0.1, 0.1,  0.1, 0.8;
-//
-//   NTInsertion D_NTInsertion = NTInsertion(D_root);
-//
-//   REQUIRE(D_NTInsertion.n_landing_in() == D_n_landing_in);
-//   REQUIRE(D_NTInsertion.n_landing_out() == D_n_landing_out);
-//   REQUIRE(D_NTInsertion.n_transition() == D_n_transition);
-//   REQUIRE(D_NTInsertion.n_emission_matrix() == D_n_emission_matrix);
-//
-//   // J tests
-//   Eigen::VectorXd J_n_landing_in(4);
-//   J_n_landing_in << 0.1, 0.2, 0.2, 0.2;
-//   Eigen::MatrixXd J_n_landing_out(4,5);
-//   J_n_landing_out <<
-//   0.4, 0.25, 0, 0, 0,
-//   0.4, 0.25, 0, 0, 0,
-//   0.4, 0.25, 0, 0, 0,
-//   0.4, 0.25, 0, 0, 0;
-//   Eigen::MatrixXd J_n_transition(4,4);
-//   J_n_transition <<
-//   0.05, 0.15, 0.075, 0.075,
-//   0.05, 0.15, 0.075, 0.075,
-//   0.05, 0.15, 0.075, 0.075,
-//   0.05, 0.15, 0.075, 0.075;
-//   Eigen::MatrixXd J_n_emission_matrix(4,4);
-//   J_n_emission_matrix <<
-//   0.94, 0.02, 0.02, 0.02,
-//   0.02, 0.94, 0.02, 0.02,
-//   0.02, 0.02, 0.94, 0.02,
-//   0.02, 0.02, 0.02, 0.94;
-//
-//   NTInsertion J_NTInsertion = NTInsertion(J_root);
-//
-//   REQUIRE(J_NTInsertion.n_landing_in() == J_n_landing_in);
-//   REQUIRE(J_NTInsertion.n_landing_out() == J_n_landing_out);
-//   REQUIRE(J_NTInsertion.n_transition() == J_n_transition);
-//   REQUIRE(J_NTInsertion.n_emission_matrix() == J_n_emission_matrix);
-// }
+
+
+// NTInsertion tests
+
+TEST_CASE("NTInsertion", "[ntinsertion]") {
+  initialize_global_test_vars();
+
+  // V genes can't initialize NTInsertion objects.
+  // NTInsertion V_NTInsertion = NTInsertion(V_root);
+
+  // D tests
+  Eigen::VectorXd D_n_landing_in(4);
+  D_n_landing_in << 0.1, 0.2, 0.1, 0.05;
+  Eigen::MatrixXd D_n_landing_out(4,5);
+  D_n_landing_out <<
+  0.45, 0.125, 0.1, 0, 0,
+  0.45, 0.125, 0.1, 0, 0,
+  0.45, 0.125, 0.1, 0, 0,
+  0.45, 0.125, 0.1, 0, 0;
+  Eigen::MatrixXd D_n_transition(4,4);
+  D_n_transition <<
+  0.075, 0.175, 0.05, 0.025,
+  0.075, 0.175, 0.05, 0.025,
+  0.075, 0.175, 0.05, 0.025,
+  0.075, 0.175, 0.05, 0.025;
+  Eigen::MatrixXd D_n_emission_matrix(4,4);
+  D_n_emission_matrix <<
+  0.7, 0.05, 0.1, 0.1,
+  0.1, 0.75, 0.1, 0.1,
+  0.1, 0.1,  0.7, 0.,
+  0.1, 0.1,  0.1, 0.8;
+
+  NTInsertion D_NTInsertion(D_root);
+
+  REQUIRE(D_NTInsertion.n_landing_in() == D_n_landing_in);
+  REQUIRE(D_NTInsertion.n_landing_out() == D_n_landing_out);
+  REQUIRE(D_NTInsertion.n_transition() == D_n_transition);
+  REQUIRE(D_NTInsertion.n_emission_matrix() == D_n_emission_matrix);
+
+  // J tests
+  Eigen::VectorXd J_n_landing_in(4);
+  J_n_landing_in << 0.1, 0.2, 0.2, 0.2;
+  Eigen::MatrixXd J_n_landing_out(4,5);
+  J_n_landing_out <<
+  0.4, 0.25, 0, 0, 0,
+  0.4, 0.25, 0, 0, 0,
+  0.4, 0.25, 0, 0, 0,
+  0.4, 0.25, 0, 0, 0;
+  Eigen::MatrixXd J_n_transition(4,4);
+  J_n_transition <<
+  0.05, 0.15, 0.075, 0.075,
+  0.05, 0.15, 0.075, 0.075,
+  0.05, 0.15, 0.075, 0.075,
+  0.05, 0.15, 0.075, 0.075;
+  Eigen::MatrixXd J_n_emission_matrix(4,4);
+  J_n_emission_matrix <<
+  0.94, 0.02, 0.02, 0.02,
+  0.02, 0.94, 0.02, 0.02,
+  0.02, 0.02, 0.94, 0.02,
+  0.02, 0.02, 0.02, 0.94;
+
+  NTInsertion J_NTInsertion(J_root);
+
+  REQUIRE(J_NTInsertion.n_landing_in() == J_n_landing_in);
+  REQUIRE(J_NTInsertion.n_landing_out() == J_n_landing_out);
+  REQUIRE(J_NTInsertion.n_transition() == J_n_transition);
+  REQUIRE(J_NTInsertion.n_emission_matrix() == J_n_emission_matrix);
+}
 //
 //
 // // NPadding tests

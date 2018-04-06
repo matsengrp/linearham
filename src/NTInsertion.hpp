@@ -1,7 +1,9 @@
 #ifndef LINEARHAM_NTINSERTION_
 #define LINEARHAM_NTINSERTION_
 
-#include "yaml_utils.hpp"
+#include <yaml-cpp/yaml.h>
+#include <Eigen/Dense>
+#include <memory>
 
 /// @file NTInsertion.hpp
 /// @brief Header for the NTInsertion class.
@@ -31,7 +33,6 @@ class NTInsertion {
                                        // different NTI bases.
 
  public:
-  NTInsertion(){};
   NTInsertion(const YAML::Node& root);
 
   const Eigen::VectorXd& n_landing_in() const { return n_landing_in_; };
@@ -44,6 +45,8 @@ class NTInsertion {
 
 
 typedef std::shared_ptr<NTInsertion> NTInsertionPtr;
-}
+
+
+}  // namespace linearham
 
 #endif  // LINEARHAM_NTINSERTION_

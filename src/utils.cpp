@@ -13,21 +13,6 @@ namespace linearham {
 const double EPS_PARSE = 1e-5;
 
 
-/// @brief Do two strings contain the same characters?
-/// @param[in] str1
-/// The string to be tested for equality.
-/// @param[in] str2
-/// The (sorted) string to be tested against for equality.
-/// @return
-/// A boolean indicating whether or not `str1` and `str2` do contain the same
-/// characters.
-bool IsEqualStrings(std::string str1, const std::string& str2) {
-  assert(std::is_sorted(str2.begin(), str2.end()));
-  std::sort(str1.begin(), str1.end());
-  return str1 == str2;
-};
-
-
 /// @brief Parse a YAML map from strings to probabilities.
 /// @param[in] node
 /// A YAML map node.

@@ -64,7 +64,7 @@ Germline::Germline(const YAML::Node& root) {
   // gene positions.
   for (std::size_t i = 0; i < state_names.size(); i++) {
     if (std::regex_match(state_names[i], match, grgx)) {
-      landing_in_[std::stoi(match[1])] = probs[i];
+      landing_in_[std::stoi(match.str(1))] = probs[i];
     } else {
       // Make sure we match "insert_left_".
       assert(state_names[i].find("insert_left_") != std::string::npos);
@@ -74,9 +74,9 @@ Germline::Germline(const YAML::Node& root) {
   // Parse germline-encoded states.
   for (int i = gstart; i < gend + 1; i++) {
     YAML::Node gstate = root["states"][i];
-    std::string gsname = gstate["name"].as<std::string>();
-    assert(std::regex_match(gsname, match, grgx));
-    int gindex = std::stoi(match[1]);
+    std::string gname = gstate["name"].as<std::string>();
+    assert(std::regex_match(gname, match, grgx));
+    int gindex = std::stoi(match.str(1));
     // Make sure the nominal state number corresponds with the order.
     assert(gindex == i - gstart);
 
@@ -86,7 +86,7 @@ Germline::Germline(const YAML::Node& root) {
     for (std::size_t j = 0; j < state_names.size(); j++) {
       if (std::regex_match(state_names[j], match, grgx)) {
         // We can transition to the next germline base...
-        assert(std::stoi(match[1]) == (gindex + 1));
+        assert(std::stoi(match.str(1)) == (gindex + 1));
         next_transition[gindex] = probs[j];
       } else if (state_names[j] == "end") {
         // ... or we can transition to the end...
@@ -103,8 +103,8 @@ Germline::Germline(const YAML::Node& root) {
     assert(gstate["emissions"]["track"].as<std::string>() == "nukes");
 
     for (std::size_t j = 0; j < state_names.size(); j++) {
-      int base = GetAlphabetIndex(alphabet_, state_names[j][0]);
-      emission_matrix_(base, gindex) = probs[j];
+      int emit_base = GetAlphabetIndex(alphabet_, state_names[j][0]);
+      emission_matrix_(emit_base, gindex) = probs[j];
     }
 
     // Parse the germline base and rate.

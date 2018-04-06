@@ -14,8 +14,6 @@
 namespace linearham {
 
 
-bool IsEqualStrings(std::string str1, const std::string& str2);
-
 std::pair<std::vector<std::string>, Eigen::VectorXd> ParseStringProbMap(
     const YAML::Node& node);
 

@@ -39,7 +39,6 @@ class Germline {
   Eigen::VectorXd rates_;  // A vector of germline rates.
 
  public:
-  Germline(){};
   Germline(const YAML::Node& root);
 
   const Eigen::VectorXd& landing_in() const { return landing_in_; };
