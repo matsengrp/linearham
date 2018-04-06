@@ -58,7 +58,7 @@ NTInsertion::NTInsertion(const YAML::Node& root) {
   // The init state has landing-in probabilities in each of the NTI states.
   for (std::size_t i = 0; i < state_names.size(); i++) {
     if (std::regex_match(state_names[i], match, nrgx)) {
-      int base = GetAlphabetIndex(alphabet, match.str(1)[0]);
+      int nbase = GetAlphabetIndex(alphabet, match.str(1)[0]);
       n_landing_in_[base] = probs[i];
     } else {
       // If the init state does not land in a NTI state, it must land in the
