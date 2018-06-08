@@ -3,10 +3,14 @@
 
 #include <yaml-cpp/yaml.h>
 #include <Eigen/Dense>
+#include <utility>
+#include <string>
+
 #include "catch.hpp"
 #include "linalg.hpp"
 #include "Germline.hpp"
 #include "NTInsertion.hpp"
+#include "NPadding.hpp"
 
 
 namespace test {
@@ -16,12 +20,15 @@ using namespace linearham;
 // Global test variables
 
 YAML::Node V_root, D_root, J_root;
-
+Eigen::VectorXi emission_indices(13);
+std::pair<int, int> n_read_counts;
 
 void initialize_global_test_vars() {
   V_root = YAML::LoadFile("data/example_data/hmm_params/IGHV_ex_star_01.yaml");
   D_root = YAML::LoadFile("data/example_data/hmm_params/IGHD_ex_star_01.yaml");
   J_root = YAML::LoadFile("data/example_data/hmm_params/IGHJ_ex_star_01.yaml");
+  emission_indices << 0, 1, 0, 2, 3, 0, 1, 1, 1, 3, 2, 3, 3;
+  n_read_counts = {3,2};
 }
 
 
@@ -328,87 +335,93 @@ TEST_CASE("NTInsertion", "[ntinsertion]") {
   REQUIRE(J_NTInsertion.n_transition() == J_n_transition);
   REQUIRE(J_NTInsertion.n_emission_matrix() == J_n_emission_matrix);
 }
-//
-//
-// // NPadding tests
-// /*
-// TEST_CASE("NPadding", "[npadding]") {
-//   initialize_global_test_vars();
-//
-//   // For each gene, we will test Case 1, Case 2a, and Case 2b as shown
-//   // at https://github.com/matsengrp/linearham/issues/35#issuecomment-270037356.
-//
-//   // V tests
-//   double V_n_transition_prob = 0.33333333333333337;
-//   double V_ambig_emission_prob = 0.25;
-//   Eigen::VectorXd V_n_emission_vector(4);
-//   V_n_emission_vector << 0.25, 0.25, 0.25, 0.25;
-//
-//   NPadding V_NPadding(V_root);
-//
-//   REQUIRE(V_NPadding.n_transition_prob() == V_n_transition_prob);
-//   REQUIRE(V_NPadding.ambig_emission_prob() == V_ambig_emission_prob);
-//   REQUIRE(V_NPadding.n_emission_vector() == V_n_emission_vector);
-//
-//   // Case 1
-//   int V_read_pos = 2;
-//   std::pair<int, int> V_flexbounds = std::make_pair(0, 3);
-//   double V_NPaddingProb = 0.33333333333333337*0.25*0.33333333333333337*0.25*0.33333333333333337*0.25*0.33333333333333337*0.25*0.33333333333333337*0.25*(1 - 0.33333333333333337);
-//
-//   REQUIRE(V_NPadding.NPaddingProb(V_flexbounds, emission_indices,
-//                                   V_read_pos, n_read_counts.first, true) == V_NPaddingProb);
-//
-//   // Case 2a
-//   V_read_pos = -4;
-//   V_NPaddingProb = 0.25*0.25*0.25*(1 - 0.33333333333333337);
-//
-//   REQUIRE(V_NPadding.NPaddingProb(V_flexbounds, emission_indices,
-//                                   V_read_pos, n_read_counts.first, true) == V_NPaddingProb);
-//
-//   // Case 2b
-//   V_read_pos = -2;
-//   V_NPaddingProb = 0.33333333333333337*0.25*(1 - 0.33333333333333337)*0.25*0.25;
-//
-//   REQUIRE(V_NPadding.NPaddingProb(V_flexbounds, emission_indices,
-//                                   V_read_pos, n_read_counts.first, true) == V_NPaddingProb);
-//
-//   // D genes can't initialize NPadding objects.
-//   // NPadding D_NPadding = NPadding(D_root);
-//
-//   // J tests
-//   double J_n_transition_prob = 0.96;
-//   double J_ambig_emission_prob = 0.25;
-//   Eigen::VectorXd J_n_emission_vector(4);
-//   J_n_emission_vector << 0.25, 0.25, 0.25, 0.25;
-//
-//   NPadding J_NPadding(J_root);
-//
-//   REQUIRE(J_NPadding.n_transition_prob() == J_n_transition_prob);
-//   REQUIRE(J_NPadding.ambig_emission_prob() == J_ambig_emission_prob);
-//   REQUIRE(J_NPadding.n_emission_vector() == J_n_emission_vector);
-//
-//   // Case 1
-//   int J_read_pos = 10;
-//   std::pair<int, int> J_flexbounds = std::make_pair(9, 13);
-//   double J_NPaddingProb = 0.96*0.25*0.96*0.25*0.96*0.25*0.96*0.25*0.96*0.25*(1 - 0.96);
-//
-//   REQUIRE(J_NPadding.NPaddingProb(J_flexbounds, emission_indices,
-//                                   J_read_pos, n_read_counts.second, false) == J_NPaddingProb);
-//
-//   // Case 2a
-//   J_read_pos = 16;
-//   J_NPaddingProb = 0.25*0.25*(1 - 0.96);
-//
-//   REQUIRE(J_NPadding.NPaddingProb(J_flexbounds, emission_indices,
-//                                   J_read_pos, n_read_counts.second, false) == J_NPaddingProb);
-//
-//   // Case 2b
-//   J_read_pos = 14;
-//   J_NPaddingProb = 0.25*0.96*0.25*(1 - 0.96);
-//
-//   REQUIRE(J_NPadding.NPaddingProb(J_flexbounds, emission_indices,
-//                                   J_read_pos, n_read_counts.second, false) == J_NPaddingProb);
-// }*/
+
+
+// NPadding tests
+
+TEST_CASE("NPadding", "[npadding]") {
+  initialize_global_test_vars();
+
+  // For each gene, we will test Case 1, Case 2a, and Case 2b as shown
+  // at https://github.com/matsengrp/linearham/issues/35#issuecomment-270037356.
+
+  // V tests
+  double V_n_transition_prob = 0.34;
+  double V_ambig_emission_prob = 0.25;
+  Eigen::VectorXd V_n_emission_vector(4);
+  V_n_emission_vector << 0.25, 0.25, 0.25, 0.25;
+
+  NPadding V_NPadding(V_root);
+
+  REQUIRE(V_NPadding.n_transition_prob() == V_n_transition_prob);
+  REQUIRE(V_NPadding.ambig_emission_prob() == V_ambig_emission_prob);
+  REQUIRE(V_NPadding.n_emission_vector() == V_n_emission_vector);
+
+  // Case 1
+  int V_read_pos = 2;
+  std::pair<int, int> V_flexbounds = {0, 3};
+  double V_NPaddingProb = 0.34*0.25*0.34*0.25*0.34*0.25*0.34*0.25*0.34*0.25*(1 - 0.34);
+
+  REQUIRE(V_NPadding.NPaddingProb(V_flexbounds, emission_indices,
+                                  V_read_pos, n_read_counts.first, true)
+                                  == Approx(V_NPaddingProb).epsilon(1e-3));
+
+  // Case 2a
+  V_read_pos = -4;
+  V_NPaddingProb = 0.25*0.25*0.25*(1 - 0.34);
+
+  REQUIRE(V_NPadding.NPaddingProb(V_flexbounds, emission_indices,
+                                  V_read_pos, n_read_counts.first, true)
+                                  == Approx(V_NPaddingProb).epsilon(1e-3));
+
+  // Case 2b
+  V_read_pos = -2;
+  V_NPaddingProb = 0.34*0.25*0.25*0.25*(1 - 0.34);
+
+  REQUIRE(V_NPadding.NPaddingProb(V_flexbounds, emission_indices,
+                                  V_read_pos, n_read_counts.first, true)
+                                  == Approx(V_NPaddingProb).epsilon(1e-3));
+
+  // D genes can't initialize NPadding objects.
+  // NPadding D_NPadding = NPadding(D_root);
+
+  // J tests
+  double J_n_transition_prob = 0.96;
+  double J_ambig_emission_prob = 0.25;
+  Eigen::VectorXd J_n_emission_vector(4);
+  J_n_emission_vector << 0.25, 0.25, 0.25, 0.25;
+
+  NPadding J_NPadding(J_root);
+
+  REQUIRE(J_NPadding.n_transition_prob() == J_n_transition_prob);
+  REQUIRE(J_NPadding.ambig_emission_prob() == J_ambig_emission_prob);
+  REQUIRE(J_NPadding.n_emission_vector() == J_n_emission_vector);
+
+  // Case 1
+  int J_read_pos = 10;
+  std::pair<int, int> J_flexbounds = {9, 13};
+  double J_NPaddingProb = 0.96*0.25*0.96*0.25*0.96*0.25*0.95*0.25*0.96*0.25*(1 - 0.96);
+
+  REQUIRE(J_NPadding.NPaddingProb(J_flexbounds, emission_indices,
+                                  J_read_pos, n_read_counts.second, false)
+                                  == Approx(J_NPaddingProb).epsilon(1e-3));
+
+  // Case 2a
+  J_read_pos = 16;
+  J_NPaddingProb = 0.25*0.25*(1 - 0.96);
+
+  REQUIRE(J_NPadding.NPaddingProb(J_flexbounds, emission_indices,
+                                  J_read_pos, n_read_counts.second, false)
+                                  == Approx(J_NPaddingProb).epsilon(1e-3));
+
+  // Case 2b
+  J_read_pos = 14;
+  J_NPaddingProb = 0.25*0.96*0.25*(1 - 0.96);
+
+  REQUIRE(J_NPadding.NPaddingProb(J_flexbounds, emission_indices,
+                                  J_read_pos, n_read_counts.second, false)
+                                  == Approx(J_NPaddingProb).epsilon(1e-3));
+}
 //
 //
 // // VDJGermline tests

@@ -5,6 +5,7 @@
 #include <string>
 #include <tuple>
 #include <vector>
+
 #include "utils.hpp"
 
 /// @file NTInsertion.cpp
@@ -59,7 +60,7 @@ NTInsertion::NTInsertion(const YAML::Node& root) {
   for (std::size_t i = 0; i < state_names.size(); i++) {
     if (std::regex_match(state_names[i], match, nrgx)) {
       int nbase = GetAlphabetIndex(alphabet, match.str(1)[0]);
-      n_landing_in_[base] = probs[i];
+      n_landing_in_[nbase] = probs[i];
     } else {
       // If the init state does not land in a NTI state, it must land in the
       // germline gene.
