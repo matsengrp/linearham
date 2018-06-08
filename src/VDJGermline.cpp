@@ -1,5 +1,8 @@
 #include "VDJGermline.hpp"
 
+#include <dirent.h>
+#include <regex>
+
 /// @file VDJGermline.cpp
 /// @brief Implementations of the V, D, and J germline classes.
 
@@ -7,24 +10,24 @@ namespace linearham {
 
 
 VGermlinePtr GermlineGene::VGermlinePtrCast() const {
-  assert(type == kVType);
+  assert(type == GermlineType::V);
   return std::static_pointer_cast<VGermline>(germ_ptr);
 };
 
 
 DGermlinePtr GermlineGene::DGermlinePtrCast() const {
-  assert(type == kDType);
+  assert(type == GermlineType::D);
   return std::static_pointer_cast<DGermline>(germ_ptr);
 };
 
 
 JGermlinePtr GermlineGene::JGermlinePtrCast() const {
-  assert(type == kJType);
+  assert(type == GermlineType::J);
   return std::static_pointer_cast<JGermline>(germ_ptr);
 };
 
 
-/// @brief Constructs a GermlineGene map from germline YAML files.
+/// @brief Constructs a GermlineGene map from partis germline YAML files.
 /// @param[in] dir_path
 /// Path to a directory of germline gene HMM YAML files.
 /// @return
@@ -58,15 +61,15 @@ std::unordered_map<std::string, GermlineGene> CreateGermlineGeneMap(
 
     // Create the GermlineGene object.
     GermlineGene ggene;
-    if (match[2] == "V") {
-      ggene.type = kVType;
+    if (match.str(2) == "V") {
+      ggene.type = GermlineType::V;
       ggene.germ_ptr.reset(new VGermline(root));
-    } else if (match[2] == "D") {
-      ggene.type = kDType;
+    } else if (match.str(2) == "D") {
+      ggene.type = GermlineType::D;
       ggene.germ_ptr.reset(new DGermline(root));
     } else {
-      assert(match[2] == "J");
-      ggene.type = kJType;
+      assert(match.str(2) == "J");
+      ggene.type = GermlineType::J;
       ggene.germ_ptr.reset(new JGermline(root));
     }
 
@@ -74,14 +77,14 @@ std::unordered_map<std::string, GermlineGene> CreateGermlineGeneMap(
     ggenes.emplace(gname, ggene);
   }
 
-  // All Germline alphabet-maps (and hence alphabets) should be identical.
+  // All Germline alphabets should be identical.
   // (Note: `ggenes` only has forward iterators, so we cannot end at
   // `std::prev(ggenes.end())`.)
   for (auto it = ggenes.begin(),
             end = std::next(ggenes.begin(), ggenes.size() - 1);
        it != end;) {
-    assert(it->second.germ_ptr->alphabet_map() ==
-           (++it)->second.germ_ptr->alphabet_map());
+    assert(it->second.germ_ptr->alphabet() ==
+           (++it)->second.germ_ptr->alphabet());
   }
 
   // Close directory stream.
@@ -89,4 +92,6 @@ std::unordered_map<std::string, GermlineGene> CreateGermlineGeneMap(
 
   return ggenes;
 };
-}
+
+
+}  // namespace linearham

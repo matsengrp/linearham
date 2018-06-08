@@ -1,9 +1,10 @@
 #ifndef LINEARHAM_NTINSERTION_
 #define LINEARHAM_NTINSERTION_
 
+#include <memory>
+
 #include <yaml-cpp/yaml.h>
 #include <Eigen/Dense>
-#include <memory>
 
 /// @file NTInsertion.hpp
 /// @brief Header for the NTInsertion class.

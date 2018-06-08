@@ -1,9 +1,10 @@
 #ifndef LINEARHAM_NPADDING_
 #define LINEARHAM_NPADDING_
 
+#include <utility>
+
 #include <yaml-cpp/yaml.h>
 #include <Eigen/Dense>
-#include <utility>
 
 /// @file NPadding.hpp
 /// @brief Header for the NPadding class.

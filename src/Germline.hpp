@@ -1,10 +1,11 @@
 #ifndef LINEARHAM_GERMLINE_
 #define LINEARHAM_GERMLINE_
 
-#include <yaml-cpp/yaml.h>
-#include <Eigen/Dense>
 #include <memory>
 #include <string>
+
+#include <yaml-cpp/yaml.h>
+#include <Eigen/Dense>
 
 /// @file Germline.hpp
 /// @brief Header for the Germline class.

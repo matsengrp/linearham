@@ -1,12 +1,13 @@
 #ifndef LINEARHAM_UTILS_
 #define LINEARHAM_UTILS_
 
-#include <yaml-cpp/yaml.h>
-#include <Eigen/Dense>
 #include <regex>
 #include <string>
 #include <utility>
 #include <vector>
+
+#include <yaml-cpp/yaml.h>
+#include <Eigen/Dense>
 
 /// @file utils.hpp
 /// @brief Utility functions used in linearham.

@@ -1,16 +1,18 @@
 // This tells Catch to provide a main() - only do this in one cpp file.
 #define CATCH_CONFIG_MAIN
 
-#include <yaml-cpp/yaml.h>
-#include <Eigen/Dense>
 #include <utility>
 #include <string>
+#include <unordered_map>
 
+#include <yaml-cpp/yaml.h>
+#include <Eigen/Dense>
 #include "catch.hpp"
 #include "linalg.hpp"
 #include "Germline.hpp"
 #include "NTInsertion.hpp"
 #include "NPadding.hpp"
+#include "VDJGermline.hpp"
 
 
 namespace test {
@@ -422,19 +424,19 @@ TEST_CASE("NPadding", "[npadding]") {
                                   J_read_pos, n_read_counts.second, false)
                                   == Approx(J_NPaddingProb).epsilon(1e-3));
 }
-//
-//
-// // VDJGermline tests
-//
-// TEST_CASE("CreateGermlineGeneMap", "[vdjgermline]") {
-//   std::unordered_map<std::string, GermlineGene> ggenes =
-//       CreateGermlineGeneMap("data/example_data/hmm_params");
-//   VGermlinePtr vgene_ptr = ggenes["IGHV_ex*01"].VGermlinePtrCast();
-//   DGermlinePtr dgene_ptr = ggenes["IGHD_ex*01"].DGermlinePtrCast();
-//   JGermlinePtr jgene_ptr = ggenes["IGHJ_ex*01"].JGermlinePtrCast();
-// }
-//
-//
+
+
+// VDJGermline tests
+
+TEST_CASE("CreateGermlineGeneMap", "[vdjgermline]") {
+  std::unordered_map<std::string, GermlineGene> ggenes =
+      CreateGermlineGeneMap("data/example_data/hmm_params");
+  VGermlinePtr vgene_ptr = ggenes["IGHV_ex*01"].VGermlinePtrCast();
+  DGermlinePtr dgene_ptr = ggenes["IGHD_ex*01"].DGermlinePtrCast();
+  JGermlinePtr jgene_ptr = ggenes["IGHJ_ex*01"].JGermlinePtrCast();
+}
+
+
 // // Smooshable/Chain/Pile tests
 //
 // TEST_CASE("SmooshableChainPile", "[smooshablechainpile]") {
