@@ -14,6 +14,8 @@
 #include "NPadding.hpp"
 #include "VDJGermline.hpp"
 
+#include "Pile.hpp"
+
 
 namespace test {
 
@@ -437,148 +439,148 @@ TEST_CASE("CreateGermlineGeneMap", "[vdjgermline]") {
 }
 
 
-// // Smooshable/Chain/Pile tests
-//
-// TEST_CASE("SmooshableChainPile", "[smooshablechainpile]") {
-//   // Make a Chain out of `A` and `B`.
-//   Eigen::MatrixXd A(2,4);
-//   A <<
-//   0.5, 0.71, 0.13, 0.25,
-//   0.29, 0.31, 0.37, 0.33;
-//   std::array<int, 4> A_marginal_indices = {0, 0, (int)A.rows(), (int)A.cols() - 1};
-//   Eigen::MatrixXd B(3,3);
-//   B <<
-//   0.11, 0.3,  0.37,
-//   0.09, 0.29, 0.41,
-//   0.55, 0.11, 0.97;
-//   std::array<int, 4> B_marginal_indices = {0, 1, (int)B.rows(), (int)B.cols() - 1};
-//
-//   Eigen::MatrixXd correct_AB_marginal(2,2);
-//   correct_AB_marginal <<
-//   (0.50*0.3+0.71*0.29+0.13*0.11), (0.50*0.37+0.71*0.41+0.13*0.97),
-//   (0.29*0.3+0.31*0.29+0.37*0.11), (0.29*0.37+0.31*0.41+0.37*0.97);
-//   Eigen::MatrixXd correct_AB_viterbi(2,2);
-//   correct_AB_viterbi <<
-//   0.71*0.29, 0.71*0.41,
-//   0.31*0.29, 0.37*0.97;
-//   Eigen::MatrixXi correct_AB_viterbi_idx(2,2);
-//   correct_AB_viterbi_idx <<
-//   1,1,
-//   1,2;
-//
-//   SmooshablePtr ps_A = BuildSmooshablePtr(nullptr, nullptr, "a_l", "a_r/b_l",
-//                                           A_marginal_indices, A, A);
-//   SmooshablePtr ps_B = BuildSmooshablePtr(nullptr, nullptr, "a_r/b_l", "b_r/c_l",
-//                                           B_marginal_indices, B, B);
-//   ChainPtr ps_AB = std::make_shared<Chain>(Chain(ps_A, ps_B));
-//
-//   // Test `ps_A` and `ps_B`.
-//   REQUIRE(ps_A->left_flex() == 1);
-//   REQUIRE(ps_B->left_flex() == 2);
-//   REQUIRE(ps_A->right_flex() == 2);
-//   REQUIRE(ps_B->right_flex() == 1);
-//
-//   REQUIRE(ps_A->germ_ptr() == nullptr);
-//   REQUIRE(ps_B->germ_ptr() == nullptr);
-//   REQUIRE(ps_A->nti_ptr() == nullptr);
-//   REQUIRE(ps_B->nti_ptr() == nullptr);
-//   REQUIRE(ps_A->left_flexbounds_name() == "a_l");
-//   REQUIRE(ps_B->left_flexbounds_name() == "a_r/b_l");
-//   REQUIRE(ps_A->right_flexbounds_name() == "a_r/b_l");
-//   REQUIRE(ps_B->right_flexbounds_name() == "b_r/c_l");
-//   REQUIRE(ps_A->marginal_indices() == A_marginal_indices);
-//   REQUIRE(ps_B->marginal_indices() == B_marginal_indices);
-//   REQUIRE(ps_A->pre_marginal() == A);
-//   REQUIRE(ps_B->pre_marginal() == B);
-//   REQUIRE(ps_A->marginal() == A.block(0, 0, A.rows(), A.cols() - 1));
-//   REQUIRE(ps_B->marginal() == B.block(0, 1, B.rows(), B.cols() - 1));
-//   REQUIRE(ps_A->viterbi() == A.block(0, 0, A.rows(), A.cols() - 1));
-//   REQUIRE(ps_B->viterbi() == B.block(0, 1, B.rows(), B.cols() - 1));
-//
-//   REQUIRE(ps_A->scaler_count() == 0);
-//   REQUIRE(ps_B->scaler_count() == 0);
-//   REQUIRE(ps_A->is_dirty() == false);
-//   REQUIRE(ps_B->is_dirty() == false);
-//
-//   // Test `ps_AB`.
-//   REQUIRE(ps_AB->left_flex() == 1);
-//   REQUIRE(ps_AB->right_flex() == 1);
-//
-//   REQUIRE(ps_AB->marginal() == correct_AB_marginal);
-//   REQUIRE(ps_AB->viterbi() == correct_AB_viterbi);
-//   REQUIRE(ps_AB->viterbi_idx() == correct_AB_viterbi_idx);
-//
-//   REQUIRE(ps_AB->scaler_count() == 0);
-//   REQUIRE(ps_AB->is_dirty() == false);
-//
-//
-//   // Let's add `C` to the `AB` Chain.
-//   Eigen::MatrixXd C(2,1);
-//   C <<
-//   0.89,
-//   0.43;
-//   std::array<int, 4> C_marginal_indices = {0, 0, (int)C.rows(), (int)C.cols()};
-//
-//   Eigen::MatrixXd correct_ABC_marginal(2,1);
-//   correct_ABC_marginal <<
-//   (0.50*0.3+0.71*0.29+0.13*0.11)*0.89 + (0.50*0.37+0.71*0.41+0.13*0.97)*0.43,
-//   (0.29*0.3+0.31*0.29+0.37*0.11)*0.89 + (0.29*0.37+0.31*0.41+0.37*0.97)*0.43;
-//   Eigen::MatrixXd correct_ABC_viterbi(2,1);
-//   correct_ABC_viterbi <<
-//   // 0.71*0.29*0.89 > 0.71*0.41*0.43
-//   // 0.31*0.29*0.89 < 0.37*0.97*0.43
-//   0.71*0.29*0.89,
-//   0.37*0.97*0.43;
-//   Eigen::MatrixXi correct_ABC_viterbi_idx(2,1);
-//   correct_ABC_viterbi_idx <<
-//   0,
-//   1;
-//   // This 1 in the second row then gives us the corresponding column index,
-//   // which contains a 2. So the second path is {2,1}.
-//   IntVectorVector correct_viterbi_paths = {{1,0}, {2,1}};
-//
-//   SmooshablePtr ps_C = BuildSmooshablePtr(nullptr, nullptr, "b_r/c_l", "c_r",
-//                                           C_marginal_indices, C, C);
-//   ChainPtr ps_ABC = std::make_shared<Chain>(Chain(ps_AB, ps_C));
-//
-//   // Test `ps_ABC`.
-//   REQUIRE(ps_ABC->left_flex() == 1);
-//   REQUIRE(ps_ABC->right_flex() == 0);
-//
-//   REQUIRE(ps_ABC->marginal() == correct_ABC_marginal);
-//   REQUIRE(ps_ABC->viterbi() == correct_ABC_viterbi);
-//   REQUIRE(ps_ABC->viterbi_idx() == correct_ABC_viterbi_idx);
-//   REQUIRE(ps_ABC->ViterbiPaths() == correct_viterbi_paths);
-//
-//   REQUIRE(ps_ABC->scaler_count() == 0);
-//   REQUIRE(ps_ABC->is_dirty() == false);
-//
-//
-//   // Test the underflow mechanism.
-//   ps_B->AuxUpdateMarginal(B * SCALE_THRESHOLD);
-//   REQUIRE(ps_B->scaler_count() == 1);
-//   REQUIRE(ps_B->marginal() == B.block(0, 1, B.rows(), B.cols() - 1));
-//   ps_B->AuxUpdateMarginal(B);
-//
-//
-//   // Make a Pile that holds the `ABC` Chain.
-//   Pile p_A = Pile();
-//   p_A.push_back(ps_A);
-//   Pile p_ABC = p_A.SmooshRight({{ps_B, ps_C}});
-//
-//   // Test `p_ABC`.
-//   for (auto it = p_ABC.begin(); it != p_ABC.end(); ++it) {
-//     REQUIRE((*it)->left_flex() == ps_ABC->left_flex());
-//     REQUIRE((*it)->right_flex() == ps_ABC->right_flex());
-//
-//     REQUIRE((*it)->marginal() == ps_ABC->marginal());
-//     REQUIRE((*it)->viterbi() == ps_ABC->viterbi());
-//     REQUIRE((*it)->viterbi_idx() == ps_ABC->viterbi_idx());
-//
-//     REQUIRE((*it)->scaler_count() == ps_ABC->scaler_count());
-//     REQUIRE((*it)->is_dirty() == ps_ABC->is_dirty());
-//   }
-// }
+// Smooshable/Chain/Pile tests
+
+TEST_CASE("SmooshableChainPile", "[smooshablechainpile]") {
+  // Make a Chain out of `A` and `B`.
+  Eigen::MatrixXd A(2,4);
+  A <<
+  0.5, 0.71, 0.13, 0.25,
+  0.29, 0.31, 0.37, 0.33;
+  std::array<int, 4> A_marginal_indices = {0, 0, (int)A.rows(), (int)A.cols() - 1};
+  Eigen::MatrixXd B(3,3);
+  B <<
+  0.11, 0.3,  0.37,
+  0.09, 0.29, 0.41,
+  0.55, 0.11, 0.97;
+  std::array<int, 4> B_marginal_indices = {0, 1, (int)B.rows(), (int)B.cols() - 1};
+
+  Eigen::MatrixXd correct_AB_marginal(2,2);
+  correct_AB_marginal <<
+  (0.50*0.3+0.71*0.29+0.13*0.11), (0.50*0.37+0.71*0.41+0.13*0.97),
+  (0.29*0.3+0.31*0.29+0.37*0.11), (0.29*0.37+0.31*0.41+0.37*0.97);
+  Eigen::MatrixXd correct_AB_viterbi(2,2);
+  correct_AB_viterbi <<
+  0.71*0.29, 0.71*0.41,
+  0.31*0.29, 0.37*0.97;
+  Eigen::MatrixXi correct_AB_viterbi_idx(2,2);
+  correct_AB_viterbi_idx <<
+  1,1,
+  1,2;
+
+  SmooshablePtr ps_A = BuildSmooshablePtr(nullptr, nullptr, "a_l", "a_r/b_l",
+                                          A_marginal_indices, A, A);
+  SmooshablePtr ps_B = BuildSmooshablePtr(nullptr, nullptr, "a_r/b_l", "b_r/c_l",
+                                          B_marginal_indices, B, B);
+  ChainPtr ps_AB = std::make_shared<Chain>(Chain(ps_A, ps_B));
+
+  // Test `ps_A` and `ps_B`.
+  REQUIRE(ps_A->left_flex() == 1);
+  REQUIRE(ps_B->left_flex() == 2);
+  REQUIRE(ps_A->right_flex() == 2);
+  REQUIRE(ps_B->right_flex() == 1);
+
+  REQUIRE(ps_A->germ_ptr() == nullptr);
+  REQUIRE(ps_B->germ_ptr() == nullptr);
+  REQUIRE(ps_A->nti_ptr() == nullptr);
+  REQUIRE(ps_B->nti_ptr() == nullptr);
+  REQUIRE(ps_A->left_flexbounds_name() == "a_l");
+  REQUIRE(ps_B->left_flexbounds_name() == "a_r/b_l");
+  REQUIRE(ps_A->right_flexbounds_name() == "a_r/b_l");
+  REQUIRE(ps_B->right_flexbounds_name() == "b_r/c_l");
+  REQUIRE(ps_A->marginal_indices() == A_marginal_indices);
+  REQUIRE(ps_B->marginal_indices() == B_marginal_indices);
+  REQUIRE(ps_A->pre_marginal() == A);
+  REQUIRE(ps_B->pre_marginal() == B);
+  REQUIRE(ps_A->marginal() == A.block(0, 0, A.rows(), A.cols() - 1));
+  REQUIRE(ps_B->marginal() == B.block(0, 1, B.rows(), B.cols() - 1));
+  REQUIRE(ps_A->viterbi() == A.block(0, 0, A.rows(), A.cols() - 1));
+  REQUIRE(ps_B->viterbi() == B.block(0, 1, B.rows(), B.cols() - 1));
+
+  REQUIRE(ps_A->scaler_count() == 0);
+  REQUIRE(ps_B->scaler_count() == 0);
+  REQUIRE(ps_A->is_dirty() == false);
+  REQUIRE(ps_B->is_dirty() == false);
+
+  // Test `ps_AB`.
+  REQUIRE(ps_AB->left_flex() == 1);
+  REQUIRE(ps_AB->right_flex() == 1);
+
+  REQUIRE(ps_AB->marginal() == correct_AB_marginal);
+  REQUIRE(ps_AB->viterbi() == correct_AB_viterbi);
+  REQUIRE(ps_AB->viterbi_idx() == correct_AB_viterbi_idx);
+
+  REQUIRE(ps_AB->scaler_count() == 0);
+  REQUIRE(ps_AB->is_dirty() == false);
+
+
+  // Let's add `C` to the `AB` Chain.
+  Eigen::MatrixXd C(2,1);
+  C <<
+  0.89,
+  0.43;
+  std::array<int, 4> C_marginal_indices = {0, 0, (int)C.rows(), (int)C.cols()};
+
+  Eigen::MatrixXd correct_ABC_marginal(2,1);
+  correct_ABC_marginal <<
+  (0.50*0.3+0.71*0.29+0.13*0.11)*0.89 + (0.50*0.37+0.71*0.41+0.13*0.97)*0.43,
+  (0.29*0.3+0.31*0.29+0.37*0.11)*0.89 + (0.29*0.37+0.31*0.41+0.37*0.97)*0.43;
+  Eigen::MatrixXd correct_ABC_viterbi(2,1);
+  correct_ABC_viterbi <<
+  // 0.71*0.29*0.89 > 0.71*0.41*0.43
+  // 0.31*0.29*0.89 < 0.37*0.97*0.43
+  0.71*0.29*0.89,
+  0.37*0.97*0.43;
+  Eigen::MatrixXi correct_ABC_viterbi_idx(2,1);
+  correct_ABC_viterbi_idx <<
+  0,
+  1;
+  // This 1 in the second row then gives us the corresponding column index,
+  // which contains a 2. So the second path is {2,1}.
+  IntVectorVector correct_viterbi_paths = {{1,0}, {2,1}};
+
+  SmooshablePtr ps_C = BuildSmooshablePtr(nullptr, nullptr, "b_r/c_l", "c_r",
+                                          C_marginal_indices, C, C);
+  ChainPtr ps_ABC = std::make_shared<Chain>(Chain(ps_AB, ps_C));
+
+  // Test `ps_ABC`.
+  REQUIRE(ps_ABC->left_flex() == 1);
+  REQUIRE(ps_ABC->right_flex() == 0);
+
+  REQUIRE(ps_ABC->marginal() == correct_ABC_marginal);
+  REQUIRE(ps_ABC->viterbi() == correct_ABC_viterbi);
+  REQUIRE(ps_ABC->viterbi_idx() == correct_ABC_viterbi_idx);
+  REQUIRE(ps_ABC->ViterbiPaths() == correct_viterbi_paths);
+
+  REQUIRE(ps_ABC->scaler_count() == 0);
+  REQUIRE(ps_ABC->is_dirty() == false);
+
+
+  // Test the underflow mechanism.
+  ps_B->AuxUpdateMarginal(B * SCALE_THRESHOLD);
+  REQUIRE(ps_B->scaler_count() == 1);
+  REQUIRE(ps_B->marginal() == B.block(0, 1, B.rows(), B.cols() - 1));
+  ps_B->AuxUpdateMarginal(B);
+
+
+  // Make a Pile that holds the `ABC` Chain.
+  Pile p_A = Pile();
+  p_A.push_back(ps_A);
+  Pile p_ABC = p_A.SmooshRight({{ps_B, ps_C}});
+
+  // Test `p_ABC`.
+  for (auto it = p_ABC.begin(); it != p_ABC.end(); ++it) {
+    REQUIRE((*it)->left_flex() == ps_ABC->left_flex());
+    REQUIRE((*it)->right_flex() == ps_ABC->right_flex());
+
+    REQUIRE((*it)->marginal() == ps_ABC->marginal());
+    REQUIRE((*it)->viterbi() == ps_ABC->viterbi());
+    REQUIRE((*it)->viterbi_idx() == ps_ABC->viterbi_idx());
+
+    REQUIRE((*it)->scaler_count() == ps_ABC->scaler_count());
+    REQUIRE((*it)->is_dirty() == ps_ABC->is_dirty());
+  }
+}
 //
 //
 // // SimpleData tests

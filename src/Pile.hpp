@@ -23,11 +23,11 @@ class Pile {
 
   typedef typename std::vector<SmooshishPtr>::size_type size_type;
   typedef typename std::vector<SmooshishPtr>::const_iterator const_iterator;
-  inline bool empty() const { return items_.empty(); };
-  inline const_iterator begin() const { return items_.begin(); };
-  inline const_iterator end() const { return items_.end(); };
-  inline std::size_t size() const { return items_.size(); };
-  inline void reserve(std::size_t new_cap) { items_.reserve(new_cap); };
+  bool empty() const { return items_.empty(); };
+  const_iterator begin() const { return items_.begin(); };
+  const_iterator end() const { return items_.end(); };
+  std::size_t size() const { return items_.size(); };
+  void reserve(std::size_t new_cap) { items_.reserve(new_cap); };
 };
 }
 

@@ -13,7 +13,7 @@ Pile Pile::SmooshRight(const std::vector<SmooshablePtrVect>& futures) const {
 
   for (std::size_t i = 0; i < items_.size(); i++) {
     for (std::size_t j = 0; j < futures.size(); j++) {
-      pile.push_back(SmooshVector((*this)[i], futures[j]));
+      pile.push_back(SmooshVector(items_[i], futures[j]));
     }
   }
   return pile;
