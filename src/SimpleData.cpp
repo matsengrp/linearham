@@ -23,9 +23,9 @@ SimpleData::SimpleData(
     const std::unordered_map<std::string, GermlineGene>& ggenes)
     : Data(flexbounds_str, relpos_str) {
   // Convert the read sequence string to a vector of integers (according to the
-  // alphabet-map).
+  // alphabet).
   seq_ = ConvertSeqToInts(seq_str,
-                          ggenes.begin()->second.germ_ptr->alphabet_map());
+                          ggenes.begin()->second.germ_ptr->alphabet());
 
   // Store `n_read_counts`.
   n_read_counts_ = n_read_counts;

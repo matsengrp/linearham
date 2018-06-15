@@ -175,13 +175,13 @@ void Data::InitializeMatchIndices(
     // Cache the match matrix indices.
     GermlineGene ggene = ggenes.at(gname);
 
-    if (ggene.type == kVType) {
+    if (ggene.type == GermlineType::V) {
       CacheMatchMatrixIndices(ggene.germ_ptr->length(), gname, "v_l", "v_r");
-    } else if (ggene.type == kDType) {
+    } else if (ggene.type == GermlineType::D) {
       CacheMatchMatrixIndices(ggene.germ_ptr->length(), gname, "v_r", "d_r");
       CacheMatchMatrixIndices(ggene.germ_ptr->length(), gname, "d_l", "d_r");
     } else {
-      assert(ggene.type == kJType);
+      assert(ggene.type == GermlineType::J);
       CacheMatchMatrixIndices(ggene.germ_ptr->length(), gname, "d_r", "j_r");
       CacheMatchMatrixIndices(ggene.germ_ptr->length(), gname, "j_l", "j_r");
     }
@@ -204,9 +204,9 @@ void Data::InitializePile(
     // Construct the proper Smooshable(s).
     GermlineGene ggene = ggenes.at(gname);
 
-    if (ggene.type == kVType) {
+    if (ggene.type == GermlineType::V) {
       vdj_pile_.push_back(VSmooshable(ggene.VGermlinePtrCast()));
-    } else if (ggene.type == kDType) {
+    } else if (ggene.type == GermlineType::D) {
       SmooshablePtrVect dx_smooshable, dn_smooshables;
       std::tie(dx_smooshable, dn_smooshables) =
           DSmooshables(ggene.DGermlinePtrCast());
@@ -214,7 +214,7 @@ void Data::InitializePile(
       d_smooshables.push_back(dx_smooshable);
       d_smooshables.push_back(dn_smooshables);
     } else {
-      assert(ggene.type == kJType);
+      assert(ggene.type == GermlineType::J);
       SmooshablePtrVect jx_smooshable, jn_smooshables;
       std::tie(jx_smooshable, jn_smooshables) =
           JSmooshables(ggene.JGermlinePtrCast());
@@ -569,18 +569,20 @@ double Data::MarginalLogLikelihood() const {
 
 
 /// @brief Converts a string sequence to an integer sequence according to the
-/// alphabet-map.
+/// alphabet.
 /// @param[in] seq
 /// The string sequence.
-/// @param[in] alphabet_map
-/// The string-integer alphabet-map.
+/// @param[in] alphabet
+/// The nucleotide alphabet.
 /// @return
 /// The integer sequence.
 Eigen::VectorXi ConvertSeqToInts(
-    const std::string& seq, const std::unordered_map<char, int>& alphabet_map) {
+    const std::string& seq, const std::string& alphabet) {
   Eigen::VectorXi seq_ints(seq.size());
   for (std::size_t i = 0; i < seq.size(); i++) {
-    seq_ints[i] = alphabet_map.at(seq[i]);
+    auto it = std::find(alphabet.begin(), alphabet.end(), seq[i]);
+    assert(it != alphabet.end());
+    seq_ints[i] = it - alphabet.begin();
   }
 
   return seq_ints;

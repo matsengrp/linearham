@@ -105,7 +105,7 @@ enum MatchIndices {
 // Auxiliary Functions
 
 Eigen::VectorXi ConvertSeqToInts(
-    const std::string& seq, const std::unordered_map<char, int>& alphabet_map);
+    const std::string& seq, const std::string& alphabet);
 
 std::string ConvertIntsToSeq(const Eigen::Ref<const Eigen::VectorXi>& seq_ints,
                              const std::string& alphabet);

@@ -15,6 +15,7 @@
 #include "VDJGermline.hpp"
 
 #include "Pile.hpp"
+#include "SimpleData.hpp"
 
 
 namespace test {
@@ -437,6 +438,7 @@ TEST_CASE("CreateGermlineGeneMap", "[vdjgermline]") {
   DGermlinePtr dgene_ptr = ggenes["IGHD_ex*01"].DGermlinePtrCast();
   JGermlinePtr jgene_ptr = ggenes["IGHJ_ex*01"].JGermlinePtrCast();
 }
+//////////// past here, revisions need to be made!!!!
 
 
 // Smooshable/Chain/Pile tests
@@ -581,97 +583,97 @@ TEST_CASE("SmooshableChainPile", "[smooshablechainpile]") {
     REQUIRE((*it)->is_dirty() == ps_ABC->is_dirty());
   }
 }
-//
-//
-// // SimpleData tests
-//
-// TEST_CASE("SimpleData", "[simpledata]") {
-//   // Test the SimpleData class using the example HMM files.
-//   std::vector<SimpleDataPtr> ex_simple_data_ptrs = ReadSimpleData(
-//       "data/example_data/hmm_input.csv", "data/example_data/hmm_params");
-//
-//   /// @todo MAKE PICTURE FOR THIS SCENARIO!!!!!
-//
-//   std::map<std::string, std::pair<int, int>> VDJ_flexbounds = {
-//       {"v_l", {0, 2}},  {"v_r", {4, 6}},   {"d_l", {7, 8}},
-//       {"d_r", {9, 10}}, {"j_l", {11, 12}}, {"j_r", {13, 13}}};
-//   std::map<std::string, int> VDJ_relpos = {
-//       {"IGHV_ex*01", 1}, {"IGHD_ex*01", 5}, {"IGHJ_ex*01", 10}};
-//   std::map<std::array<std::string, 2>, std::array<int, 6>> VDJ_match_indices = {
-//       {{"IGHV_ex*01", "v_l"}, {1, 6, 1, 2, 1, 0}},
-//       {{"IGHD_ex*01", "v_r"}, {5, 10, 1, 1, 1, 0}},
-//       {{"IGHD_ex*01", "d_l"}, {7, 10, 1, 1, 0, 0}},
-//       {{"IGHJ_ex*01", "d_r"}, {10, 13, 0, 0, 1, 0}},
-//       {{"IGHJ_ex*01", "j_l"}, {11, 13, 1, 0, 0, 0}}};
-//   Eigen::VectorXi VDJ_seq(13);
-//   VDJ_seq << 0, 1, 0, 2, 3, 0, 1, 1, 1, 3, 2, 3, 3;
-//   std::pair<int, int> VDJ_n_read_counts = {3,2};
-//
-//   REQUIRE(ex_simple_data_ptrs[0]->flexbounds() == VDJ_flexbounds);
-//   REQUIRE(ex_simple_data_ptrs[0]->relpos() == VDJ_relpos);
-//   REQUIRE(ex_simple_data_ptrs[0]->match_indices() == VDJ_match_indices);
-//   REQUIRE(ex_simple_data_ptrs[0]->seq() == VDJ_seq);
-//   REQUIRE(ex_simple_data_ptrs[0]->n_read_counts() == VDJ_n_read_counts);
-//   REQUIRE(ex_simple_data_ptrs[0]->length() == VDJ_seq.size());
-//
-//   Eigen::MatrixXd V_marginal(1,3);
-//   V_marginal <<
-//   // Format is gene_prob * npadding_prob * emission * transition * ... * emission * landing_out
-//   0.07*0.07*1*0.1*1*0.97*0.2, 0.07*0.07*1*0.1*1*0.97*0.8*0.15*0.5, 0.07*0.07*1*0.1*1*0.97*0.8*0.15*0.5*0.125*1;
-//   Eigen::MatrixXd DX_marginal(3,2);
-//   DX_marginal <<
-//   // Format is gene_prob * landing_in * emission * transition * ... * emission * landing_out
-//                                                  0,                                                       0,
-//   0.035*0.4*0.12*0.98*0.07*0.95*0.05*0.6*0.15*0.65, 0.035*0.4*0.12*0.98*0.07*0.95*0.05*0.6*0.15*0.35*0.01*1,
-//             0.035*0.1*0.07*0.95*0.05*0.6*0.15*0.65,           0.035*0.1*0.07*0.95*0.05*0.6*0.15*0.35*0.01*1;
-//   Eigen::MatrixXd DN_nti_marginal(3,2);
-//   DN_nti_marginal <<
-//   8.04375e-05, 0,
-//    0.00138937, 0,
-//        0.0175, 0;
-//   Eigen::MatrixXd DN_germ_marginal(2,2);
-//   DN_germ_marginal <<
-//   // Format is gene_prob * emission * transition * ... * emission * landing_out
-//   0.035*0.05*0.6*0.15*0.65, 0.035*0.05*0.6*0.15*0.35*0.01*1,
-//            0.035*0.15*0.65,          0.035*0.15*0.35*0.01*1;
-//   Eigen::MatrixXd JX_marginal(2,1);
-//   JX_marginal <<
-//   // Format is gene_prob * landing_in * emission * transition * ... * emission * npadding_prob
-//                              0,
-//   0.015*0.25*0.03*1*0.7*1*0.06;
-//   Eigen::MatrixXd JN_nti_marginal(2,2);
-//   JN_nti_marginal <<
-//   0.003762, 0,
-//     0.0495, 0;
-//   Eigen::MatrixXd JN_germ_marginal(2,1);
-//   JN_germ_marginal <<
-//   // Format is gene_prob * emission * transition * ... * emission * npadding_prob
-//   0.015*0.7*1*0.06,
-//         0.015*0.06;
-//
-//   REQUIRE(ex_simple_data_ptrs[0]->vdj_pile()[0]->marginal().isApprox(V_marginal * DX_marginal * JX_marginal, 1e-5));
-//   REQUIRE(ex_simple_data_ptrs[0]->vdj_pile()[1]->marginal().isApprox(V_marginal * DX_marginal * JN_nti_marginal * JN_germ_marginal, 1e-5));
-//   REQUIRE(ex_simple_data_ptrs[0]->vdj_pile()[2]->marginal().isApprox(V_marginal * DN_nti_marginal * DN_germ_marginal * JX_marginal, 1e-5));
-//   REQUIRE(ex_simple_data_ptrs[0]->vdj_pile()[3]->marginal().isApprox(V_marginal * DN_nti_marginal * DN_germ_marginal * JN_nti_marginal * JN_germ_marginal, 1e-5));
-//   REQUIRE(ex_simple_data_ptrs[0]->MarginalLogLikelihood() == Approx(-37.3790770807));
-//
-//   // Test the SimpleData class using the BCRHam HMM files.
-//   // io::CSVReader<1, io::trim_chars<>, io::double_quote_escape<',', '\"'>> in(
-//   //     "data/bcrham_compare/hmm_output.csv");
-//   // in.read_header(io::ignore_extra_column, "logprob");
-//   // double logprob;
-//   // std::vector<double> viterbi_logprobs;
-//   // while (in.read_row(logprob)) {
-//   //   viterbi_logprobs.push_back(logprob);
-//   // }
-//   //
-//   // std::vector<SimpleDataPtr> bcrham_simple_data_ptrs =
-//   //     ReadCSVData("data/bcrham_compare/hmm_input.csv", "data/hmm_params_bcrham");
-//   //
-//   // for (int i = 0; i < viterbi_logprobs.size(); i++) {
-//   //   REQUIRE(std::fabs(bcrham_simple_data_ptrs[i]->vdj_pile()[0]->FinalViterbiLogProb() - viterbi_logprobs[i]) <= 1e-3);
-//   // }
-// }
+
+
+// SimpleData tests
+
+TEST_CASE("SimpleData", "[simpledata]") {
+  // Test the SimpleData class using the example HMM files.
+  std::vector<SimpleDataPtr> ex_simple_data_ptrs = ReadSimpleData(
+      "data/example_data/hmm_input.csv", "data/example_data/hmm_params");
+
+  /// @todo MAKE PICTURE FOR THIS SCENARIO!!!!!
+
+  std::map<std::string, std::pair<int, int>> VDJ_flexbounds = {
+      {"v_l", {0, 2}},  {"v_r", {4, 6}},   {"d_l", {7, 8}},
+      {"d_r", {9, 10}}, {"j_l", {11, 12}}, {"j_r", {13, 13}}};
+  std::map<std::string, int> VDJ_relpos = {
+      {"IGHV_ex*01", 1}, {"IGHD_ex*01", 5}, {"IGHJ_ex*01", 10}};
+  std::map<std::array<std::string, 2>, std::array<int, 6>> VDJ_match_indices = {
+      {{"IGHV_ex*01", "v_l"}, {1, 6, 1, 2, 1, 0}},
+      {{"IGHD_ex*01", "v_r"}, {5, 10, 1, 1, 1, 0}},
+      {{"IGHD_ex*01", "d_l"}, {7, 10, 1, 1, 0, 0}},
+      {{"IGHJ_ex*01", "d_r"}, {10, 13, 0, 0, 1, 0}},
+      {{"IGHJ_ex*01", "j_l"}, {11, 13, 1, 0, 0, 0}}};
+  Eigen::VectorXi VDJ_seq(13);
+  VDJ_seq << 0, 1, 0, 2, 3, 0, 1, 1, 1, 3, 2, 3, 3;
+  std::pair<int, int> VDJ_n_read_counts = {3,2};
+
+  REQUIRE(ex_simple_data_ptrs[0]->flexbounds() == VDJ_flexbounds);
+  REQUIRE(ex_simple_data_ptrs[0]->relpos() == VDJ_relpos);
+  REQUIRE(ex_simple_data_ptrs[0]->match_indices() == VDJ_match_indices);
+  REQUIRE(ex_simple_data_ptrs[0]->seq() == VDJ_seq);
+  REQUIRE(ex_simple_data_ptrs[0]->n_read_counts() == VDJ_n_read_counts);
+  REQUIRE(ex_simple_data_ptrs[0]->length() == VDJ_seq.size());
+
+  Eigen::MatrixXd V_marginal(1,3);
+  V_marginal <<
+  // Format is gene_prob * npadding_prob * emission * transition * ... * emission * landing_out
+  0.07*0.07*1*0.1*1*0.97*0.2, 0.07*0.07*1*0.1*1*0.97*0.8*0.15*0.5, 0.07*0.07*1*0.1*1*0.97*0.8*0.15*0.5*0.125*1;
+  Eigen::MatrixXd DX_marginal(3,2);
+  DX_marginal <<
+  // Format is gene_prob * landing_in * emission * transition * ... * emission * landing_out
+                                                 0,                                                       0,
+  0.035*0.4*0.12*0.98*0.07*0.95*0.05*0.6*0.15*0.65, 0.035*0.4*0.12*0.98*0.07*0.95*0.05*0.6*0.15*0.35*0.01*1,
+            0.035*0.1*0.07*0.95*0.05*0.6*0.15*0.65,           0.035*0.1*0.07*0.95*0.05*0.6*0.15*0.35*0.01*1;
+  Eigen::MatrixXd DN_nti_marginal(3,2);
+  DN_nti_marginal <<
+  8.04375e-05, 0,
+   0.00138937, 0,
+       0.0175, 0;
+  Eigen::MatrixXd DN_germ_marginal(2,2);
+  DN_germ_marginal <<
+  // Format is gene_prob * emission * transition * ... * emission * landing_out
+  0.035*0.05*0.6*0.15*0.65, 0.035*0.05*0.6*0.15*0.35*0.01*1,
+           0.035*0.15*0.65,          0.035*0.15*0.35*0.01*1;
+  Eigen::MatrixXd JX_marginal(2,1);
+  JX_marginal <<
+  // Format is gene_prob * landing_in * emission * transition * ... * emission * npadding_prob
+                             0,
+  0.015*0.25*0.03*1*0.7*1*0.06;
+  Eigen::MatrixXd JN_nti_marginal(2,2);
+  JN_nti_marginal <<
+  0.003762, 0,
+    0.0495, 0;
+  Eigen::MatrixXd JN_germ_marginal(2,1);
+  JN_germ_marginal <<
+  // Format is gene_prob * emission * transition * ... * emission * npadding_prob
+  0.015*0.7*1*0.06,
+        0.015*0.06;
+
+  REQUIRE(ex_simple_data_ptrs[0]->vdj_pile()[0]->marginal().isApprox(V_marginal * DX_marginal * JX_marginal, 1e-5));
+  REQUIRE(ex_simple_data_ptrs[0]->vdj_pile()[1]->marginal().isApprox(V_marginal * DX_marginal * JN_nti_marginal * JN_germ_marginal, 1e-5));
+  REQUIRE(ex_simple_data_ptrs[0]->vdj_pile()[2]->marginal().isApprox(V_marginal * DN_nti_marginal * DN_germ_marginal * JX_marginal, 1e-5));
+  REQUIRE(ex_simple_data_ptrs[0]->vdj_pile()[3]->marginal().isApprox(V_marginal * DN_nti_marginal * DN_germ_marginal * JN_nti_marginal * JN_germ_marginal, 1e-5));
+  REQUIRE(ex_simple_data_ptrs[0]->MarginalLogLikelihood() == Approx(-37.3790770807));
+
+  // Test the SimpleData class using the BCRHam HMM files.
+  // io::CSVReader<1, io::trim_chars<>, io::double_quote_escape<',', '\"'>> in(
+  //     "data/bcrham_compare/hmm_output.csv");
+  // in.read_header(io::ignore_extra_column, "logprob");
+  // double logprob;
+  // std::vector<double> viterbi_logprobs;
+  // while (in.read_row(logprob)) {
+  //   viterbi_logprobs.push_back(logprob);
+  // }
+  //
+  // std::vector<SimpleDataPtr> bcrham_simple_data_ptrs =
+  //     ReadCSVData("data/bcrham_compare/hmm_input.csv", "data/hmm_params_bcrham");
+  //
+  // for (int i = 0; i < viterbi_logprobs.size(); i++) {
+  //   REQUIRE(std::fabs(bcrham_simple_data_ptrs[i]->vdj_pile()[0]->FinalViterbiLogProb() - viterbi_logprobs[i]) <= 1e-3);
+  // }
+}
 //
 //
 // // PhyloData tests
