@@ -26,12 +26,6 @@ class PhyloData : public Data {
   pll_utree_t* tree_;
   std::unique_ptr<pt::pll::Partition> partition_;
 
-  // Brent Optimization Functor
-  brent::member_func_wrapper<PhyloData> f_;
-
-  // Brent Optimization Upper Bound
-  double b_;
-
   Eigen::VectorXd GermlineEmissionVector(
       GermlinePtr germ_ptr, std::string left_flexbounds_name) const override;
 
@@ -41,7 +35,7 @@ class PhyloData : public Data {
   // Initialization Functions
   void InitializeMsa(const std::vector<std::string>& msa_seqs,
                      unsigned int tip_node_count, unsigned int sites,
-                     const std::unordered_map<char, int>& alphabet_map,
+                     const std::string& alphabet,
                      int& root_index);
 
   void InitializeXmsaStructs(
@@ -49,11 +43,11 @@ class PhyloData : public Data {
       int root_index);
 
   // Branch Length Optimization Functions
-  double BranchLengthLogLikelihood(double length);
-
-  void OptimizeBranch(pll_utree_t* node);
-
-  void OptimizeAllBranchesOnce();
+  // double BranchLengthLogLikelihood(double length);
+  //
+  // void OptimizeBranch(pll_utree_t* node);
+  //
+  // void OptimizeAllBranchesOnce();
 
   // Smooshable Functions
   void UpdateMarginal(SmooshishPtr sp) const;
@@ -76,7 +70,7 @@ class PhyloData : public Data {
   void BuildXmsa(const std::map<std::tuple<int, double, int>, int>& xmsa_ids,
                  const std::string& alphabet, int root_index);
 
-  void UpdateBranchLength(pll_utree_t* node, double length);
+  // void UpdateBranchLength(pll_utree_t* node, double length);
 
  public:
   PhyloData(){};
@@ -99,12 +93,12 @@ class PhyloData : public Data {
   const std::map<int, Eigen::VectorXi>& nti_xmsa_indices() const {
     return nti_xmsa_indices_;
   };
-  pll_utree_t* tree() const { return tree_; };
+  const pll_utree_t& tree() const { return *tree_; };
   const pt::pll::Partition& partition() const { return *partition_; };
   int length() const override { return msa_.cols(); };
 
   // Branch Length Optimization Functions
-  void OptimizeAllBranches();
+  // void OptimizeAllBranches();
 };
 
 

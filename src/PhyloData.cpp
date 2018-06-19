@@ -25,18 +25,17 @@ PhyloData::PhyloData(
     std::string newick_path, std::string fasta_path, std::string raxml_path)
     : Data(flexbounds_str, relpos_str) {
   // Initialize `tree_`.
-  unsigned int tip_node_count;
-  tree_ = pll_utree_parse_newick(newick_path.c_str(), &tip_node_count);
+  tree_ = pll_utree_parse_newick(newick_path.c_str());
 
   // Initialize `xmsa_labels_`.
   std::vector<std::string> msa_seqs;
   unsigned int sites =
-      pt::pll::ParseFasta(fasta_path, tip_node_count, xmsa_labels_, msa_seqs);
+      pt::pll::ParseFasta(fasta_path, tree_->tip_count, xmsa_labels_, msa_seqs);
 
   // Initialize `msa_`.
   int root_index;
-  InitializeMsa(msa_seqs, tip_node_count, sites,
-                ggenes.begin()->second.germ_ptr->alphabet_map(), root_index);
+  InitializeMsa(msa_seqs, tree_->tip_count, sites,
+                ggenes.begin()->second.germ_ptr->alphabet(), root_index);
 
   // Initialize `match_indices_`.
   InitializeMatchIndices(ggenes);
@@ -45,22 +44,16 @@ PhyloData::PhyloData(
   // `nti_xmsa_indices_`.
   InitializeXmsaStructs(ggenes, root_index);
 
-  // Initialize `f_`.
-  f_ = brent::member_func_wrapper<PhyloData>(
-      this, &PhyloData::BranchLengthLogLikelihood);
-
   // Initialize `partition_`.
-  pt::pll::ModelParameters parameters = pt::pll::ParseRaxmlInfo(raxml_path);
-  partition_.reset(new pt::pll::Partition(tree_, tip_node_count, parameters,
-                                          xmsa_labels_, xmsa_seqs_));
-
-  // Initialize `b_`.
-  InitializeBrentUpperBound();
+  pt::pll::Model model_params = pt::pll::ParseRaxmlInfo(raxml_path);
+  partition_.reset(new pt::pll::Partition(tree_, model_params,
+                                          xmsa_labels_, xmsa_seqs_, false));
 
   // Initialize `xmsa_emission_`.
   xmsa_emission_.resize(xmsa_.cols());
-  partition_->TraversalUpdate(tree_, pt::pll::TraversalType::FULL);
-  partition_->LogLikelihood(tree_, xmsa_emission_.data());
+  pll_unode_t* root = pt::pll::GetVirtualRoot(tree_);
+  partition_->TraversalUpdate(root, pt::pll::TraversalType::FULL);
+  partition_->LogLikelihood(root, xmsa_emission_.data());
   xmsa_emission_.array() = xmsa_emission_.array().exp();
 
   // Initialize `vdj_pile_`.
@@ -69,7 +62,7 @@ PhyloData::PhyloData(
 
 
 /// @brief Destructor for PhyloData.
-PhyloData::~PhyloData() { pll_utree_destroy(tree_); };
+PhyloData::~PhyloData() { pll_utree_destroy(tree_, pt::pll::cb_erase_data); };
 
 
 /// @brief Creates a vector with per-site germline emission probabilities for a
@@ -146,13 +139,13 @@ Eigen::RowVectorXd PhyloData::NTIEmissionVector(NTInsertionPtr nti_ptr,
 /// The number of tip nodes (including the germline root).
 /// @param[in] sites
 /// The number of sites in the sequence strings.
-/// @param[in] alphabet_map
-/// The string-integer alphabet-map.
+/// @param[in] alphabet
+/// The nucleotide alphabet.
 /// @param[out] root_index
 /// The xMSA row index of the germline root sequence.
 void PhyloData::InitializeMsa(const std::vector<std::string>& msa_seqs,
                               unsigned int tip_node_count, unsigned int sites,
-                              const std::unordered_map<char, int>& alphabet_map,
+                              const std::string& alphabet,
                               int& root_index) {
   assert(msa_seqs.size() == tip_node_count);
   assert(msa_seqs[0].size() == sites);
@@ -162,7 +155,7 @@ void PhyloData::InitializeMsa(const std::vector<std::string>& msa_seqs,
   for (int i = 0; i < msa_seqs.size(); i++) {
     if (xmsa_labels_[i] != "root") {
       msa_.row(row_index++) =
-          ConvertSeqToInts(msa_seqs[i], alphabet_map).transpose();
+          ConvertSeqToInts(msa_seqs[i], alphabet).transpose();
     } else {
       root_index = i;
     }
@@ -194,13 +187,13 @@ void PhyloData::InitializeXmsaStructs(
     // Cache the xMSA index vector for this germline gene.
     GermlineGene ggene = ggenes.at(gname);
 
-    if (ggene.type == kVType) {
+    if (ggene.type == GermlineType::V) {
       CacheGermlineXmsaIndices(ggene.germ_ptr, "v_l", xmsa_ids);
-    } else if (ggene.type == kDType) {
+    } else if (ggene.type == GermlineType::D) {
       CacheGermlineXmsaIndices(ggene.germ_ptr, "v_r", xmsa_ids);
       CacheGermlineXmsaIndices(ggene.germ_ptr, "d_l", xmsa_ids);
     } else {
-      assert(ggene.type == kJType);
+      assert(ggene.type == GermlineType::J);
       CacheGermlineXmsaIndices(ggene.germ_ptr, "d_r", xmsa_ids);
       CacheGermlineXmsaIndices(ggene.germ_ptr, "j_l", xmsa_ids);
     }
@@ -233,26 +226,26 @@ void PhyloData::InitializeXmsaStructs(
 ///
 /// In addition, `tree_` determines the branch length that will be optimized.
 /// This node will change as we traverse the tree.
-double PhyloData::BranchLengthLogLikelihood(double length) {
-  UpdateBranchLength(tree_, length);
-  return -MarginalLogLikelihood();
-};
+// double PhyloData::BranchLengthLogLikelihood(double length) {
+//   UpdateBranchLength(tree_, length);
+//   return -MarginalLogLikelihood();
+// };
 
 
 /// @brief Optimizes the branch length associated with the input tree node.
 /// @param[in] node
 /// A tree node.
-void PhyloData::OptimizeBranch(pll_utree_t* node) {
-  // Store the current tree node pointer in PhyloData.
-  // This step is required so that our optimization functor `f_` can compute the
-  // proper likelihood values within Brent's method.
-  tree_ = node;
-
-  // Optimize the current branch length.
-  double len;
-  brent::local_min(1.0e-10, b_, 1.0e-10, f_, len);
-  UpdateBranchLength(node, len);
-};
+// void PhyloData::OptimizeBranch(pll_utree_t* node) {
+//   // Store the current tree node pointer in PhyloData.
+//   // This step is required so that our optimization functor `f_` can compute the
+//   // proper likelihood values within Brent's method.
+//   tree_ = node;
+//
+//   // Optimize the current branch length.
+//   double len;
+//   brent::local_min(1.0e-10, b_, 1.0e-10, f_, len);
+//   UpdateBranchLength(node, len);
+// };
 
 
 /// @brief Performs a post-order tree traversal and optimizes the branch length
@@ -261,33 +254,33 @@ void PhyloData::OptimizeBranch(pll_utree_t* node) {
 /// This function is adapted from a similar function found in the libptpll
 /// library.  Note that this function optimizes the initial branch length twice
 /// per traversal.
-void PhyloData::OptimizeAllBranchesOnce() {
-  std::vector<pll_utree_t*> nodes(partition_->node_count(), nullptr);
-  unsigned int nodes_found;
-
-  // Traverse the entire tree and collect nodes using a callback
-  // function that returns 1 for every node visited. Some of these
-  // nodes will be tips, in which case we operate on node->back (the
-  // tip's parent) instead of node; see below.
-  if (!pll_utree_traverse(tree_, [](pll_utree_t*) { return 1; }, nodes.data(),
-                          &nodes_found)) {
-    throw std::invalid_argument("OptimizeAllBranches() requires an inner node");
-  }
-
-  if (nodes_found != nodes.size()) {
-    throw std::invalid_argument("Unexpected number of nodes");
-  }
-
-  for (auto node : nodes) {
-    // If this is a tip node, operate on its parent instead.
-    if (!node->next) {
-      node = node->back;
-    }
-
-    partition_->TraversalUpdate(node, pt::pll::TraversalType::PARTIAL);
-    OptimizeBranch(node);
-  }
-};
+// void PhyloData::OptimizeAllBranchesOnce() {
+//   std::vector<pll_utree_t*> nodes(partition_->node_count(), nullptr);
+//   unsigned int nodes_found;
+//
+//   // Traverse the entire tree and collect nodes using a callback
+//   // function that returns 1 for every node visited. Some of these
+//   // nodes will be tips, in which case we operate on node->back (the
+//   // tip's parent) instead of node; see below.
+//   if (!pll_utree_traverse(tree_, [](pll_utree_t*) { return 1; }, nodes.data(),
+//                           &nodes_found)) {
+//     throw std::invalid_argument("OptimizeAllBranches() requires an inner node");
+//   }
+//
+//   if (nodes_found != nodes.size()) {
+//     throw std::invalid_argument("Unexpected number of nodes");
+//   }
+//
+//   for (auto node : nodes) {
+//     // If this is a tip node, operate on its parent instead.
+//     if (!node->next) {
+//       node = node->back;
+//     }
+//
+//     partition_->TraversalUpdate(node, pt::pll::TraversalType::PARTIAL);
+//     OptimizeBranch(node);
+//   }
+// };
 
 
 // Smooshable Functions
@@ -491,19 +484,19 @@ void PhyloData::BuildXmsa(
 /// A tree node.
 /// @param[in] length
 /// A new branch length.
-void PhyloData::UpdateBranchLength(pll_utree_t* node, double length) {
-  // Modify the specified branch length.
-  partition_->UpdateBranchLength(node, length);
-
-  // Compute the updated per-site phylogenetic "emission" likelihoods.
-  partition_->LogLikelihood(node, xmsa_emission_.data());
-  xmsa_emission_.array() = xmsa_emission_.array().exp();
-
-  // Update the Smooshish marginal/viterbi probability matrices in `vdj_pile_`
-  // to reflect the changes in the "emission" probabilities.
-  MarkPileAsDirty();
-  CleanPile();
-};
+// void PhyloData::UpdateBranchLength(pll_utree_t* node, double length) {
+//   // Modify the specified branch length.
+//   partition_->UpdateBranchLength(node, length);
+//
+//   // Compute the updated per-site phylogenetic "emission" likelihoods.
+//   partition_->LogLikelihood(node, xmsa_emission_.data());
+//   xmsa_emission_.array() = xmsa_emission_.array().exp();
+//
+//   // Update the Smooshish marginal/viterbi probability matrices in `vdj_pile_`
+//   // to reflect the changes in the "emission" probabilities.
+//   MarkPileAsDirty();
+//   CleanPile();
+// };
 
 
 // Branch Length Optimization Functions
@@ -514,21 +507,21 @@ void PhyloData::UpdateBranchLength(pll_utree_t* node, double length) {
 ///
 /// This function is adapted from a similar function found in the libptpll
 /// library.
-void PhyloData::OptimizeAllBranches() {
-  // Compute the initial log-likelihood values.
-  double loglike_prev = MarginalLogLikelihood();
-  OptimizeAllBranchesOnce();
-  double loglike = MarginalLogLikelihood();
-
-  // Continue the branch length optimization.
-  unsigned int i = 0;
-  while (loglike - loglike_prev > EPS_LOGLIK && i < MAX_ITER) {
-    loglike_prev = loglike;
-    OptimizeAllBranchesOnce();
-    loglike = MarginalLogLikelihood();
-    i++;
-  }
-};
+// void PhyloData::OptimizeAllBranches() {
+//   // Compute the initial log-likelihood values.
+//   double loglike_prev = MarginalLogLikelihood();
+//   OptimizeAllBranchesOnce();
+//   double loglike = MarginalLogLikelihood();
+//
+//   // Continue the branch length optimization.
+//   unsigned int i = 0;
+//   while (loglike - loglike_prev > EPS_LOGLIK && i < MAX_ITER) {
+//     loglike_prev = loglike;
+//     OptimizeAllBranchesOnce();
+//     loglike = MarginalLogLikelihood();
+//     i++;
+//   }
+// };
 
 
 // Auxiliary Functions

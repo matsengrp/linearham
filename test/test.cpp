@@ -16,6 +16,7 @@
 
 #include "Pile.hpp"
 #include "SimpleData.hpp"
+#include "PhyloData.hpp"
 
 
 namespace test {
@@ -674,142 +675,142 @@ TEST_CASE("SimpleData", "[simpledata]") {
   //   REQUIRE(std::fabs(bcrham_simple_data_ptrs[i]->vdj_pile()[0]->FinalViterbiLogProb() - viterbi_logprobs[i]) <= 1e-3);
   // }
 }
-//
-//
-// // PhyloData tests
-//
-// TEST_CASE("PhyloData", "[phylodata]") {
-//   // Test the PhyloData class using the example files.
-//   std::string csv_path = "data/example_data/hmm_input.csv";
-//   std::string dir_path = "data/example_data/hmm_params";
-//   std::string newick_path = "data/phylodata_ex/newton.tre";
-//   std::string fasta_path = "data/phylodata_ex/newton.fasta";
-//   std::string raxml_path = "data/phylodata_ex/RAxML_info.newton";
-//   PhyloDataPtr phylo_data_ptr =
-//       ReadPhyloData(csv_path, dir_path, newick_path, fasta_path, raxml_path);
-//
-//   std::map<std::string, std::pair<int, int>> VDJ_flexbounds = {
-//       {"v_l", {0, 2}},  {"v_r", {4, 6}},   {"d_l", {7, 8}},
-//       {"d_r", {9, 10}}, {"j_l", {11, 12}}, {"j_r", {13, 13}}};
-//   std::map<std::string, int> VDJ_relpos = {
-//       {"IGHV_ex*01", 1}, {"IGHD_ex*01", 5}, {"IGHJ_ex*01", 10}};
-//   std::map<std::array<std::string, 2>, std::array<int, 6>> VDJ_match_indices = {
-//       {{"IGHV_ex*01", "v_l"}, {1, 6, 1, 2, 1, 0}},
-//       {{"IGHD_ex*01", "v_r"}, {5, 10, 1, 1, 1, 0}},
-//       {{"IGHD_ex*01", "d_l"}, {7, 10, 1, 1, 0, 0}},
-//       {{"IGHJ_ex*01", "d_r"}, {10, 13, 0, 0, 1, 0}},
-//       {{"IGHJ_ex*01", "j_l"}, {11, 13, 1, 0, 0, 0}}};
-//   Eigen::MatrixXi VDJ_msa(3,13);
-//   VDJ_msa <<
-//   3, 0, 0, 0, 0, 2, 0, 3, 1, 0, 0, 3, 3,
-//   1, 0, 1, 0, 1, 2, 3, 3, 1, 2, 0, 2, 3,
-//   1, 2, 3, 0, 2, 3, 0, 2, 2, 0, 1, 3, 1;
-//   Eigen::MatrixXi VDJ_xmsa(4,33);
-//   VDJ_xmsa <<
-//   2, 0, 3, 1, 0, 0, 3, 3, 0, 0, 0, 0, 2, 0, 0, 0, 2, 2, 0, 0, 0, 3, 3, 3, 0, 0, 0, 0, 0, 0, 3, 3, 3,
-//   2, 3, 3, 1, 2, 0, 2, 3, 0, 1, 0, 1, 2, 1, 1, 1, 2, 2, 3, 3, 3, 3, 3, 3, 2, 2, 2, 0, 0, 0, 2, 2, 2,
-//   2, 2, 3, 0, 1, 0, 3, 2, 0, 3, 2, 0, 1, 1, 2, 3, 0, 3, 0, 1, 3, 0, 1, 2, 0, 2, 3, 1, 2, 3, 0, 1, 2,
-//   3, 0, 2, 2, 0, 1, 3, 1, 2, 3, 0, 2, 3, 2, 2, 2, 3, 3, 0, 0, 0, 2, 2, 2, 0, 0, 0, 1, 1, 1, 3, 3, 3;
-//   std::vector<std::string> VDJ_xmsa_labels = {"0", "1", "root", "3"};
-//   std::vector<std::string> VDJ_xmsa_seqs = {
-//       "GATCAATTAAAAGAAAGGAAATTTAAAAAATTT", "GTTCGAGTACACGCCCGGTTTTTTGGGAAAGGG",
-//       "GGTACATGATGACCGTATACTACGAGTCGTACG", "TAGGACTCGTAGTGGGTTAAAGGGAAACCCTTT"};
-//   Eigen::VectorXd VDJ_xmsa_rates(33);
-//   VDJ_xmsa_rates << 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1;
-//   Eigen::VectorXd VDJ_xmsa_emission(33);
-//   VDJ_xmsa_emission << 0.0111546, 0.000997593, 0.0156026, 0.00133163, 0.000486007, 0.00301193, 0.0125605, 0.00408875, 0.00396307, 0.00219854, 0.00269666, 0.000582657, 0.00336507, 0.000514242, 0.00109387, 0.000878756, 0.00301085, 0.015862, 0.004757, 0.000758171, 0.00167646, 0.00365835, 0.00408875, 0.0152315, 0.00304936, 0.000716547, 0.000997593, 0.00377454, 0.00128657, 0.00200704, 0.0020151, 0.00225217, 0.00336897;
-//   std::map<std::array<std::string, 2>, Eigen::VectorXi> VDJ_germ_xmsa_indices;
-//   Eigen::VectorXi xmsa_indices(5);
-//   xmsa_indices << 8, 9, 10, 11, 12;
-//   VDJ_germ_xmsa_indices.emplace(
-//       std::array<std::string, 2>({"IGHV_ex*01", "v_l"}), xmsa_indices);
-//   xmsa_indices.resize(5);
-//   xmsa_indices << 0, 1, 2, 3, 4;
-//   VDJ_germ_xmsa_indices.emplace(
-//       std::array<std::string, 2>({"IGHD_ex*01", "v_r"}), xmsa_indices);
-//   xmsa_indices.resize(3);
-//   xmsa_indices << 2, 3, 4;
-//   VDJ_germ_xmsa_indices.emplace(
-//       std::array<std::string, 2>({"IGHD_ex*01", "d_l"}), xmsa_indices);
-//   xmsa_indices.resize(3);
-//   xmsa_indices << 5, 6, 7;
-//   VDJ_germ_xmsa_indices.emplace(
-//       std::array<std::string, 2>({"IGHJ_ex*01", "d_r"}), xmsa_indices);
-//   xmsa_indices.resize(2);
-//   xmsa_indices << 6, 7;
-//   VDJ_germ_xmsa_indices.emplace(
-//       std::array<std::string, 2>({"IGHJ_ex*01", "j_l"}), xmsa_indices);
-//   std::map<int, Eigen::VectorXi> VDJ_nti_xmsa_indices;
-//   xmsa_indices.resize(4);
-//   xmsa_indices << 11, 13, 14, 15;
-//   VDJ_nti_xmsa_indices.emplace(4, xmsa_indices);
-//   xmsa_indices << 16, 12, 0, 17;
-//   VDJ_nti_xmsa_indices.emplace(5, xmsa_indices);
-//   xmsa_indices << 18, 19, 1, 20;
-//   VDJ_nti_xmsa_indices.emplace(6, xmsa_indices);
-//   xmsa_indices << 21, 22, 23, 2;
-//   VDJ_nti_xmsa_indices.emplace(7, xmsa_indices);
-//   xmsa_indices << 24, 4, 25, 26;
-//   VDJ_nti_xmsa_indices.emplace(9, xmsa_indices);
-//   xmsa_indices << 5, 27, 28, 29;
-//   VDJ_nti_xmsa_indices.emplace(10, xmsa_indices);
-//   xmsa_indices << 30, 31, 32, 6;
-//   VDJ_nti_xmsa_indices.emplace(11, xmsa_indices);
-//
-//   REQUIRE(phylo_data_ptr->flexbounds() == VDJ_flexbounds);
-//   REQUIRE(phylo_data_ptr->relpos() == VDJ_relpos);
-//   REQUIRE(phylo_data_ptr->match_indices() == VDJ_match_indices);
-//   REQUIRE(phylo_data_ptr->msa() == VDJ_msa);
-//   REQUIRE(phylo_data_ptr->xmsa() == VDJ_xmsa);
-//   REQUIRE(phylo_data_ptr->xmsa_labels() == VDJ_xmsa_labels);
-//   REQUIRE(phylo_data_ptr->xmsa_seqs() == VDJ_xmsa_seqs);
-//   REQUIRE(phylo_data_ptr->xmsa_rates() == VDJ_xmsa_rates);
-//   REQUIRE(phylo_data_ptr->xmsa_emission().isApprox(VDJ_xmsa_emission, 1e-5));
-//   REQUIRE(phylo_data_ptr->germ_xmsa_indices() == VDJ_germ_xmsa_indices);
-//   REQUIRE(phylo_data_ptr->nti_xmsa_indices() == VDJ_nti_xmsa_indices);
-//   REQUIRE(phylo_data_ptr->length() == VDJ_msa.cols());
-//
-//   Eigen::MatrixXd V_marginal(1,3);
-//   V_marginal <<
-//   // Format is gene_prob * npadding_prob * emission * transition * ... * emission * landing_out
-//   0.07*0.00396307*1*0.00219854*1*0.00269666*0.2, 0.07*0.00396307*1*0.00219854*1*0.00269666*0.8*0.000582657*0.5, 0.07*0.00396307*1*0.00219854*1*0.00269666*0.8*0.000582657*0.5*0.00336507*1;
-//   Eigen::MatrixXd DX_marginal(3,2);
-//   DX_marginal <<
-//   // Format is gene_prob * landing_in * emission * transition * ... * emission * landing_out
-//                                                                         0,                                                                                     0,
-//   0.035*0.4*0.0111546*0.98*0.000997593*0.95*0.0156026*0.6*0.00133163*0.65, 0.035*0.4*0.0111546*0.98*0.000997593*0.95*0.0156026*0.6*0.00133163*0.35*0.000486007*1,
-//                  0.035*0.1*0.000997593*0.95*0.0156026*0.6*0.00133163*0.65,                0.035*0.1*0.000997593*0.95*0.0156026*0.6*0.00133163*0.35*0.000486007*1;
-//   Eigen::MatrixXd DN_nti_marginal(3,2);
-//   DN_nti_marginal <<
-//   3.23311e-11, 0,
-//   1.67553e-07, 0,
-//   8.10917e-05, 0;
-//   Eigen::MatrixXd DN_germ_marginal(2,2);
-//   DN_germ_marginal <<
-//   // Format is gene_prob * emission * transition * ... * emission * landing_out
-//   0.035*0.0156026*0.6*0.00133163*0.65, 0.035*0.0156026*0.6*0.00133163*0.35*0.000486007*1,
-//                 0.035*0.00133163*0.65,               0.035*0.00133163*0.35*0.000486007*1;
-//   Eigen::MatrixXd JX_marginal(2,1);
-//   JX_marginal <<
-//   // Format is gene_prob * landing_in * emission * transition * ... * emission * npadding_prob
-//                                                0,
-//   0.015*0.25*0.00301193*1*0.0125605*1*0.00408875;
-//   Eigen::MatrixXd JN_nti_marginal(2,2);
-//   JN_nti_marginal <<
-//   1.79499e-07, 0,
-//   0.000428706, 0;
-//   Eigen::MatrixXd JN_germ_marginal(2,1);
-//   JN_germ_marginal <<
-//   // Format is gene_prob * emission * transition * ... * emission * npadding_prob
-//   0.015*0.0125605*1*0.00408875,
-//               0.015*0.00408875;
-//
-//   REQUIRE(phylo_data_ptr->vdj_pile()[0]->marginal().isApprox(V_marginal * DX_marginal * JX_marginal, 1e-5));
-//   REQUIRE(phylo_data_ptr->vdj_pile()[1]->marginal().isApprox(V_marginal * DX_marginal * JN_nti_marginal * JN_germ_marginal, 1e-5));
-//   REQUIRE(phylo_data_ptr->vdj_pile()[2]->marginal().isApprox(V_marginal * DN_nti_marginal * DN_germ_marginal * JX_marginal, 1e-5));
-//   REQUIRE(phylo_data_ptr->vdj_pile()[3]->marginal().isApprox(V_marginal * DN_nti_marginal * DN_germ_marginal * JN_nti_marginal * JN_germ_marginal, 1e-5));
-//   REQUIRE(phylo_data_ptr->MarginalLogLikelihood() == Approx(-84.493389669));
-// }
+
+
+// PhyloData tests
+
+TEST_CASE("PhyloData", "[phylodata]") {
+  // Test the PhyloData class using the example files.
+  std::string csv_path = "data/example_data/hmm_input.csv";
+  std::string dir_path = "data/example_data/hmm_params";
+  std::string newick_path = "data/phylodata_ex/newton.tre";
+  std::string fasta_path = "data/phylodata_ex/newton.fasta";
+  std::string raxml_path = "data/phylodata_ex/RAxML_info.newton";
+  PhyloDataPtr phylo_data_ptr =
+      ReadPhyloData(csv_path, dir_path, newick_path, fasta_path, raxml_path);
+
+  std::map<std::string, std::pair<int, int>> VDJ_flexbounds = {
+      {"v_l", {0, 2}},  {"v_r", {4, 6}},   {"d_l", {7, 8}},
+      {"d_r", {9, 10}}, {"j_l", {11, 12}}, {"j_r", {13, 13}}};
+  std::map<std::string, int> VDJ_relpos = {
+      {"IGHV_ex*01", 1}, {"IGHD_ex*01", 5}, {"IGHJ_ex*01", 10}};
+  std::map<std::array<std::string, 2>, std::array<int, 6>> VDJ_match_indices = {
+      {{"IGHV_ex*01", "v_l"}, {1, 6, 1, 2, 1, 0}},
+      {{"IGHD_ex*01", "v_r"}, {5, 10, 1, 1, 1, 0}},
+      {{"IGHD_ex*01", "d_l"}, {7, 10, 1, 1, 0, 0}},
+      {{"IGHJ_ex*01", "d_r"}, {10, 13, 0, 0, 1, 0}},
+      {{"IGHJ_ex*01", "j_l"}, {11, 13, 1, 0, 0, 0}}};
+  Eigen::MatrixXi VDJ_msa(3,13);
+  VDJ_msa <<
+  3, 0, 0, 0, 0, 2, 0, 3, 1, 0, 0, 3, 3,
+  1, 0, 1, 0, 1, 2, 3, 3, 1, 2, 0, 2, 3,
+  1, 2, 3, 0, 2, 3, 0, 2, 2, 0, 1, 3, 1;
+  Eigen::MatrixXi VDJ_xmsa(4,33);
+  VDJ_xmsa <<
+  2, 0, 3, 1, 0, 0, 3, 3, 0, 0, 0, 0, 2, 0, 0, 0, 2, 2, 0, 0, 0, 3, 3, 3, 0, 0, 0, 0, 0, 0, 3, 3, 3,
+  2, 3, 3, 1, 2, 0, 2, 3, 0, 1, 0, 1, 2, 1, 1, 1, 2, 2, 3, 3, 3, 3, 3, 3, 2, 2, 2, 0, 0, 0, 2, 2, 2,
+  2, 2, 3, 0, 1, 0, 3, 2, 0, 3, 2, 0, 1, 1, 2, 3, 0, 3, 0, 1, 3, 0, 1, 2, 0, 2, 3, 1, 2, 3, 0, 1, 2,
+  3, 0, 2, 2, 0, 1, 3, 1, 2, 3, 0, 2, 3, 2, 2, 2, 3, 3, 0, 0, 0, 2, 2, 2, 0, 0, 0, 1, 1, 1, 3, 3, 3;
+  std::vector<std::string> VDJ_xmsa_labels = {"0", "1", "root", "3"};
+  std::vector<std::string> VDJ_xmsa_seqs = {
+      "GATCAATTAAAAGAAAGGAAATTTAAAAAATTT", "GTTCGAGTACACGCCCGGTTTTTTGGGAAAGGG",
+      "GGTACATGATGACCGTATACTACGAGTCGTACG", "TAGGACTCGTAGTGGGTTAAAGGGAAACCCTTT"};
+  Eigen::VectorXd VDJ_xmsa_rates(33);
+  VDJ_xmsa_rates << 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1;
+  Eigen::VectorXd VDJ_xmsa_emission(33);
+  VDJ_xmsa_emission << 0.0111546, 0.000997593, 0.0156026, 0.00133163, 0.000486007, 0.00301193, 0.0125605, 0.00408875, 0.00396307, 0.00219854, 0.00269666, 0.000582657, 0.00336507, 0.000514242, 0.00109387, 0.000878756, 0.00301085, 0.015862, 0.004757, 0.000758171, 0.00167646, 0.00365835, 0.00408875, 0.0152315, 0.00304936, 0.000716547, 0.000997593, 0.00377454, 0.00128657, 0.00200704, 0.0020151, 0.00225217, 0.00336897;
+  std::map<std::array<std::string, 2>, Eigen::VectorXi> VDJ_germ_xmsa_indices;
+  Eigen::VectorXi xmsa_indices(5);
+  xmsa_indices << 8, 9, 10, 11, 12;
+  VDJ_germ_xmsa_indices.emplace(
+      std::array<std::string, 2>({"IGHV_ex*01", "v_l"}), xmsa_indices);
+  xmsa_indices.resize(5);
+  xmsa_indices << 0, 1, 2, 3, 4;
+  VDJ_germ_xmsa_indices.emplace(
+      std::array<std::string, 2>({"IGHD_ex*01", "v_r"}), xmsa_indices);
+  xmsa_indices.resize(3);
+  xmsa_indices << 2, 3, 4;
+  VDJ_germ_xmsa_indices.emplace(
+      std::array<std::string, 2>({"IGHD_ex*01", "d_l"}), xmsa_indices);
+  xmsa_indices.resize(3);
+  xmsa_indices << 5, 6, 7;
+  VDJ_germ_xmsa_indices.emplace(
+      std::array<std::string, 2>({"IGHJ_ex*01", "d_r"}), xmsa_indices);
+  xmsa_indices.resize(2);
+  xmsa_indices << 6, 7;
+  VDJ_germ_xmsa_indices.emplace(
+      std::array<std::string, 2>({"IGHJ_ex*01", "j_l"}), xmsa_indices);
+  std::map<int, Eigen::VectorXi> VDJ_nti_xmsa_indices;
+  xmsa_indices.resize(4);
+  xmsa_indices << 11, 13, 14, 15;
+  VDJ_nti_xmsa_indices.emplace(4, xmsa_indices);
+  xmsa_indices << 16, 12, 0, 17;
+  VDJ_nti_xmsa_indices.emplace(5, xmsa_indices);
+  xmsa_indices << 18, 19, 1, 20;
+  VDJ_nti_xmsa_indices.emplace(6, xmsa_indices);
+  xmsa_indices << 21, 22, 23, 2;
+  VDJ_nti_xmsa_indices.emplace(7, xmsa_indices);
+  xmsa_indices << 24, 4, 25, 26;
+  VDJ_nti_xmsa_indices.emplace(9, xmsa_indices);
+  xmsa_indices << 5, 27, 28, 29;
+  VDJ_nti_xmsa_indices.emplace(10, xmsa_indices);
+  xmsa_indices << 30, 31, 32, 6;
+  VDJ_nti_xmsa_indices.emplace(11, xmsa_indices);
+
+  REQUIRE(phylo_data_ptr->flexbounds() == VDJ_flexbounds);
+  REQUIRE(phylo_data_ptr->relpos() == VDJ_relpos);
+  REQUIRE(phylo_data_ptr->match_indices() == VDJ_match_indices);
+  REQUIRE(phylo_data_ptr->msa() == VDJ_msa);
+  REQUIRE(phylo_data_ptr->xmsa() == VDJ_xmsa);
+  REQUIRE(phylo_data_ptr->xmsa_labels() == VDJ_xmsa_labels);
+  REQUIRE(phylo_data_ptr->xmsa_seqs() == VDJ_xmsa_seqs);
+  REQUIRE(phylo_data_ptr->xmsa_rates() == VDJ_xmsa_rates);
+  REQUIRE(phylo_data_ptr->xmsa_emission().isApprox(VDJ_xmsa_emission, 1e-5));
+  REQUIRE(phylo_data_ptr->germ_xmsa_indices() == VDJ_germ_xmsa_indices);
+  REQUIRE(phylo_data_ptr->nti_xmsa_indices() == VDJ_nti_xmsa_indices);
+  REQUIRE(phylo_data_ptr->length() == VDJ_msa.cols());
+
+  Eigen::MatrixXd V_marginal(1,3);
+  V_marginal <<
+  // Format is gene_prob * npadding_prob * emission * transition * ... * emission * landing_out
+  0.07*0.00396307*1*0.00219854*1*0.00269666*0.2, 0.07*0.00396307*1*0.00219854*1*0.00269666*0.8*0.000582657*0.5, 0.07*0.00396307*1*0.00219854*1*0.00269666*0.8*0.000582657*0.5*0.00336507*1;
+  Eigen::MatrixXd DX_marginal(3,2);
+  DX_marginal <<
+  // Format is gene_prob * landing_in * emission * transition * ... * emission * landing_out
+                                                                        0,                                                                                     0,
+  0.035*0.4*0.0111546*0.98*0.000997593*0.95*0.0156026*0.6*0.00133163*0.65, 0.035*0.4*0.0111546*0.98*0.000997593*0.95*0.0156026*0.6*0.00133163*0.35*0.000486007*1,
+                 0.035*0.1*0.000997593*0.95*0.0156026*0.6*0.00133163*0.65,                0.035*0.1*0.000997593*0.95*0.0156026*0.6*0.00133163*0.35*0.000486007*1;
+  Eigen::MatrixXd DN_nti_marginal(3,2);
+  DN_nti_marginal <<
+  3.23311e-11, 0,
+  1.67553e-07, 0,
+  8.10917e-05, 0;
+  Eigen::MatrixXd DN_germ_marginal(2,2);
+  DN_germ_marginal <<
+  // Format is gene_prob * emission * transition * ... * emission * landing_out
+  0.035*0.0156026*0.6*0.00133163*0.65, 0.035*0.0156026*0.6*0.00133163*0.35*0.000486007*1,
+                0.035*0.00133163*0.65,               0.035*0.00133163*0.35*0.000486007*1;
+  Eigen::MatrixXd JX_marginal(2,1);
+  JX_marginal <<
+  // Format is gene_prob * landing_in * emission * transition * ... * emission * npadding_prob
+                                               0,
+  0.015*0.25*0.00301193*1*0.0125605*1*0.00408875;
+  Eigen::MatrixXd JN_nti_marginal(2,2);
+  JN_nti_marginal <<
+  1.79499e-07, 0,
+  0.000428706, 0;
+  Eigen::MatrixXd JN_germ_marginal(2,1);
+  JN_germ_marginal <<
+  // Format is gene_prob * emission * transition * ... * emission * npadding_prob
+  0.015*0.0125605*1*0.00408875,
+              0.015*0.00408875;
+
+  REQUIRE(phylo_data_ptr->vdj_pile()[0]->marginal().isApprox(V_marginal * DX_marginal * JX_marginal, 1e-5));
+  REQUIRE(phylo_data_ptr->vdj_pile()[1]->marginal().isApprox(V_marginal * DX_marginal * JN_nti_marginal * JN_germ_marginal, 1e-5));
+  REQUIRE(phylo_data_ptr->vdj_pile()[2]->marginal().isApprox(V_marginal * DN_nti_marginal * DN_germ_marginal * JX_marginal, 1e-5));
+  REQUIRE(phylo_data_ptr->vdj_pile()[3]->marginal().isApprox(V_marginal * DN_nti_marginal * DN_germ_marginal * JN_nti_marginal * JN_germ_marginal, 1e-5));
+  REQUIRE(phylo_data_ptr->MarginalLogLikelihood() == Approx(-84.493389669));
+}
 //
 //
 // TEST_CASE("OptimizeAllBranches", "[phylodata]") {
