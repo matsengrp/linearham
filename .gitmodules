@@ -7,3 +7,6 @@
 [submodule "lib/libpll"]
 	path = lib/libpll
 	url = https://github.com/xflouris/libpll.git
+[submodule "lib/eigen"]
+	path = lib/eigen
+	url = https://github.com/eigenteam/eigen-git-mirror.git
