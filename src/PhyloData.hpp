@@ -4,24 +4,11 @@
 #include <pll_partition.hpp>
 #include <pll_util.hpp>
 #include "Data.hpp"
-#include "brent_func.hpp"
 
 /// @file PhyloData.hpp
 /// @brief Header for the PhyloData class.
 
 namespace linearham {
-
-/// @brief A scalar used to compute the Brent optimization upper bound.
-const unsigned int BRENT_SCALAR = 5;
-
-
-/// @brief The maximum number of iterations allowed during branch length
-/// optimization.
-const unsigned int MAX_ITER = 100;
-
-
-/// @brief The log-likelihood optimization convergence threshold.
-const double EPS_LOGLIK = 1e-5;
 
 
 /// @brief This class holds data used to compute HMM emission probabilities
@@ -60,8 +47,6 @@ class PhyloData : public Data {
   void InitializeXmsaStructs(
       const std::unordered_map<std::string, GermlineGene>& ggenes,
       int root_index);
-
-  void InitializeBrentUpperBound();
 
   // Branch Length Optimization Functions
   double BranchLengthLogLikelihood(double length);
@@ -137,12 +122,6 @@ void StoreXmsaIndex(std::tuple<int, double, int> id,
                     int& xmsa_index);
 
 std::vector<SmooshishPtr> FindDirtySmooshables(SmooshishPtr sp);
-
-void AuxFindSPRRegraftBranches(pll_utree_t* p_aux,
-                               std::vector<pll_utree_t*>& regraft_nodes);
-
-std::vector<pll_utree_t*> FindSPRRegraftBranches(pll_utree_t* p,
-                                                 int branch_count);
 
 
 // PhyloDataPtr Function
