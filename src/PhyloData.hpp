@@ -19,6 +19,7 @@ class PhyloData : public Data {
   Eigen::MatrixXi xmsa_;
   std::vector<std::string> xmsa_labels_;
   std::vector<std::string> xmsa_seqs_;
+  int xmsa_root_index_;
   Eigen::VectorXd xmsa_rates_;
   Eigen::VectorXd xmsa_emission_;
   std::map<std::array<std::string, 2>, Eigen::VectorXi> germ_xmsa_indices_;
@@ -35,12 +36,10 @@ class PhyloData : public Data {
   // Initialization Functions
   void InitializeMsa(const std::vector<std::string>& msa_seqs,
                      unsigned int tip_node_count, unsigned int sites,
-                     const std::string& alphabet,
-                     int& root_index);
+                     const std::string& alphabet);
 
   void InitializeXmsaStructs(
-      const std::unordered_map<std::string, GermlineGene>& ggenes,
-      int root_index);
+      const std::unordered_map<std::string, GermlineGene>& ggenes);
 
   // Branch Length Optimization Functions
   // double BranchLengthLogLikelihood(double length);
@@ -68,7 +67,7 @@ class PhyloData : public Data {
       std::map<std::tuple<int, double, int>, int>& xmsa_ids);
 
   void BuildXmsa(const std::map<std::tuple<int, double, int>, int>& xmsa_ids,
-                 const std::string& alphabet, int root_index);
+                 const std::string& alphabet);
 
   // void UpdateBranchLength(pll_utree_t* node, double length);
 
@@ -77,13 +76,14 @@ class PhyloData : public Data {
   PhyloData(const std::string& flexbounds_str, const std::string& relpos_str,
             const std::unordered_map<std::string, GermlineGene>& ggenes,
             std::string newick_path, std::string fasta_path,
-            std::string raxml_path);
+            std::string raxml_path, size_t rate_categories);
   ~PhyloData();
 
   const Eigen::MatrixXi& msa() const { return msa_; };
   const Eigen::MatrixXi& xmsa() const { return xmsa_; };
   const std::vector<std::string>& xmsa_labels() const { return xmsa_labels_; };
   const std::vector<std::string>& xmsa_seqs() const { return xmsa_seqs_; };
+  int xmsa_root_index() const { return xmsa_root_index_; };
   const Eigen::VectorXd& xmsa_rates() const { return xmsa_rates_; };
   const Eigen::VectorXd& xmsa_emission() const { return xmsa_emission_; };
   const std::map<std::array<std::string, 2>, Eigen::VectorXi>&
@@ -122,7 +122,7 @@ std::vector<SmooshishPtr> FindDirtySmooshables(SmooshishPtr sp);
 
 PhyloDataPtr ReadPhyloData(std::string csv_path, std::string dir_path,
                            std::string newick_path, std::string fasta_path,
-                           std::string raxml_path);
+                           std::string raxml_path, size_t rate_categories);
 }
 
 #endif  // LINEARHAM_PHYLODATA_

@@ -19,10 +19,13 @@ namespace linearham {
 /// Path to a FASTA file with sequences.
 /// @param[in] raxml_path
 /// Path to a RAxML parameter file.
+/// @param[in] rate_categories
+/// The number of discrete-gamma rate categories to use.
 PhyloData::PhyloData(
     const std::string& flexbounds_str, const std::string& relpos_str,
     const std::unordered_map<std::string, GermlineGene>& ggenes,
-    std::string newick_path, std::string fasta_path, std::string raxml_path)
+    std::string newick_path, std::string fasta_path, std::string raxml_path,
+    size_t rate_categories)
     : Data(flexbounds_str, relpos_str) {
   // Initialize `tree_`.
   tree_ = pll_utree_parse_newick(newick_path.c_str());
@@ -32,28 +35,32 @@ PhyloData::PhyloData(
   unsigned int sites =
       pt::pll::ParseFasta(fasta_path, tree_->tip_count, xmsa_labels_, msa_seqs);
 
-  // Initialize `msa_`.
-  int root_index;
+  // Initialize `msa_` and `xmsa_root_index_`.
   InitializeMsa(msa_seqs, tree_->tip_count, sites,
-                ggenes.begin()->second.germ_ptr->alphabet(), root_index);
+                ggenes.begin()->second.germ_ptr->alphabet());
 
   // Initialize `match_indices_`.
   InitializeMatchIndices(ggenes);
 
   // Initialize `xmsa_`, `xmsa_seqs_`, `xmsa_rates_`, `germ_xmsa_indices_`, and
   // `nti_xmsa_indices_`.
-  InitializeXmsaStructs(ggenes, root_index);
+  InitializeXmsaStructs(ggenes);
 
   // Initialize `partition_`.
-  pt::pll::Model model_params = pt::pll::ParseRaxmlInfo(raxml_path);
+  pt::pll::Model model_params = pt::pll::ParseRaxmlInfo(raxml_path, rate_categories);
   partition_.reset(new pt::pll::Partition(tree_, model_params,
                                           xmsa_labels_, xmsa_seqs_, false));
 
   // Initialize `xmsa_emission_`.
   xmsa_emission_.resize(xmsa_.cols());
-  pll_unode_t* root = pt::pll::GetVirtualRoot(tree_);
-  partition_->TraversalUpdate(root, pt::pll::TraversalType::FULL);
-  partition_->LogLikelihood(root, xmsa_emission_.data());
+  pll_unode_t* root_node = pt::pll::GetVirtualRoot(tree_);
+  partition_->TraversalUpdate(root_node, pt::pll::TraversalType::FULL);
+  partition_->LogLikelihood(root_node, xmsa_emission_.data());
+  // Apply the naive sequence correction to the phylogenetic likelihoods.
+  for (int i = 0; i < xmsa_emission_.size(); i++) {
+    double root_prob = model_params.frequencies[xmsa_(xmsa_root_index_, i)];
+    xmsa_emission_[i] -= log(root_prob);
+  }
   xmsa_emission_.array() = xmsa_emission_.array().exp();
 
   // Initialize `vdj_pile_`.
@@ -141,12 +148,9 @@ Eigen::RowVectorXd PhyloData::NTIEmissionVector(NTInsertionPtr nti_ptr,
 /// The number of sites in the sequence strings.
 /// @param[in] alphabet
 /// The nucleotide alphabet.
-/// @param[out] root_index
-/// The xMSA row index of the germline root sequence.
 void PhyloData::InitializeMsa(const std::vector<std::string>& msa_seqs,
                               unsigned int tip_node_count, unsigned int sites,
-                              const std::string& alphabet,
-                              int& root_index) {
+                              const std::string& alphabet) {
   assert(msa_seqs.size() == tip_node_count);
   assert(msa_seqs[0].size() == sites);
 
@@ -157,7 +161,7 @@ void PhyloData::InitializeMsa(const std::vector<std::string>& msa_seqs,
       msa_.row(row_index++) =
           ConvertSeqToInts(msa_seqs[i], alphabet).transpose();
     } else {
-      root_index = i;
+      xmsa_root_index_ = i;
     }
   }
 };
@@ -169,11 +173,8 @@ void PhyloData::InitializeMsa(const std::vector<std::string>& msa_seqs,
 /// (i.e. `germ_xmsa_indices_`) and NTI regions (i.e. `nti_xmsa_indices_`).
 /// @param[in] ggenes
 /// A map holding (germline name, GermlineGene) pairs.
-/// @param[in] root_index
-/// The xMSA row index of the germline root sequence.
 void PhyloData::InitializeXmsaStructs(
-    const std::unordered_map<std::string, GermlineGene>& ggenes,
-    int root_index) {
+    const std::unordered_map<std::string, GermlineGene>& ggenes) {
   // This map holds ({germline base, germline rate, MSA position}, xMSA
   // position) pairs.
   // We use this map to keep track of the unique xMSA site indices.
@@ -207,7 +208,7 @@ void PhyloData::InitializeXmsaStructs(
 
   // Build the xMSA, the associated per-site rate vector, and the vector of xMSA
   // sequence strings.
-  BuildXmsa(xmsa_ids, ggenes.begin()->second.germ_ptr->alphabet(), root_index);
+  BuildXmsa(xmsa_ids, ggenes.begin()->second.germ_ptr->alphabet());
 };
 
 
@@ -446,11 +447,9 @@ void PhyloData::CacheNTIXmsaIndices(
 /// A map identifying already cached xMSA site indices.
 /// @param[in] alphabet
 /// The nucleotide alphabet.
-/// @param[in] root_index
-/// The xMSA row index of the germline root sequence.
 void PhyloData::BuildXmsa(
     const std::map<std::tuple<int, double, int>, int>& xmsa_ids,
-    const std::string& alphabet, int root_index) {
+    const std::string& alphabet) {
   // Initialize `xmsa_`, `xmsa_rates_`, and `xmsa_seqs_`.
   xmsa_.resize(msa_.rows() + 1, xmsa_ids.size());
   xmsa_rates_.resize(xmsa_ids.size());
@@ -465,9 +464,9 @@ void PhyloData::BuildXmsa(
     int msa_index = std::get<kMsaIndex>(id);
     int xmsa_index = it->second;
 
-    xmsa_.col(xmsa_index) << msa_.col(msa_index).segment(0, root_index),
+    xmsa_.col(xmsa_index) << msa_.col(msa_index).segment(0, xmsa_root_index_),
         germ_base,
-        msa_.col(msa_index).segment(root_index, msa_.rows() - root_index);
+        msa_.col(msa_index).segment(xmsa_root_index_, msa_.rows() - xmsa_root_index_);
     xmsa_rates_[xmsa_index] = germ_rate;
   }
 
@@ -589,11 +588,13 @@ std::vector<SmooshishPtr> FindDirtySmooshables(SmooshishPtr sp) {
 /// Path to a FASTA file with sequences.
 /// @param[in] raxml_path
 /// Path to a RAxML parameter file.
+/// @param[in] rate_categories
+/// The number of discrete-gamma rate categories to use.
 /// @return
 /// A PhyloData pointer.
 PhyloDataPtr ReadPhyloData(std::string csv_path, std::string dir_path,
                            std::string newick_path, std::string fasta_path,
-                           std::string raxml_path) {
+                           std::string raxml_path, size_t rate_categories) {
   // Create the GermlineGene map needed for the PhyloData constructor.
   std::unordered_map<std::string, GermlineGene> ggenes =
       CreateGermlineGeneMap(dir_path);
@@ -608,7 +609,7 @@ PhyloDataPtr ReadPhyloData(std::string csv_path, std::string dir_path,
 
   in.read_row(flexbounds_str, relpos_str);
   PhyloDataPtr phylo_data_ptr = std::make_shared<PhyloData>(
-      flexbounds_str, relpos_str, ggenes, newick_path, fasta_path, raxml_path);
+      flexbounds_str, relpos_str, ggenes, newick_path, fasta_path, raxml_path, rate_categories);
   assert(!in.read_row(flexbounds_str, relpos_str));
 
   return phylo_data_ptr;

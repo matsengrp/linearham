@@ -30,9 +30,9 @@ Eigen::VectorXi emission_indices(13);
 std::pair<int, int> n_read_counts;
 
 void initialize_global_test_vars() {
-  V_root = YAML::LoadFile("data/example_data/hmm_params/IGHV_ex_star_01.yaml");
-  D_root = YAML::LoadFile("data/example_data/hmm_params/IGHD_ex_star_01.yaml");
-  J_root = YAML::LoadFile("data/example_data/hmm_params/IGHJ_ex_star_01.yaml");
+  V_root = YAML::LoadFile("data/SimpleData_ex/hmm_params/IGHV_ex_star_01.yaml");
+  D_root = YAML::LoadFile("data/SimpleData_ex/hmm_params/IGHD_ex_star_01.yaml");
+  J_root = YAML::LoadFile("data/SimpleData_ex/hmm_params/IGHJ_ex_star_01.yaml");
   emission_indices << 0, 1, 0, 2, 3, 0, 1, 1, 1, 3, 2, 3, 3;
   n_read_counts = {3,2};
 }
@@ -434,7 +434,7 @@ TEST_CASE("NPadding", "[npadding]") {
 
 TEST_CASE("CreateGermlineGeneMap", "[vdjgermline]") {
   std::unordered_map<std::string, GermlineGene> ggenes =
-      CreateGermlineGeneMap("data/example_data/hmm_params");
+      CreateGermlineGeneMap("data/SimpleData_ex/hmm_params");
   VGermlinePtr vgene_ptr = ggenes["IGHV_ex*01"].VGermlinePtrCast();
   DGermlinePtr dgene_ptr = ggenes["IGHD_ex*01"].DGermlinePtrCast();
   JGermlinePtr jgene_ptr = ggenes["IGHJ_ex*01"].JGermlinePtrCast();
@@ -591,7 +591,7 @@ TEST_CASE("SmooshableChainPile", "[smooshablechainpile]") {
 TEST_CASE("SimpleData", "[simpledata]") {
   // Test the SimpleData class using the example HMM files.
   std::vector<SimpleDataPtr> ex_simple_data_ptrs = ReadSimpleData(
-      "data/example_data/hmm_input.csv", "data/example_data/hmm_params");
+      "data/SimpleData_ex/hmm_input.csv", "data/SimpleData_ex/hmm_params");
 
   /// @todo MAKE PICTURE FOR THIS SCENARIO!!!!!
 
@@ -681,13 +681,13 @@ TEST_CASE("SimpleData", "[simpledata]") {
 
 TEST_CASE("PhyloData", "[phylodata]") {
   // Test the PhyloData class using the example files.
-  std::string csv_path = "data/example_data/hmm_input.csv";
-  std::string dir_path = "data/example_data/hmm_params";
-  std::string newick_path = "data/phylodata_ex/newton.tre";
-  std::string fasta_path = "data/phylodata_ex/newton.fasta";
-  std::string raxml_path = "data/phylodata_ex/RAxML_info.newton";
+  std::string csv_path = "data/SimpleData_ex/hmm_input.csv";
+  std::string dir_path = "data/SimpleData_ex/hmm_params";
+  std::string newick_path = "data/PhyloData_ex/newton.tre";
+  std::string fasta_path = "data/PhyloData_ex/newton.fasta";
+  std::string raxml_path = "data/PhyloData_ex/RAxML_info.newton";
   PhyloDataPtr phylo_data_ptr =
-      ReadPhyloData(csv_path, dir_path, newick_path, fasta_path, raxml_path);
+      ReadPhyloData(csv_path, dir_path, newick_path, fasta_path, raxml_path, 4);
 
   std::map<std::string, std::pair<int, int>> VDJ_flexbounds = {
       {"v_l", {0, 2}},  {"v_r", {4, 6}},   {"d_l", {7, 8}},
@@ -715,17 +715,20 @@ TEST_CASE("PhyloData", "[phylodata]") {
   std::vector<std::string> VDJ_xmsa_seqs = {
       "GATCAATTAAAAGAAAGGAAATTTAAAAAATTT", "GTTCGAGTACACGCCCGGTTTTTTGGGAAAGGG",
       "GGTACATGATGACCGTATACTACGAGTCGTACG", "TAGGACTCGTAGTGGGTTAAAGGGAAACCCTTT"};
+  int VDJ_xmsa_root_index = std::find(VDJ_xmsa_labels.begin(),
+                                      VDJ_xmsa_labels.end(), "root")
+                            - VDJ_xmsa_labels.begin();
   Eigen::VectorXd VDJ_xmsa_rates(33);
   VDJ_xmsa_rates << 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
                     1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1;
   Eigen::VectorXd VDJ_xmsa_emission(33);
-  VDJ_xmsa_emission << 0.0111546, 0.000997593, 0.0156026, 0.00133163, 0.000486007,
-                       0.00301193, 0.0125605, 0.00408875, 0.00396307, 0.00219854,
-                       0.00269666, 0.000582657, 0.00336507, 0.000514242, 0.00109387,
-                       0.000878756, 0.00301085, 0.015862, 0.004757, 0.000758171,
-                       0.00167646, 0.00365835, 0.00408875, 0.0152315, 0.00304936,
-                       0.000716547, 0.000997593, 0.00377454, 0.00128657, 0.00200704,
-                       0.0020151, 0.00225217, 0.00336897;
+  VDJ_xmsa_emission << 0.0446185, 0.00399037, 0.0400067, 0.00783313, 0.00255793,
+                       0.0177172, 0.0322063, 0.016355, 0.0233122, 0.00563729,
+                       0.0107866, 0.00342739, 0.0177109, 0.00270654, 0.00437549,
+                       0.00225322, 0.0177109, 0.0406717, 0.0279823, 0.00399037,
+                       0.00429863, 0.0215197, 0.0215197, 0.0609261, 0.0179374,
+                       0.00286619, 0.00255793, 0.019866, 0.00514627, 0.00514627,
+                       0.0118535, 0.0118535, 0.0134759;
   std::map<std::array<std::string, 2>, Eigen::VectorXi> VDJ_germ_xmsa_indices;
   Eigen::VectorXi xmsa_indices(5);
   xmsa_indices << 8, 9, 10, 11, 12;
@@ -771,6 +774,7 @@ TEST_CASE("PhyloData", "[phylodata]") {
   REQUIRE(phylo_data_ptr->xmsa() == VDJ_xmsa);
   REQUIRE(phylo_data_ptr->xmsa_labels() == VDJ_xmsa_labels);
   REQUIRE(phylo_data_ptr->xmsa_seqs() == VDJ_xmsa_seqs);
+  REQUIRE(phylo_data_ptr->xmsa_root_index() == VDJ_xmsa_root_index);
   REQUIRE(phylo_data_ptr->xmsa_rates() == VDJ_xmsa_rates);
   REQUIRE(phylo_data_ptr->xmsa_emission().isApprox(VDJ_xmsa_emission, 1e-5));
   REQUIRE(phylo_data_ptr->germ_xmsa_indices() == VDJ_germ_xmsa_indices);
@@ -780,58 +784,87 @@ TEST_CASE("PhyloData", "[phylodata]") {
   Eigen::MatrixXd V_marginal(1,3);
   V_marginal <<
   // Format is gene_prob * npadding_prob * emission * transition * ... * emission * landing_out
-  0.07*0.00396307*1*0.00219854*1*0.00269666*0.2, 0.07*0.00396307*1*0.00219854*1*0.00269666*0.8*0.000582657*0.5, 0.07*0.00396307*1*0.00219854*1*0.00269666*0.8*0.000582657*0.5*0.00336507*1;
+  0.07*0.0233122*1*0.00563729*1*0.0107866*0.2, 0.07*0.0233122*1*0.00563729*1*0.0107866*0.8*0.00342739*0.5, 0.07*0.0233122*1*0.00563729*1*0.0107866*0.8*0.00342739*0.5*0.0177109*1;
   Eigen::MatrixXd DX_marginal(3,2);
   DX_marginal <<
   // Format is gene_prob * landing_in * emission * transition * ... * emission * landing_out
-                                                                        0,                                                                                     0,
-  0.035*0.4*0.0111546*0.98*0.000997593*0.95*0.0156026*0.6*0.00133163*0.65, 0.035*0.4*0.0111546*0.98*0.000997593*0.95*0.0156026*0.6*0.00133163*0.35*0.000486007*1,
-                 0.035*0.1*0.000997593*0.95*0.0156026*0.6*0.00133163*0.65,                0.035*0.1*0.000997593*0.95*0.0156026*0.6*0.00133163*0.35*0.000486007*1;
+                                                                       0,                                                                                   0,
+  0.035*0.4*0.0446185*0.98*0.00399037*0.95*0.0400067*0.6*0.00783313*0.65, 0.035*0.4*0.0446185*0.98*0.00399037*0.95*0.0400067*0.6*0.00783313*0.35*0.00255793*1,
+                 0.035*0.1*0.00399037*0.95*0.0400067*0.6*0.00783313*0.65,                0.035*0.1*0.00399037*0.95*0.0400067*0.6*0.00783313*0.35*0.00255793*1;
   Eigen::MatrixXd DN_nti_marginal(3,2);
   DN_nti_marginal <<
-  3.23311e-11, 0,
-  1.67553e-07, 0,
-  8.10917e-05, 0;
+  3.41703e-09, 0,
+  3.66539e-06, 0,
+  0.000421028, 0;
   Eigen::MatrixXd DN_germ_marginal(2,2);
   DN_germ_marginal <<
   // Format is gene_prob * emission * transition * ... * emission * landing_out
-  0.035*0.0156026*0.6*0.00133163*0.65, 0.035*0.0156026*0.6*0.00133163*0.35*0.000486007*1,
-                0.035*0.00133163*0.65,               0.035*0.00133163*0.35*0.000486007*1;
+  0.035*0.0400067*0.6*0.00783313*0.65, 0.035*0.0400067*0.6*0.00783313*0.35*0.00255793*1,
+                0.035*0.00783313*0.65,               0.035*0.00783313*0.35*0.00255793*1;
   Eigen::MatrixXd JX_marginal(2,1);
   JX_marginal <<
   // Format is gene_prob * landing_in * emission * transition * ... * emission * npadding_prob
-                                               0,
-  0.015*0.25*0.00301193*1*0.0125605*1*0.00408875;
+                                            0,
+  0.015*0.25*0.0177172*1*0.0322063*1*0.016355;
   Eigen::MatrixXd JN_nti_marginal(2,2);
   JN_nti_marginal <<
-  1.79499e-07, 0,
-  0.000428706, 0;
+  3.93063e-06, 0,
+   0.00195086, 0;
   Eigen::MatrixXd JN_germ_marginal(2,1);
   JN_germ_marginal <<
   // Format is gene_prob * emission * transition * ... * emission * npadding_prob
-  0.015*0.0125605*1*0.00408875,
-              0.015*0.00408875;
+  0.015*0.0322063*1*0.016355,
+              0.015*0.016355;
 
   REQUIRE(phylo_data_ptr->vdj_pile()[0]->marginal().isApprox(V_marginal * DX_marginal * JX_marginal, 1e-5));
   REQUIRE(phylo_data_ptr->vdj_pile()[1]->marginal().isApprox(V_marginal * DX_marginal * JN_nti_marginal * JN_germ_marginal, 1e-5));
   REQUIRE(phylo_data_ptr->vdj_pile()[2]->marginal().isApprox(V_marginal * DN_nti_marginal * DN_germ_marginal * JX_marginal, 1e-5));
   REQUIRE(phylo_data_ptr->vdj_pile()[3]->marginal().isApprox(V_marginal * DN_nti_marginal * DN_germ_marginal * JN_nti_marginal * JN_germ_marginal, 1e-5));
-  REQUIRE(phylo_data_ptr->MarginalLogLikelihood() == Approx(-84.493389669));
+  REQUIRE(phylo_data_ptr->MarginalLogLikelihood() == Approx(-67.4783094425));
+
+  // Test the phylogenetic likelihood calculation using the R package "phylomd".
+  // For more details, see https://github.com/dunleavy005/phylomd.
+  csv_path = "data/PhyloData_ex/phylolikelihood_hmm_input.csv";
+  dir_path = "data/PhyloData_ex/phylolikelihood_hmm_params";
+  PhyloDataPtr phylo_likelihood_ptr =
+      ReadPhyloData(csv_path, dir_path, newick_path, fasta_path, raxml_path, 1);
+
+  // library(ape)
+  // library(phylomd)
+  //
+  // tree = read.tree("newton.tre")
+  // tree = root(tree, outgroup=1, resolve.root=T)
+  // msa = toupper(read.dna("newton.fasta", format="fasta", as.character=T))
+  // xmsa.root.seq = c("A", "T", "G", "A", "C", "G", "G", "T", "A", "C", "A", "T", "G")
+  // msa["root",] = xmsa.root.seq
+  // subst.mod = GTR(1, 1, 1, 1, 1, 1, c(0.17, 0.19, 0.25, 0.39), scale=T)
+  //
+  // likelihoods = rep(NA, ncol(msa))
+  // for (i in 1:ncol(msa)) {
+  //   likelihoods[i] = phylo.t.derivatives(tree, subst.mod, 0, msa[,i])
+  // }
+  //
+  // root.probs = subst.mod$pi[match(msa["root",], subst.mod$states)]
+  //
+  // log(prod(likelihoods / root.probs))
+  // # -55.73483
+
+  REQUIRE(phylo_likelihood_ptr->MarginalLogLikelihood() == Approx(-55.73483));
 }
 //
 //
 // TEST_CASE("OptimizeAllBranches", "[phylodata]") {
 //   // Test the branch length optimization in the PhyloData class.
-//   std::string csv_path = "data/phylodata_ex/brlen_optim_ex/hmm_input.csv";
-//   std::string dir_path = "data/phylodata_ex/brlen_optim_ex/hmm_params";
-//   std::string newick_path = "data/phylodata_ex/newton_phyml.tre";
-//   std::string fasta_path = "data/phylodata_ex/newton.fasta";
-//   std::string raxml_path = "data/phylodata_ex/RAxML_info.newton";
+//   std::string csv_path = "data/PhyloData_ex/brlen_optim_ex/hmm_input.csv";
+//   std::string dir_path = "data/PhyloData_ex/brlen_optim_ex/hmm_params";
+//   std::string newick_path = "data/PhyloData_ex/newton_phyml.tre";
+//   std::string fasta_path = "data/PhyloData_ex/newton.fasta";
+//   std::string raxml_path = "data/PhyloData_ex/RAxML_info.newton";
 //   PhyloDataPtr phylo_data_ptr =
 //       ReadPhyloData(csv_path, dir_path, newick_path, fasta_path, raxml_path);
 //   phylo_data_ptr->OptimizeAllBranches();
 //
-//   std::string test_newick_path = "data/phylodata_ex/brlen_optim_ex/newton_optim_phyml.tre";
+//   std::string test_newick_path = "data/PhyloData_ex/brlen_optim_ex/newton_optim_phyml.tre";
 //   PhyloDataPtr test_ptr =
 //       ReadPhyloData(csv_path, dir_path, test_newick_path, fasta_path, raxml_path);
 //
