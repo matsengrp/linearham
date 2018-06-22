@@ -1,44 +1,53 @@
 #include "Germline.hpp"
 
+#include <cstddef>
+#include <regex>
+#include <tuple>
+#include <vector>
+
+#include "linalg.hpp"
+#include "utils.hpp"
+
 /// @file Germline.cpp
 /// @brief Implementation of the Germline class.
 
 namespace linearham {
 
 
-/// @brief Constructor for Germline starting from a YAML file.
+/// @brief Constructor for Germline starting from a partis YAML file.
 /// @param[in] root
-/// A root node associated with a germline YAML file.
-Germline::Germline(YAML::Node root) {
-  // Store alphabet-map and germline name.
+/// A root node associated with a partis YAML file.
+Germline::Germline(const YAML::Node& root) {
+  // Store the alphabet and germline name.
   // For the rest of this function, g[something] means germline_[something].
-  std::vector<std::string> alphabet;
-  std::tie(alphabet, alphabet_map_) = GetAlphabet(root);
-  std::string gname = root["name"].as<std::string>();
+  alphabet_ = GetAlphabet(root);
+  name_ = root["name"].as<std::string>();
 
   // In the YAML file, states of the germline gene are denoted
-  // [germline name]_[position]. The vector of probabilities of various
-  // insertions on the left of this germline gene are denoted
-  // insert_left_[base].
-  // The regex's obtained below extract the corresponding position and base.
-  std::regex grgx, nrgx;
-  std::tie(grgx, nrgx) = GetStateRegex(gname, alphabet);
+  // [germline name]_[position].  The regex obtained below extracts the position
+  // of each state.
+  std::regex grgx = GetGermlineStateRegex(name_);
   std::smatch match;
 
   // The HMM YAML has insert_left states (perhaps), germline-encoded states,
   // then insert_right states (perhaps).
   // Here we step through the insert states to get to the germline states.
   int gstart, gend;
-  std::tie(gstart, gend) = FindGermlineStartEnd(root, gname);
-  assert((gstart == 2) ^ (gstart == (alphabet.size() + 1)));
-  assert((gend == (root["states"].size() - 1)) ^
-         (gend == (root["states"].size() - 2)));
+  std::tie(gstart, gend) = FindGermlineStartEnd(root, name_);
+  assert(gstart == 2 || gstart == (alphabet_.size() + 1));
+  assert(gend == (root["states"].size() - 1) ||
+         gend == (root["states"].size() - 2));
   int gcount = gend - gstart + 1;
 
-  // Create the Germline data structures.
+  // Fix germline gene name.
+  name_ = std::regex_replace(name_, std::regex("_star_"), "*");
+
+  // Initialize the Germline data structures.
   landing_in_.setZero(gcount);
   landing_out_.setZero(gcount);
-  emission_matrix_.setZero(alphabet.size(), gcount);
+  emission_matrix_.setZero(alphabet_.size(), gcount);
+  bases_.setZero(gcount);
+  rates_.setZero(gcount);
   Eigen::VectorXd next_transition = Eigen::VectorXd::Zero(gcount - 1);
 
   // Store the gene probability.
@@ -54,9 +63,9 @@ Germline::Germline(YAML::Node root) {
 
   // The init state has landing-in probabilities in some of the germline
   // gene positions.
-  for (unsigned int i = 0; i < state_names.size(); i++) {
+  for (std::size_t i = 0; i < state_names.size(); i++) {
     if (std::regex_match(state_names[i], match, grgx)) {
-      landing_in_[std::stoi(match[1])] = probs[i];
+      landing_in_[std::stoi(match.str(1))] = probs[i];
     } else {
       // Make sure we match "insert_left_".
       assert(state_names[i].find("insert_left_") != std::string::npos);
@@ -66,18 +75,19 @@ Germline::Germline(YAML::Node root) {
   // Parse germline-encoded states.
   for (int i = gstart; i < gend + 1; i++) {
     YAML::Node gstate = root["states"][i];
-    std::string gsname = gstate["name"].as<std::string>();
-    assert(std::regex_match(gsname, match, grgx));
-    int gindex = std::stoi(match[1]);
+    std::string gname = gstate["name"].as<std::string>();
+    assert(std::regex_match(gname, match, grgx));
+    int gindex = std::stoi(match.str(1));
     // Make sure the nominal state number corresponds with the order.
     assert(gindex == i - gstart);
 
+    // Parse germline transition data.
     std::tie(state_names, probs) = ParseStringProbMap(gstate["transitions"]);
 
-    for (unsigned int j = 0; j < state_names.size(); j++) {
+    for (std::size_t j = 0; j < state_names.size(); j++) {
       if (std::regex_match(state_names[j], match, grgx)) {
-        // We can only transition to the next germline base...
-        assert(std::stoi(match[1]) == (gindex + 1));
+        // We can transition to the next germline base...
+        assert(std::stoi(match.str(1)) == (gindex + 1));
         next_transition[gindex] = probs[j];
       } else if (state_names[j] == "end") {
         // ... or we can transition to the end...
@@ -88,191 +98,57 @@ Germline::Germline(YAML::Node root) {
       }
     }
 
+    // Parse germline emission data.
     std::tie(state_names, probs) =
         ParseStringProbMap(gstate["emissions"]["probs"]);
-    assert(IsEqualStringVecs(state_names, alphabet));
+    assert(gstate["emissions"]["track"].as<std::string>() == "nukes");
 
-    for (unsigned int j = 0; j < state_names.size(); j++) {
-      emission_matrix_(alphabet_map_[state_names[j]], gindex) = probs[j];
+    for (std::size_t j = 0; j < state_names.size(); j++) {
+      int emit_base = GetAlphabetIndex(alphabet_, state_names[j][0]);
+      emission_matrix_(emit_base, gindex) = probs[j];
     }
+
+    // Parse the germline base and rate.
+    bases_[gindex] =
+        GetAlphabetIndex(alphabet_, gstate["extras"]["germline"].as<char>());
+    // `rates_` should be a vector of 1's because we utilize a 4-rate discrete
+    // gamma model through libpll.
+    rates_[gindex] = 1;
   }
 
-  // Build the Germline transition matrix.
+  // Build the germline transition probability matrix.
   transition_ = BuildTransition(next_transition);
+  assert(transition_.rows() == transition_.cols());
   assert(transition_.cols() == emission_matrix_.cols());
 };
 
 
-/// @brief Prepares a vector with per-site emission probabilities for a trimmed
-/// read.
-/// @param[in] emission_indices
-/// Vector of indices giving the emitted states of a trimmed read.
-/// @param[in] start
-/// What does the first trimmed read position correspond to in the germline
-/// gene?
-/// @param[out] emission
-/// Storage for the vector of per-site emission probabilities.
-///
-/// First, note that this is for a "trimmed" read, meaning the part of the read
-/// that could potentially align to this germline gene. This is typically
-/// obtained by the Smith-Waterman alignment step.
-///
-/// The ith entry of the resulting vector is the probability of emitting
-/// the state corresponding to the ith entry of `emission_indices` from the
-/// `i+start` entry of the germline sequence.
-void Germline::EmissionVector(
-    const Eigen::Ref<const Eigen::VectorXi>& emission_indices, int start,
-    Eigen::Ref<Eigen::VectorXd> emission) const {
-  int length = emission_indices.size();
-  assert(start + length <= this->length());
-  VectorByIndices(
-      emission_matrix_.block(0, start, emission_matrix_.rows(), length),
-      emission_indices, emission);
-};
-
-
-/// @brief Prepares a matrix with the probabilities of various linear matches.
-/// @param[in] start
-/// What does the first read position correspond to in the germline gene?
-/// @param[in] emission_indices
-/// Vector of indices giving the emitted states.
-/// @param[in] left_flex
-/// How many alternative start points should we allow on the left side?
-/// @param[in] right_flex
-/// How many alternative end points should we allow on the right side?
-/// @param[out] match
-/// Storage for the matrix of match probabilities.
-///
-/// The match matrix has (zero-indexed) \f$i,j\f$th entry equal to the
-/// probability of a linear match starting at `start+i` and ending
-/// `right_flex-j` before the end.
-/// Note that we don't need a "stop" parameter because we can give
-/// `emission_indices` a vector of any length (given the constraints
-/// on maximal length).
-void Germline::MatchMatrix(
-    int start, const Eigen::Ref<const Eigen::VectorXi>& emission_indices,
-    int left_flex, int right_flex, Eigen::Ref<Eigen::MatrixXd> match) const {
-  int length = emission_indices.size();
-  assert(0 <= left_flex && left_flex <= length - 1);
-  assert(0 <= right_flex && right_flex <= length - 1);
-  assert(start + length <= this->length());
-  Eigen::VectorXd emission(length);
-  /// @todo Inefficient. Shouldn't calculate fullMatch then cut it down.
-  Eigen::MatrixXd fullMatch(length, length);
-  EmissionVector(emission_indices, start, emission);
-  BuildMatchMatrix(transition_.block(start, start, length, length), emission,
-                   fullMatch);
-  match = fullMatch.block(0, length - right_flex - 1, left_flex + 1,
-                          right_flex + 1);
-};
-
-
-/// @brief Creates the matrix with the probabilities of various germline linear
-/// matches.
-/// @param[in] left_flexbounds
-/// A 2-tuple of read positions providing the bounds of the germline's left flex
-/// region.
-/// @param[in] right_flexbounds
-/// A 2-tuple of read positions providing the bounds of the germline's right
-/// flex region.
-/// @param[in] emission_indices
-/// A vector of indices corresponding to the observed bases of the read.
-/// @param[in] relpos
-/// The read position corresponding to the first base of the germline gene.
+/// @brief Makes the Germline match transition probability matrix.
+/// @param[in] next_transition
+/// Vector of probabilities of transitioning to the next match state.
 /// @return
-/// The germline match probability matrix.
+/// Matrix of match probabilities just in terms of the transitions in
+/// and along a germline segment.
 ///
-/// This function uses `MatchMatrix` to build the match matrix for the relevant
-/// part of the germline gene then pads the remaining flex positions without
-/// germline states by filling the match matrix with zeroes.
+/// Here a "match" is a specific path through the hidden states of the HMM.
 ///
-/// Note that this function ignores the probability of transitioning into and
-/// out of the match when calculating the germline match matrix.
-Eigen::MatrixXd Germline::GermlineProbMatrix(
-    std::pair<int, int> left_flexbounds, std::pair<int, int> right_flexbounds,
-    const Eigen::Ref<const Eigen::VectorXi>& emission_indices,
-    int relpos) const {
-  assert(left_flexbounds.first <= left_flexbounds.second);
-  assert(right_flexbounds.first <= right_flexbounds.second);
-  assert(left_flexbounds.first + 1 <= right_flexbounds.first);
-  assert(left_flexbounds.second + 1 <= right_flexbounds.second);
-  assert(right_flexbounds.first <= relpos + this->length());
+/// If next_transition is of length \f$\ell-1\f$, then make an \f$\ell \times
+/// \ell\f$ matrix M with the part of the match probability coming from the
+/// transitions. If \f$a\f$ is next_transition,
+/// \f[
+/// M_{i,j} := \prod_{k=i}^{j-1} a_k
+/// \f]
+/// is the cumulative transition probability of having a match start at i and
+/// end at j, ignoring the transitions into and out of the match.
+Eigen::MatrixXd BuildTransition(
+    const Eigen::Ref<const Eigen::VectorXd>& next_transition) {
+  int ell = next_transition.size() + 1;
+  Eigen::MatrixXd transition = Eigen::MatrixXd::Ones(ell, ell);
+  SubProductMatrix(next_transition, transition.block(0, 1, ell - 1, ell - 1));
+  transition.triangularView<Eigen::StrictlyLower>().setZero();
 
-  assert(0 < relpos + this->length() && relpos < emission_indices.size());
-  assert(0 <= left_flexbounds.first && 0 <= left_flexbounds.second);
-  assert(left_flexbounds.first < emission_indices.size() &&
-         left_flexbounds.second < emission_indices.size());
-  assert(0 < right_flexbounds.first && 0 < right_flexbounds.second);
-  assert(right_flexbounds.first <= emission_indices.size() &&
-         right_flexbounds.second <= emission_indices.size());
-
-  Eigen::MatrixXd outp = Eigen::MatrixXd::Zero(
-      left_flexbounds.second - left_flexbounds.first + 1,
-      right_flexbounds.second - right_flexbounds.first + 1);
-
-  // If the germline's left flex region has no germline states,
-  // return a match probability matrix filled only with zeroes.
-  if (relpos > left_flexbounds.second) return outp;
-
-  // Determine the output matrix block that will hold the germline match matrix.
-  int read_start, read_end, left_flex, right_flex;
-  FindGermProbMatrixIndices(left_flexbounds, right_flexbounds, relpos,
-                            this->length(), read_start, read_end, left_flex,
-                            right_flex);
-
-  int row_start = read_start - left_flexbounds.first;
-  int col_start = read_end - right_flex - right_flexbounds.first;
-
-  // Compute the germline match probability matrix.
-  MatchMatrix(read_start - relpos,
-              emission_indices.segment(read_start, read_end - read_start),
-              left_flex, right_flex,
-              outp.block(row_start, col_start, left_flex + 1, right_flex + 1));
-
-  return outp;
+  return transition;
 };
 
 
-// Auxiliary Functions
-
-
-/// @brief Finds the indices that correspond to the germline match matrix block
-/// with actual germline states.
-/// @param[in] left_flexbounds
-/// A 2-tuple of read positions providing the bounds of the germline's left flex
-/// region.
-/// @param[in] right_flexbounds
-/// A 2-tuple of read positions providing the bounds of the germline's right
-/// flex region.
-/// @param[in] relpos
-/// The read position corresponding to the first base of the germline gene.
-/// @param[in] germ_length
-/// The length of the germline gene.
-/// @param[out] read_start
-/// The read position of the start of the germline match.
-/// @param[out] read_end
-/// The read position of the end of the germline match.
-/// @param[out] left_flex
-/// The number of alternative match starting positions with actual germline
-/// states.
-/// @param[out] right_flex
-/// The number of alternative match ending positions with actual germline
-/// states.
-void FindGermProbMatrixIndices(std::pair<int, int> left_flexbounds,
-                               std::pair<int, int> right_flexbounds, int relpos,
-                               int germ_length, int& read_start, int& read_end,
-                               int& left_flex, int& right_flex) {
-  int g_ll, g_lr, g_rl, g_rr;
-  g_ll = left_flexbounds.first;
-  g_lr = left_flexbounds.second;
-  g_rl = right_flexbounds.first;
-  g_rr = right_flexbounds.second;
-
-  // Calculate indices.
-  read_start = std::max(relpos, g_ll);
-  left_flex = std::min(relpos + germ_length - 1, g_lr) - read_start;
-
-  read_end = std::min(relpos + germ_length, g_rr);
-  right_flex = read_end - std::max(relpos + 1, g_rl);
-};
-}
+}  // namespace linearham

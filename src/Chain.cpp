@@ -45,7 +45,7 @@ void Chain::Scale(Eigen::MatrixXd& myself, Eigen::MatrixXd& other) const {
 const Eigen::MatrixXd& Chain::marginal() const {
   if (marginal_.size() == 0) {
     // marginal_ hasn't been computed yet, so compute it.
-    marginal_.resize(left_flex() + 1, right_flex() + 1);
+    marginal_.resize(left_flex_ + 1, right_flex_ + 1);
     marginal_ = prev_->marginal() * curr_->marginal();
     Scale(marginal_, viterbi_);
   }
@@ -57,8 +57,8 @@ const Eigen::MatrixXd& Chain::marginal() const {
 void Chain::PerhapsCalcViterbi() const {
   if (viterbi_.size() == 0) {
     // viterbi_ hasn't been computed yet, so compute it.
-    viterbi_.resize(left_flex() + 1, right_flex() + 1);
-    viterbi_idx_.resize(left_flex() + 1, right_flex() + 1);
+    viterbi_.resize(left_flex_ + 1, right_flex_ + 1);
+    viterbi_idx_.resize(left_flex_ + 1, right_flex_ + 1);
     BinaryMax(prev_->viterbi(), curr_->viterbi(), viterbi_, viterbi_idx_);
     Scale(viterbi_, marginal_);
   }
@@ -89,7 +89,7 @@ const Eigen::MatrixXi& Chain::viterbi_idx() const {
 
 /// @brief Recursive auxiliary function to get the Viterbi path.
 void Chain::AuxViterbiPath(int row, int col, std::vector<int>& path) const {
-  int new_col = viterbi_idx()(row, col);
+  int new_col = viterbi_idx_(row, col);
   prev_->AuxViterbiPath(row, new_col, path);
   path.push_back(new_col);
 };
@@ -112,12 +112,57 @@ std::vector<int> Chain::ViterbiPath(int row, int col) const {
 /// column.
 IntVectorVector Chain::ViterbiPaths() const {
   IntVectorVector paths;
-  for (int i = 0; i < viterbi_idx_.rows(); i++) {
-    for (int j = 0; j < viterbi_idx_.cols(); j++) {
+  // Note that we call `viterbi_idx()` (not `viterbi_idx_`) because this ensures
+  // `viterbi_idx_` is computed.
+  for (int i = 0; i < viterbi_idx().rows(); i++) {
+    for (int j = 0; j < viterbi_idx().cols(); j++) {
       paths.push_back(ViterbiPath(i, j));
     }
   }
   return paths;
+};
+
+
+/// @brief If a Chain is clean, mark it as dirty and recursively mark the
+/// upstream Smooshishs as dirty.
+void Chain::MarkAsDirty() {
+  if (!is_dirty_) {
+    is_dirty_ = true;
+    prev_->MarkAsDirty();
+    curr_->MarkAsDirty();
+  }
+};
+
+
+/// @brief If a Chain is dirty, mark it as clean, resize its marginal/viterbi
+/// probability matrices to empty matrices, and recursively mark the upstream
+/// Smooshishs as clean.
+///
+/// Note that resizing a dirty Chain's marginal/viterbi probability matrices to
+/// empty matrices will force recomputations based on the upstream Smooshishs'
+/// probability matrices (see member functions `marginal()`, `viterbi()`, and
+/// `viterbi_idx()`).
+void Chain::MarkAsClean() {
+  if (is_dirty_) {
+    is_dirty_ = false;
+    marginal_.resize(0, 0);
+    viterbi_.resize(0, 0);
+    prev_->MarkAsClean();
+    curr_->MarkAsClean();
+  }
+};
+
+
+/// @brief If a Chain is dirty, recurse over the upstream Smooshishs looking for
+/// dirty Smooshables.
+/// @param[in,out] dirty_smooshables
+/// A vector of SmooshishPtr's storing dirty Smooshables.
+void Chain::AuxFindDirtySmooshables(
+    std::vector<SmooshishPtr>& dirty_smooshables) {
+  if (is_dirty_) {
+    prev_->AuxFindDirtySmooshables(dirty_smooshables);
+    curr_->AuxFindDirtySmooshables(dirty_smooshables);
+  }
 };
 
 

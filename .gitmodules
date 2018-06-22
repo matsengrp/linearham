@@ -1,9 +1,12 @@
-[submodule "eigen"]
-	path = lib/eigen
-	url = https://github.com/RLovelett/eigen.git
 [submodule "yaml-cpp"]
 	path = lib/yaml-cpp
 	url = https://github.com/jbeder/yaml-cpp.git
 [submodule "lib/fast-cpp-csv-parser"]
 	path = lib/fast-cpp-csv-parser
 	url = https://github.com/ben-strasser/fast-cpp-csv-parser.git
+[submodule "lib/eigen"]
+	path = lib/eigen
+	url = https://github.com/eigenteam/eigen-git-mirror.git
+[submodule "lib/libptpll"]
+	path = lib/libptpll
+	url = https://github.com/matsengrp/libptpll.git

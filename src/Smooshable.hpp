@@ -1,8 +1,9 @@
 #ifndef LINEARHAM_SMOOSHABLE_
 #define LINEARHAM_SMOOSHABLE_
 
+#include "Germline.hpp"
+#include "NTInsertion.hpp"
 #include "Smooshish.hpp"
-#include "VDJGermline.hpp"
 
 /// @file Smooshable.hpp
 /// @brief Header for the Smooshable class.
@@ -18,15 +19,36 @@ namespace linearham {
 /// (resp. right) sides.
 class Smooshable : public Smooshish {
  private:
+  GermlinePtr germ_ptr_;
+  NTInsertionPtr nti_ptr_;
+  std::string left_flexbounds_name_;
+  std::string right_flexbounds_name_;
+  std::array<int, 4> marginal_indices_;
+  // The marginal probability matrix (without emission probabilities and
+  // un-cut).
+  Eigen::MatrixXd pre_marginal_;
+  // The marginal probability matrix (with emission probabilities and possibly
+  // cut).
   Eigen::MatrixXd marginal_;
 
  public:
   Smooshable(){};
-  Smooshable(const Eigen::Ref<const Eigen::MatrixXd>& marginal);
+  Smooshable(GermlinePtr germ_ptr, NTInsertionPtr nti_ptr,
+             std::string left_flexbounds_name,
+             std::string right_flexbounds_name,
+             std::array<int, 4> marginal_indices,
+             const Eigen::Ref<const Eigen::MatrixXd>& pre_marginal,
+             const Eigen::Ref<const Eigen::MatrixXd>& marginal);
 
   int left_flex() const override { return marginal_.rows() - 1; };
   int right_flex() const override { return marginal_.cols() - 1; };
 
+  GermlinePtr germ_ptr() const { return germ_ptr_; };
+  NTInsertionPtr nti_ptr() const { return nti_ptr_; };
+  std::string left_flexbounds_name() const { return left_flexbounds_name_; };
+  std::string right_flexbounds_name() const { return right_flexbounds_name_; };
+  std::array<int, 4> marginal_indices() const { return marginal_indices_; };
+  const Eigen::MatrixXd& pre_marginal() const { return pre_marginal_; };
   // We use override here to make sure that we are overriding the virtual
   // method in Smooshish (rather than defining some other method via a
   // different signature).
@@ -35,43 +57,38 @@ class Smooshable : public Smooshish {
   const Eigen::MatrixXd& viterbi() const override { return marginal_; };
   const Eigen::MatrixXi& viterbi_idx() const override;
   void AuxViterbiPath(int, int, std::vector<int>&) const override;
+  void MarkAsDirty() override;
+  void MarkAsClean() override;
+  void AuxFindDirtySmooshables(
+      std::vector<SmooshishPtr>& dirty_smooshables) override;
+  void AuxUpdateMarginal(const Eigen::Ref<const Eigen::MatrixXd>& new_marginal);
+};
+
+
+/// @brief An enumerated type that is used for `marginal_indices_` array
+/// indexing.
+enum MarginalIndices {
+  kMargRowStart,
+  kMargColStart,
+  kMargRowLength,
+  kMargColLength
 };
 
 
 // SmooshablePtr
 
 typedef std::shared_ptr<Smooshable> SmooshablePtr;
-SmooshablePtr BuildSmooshablePtr(const Eigen::Ref<const Eigen::MatrixXd>&);
 typedef std::vector<SmooshablePtr> SmooshablePtrVect;
 
-
-// VDJSmooshable Constructor Functions
-
-SmooshablePtr VSmooshable(
-    const VGermline& vgerm_obj,
-    const std::map<std::string, std::pair<int, int>>& flexbounds,
-    const Eigen::Ref<const Eigen::VectorXi>& emission_indices,
-    int v_relpos, std::pair<int, int> n_read_counts);
-
-std::pair<SmooshablePtrVect, SmooshablePtrVect> DSmooshables(
-    const DGermline& dgerm_obj,
-    const std::map<std::string, std::pair<int, int>>& flexbounds,
-    const Eigen::Ref<const Eigen::VectorXi>& emission_indices, int d_relpos);
-
-std::pair<SmooshablePtrVect, SmooshablePtrVect> JSmooshables(
-    const JGermline& jgerm_obj,
-    const std::map<std::string, std::pair<int, int>>& flexbounds,
-    const Eigen::Ref<const Eigen::VectorXi>& emission_indices,
-    int j_relpos, std::pair<int, int> n_read_counts);
+SmooshablePtr BuildSmooshablePtr(
+    GermlinePtr germ_ptr, NTInsertionPtr nti_ptr,
+    std::string left_flexbounds_name, std::string right_flexbounds_name,
+    std::array<int, 4> marginal_indices,
+    const Eigen::Ref<const Eigen::MatrixXd>& pre_marginal,
+    const Eigen::Ref<const Eigen::MatrixXd>& marginal);
 
 
 // Auxiliary Functions
-
-void MultiplyLandingGermProbMatrix(
-    const Eigen::Ref<const Eigen::VectorXd>& landing,
-    std::pair<int, int> left_flexbounds, std::pair<int, int> right_flexbounds,
-    int relpos, int germ_length, bool landing_in,
-    Eigen::Ref<Eigen::MatrixXd> germ_prob_matrix);
 
 int ScaleMatrix(Eigen::Ref<Eigen::MatrixXd> m);
 }

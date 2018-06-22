@@ -6,6 +6,17 @@ build:
             name: initialize git submodules
             code: |
                 git submodule update --init --recursive
+        - install-packages:
+            packages: flex bison
+        - script:
+            name: libpll install
+            code: |
+                git clone https://github.com/xflouris/libpll.git
+                cd libpll
+                ./autogen.sh
+                ./configure
+                make
+                make install
         - script:
             name: build
             code: scons

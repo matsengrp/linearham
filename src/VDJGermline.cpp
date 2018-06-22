@@ -1,29 +1,37 @@
 #include "VDJGermline.hpp"
 
+#include <dirent.h>
+#include <regex>
+
 /// @file VDJGermline.cpp
 /// @brief Implementations of the V, D, and J germline classes.
 
 namespace linearham {
 
 
-std::shared_ptr<VGermline> GermlineGene::VGermlinePtr() const {
-  assert(type == "V");
+VGermlinePtr GermlineGene::VGermlinePtrCast() const {
+  assert(type == GermlineType::V);
   return std::static_pointer_cast<VGermline>(germ_ptr);
 };
 
 
-std::shared_ptr<DGermline> GermlineGene::DGermlinePtr() const {
-  assert(type == "D");
+DGermlinePtr GermlineGene::DGermlinePtrCast() const {
+  assert(type == GermlineType::D);
   return std::static_pointer_cast<DGermline>(germ_ptr);
 };
 
 
-std::shared_ptr<JGermline> GermlineGene::JGermlinePtr() const {
-  assert(type == "J");
+JGermlinePtr GermlineGene::JGermlinePtrCast() const {
+  assert(type == GermlineType::J);
   return std::static_pointer_cast<JGermline>(germ_ptr);
 };
 
 
+/// @brief Constructs a GermlineGene map from partis germline YAML files.
+/// @param[in] dir_path
+/// Path to a directory of germline gene HMM YAML files.
+/// @return
+/// A map holding (germline name, GermlineGene) pairs.
 std::unordered_map<std::string, GermlineGene> CreateGermlineGeneMap(
     std::string dir_path) {
   // Check the directory path and open the stream.
@@ -37,7 +45,7 @@ std::unordered_map<std::string, GermlineGene> CreateGermlineGeneMap(
   std::smatch match;
 
   // Initialize output map.
-  std::unordered_map<std::string, GermlineGene> outp;
+  std::unordered_map<std::string, GermlineGene> ggenes;
 
   while ((dir_entry = readdir(dir)) != nullptr) {
     // Check the file name and determine the germline gene type.
@@ -53,34 +61,37 @@ std::unordered_map<std::string, GermlineGene> CreateGermlineGeneMap(
 
     // Create the GermlineGene object.
     GermlineGene ggene;
-    if (match[2] == "V") {
-      ggene.type = "V";
+    if (match.str(2) == "V") {
+      ggene.type = GermlineType::V;
       ggene.germ_ptr.reset(new VGermline(root));
-    } else if (match[2] == "D") {
-      ggene.type = "D";
+    } else if (match.str(2) == "D") {
+      ggene.type = GermlineType::D;
       ggene.germ_ptr.reset(new DGermline(root));
     } else {
-      assert(match[2] == "J");
-      ggene.type = "J";
+      assert(match.str(2) == "J");
+      ggene.type = GermlineType::J;
       ggene.germ_ptr.reset(new JGermline(root));
     }
 
     // Insert results into output map.
-    outp.emplace(gname, ggene);
+    ggenes.emplace(gname, ggene);
   }
 
-  // All Germline alphabet maps should be identical.
-  // (Note: `outp` only has forward iterators, so we cannot end at
-  // `std::prev(outp.end())`.)
-  for (auto it = outp.begin(), end = std::next(outp.begin(), outp.size() - 1);
+  // All Germline alphabets should be identical.
+  // (Note: `ggenes` only has forward iterators, so we cannot end at
+  // `std::prev(ggenes.end())`.)
+  for (auto it = ggenes.begin(),
+            end = std::next(ggenes.begin(), ggenes.size() - 1);
        it != end;) {
-    assert(it->second.germ_ptr->alphabet_map() ==
-           (++it)->second.germ_ptr->alphabet_map());
+    assert(it->second.germ_ptr->alphabet() ==
+           (++it)->second.germ_ptr->alphabet());
   }
 
   // Close directory stream.
   closedir(dir);
 
-  return outp;
+  return ggenes;
 };
-}
+
+
+}  // namespace linearham

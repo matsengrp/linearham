@@ -1,7 +1,11 @@
 #ifndef LINEARHAM_GERMLINE_
 #define LINEARHAM_GERMLINE_
 
-#include "yaml_utils.hpp"
+#include <memory>
+#include <string>
+
+#include <yaml-cpp/yaml.h>
+#include <Eigen/Dense>
 
 /// @file Germline.hpp
 /// @brief Header for the Germline class.
@@ -9,55 +13,56 @@
 namespace linearham {
 
 
-/// @brief The HMM representation of a germline gene, without reference to any
-/// reads.
+/// @brief A class holding germline gene HMM information extracted from a partis
+/// YAML file.  This information is used to compute (phylo)HMM path
+/// probabilities.
 class Germline {
  protected:
-  // A vector of landing probabilities to begin a germline match segment.
-  Eigen::VectorXd landing_in_;
-  // A vector of landing probabilities to end a germline match segment.
-  Eigen::VectorXd landing_out_;
-  Eigen::MatrixXd emission_matrix_;
-  Eigen::MatrixXd transition_;
-  double gene_prob_;
-  std::unordered_map<std::string, int> alphabet_map_;
+  // Germline information for (Simple|Phylo)Data
+  Eigen::VectorXd landing_in_;   // A vector of landing probabilities to begin a
+                                 // germline match segment.
+  Eigen::VectorXd landing_out_;  // A vector of landing probabilities to end a
+                                 // germline match segment.
+  Eigen::MatrixXd transition_;   // A germline transition probability matrix.
+  double gene_prob_;  // The probability of selecting the germline gene.
 
-  void EmissionVector(const Eigen::Ref<const Eigen::VectorXi>& emission_indices,
-                      int start, Eigen::Ref<Eigen::VectorXd> emission) const;
+  std::string alphabet_;  // The nucleotide alphabet.
+  std::string name_;      // The germline gene name.
 
-  void MatchMatrix(int start,
-                   const Eigen::Ref<const Eigen::VectorXi>& emission_indices,
-                   int left_flex, int right_flex,
-                   Eigen::Ref<Eigen::MatrixXd> match) const;
+  // Germline information for SimpleData
+  Eigen::MatrixXd emission_matrix_;  // A matrix of HMM emission probabilities.
+                                     // The rows denote the different emitted
+                                     // bases and the columns denote the
+                                     // different germline positions.
+
+  // Germline information for PhyloData
+  Eigen::VectorXi bases_;  // A vector of germline bases.
+  Eigen::VectorXd rates_;  // A vector of germline rates.
 
  public:
-  Germline(){};
-  Germline(YAML::Node root);
-  virtual ~Germline() {};
+  Germline(const YAML::Node& root);
 
   const Eigen::VectorXd& landing_in() const { return landing_in_; };
   const Eigen::VectorXd& landing_out() const { return landing_out_; };
-  const Eigen::MatrixXd& emission_matrix() const { return emission_matrix_; };
   const Eigen::MatrixXd& transition() const { return transition_; };
   double gene_prob() const { return gene_prob_; };
-  const std::unordered_map<std::string, int>& alphabet_map() const {
-    return alphabet_map_;
-  };
+  const std::string& alphabet() const { return alphabet_; };
+  const std::string& name() const { return name_; };
+  const Eigen::MatrixXd& emission_matrix() const { return emission_matrix_; };
+  const Eigen::VectorXi& bases() const { return bases_; };
+  const Eigen::VectorXd& rates() const { return rates_; };
   int length() const { return transition_.cols(); };
-
-  Eigen::MatrixXd GermlineProbMatrix(
-      std::pair<int, int> left_flexbounds, std::pair<int, int> right_flexbounds,
-      const Eigen::Ref<const Eigen::VectorXi>& emission_indices,
-      int relpos) const;
 };
 
 
-// Auxiliary Functions
+typedef std::shared_ptr<Germline> GermlinePtr;
 
-void FindGermProbMatrixIndices(std::pair<int, int> left_flexbounds,
-                               std::pair<int, int> right_flexbounds, int relpos,
-                               int germ_length, int& read_start, int& read_end,
-                               int& left_flex, int& right_flex);
-}
+
+// Germline transition probability matrix constructor
+Eigen::MatrixXd BuildTransition(
+    const Eigen::Ref<const Eigen::VectorXd>& next_transition);
+
+
+}  // namespace linearham
 
 #endif  // LINEARHAM_GERMLINE_
