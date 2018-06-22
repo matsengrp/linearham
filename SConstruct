@@ -36,8 +36,6 @@ common_env.Append(LINKFLAGS=['-g'])
 # Doubles compilation time.
 #common_env.Append(CCFLAGS=['-O3', '-msse2'])
 
-###### FIX BELOW!!!
-
 linearham_env = common_env.Clone()
 linearham_env.VariantDir('_build/linearham', 'src')
 linearham_env.StaticLibrary(target='_build/linearham/linearham',
