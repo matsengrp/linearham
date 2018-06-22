@@ -27,6 +27,8 @@ class Smooshish : public std::enable_shared_from_this<Smooshish> {
   bool is_dirty_ = false;
 
  public:
+  virtual ~Smooshish() {};
+
   virtual int left_flex() const = 0;
   virtual int right_flex() const = 0;
   int scaler_count() const { return scaler_count_; };
