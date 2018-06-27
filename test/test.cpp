@@ -593,7 +593,8 @@ TEST_CASE("SimpleData", "[simpledata]") {
   std::vector<SimpleDataPtr> ex_simple_data_ptrs = ReadSimpleData(
       "data/SimpleData_ex/hmm_input.csv", "data/SimpleData_ex/hmm_params");
 
-  /// @todo MAKE PICTURE FOR THIS SCENARIO!!!!!
+  // For a diagram of the S-W alignment, see
+  // https://github.com/matsengrp/linearham/issues/44#issue-336348821.
 
   std::map<std::string, std::pair<int, int>> VDJ_flexbounds = {
       {"v_l", {0, 2}},  {"v_r", {4, 6}},   {"d_l", {7, 8}},
@@ -688,6 +689,9 @@ TEST_CASE("PhyloData", "[phylodata]") {
   std::string raxml_path = "data/PhyloData_ex/RAxML_info.newton";
   PhyloDataPtr phylo_data_ptr =
       ReadPhyloData(csv_path, dir_path, newick_path, fasta_path, raxml_path, 4);
+
+  // For a diagram of the S-W alignment, see
+  // https://github.com/matsengrp/linearham/issues/44#issue-336348821.
 
   std::map<std::string, std::pair<int, int>> VDJ_flexbounds = {
       {"v_l", {0, 2}},  {"v_r", {4, 6}},   {"d_l", {7, 8}},
