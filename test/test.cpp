@@ -17,6 +17,7 @@
 #include "Pile.hpp"
 #include "SimpleData.hpp"
 #include "PhyloData.hpp"
+#include "NewData.hpp"
 
 
 namespace test {
@@ -854,6 +855,42 @@ TEST_CASE("PhyloData", "[phylodata]") {
   // # -55.73483
 
   REQUIRE(phylo_likelihood_ptr->MarginalLogLikelihood() == Approx(-55.73483));
+}
+
+
+// NewData tests
+
+TEST_CASE("NewData", "[newdata]") {
+  // Test the NewData class using the example files.
+  NewDataPtr new_data_ptr = ReadNewData(
+      "data/SimpleData_ex/hmm_input.csv", "data/SimpleData_ex/hmm_params");
+
+  // For a diagram of the S-W alignment, see
+  // https://github.com/matsengrp/linearham/issues/44#issue-336348821.
+
+  std::map<std::string, std::pair<int, int>> VDJ_flexbounds = {
+      {"v_l", {0, 2}},  {"v_r", {4, 6}},   {"d_l", {7, 8}},
+      {"d_r", {9, 10}}, {"j_l", {11, 12}}, {"j_r", {13, 13}}};
+  std::map<std::string, int> VDJ_relpos = {
+      {"IGHV_ex*01", 1}, {"IGHD_ex*01", 5}, {"IGHJ_ex*01", 10}};
+  std::vector<std::string> VDJ_vgerm_state_strs = {"IGHV_ex*01"};
+  std::vector<std::string> VDJ_vd_junction_state_strs =
+      {"IGHD_ex*01:N_A", "IGHD_ex*01:N_C", "IGHD_ex*01:N_G", "IGHD_ex*01:N_T",
+       "IGHD_ex*01:0", "IGHD_ex*01:1", "IGHD_ex*01:2", "IGHV_ex*01:3", "IGHV_ex*01:4"};
+  std::vector<int> VDJ_vd_junction_bases = {0, 1, 2, 3, 2, 2, 3, 0, 1};
+  std::vector<int> VDJ_vd_junction_match_inds = {-1, -1, -1, -1, 5, 6, 7, 4, 5};
+  std::map<std::string, std::pair<int, int>> VDJ_vd_junction_state_inds =
+      {{"IGHD_ex*01", {0, 7}}, {"IGHV_ex*01", {7, 9}}};
+  std::vector<std::string> VDJ_dgerm_state_strs = {"IGHD_ex*01"};
+
+  REQUIRE(new_data_ptr->flexbounds() == VDJ_flexbounds);
+  REQUIRE(new_data_ptr->relpos() == VDJ_relpos);
+  REQUIRE(new_data_ptr->vgerm_state_strs() == VDJ_vgerm_state_strs);
+  REQUIRE(new_data_ptr->vd_junction_state_strs() == VDJ_vd_junction_state_strs);
+  REQUIRE(new_data_ptr->vd_junction_bases() == VDJ_vd_junction_bases);
+  REQUIRE(new_data_ptr->vd_junction_match_inds() == VDJ_vd_junction_match_inds);
+  REQUIRE(new_data_ptr->vd_junction_state_inds() == VDJ_vd_junction_state_inds);
+  REQUIRE(new_data_ptr->dgerm_state_strs() == VDJ_dgerm_state_strs);
 }
 //
 //
