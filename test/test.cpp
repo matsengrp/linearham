@@ -877,19 +877,21 @@ TEST_CASE("NewData", "[newdata]") {
   std::vector<std::string> VDJ_vd_junction_state_strs =
       {"IGHD_ex*01:N_A", "IGHD_ex*01:N_C", "IGHD_ex*01:N_G", "IGHD_ex*01:N_T",
        "IGHD_ex*01:0", "IGHD_ex*01:1", "IGHD_ex*01:2", "IGHV_ex*01:3", "IGHV_ex*01:4"};
-  std::vector<int> VDJ_vd_junction_bases = {0, 1, 2, 3, 2, 2, 3, 0, 1};
-  std::vector<int> VDJ_vd_junction_match_inds = {-1, -1, -1, -1, 5, 6, 7, 4, 5};
-  std::map<std::string, std::pair<int, int>> VDJ_vd_junction_state_inds =
+  std::map<std::string, std::pair<int, int>> VDJ_vd_junction_ggene_ranges =
       {{"IGHD_ex*01", {0, 7}}, {"IGHV_ex*01", {7, 9}}};
+  std::vector<int> VDJ_vd_junction_germ_bases = {0, 1, 2, 3, 2, 2, 3, 0, 1};
+  std::vector<int> VDJ_vd_junction_germ_inds = {-1, -1, -1, -1, 0, 1, 2, 3, 4};
+  std::vector<int> VDJ_vd_junction_site_inds = {-1, -1, -1, -1, 5, 6, 7, 4, 5};
   std::vector<std::string> VDJ_dgerm_state_strs = {"IGHD_ex*01"};
 
   REQUIRE(new_data_ptr->flexbounds() == VDJ_flexbounds);
   REQUIRE(new_data_ptr->relpos() == VDJ_relpos);
   REQUIRE(new_data_ptr->vgerm_state_strs() == VDJ_vgerm_state_strs);
   REQUIRE(new_data_ptr->vd_junction_state_strs() == VDJ_vd_junction_state_strs);
-  REQUIRE(new_data_ptr->vd_junction_bases() == VDJ_vd_junction_bases);
-  REQUIRE(new_data_ptr->vd_junction_match_inds() == VDJ_vd_junction_match_inds);
-  REQUIRE(new_data_ptr->vd_junction_state_inds() == VDJ_vd_junction_state_inds);
+  REQUIRE(new_data_ptr->vd_junction_ggene_ranges() == VDJ_vd_junction_ggene_ranges);
+  REQUIRE(new_data_ptr->vd_junction_germ_bases() == VDJ_vd_junction_germ_bases);
+  REQUIRE(new_data_ptr->vd_junction_germ_inds() == VDJ_vd_junction_germ_inds);
+  REQUIRE(new_data_ptr->vd_junction_site_inds() == VDJ_vd_junction_site_inds);
   REQUIRE(new_data_ptr->dgerm_state_strs() == VDJ_dgerm_state_strs);
 }
 //
