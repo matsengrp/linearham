@@ -24,6 +24,7 @@ class Germline {
   Eigen::VectorXd landing_out_;  // A vector of landing probabilities to end a
                                  // germline match segment.
   Eigen::MatrixXd transition_;   // A germline transition probability matrix.
+  Eigen::VectorXd next_transition_;
   double gene_prob_;  // The probability of selecting the germline gene.
 
   std::string alphabet_;  // The nucleotide alphabet.
@@ -45,6 +46,7 @@ class Germline {
   const Eigen::VectorXd& landing_in() const { return landing_in_; };
   const Eigen::VectorXd& landing_out() const { return landing_out_; };
   const Eigen::MatrixXd& transition() const { return transition_; };
+  const Eigen::VectorXd& next_transition() const { return next_transition_; };
   double gene_prob() const { return gene_prob_; };
   const std::string& alphabet() const { return alphabet_; };
   const std::string& name() const { return name_; };

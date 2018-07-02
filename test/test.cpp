@@ -884,6 +884,20 @@ TEST_CASE("NewData", "[newdata]") {
   std::vector<int> VDJ_vd_junction_site_inds = {-1, -1, -1, -1, 5, 6, 7, 4, 5};
   std::vector<std::string> VDJ_dgerm_state_strs = {"IGHD_ex*01"};
 
+  // Eigen::MatrixXd tmp(1, 9);
+  // tmp << 0.2*0.1, 0.2*0.2, 0.2*0.1, 0.2*0.05, 0, 0, 0, 0.8, 0;
+  Eigen::MatrixXd tmp2(9, 9);
+  tmp2 << 0.075, 0.175, 0.05, 0.025, 0.45, 0.125, 0.1,   0,   0,
+          0.075, 0.175, 0.05, 0.025, 0.45, 0.125, 0.1,   0,   0,
+          0.075, 0.175, 0.05, 0.025, 0.45, 0.125, 0.1,   0,   0,
+          0.075, 0.175, 0.05, 0.025, 0.45, 0.125, 0.1,   0,   0,
+              0,     0,    0,     0,    0,    0.98,  0,   0,  0,
+              0,     0,    0,     0,    0,     0,   0.95,   0, 0,
+              0,     0,    0,     0,    0,     0,    0,   0 ,  0,
+          0.5*0.1, 0.5*0.2, 0.5*0.1, 0.5*0.05, 0.5*0.4, 0 , 0, 0, 0.5,
+          1*0.1, 1*0.2, 1*0.1, 1*0.05, 0, 1*0.1 , 0, 0, 0;
+
+
   REQUIRE(new_data_ptr->flexbounds() == VDJ_flexbounds);
   REQUIRE(new_data_ptr->relpos() == VDJ_relpos);
   REQUIRE(new_data_ptr->vgerm_state_strs() == VDJ_vgerm_state_strs);
@@ -893,6 +907,9 @@ TEST_CASE("NewData", "[newdata]") {
   REQUIRE(new_data_ptr->vd_junction_germ_inds() == VDJ_vd_junction_germ_inds);
   REQUIRE(new_data_ptr->vd_junction_site_inds() == VDJ_vd_junction_site_inds);
   REQUIRE(new_data_ptr->dgerm_state_strs() == VDJ_dgerm_state_strs);
+
+  // REQUIRE(new_data_ptr->tmp() == tmp);
+  REQUIRE(new_data_ptr->tmp2() == tmp2);
 }
 //
 //

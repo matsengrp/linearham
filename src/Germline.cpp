@@ -48,7 +48,7 @@ Germline::Germline(const YAML::Node& root) {
   emission_matrix_.setZero(alphabet_.size(), gcount);
   bases_.setZero(gcount);
   rates_.setZero(gcount);
-  Eigen::VectorXd next_transition = Eigen::VectorXd::Zero(gcount - 1);
+  next_transition_.setZero(gcount - 1);
 
   // Store the gene probability.
   gene_prob_ = root["extras"]["gene_prob"].as<double>();
@@ -88,7 +88,7 @@ Germline::Germline(const YAML::Node& root) {
       if (std::regex_match(state_names[j], match, grgx)) {
         // We can transition to the next germline base...
         assert(std::stoi(match.str(1)) == (gindex + 1));
-        next_transition[gindex] = probs[j];
+        next_transition_[gindex] = probs[j];
       } else if (state_names[j] == "end") {
         // ... or we can transition to the end...
         landing_out_[gindex] = probs[j];
@@ -117,7 +117,7 @@ Germline::Germline(const YAML::Node& root) {
   }
 
   // Build the germline transition probability matrix.
-  transition_ = BuildTransition(next_transition);
+  transition_ = BuildTransition(next_transition_);
   assert(transition_.rows() == transition_.cols());
   assert(transition_.cols() == emission_matrix_.cols());
 };

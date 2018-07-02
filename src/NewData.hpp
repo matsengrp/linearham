@@ -2,7 +2,9 @@
 #define LINEARHAM_NEWDATA_
 
 #include "VDJGermline.hpp"
+#include "linalg.hpp"
 #include <regex>
+#include <iostream>
 #include <csv.h>
 
 /// @file NewData.hpp
@@ -34,13 +36,11 @@ class NewData {
   std::vector<std::string> dgerm_state_strs_;
   std::vector<GermlineGene> dgerm_ggenes_;
 
-  // //// HMM transition probability matrices
-  // Eigen::MatrixXd vgerm_vd_junction_transition_;
+  //// HMM transition probability matrices
+  Eigen::MatrixXd vgerm_vd_junction_transition_;
+  Eigen::MatrixXd vd_junction_transition_;
 
-  // Eigen::MatrixXd vgerm_vd_junction_transition_;
-  //
-  //
-  //
+
   // Eigen::MatrixXd vd_junction_transition_;
   // Eigen::MatrixXd vd_junction_dgerm_transition_;
   //
@@ -71,6 +71,9 @@ class NewData {
   const std::vector<int>& vd_junction_germ_inds() const { return vd_junction_germ_inds_; };
   const std::vector<int>& vd_junction_site_inds() const { return vd_junction_site_inds_; };
   const std::vector<std::string>& dgerm_state_strs() const { return dgerm_state_strs_; };
+
+  const Eigen::MatrixXd& tmp() const { return vgerm_vd_junction_transition_; };
+  const Eigen::MatrixXd& tmp2() const { return vd_junction_transition_; };
 };
 
 
@@ -79,6 +82,12 @@ typedef std::shared_ptr<NewData> NewDataPtr;
 
 NewDataPtr ReadNewData(std::string csv_path, std::string dir_path);
 
+
+void FillTransition(const GermlineGene& from_ggene, const GermlineGene& to_ggene,
+                    int germ_ind_start,
+                    int n_rowcol_start, int n_rowcol_length,
+                    int germ_row_start, int germ_col_start, int germ_row_length, int germ_col_length,
+                    Eigen::MatrixXd& transition_);
 
 
 }
