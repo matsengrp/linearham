@@ -138,53 +138,11 @@ NewData::NewData(const std::string& flexbounds_str,
       int to_germ_ind_start = vd_junction_germ_inds_[to_range_start];
       int to_site_ind_start = vd_junction_site_inds_[to_range_start];
 
-      // 3 cases:
-      // a) same V -> V
-      // b) V -> D
-      // c) D -> D
-
-      // // same V -> V transitions
-      // if (from_ggene.germ_ptr->name() == to_ggene.germ_ptr->name()) {
-      //   vgerm_vd_junction_transition_.block(from_i, to_range_start, 1, to_range_end - to_range_start).diagonal(0).head(1) =
-      //       from_ggene.germ_ptr->transition().block(to_germ_ind_start - 1, to_germ_ind_start,
-      //                                               to_ggene.germ_ptr->length() - (to_germ_ind_start - 1),
-      //                                               to_ggene.germ_ptr->length() - to_germ_ind_start).diagonal(0).head(1);
-      //
-      //   // OR
-      //   //
-      //   // vgerm_vd_junction_transition_.block(from_range_start, to_range_start, from_range_end - from_range_start, to_range_end - to_range_start).diagonal(1).head(1) =
-      //   //     from_ggene.germ_ptr->transition().block(from_germ_pos_start, to_germ_pos_start, length - start, length - start).diagonal(1).head(1);
-      // }
-
-
-
-
-
       //
       // FillTransition(from_ggene, to_ggene, GermlineType::V, GermlineType::D,
       //                from_germ_ind_start, to_germ_ind_start, from_site_ind_start, to_site_ind_start,
       //   to_range_start, 0, (to_ggene.type == GermlineType::D) ? to_ggene.germ_ptr->alphabet().size() : 0,
       //                  0, to_range_start, 1, to_range_end - to_range_start, vgerm_vd_junction_transition_);
-
-      // // V -> D transitions
-      // if (to_ggene.type == GermlineType::D) {
-      //   DGermlinePtr to_dgerm_ptr = to_ggene.DGermlinePtrCast();
-      //
-      //   // V -> D:N transitions
-      //   Eigen::Ref<Eigen::MatrixXd> transition_block = vgerm_vd_junction_transition_
-      //                     .block(from_i, to_range_start,
-      //                            1, to_dgerm_ptr->alphabet().size());
-      //   transition_block.setOnes();
-      //   ColVecMatCwise(to_germ_ptr->landing_out().segment(to_germ_pos_start - 1, 1), transition_block, transition_block);
-      //   RowVecMatCwise(to_germ_ptr->n_landing_in(), transition_block, transition_block);
-      //
-      //   // V -> D transitions
-      //   int match_start = from_match_ind;
-      //   while (match_start < to_match_end && std::binary_search(vd_junction_match_inds_.begin() + to_state_start + to_germ_ptr->alphabet.size(),
-      //             vd_junction_match_inds_.begin() + to_state_end, match_start + 1)) {
-      //
-      //             }
-      // }
     }
   }
 
@@ -219,116 +177,6 @@ NewData::NewData(const std::string& flexbounds_str,
                      (from_range_end - from_range_start) - n_row_length, (to_range_end - to_range_start) - n_col_length, vd_junction_transition_);
     }
   }
-  // vgerm_vd_junction_transition_.setZero(vgerm_states_.size(), vd_junction_states_.size());
-  // for (int i = 0; i < vgerm_states_.size(); i++) {
-  //   int from_germ_pos = v_r.first - 1 - relpos_.at(vgerm_states_[i]);
-  //   const GermlineGene& from_ggene = ggenes.at(vgerm_states_[i]);
-  //   for (auto it = vd_junction_state_inds_.begin(); it != vd_junction_state_inds_.end(); ++it) {
-  //     const GermlineGene& to_ggene = ggenes.at(it->first);
-  //
-  //     // Fill in the germline transition probability.
-  //     if (vgerm_states_[i] == it->first) {
-  //       vgerm_vd_junction_transition_(i, it->second.first) =
-  //           from_ggene.germ_ptr->transition()(from_germ_pos, from_germ_pos + 1);
-  //     }
-  //
-  //     // Fill in the V-D transition probabilities.
-  //     if (to_ggene.type == GermlineType::D) {
-  //       DGermlinePtr to_germ_ptr = to_ggene.DGermlinePtrCast();
-  //
-  //       // N region
-  //       vgerm_vd_junction_transition_.row(i).segment(it->second.first, to_germ_ptr->alphabet().size()) =
-  //           from_ggene.germ_ptr->landing_out()[from_germ_pos] * to_germ_ptr->n_landing_in();
-  //
-  //       // germline region
-  //       auto start_it = vd_junction_states_.begin() + it->second.first + to_germ_ptr->alphabet().size();
-  //       auto end_it = vd_junction_states_.begin() + it->second.second;
-  //       int to_germ_pos = v_r.first - relpos_.at(it->first);
-  //       if (to_germ_pos > 0) {
-  //         auto find_it = std::find_if(start_it, end_it, [&to_germ_pos, &it](const std::string& state) {
-  //           return (it->first + ":" + std::to_string(to_germ_pos)) == state;
-  //         });
-  //         int state_ind = find_it - start_it;
-  //         vgerm_vd_junction_transition_(i, it->second.first + to_germ_ptr->alphabet().size() + state_ind) =
-  //             from_ggene.germ_ptr->landing_out()[from_germ_pos] * to_germ_ptr->landing_in()[to_germ_pos];
-  //       }
-  //     }
-  //   }
-  // }
-  //
-  // vd_junction_transition_.setZero(vd_junction_states_.size(), vd_junction_states_.size());
-  // for (auto from_it = vd_junction_state_inds_.begin(); from_it != vd_junction_state_inds_.end(); ++it) {
-  //   const std::string& from_gname = from_it->first;
-  //   const GermlineGene& from_ggene = ggenes.at(from_gname);
-  //   int from_germ_pos = v_r.first - relpos_.at(from_gname);
-  //
-  //   // same V -> V transitions
-  //   if (from_ggene.type == GermlineType::V) {
-  //     vd_junction_transition_.block(from_it->second.first, from_it->second.first,
-  //                                   from_it->second.second - from_it->second.first,
-  //                                   from_it->second.second - from_it->second.first).diagonal(1) =
-  //         from_ggene.germ_ptr->transition().block(from_germ_pos, from_germ_pos,
-  //                                                 from_ggene.germ_ptr->length() - from_germ_pos,
-  //                                                 from_ggene.germ_ptr->length() - from_germ_pos).diagonal(1);
-  //   }
-  //
-  //   // same D -> D transitions
-  //   if (from_ggene.type == GermlineType::D) {
-  //
-  //   }
-  //
-  //   for (auto to_it = vd_junction_state_inds_.begin(); to_it != vd_junction_state_inds_.end(); ++to_it) {
-  //     const std::string& to_gname = to_it->first;
-  //     const GermlineGene& to_ggene = ggenes.at(to_gname);
-  //
-  //     // V -> D transitions
-  //     if (from_ggene.type == GermlineType::V && to_ggene.type == GermlineType::D) {
-  //       DGermlinePtr to_germ_ptr = to_ggene.DGermlinePtrCast();
-  //
-  //       Eigen::Ref<Eigen::MatrixXd> v_to_dn_block = vd_junction_transition_.block(
-  //           from_it->second.first, to_it->second.first,
-  //           from_it->second.second - from_it->second.first,
-  //           to_germ_ptr->alphabet.size());
-  //       v_to_dn_block.setOnes();
-  //       RowVecMatCwise(to_germ_ptr->n_landing_in(), v_to_dn_block, v_to_dn_block);
-  //       ColVecMatCwise(to_germ_ptr->landing_out().segment(from_germ_pos, from_ggene.germ_ptr->length() - from_germ_pos),
-  //                      v_to_dn_block, v_to_dn_block);
-  //
-  //       auto start_it = vd_junction_states_.begin() + to_it->second.first + to_germ_ptr->alphabet().size();
-  //       auto end_it = vd_junction_states_.begin() + it->second.second;
-  //       // const std::string& to_state = vd_junction_states_[to_it->second.first + to_germ_ptr->alphabet.size()];
-  //       // std::regex state_rgx("^IGH[VDJ].+\\*[0-9]{2}:([0-9]+)$");
-  //       // std::smatch match;
-  //       // assert(std::regex_match(to_state, match, state_rgx));
-  //       // int d_start_ind = relpos_.at(to_gname) + std::stoi(match.str(1));
-  //       // int col_ind = to_it->second.first + to_germ_ptr->alphabet.size();
-  //
-  //       int v_end_ind = v_r.first;
-  //       int row_ind, col_ind;
-  //       int d_start_ind;
-  //       // int row_ind = from_it->second.first;
-  //       for (; v_end_ind < v_r.first + (from_it->second.second - from_it->second.first); v_end_ind++) {
-  //         d_start_ind = v_end_ind + 1 - relpos_.at(to_gname);
-  //         auto find_it = std::find(start_it, end_it, to_gname + ":" + std::to_string(d_start_ind));
-  //         if (find_it != end_it) {
-  //           row_ind = v_end_ind - v_r.first;
-  //           col_ind = to_it->second.first + to_germ_ptr->alphabet().size() + (find_it - start_it);
-  //           break;
-  //         }
-  //       }
-  //       // germline region
-  //
-  //       int to_germ_pos = v_r.first - relpos_.at(it->first);
-  //       if (to_germ_pos > 0) {
-  //        auto find_it = std::find_if(start_it, end_it, [&to_germ_pos, &it](const std::string& state) {
-  //          return (it->first + ":" + std::to_string(to_germ_pos)) == state;
-  //        });
-  //        int state_ind = find_it - start_it;
-  //        vgerm_vd_junction_transition_(i, it->second.first + to_germ_ptr->alphabet().size() + state_ind) =
-  //            from_ggene.germ_ptr->landing_out()[from_germ_pos] * to_germ_ptr->landing_in()[to_germ_pos];
-  //       }
-  //     }
-  //   }
 };
 
 
