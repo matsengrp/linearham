@@ -883,6 +883,15 @@ TEST_CASE("NewData", "[newdata]") {
   std::vector<int> VDJ_vd_junction_germ_inds = {-1, -1, -1, -1, 0, 1, 2, 3, 4};
   std::vector<int> VDJ_vd_junction_site_inds = {-1, -1, -1, -1, 5, 6, 7, 4, 5};
   std::vector<std::string> VDJ_dgerm_state_strs = {"IGHD_ex*01"};
+  std::vector<std::string> VDJ_dj_junction_state_strs =
+      {"IGHD_ex*01:4", "IGHJ_ex*01:N_A", "IGHJ_ex*01:N_C", "IGHJ_ex*01:N_G",
+       "IGHJ_ex*01:N_T", "IGHJ_ex*01:0", "IGHJ_ex*01:1"};
+  std::map<std::string, std::pair<int, int>> VDJ_dj_junction_ggene_ranges =
+      {{"IGHD_ex*01", {0, 1}}, {"IGHJ_ex*01", {1, 7}}};
+  std::vector<int> VDJ_dj_junction_germ_bases = {1, 0, 1, 2, 3, 0, 3};
+  std::vector<int> VDJ_dj_junction_germ_inds = {4, -1, -1, -1, -1, 0, 1};
+  std::vector<int> VDJ_dj_junction_site_inds = {9, -1, -1, -1, -1, 10, 11};
+  std::vector<std::string> VDJ_jgerm_state_strs = {"IGHJ_ex*01"};
 
   // Eigen::MatrixXd tmp(1, 9);
   // tmp << 0.2*0.1, 0.2*0.2, 0.2*0.1, 0.2*0.05, 0, 0, 0, 0.8, 0;
@@ -907,9 +916,14 @@ TEST_CASE("NewData", "[newdata]") {
   REQUIRE(new_data_ptr->vd_junction_germ_inds() == VDJ_vd_junction_germ_inds);
   REQUIRE(new_data_ptr->vd_junction_site_inds() == VDJ_vd_junction_site_inds);
   REQUIRE(new_data_ptr->dgerm_state_strs() == VDJ_dgerm_state_strs);
+  REQUIRE(new_data_ptr->dj_junction_state_strs() == VDJ_dj_junction_state_strs);
+  REQUIRE(new_data_ptr->dj_junction_ggene_ranges() == VDJ_dj_junction_ggene_ranges);
+  REQUIRE(new_data_ptr->dj_junction_germ_bases() == VDJ_dj_junction_germ_bases);
+  REQUIRE(new_data_ptr->dj_junction_germ_inds() == VDJ_dj_junction_germ_inds);
+  REQUIRE(new_data_ptr->dj_junction_site_inds() == VDJ_dj_junction_site_inds);
+  REQUIRE(new_data_ptr->jgerm_state_strs() == VDJ_jgerm_state_strs);
 
-  // REQUIRE(new_data_ptr->tmp() == tmp);
-  REQUIRE(new_data_ptr->tmp2() == tmp2);
+  REQUIRE(new_data_ptr->tmp() == tmp2);
 }
 //
 //
