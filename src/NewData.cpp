@@ -7,101 +7,6 @@ namespace linearham {
 
 
 
-void FillTransition(const GermlineGene& from_ggene, const GermlineGene& to_ggene,
-                    GermlineType left_gtype, GermlineType right_gtype,
-                    int germ_ind_row_start, int germ_ind_col_start,
-                    int site_ind_row_start, int site_ind_col_start,
-                    int n_row_start, int n_col_start, int n_row_length, int n_col_length,
-                    int germ_row_start, int germ_col_start, int germ_row_length, int germ_col_length,
-                    Eigen::MatrixXd& transition_) {
-  // same [V -> V or (N,D) -> (N,D)] or [D -> D or (N,J) -> (N,J)] transitions
-  if (from_ggene.germ_ptr->name() == to_ggene.germ_ptr->name()) {
-    // N -> N or N -> germline
-    if (from_ggene.type == right_gtype) {
-      if (n_col_length > 0) {
-        // necessary hack b/c of Germline structuring
-        const Eigen::MatrixXd& n_transition = (from_ggene.type == GermlineType::D) ? from_ggene.DGermlinePtrCast()->n_transition() : from_ggene.JGermlinePtrCast()->n_transition();
-        transition_.block(n_row_start, n_col_start, n_row_length, n_col_length) = n_transition;
-      }
-
-      // necessary hack b/c of Germline structuring
-      const Eigen::MatrixXd& n_landing_out = (from_ggene.type == GermlineType::D) ? from_ggene.DGermlinePtrCast()->n_landing_out() : from_ggene.JGermlinePtrCast()->n_landing_out();
-      transition_.block(n_row_start, germ_col_start, n_row_length, germ_col_length) =
-          n_landing_out.block(0, germ_ind_col_start, n_landing_out.rows(), germ_col_length);
-      // RowVecMatCwise(to_ggene.germ_ptr->landing_in().segment(germ_ind_col_start, germ_col_length),
-      //                transition_.block(n_row_start, germ_col_start, n_row_length, germ_col_length),
-      //                transition_.block(n_row_start, germ_col_start, n_row_length, germ_col_length));
-    }
-
-    // germline -> germline
-    // std::cout << germ_row_start << " " << germ_col_start << " " << germ_row_length << " " << germ_col_length << std::endl;
-    Eigen::Ref<Eigen::MatrixXd> transition_block_ref =
-        transition_.block(germ_row_start, germ_col_start, germ_row_length, germ_col_length);
-    // Eigen::Ref<Eigen::MatrixXd> transition_block1 = transition_;
-    // Eigen::Ref<Eigen::DiagonalMatrix<double,Eigen::Dynamic>> transition_block_ref = (germ_ind_row_start == germ_ind_col_start) ? transition_block_ref1.diagonal(1) : transition_block_ref1.diagonal(-(germ_row_length - 1));
-    // Eigen::Ref<Eigen::DiagonalMatrix<double,Eigen::Dynamic>> transition_block = (germ_ind_row_start == germ_ind_col_start) ? from_ggene.germ_ptr->next_transition().segment(germ_ind_row_start, germ_row_length - 1) : from_ggene.germ_ptr->next_transition().diagonal(-(germ_ind_row_start + germ_row_length - 1));
-    if (germ_ind_row_start == germ_ind_col_start) {
-      transition_block_ref.diagonal(1) =
-          from_ggene.germ_ptr->next_transition().segment(germ_ind_row_start, germ_row_length - 1);
-    } else {
-      transition_block_ref.diagonal(-(germ_row_length - 1)) =
-          from_ggene.germ_ptr->next_transition().diagonal(-(germ_ind_row_start + germ_row_length - 1));
-    }
-    //transition_block_ref = transition_block;
-  }
-
-  // V -> D or D -> J transitions
-  if (from_ggene.type == left_gtype && to_ggene.type == right_gtype) {
-    // germline -> N
-    if (n_col_length > 0) {
-      // // necessary hack b/c of Germline structuring
-      const Eigen::VectorXd& n_landing_in = (to_ggene.type == GermlineType::D) ? to_ggene.DGermlinePtrCast()->n_landing_in() : to_ggene.JGermlinePtrCast()->n_landing_in();
-      // std::cout << germ_row_start << " " << germ_col_start << " " << germ_row_length << " " << germ_col_length << std::endl;
-      // std::cout << n_row_start << " " << n_col_start << " " << n_row_length << " " << n_col_length << std::endl;
-      Eigen::Ref<Eigen::MatrixXd> transition_block_ref =
-          transition_.block(germ_row_start, n_col_start, germ_row_length, n_col_length);
-      transition_block_ref.setOnes();
-      ColVecMatCwise(from_ggene.germ_ptr->landing_out().segment(germ_ind_row_start, germ_row_length),
-                     transition_block_ref, transition_block_ref);
-      RowVecMatCwise(n_landing_in, transition_block_ref, transition_block_ref);
-    }
-
-    // germline -> germline
-    int match_row_diff, match_col_diff;
-    bool match_flag = false;
-
-    for (int from_site_ind = site_ind_row_start; from_site_ind < site_ind_row_start + germ_row_length && !match_flag; from_site_ind++) {
-      // germline exit/enter match!
-      if (from_site_ind == site_ind_col_start - 1) {
-        match_row_diff = from_site_ind - site_ind_row_start;
-        match_col_diff = 0;
-        match_flag = true;
-      }
-    }
-
-    for (int to_site_ind = site_ind_col_start + 1; to_site_ind < site_ind_col_start + germ_col_length && !match_flag; to_site_ind++) {
-      // germline exit/enter match!
-      if (site_ind_row_start == to_site_ind - 1) {
-        match_row_diff = 0;
-        match_col_diff = to_site_ind - site_ind_col_start;
-        match_flag = true;
-      }
-    }
-
-    if (match_flag) {
-      Eigen::Ref<Eigen::MatrixXd> transition_block_ref =
-          transition_.block(germ_row_start + match_row_diff, germ_col_start + match_col_diff,
-                            germ_row_length - match_row_diff, germ_col_length - match_col_diff);
-      int match_length = transition_block_ref.diagonal().size();
-
-      transition_block_ref.diagonal().array() =
-          from_ggene.germ_ptr->landing_out().segment(germ_ind_row_start + match_row_diff, match_length).array() *
-          to_ggene.germ_ptr->landing_in().segment(germ_ind_col_start + match_col_diff, match_length).array();
-    }
-  }
-};
-
-
 
 
 /// @brief Constructor for NewData.
@@ -280,6 +185,125 @@ NewDataPtr ReadNewData(std::string csv_path, std::string dir_path) {
 
   return new_data_ptr;
 };
+
+
+
+
+void FillHMMTransition(const GermlineGene& from_ggene,
+                       const GermlineGene& to_ggene, GermlineType left_gtype,
+                       GermlineType right_gtype, int germ_ind_row_start,
+                       int germ_ind_col_start, int site_ind_row_start,
+                       int site_ind_col_start, int n_row_start, int n_col_start,
+                       int n_row_length, int n_col_length, int germ_row_start,
+                       int germ_col_start, int germ_row_length,
+                       int germ_col_length, Eigen::MatrixXd& transition_) {
+  // Are we transitioning within the same gene?
+  // [i.e. V_i -> V_i; (N, D_i) -> (N, D_i); D_i -> D_i; (N, J_i) -> (N, J_i)]
+  if (from_ggene.germ_ptr->name() == to_ggene.germ_ptr->name()) {
+    // Are we transitioning from a NTI state in (N, D_i) or (N, J_i)?
+    if (from_ggene.type == right_gtype) {
+      // Are we in the V-D or D-J "junction" region?
+      if (n_col_length > 0) {
+        // Fill in the N -> N transition probabilities.
+        const Eigen::MatrixXd& n_transition =
+            (from_ggene.type == GermlineType::D)
+                ? from_ggene.DGermlinePtrCast()->n_transition()
+                : from_ggene.JGermlinePtrCast()->n_transition();
+        transition_.block(n_row_start, n_col_start, n_row_length,
+                          n_col_length) = n_transition;
+      }
+
+      // Fill in the N -> D or N -> J transition probabilities.
+      const Eigen::MatrixXd& n_landing_out =
+          (from_ggene.type == GermlineType::D)
+              ? from_ggene.DGermlinePtrCast()->n_landing_out()
+              : from_ggene.JGermlinePtrCast()->n_landing_out();
+      transition_.block(n_row_start, germ_col_start, n_row_length,
+                        germ_col_length) =
+          n_landing_out.block(0, germ_ind_col_start, n_landing_out.rows(),
+                              germ_col_length);
+    }
+
+    // Fill in the V -> V, D -> D, or J -> J transition probabilities.
+    Eigen::Ref<Eigen::MatrixXd> transition_block = transition_.block(
+        germ_row_start, germ_col_start, germ_row_length, germ_col_length);
+
+    // Are we in the V-D or D-J "junction" region?
+    if (germ_ind_row_start == germ_ind_col_start) {
+      transition_block.diagonal(1) =
+          from_ggene.germ_ptr->next_transition().segment(germ_ind_row_start,
+                                                         germ_row_length - 1);
+    } else {
+      transition_block.diagonal(-(germ_row_length - 1)) =
+          from_ggene.germ_ptr->next_transition().diagonal(
+              -(germ_ind_row_start + germ_row_length - 1));
+    }
+  }
+
+  // Are we transitioning across different genes?
+  // [i.e. V_i -> (N, D_j) or D_i -> (N, J_j)]
+  if (from_ggene.type == left_gtype && to_ggene.type == right_gtype) {
+    // Are we in or transitioning to the V-D or D-J "junction" region?
+    if (n_col_length > 0) {
+      // Fill in the V -> N or D -> N transition probabilities.
+      const Eigen::VectorXd& n_landing_in =
+          (to_ggene.type == GermlineType::D)
+              ? to_ggene.DGermlinePtrCast()->n_landing_in()
+              : to_ggene.JGermlinePtrCast()->n_landing_in();
+      Eigen::Ref<Eigen::MatrixXd> transition_block = transition_.block(
+          germ_row_start, n_col_start, germ_row_length, n_col_length);
+
+      transition_block.setOnes();
+      ColVecMatCwise(from_ggene.germ_ptr->landing_out().segment(
+                         germ_ind_row_start, germ_row_length),
+                     transition_block, transition_block);
+      RowVecMatCwise(n_landing_in, transition_block, transition_block);
+    }
+
+    // Is there a match region between the two genes?
+    int match_row_diff, match_col_diff;
+    bool match_found = false;
+
+    for (int from_site_ind = site_ind_row_start;
+         from_site_ind < site_ind_row_start + germ_row_length && !match_found;
+         from_site_ind++) {
+      // Can we find the start index of the potential match region?
+      if (from_site_ind == site_ind_col_start - 1) {
+        match_row_diff = from_site_ind - site_ind_row_start;
+        match_col_diff = 0;
+        match_found = true;
+      }
+    }
+
+    for (int to_site_ind = site_ind_col_start + 1;
+         to_site_ind < site_ind_col_start + germ_col_length && !match_found;
+         to_site_ind++) {
+      // Can we find the start index of the potential match region?
+      if (site_ind_row_start == to_site_ind - 1) {
+        match_row_diff = 0;
+        match_col_diff = to_site_ind - site_ind_col_start;
+        match_found = true;
+      }
+    }
+
+    if (match_found) {
+      // Fill in the V -> D or D -> J transition probabilities.
+      Eigen::Ref<Eigen::MatrixXd> transition_block = transition_.block(
+          germ_row_start + match_row_diff, germ_col_start + match_col_diff,
+          germ_row_length - match_row_diff, germ_col_length - match_col_diff);
+      int match_length = transition_block.diagonal().size();
+
+      transition_block.diagonal().array() =
+          from_ggene.germ_ptr->landing_out()
+              .segment(germ_ind_row_start + match_row_diff, match_length)
+              .array() *
+          to_ggene.germ_ptr->landing_in()
+              .segment(germ_ind_col_start + match_col_diff, match_length)
+              .array();
+    }
+  }
+};
+
 
 
 }  // namespace linearham

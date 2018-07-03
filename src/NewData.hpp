@@ -39,11 +39,9 @@ class NewData {
   //// HMM transition probability matrices
   Eigen::MatrixXd vgerm_vd_junction_transition_;
   Eigen::MatrixXd vd_junction_transition_;
+  Eigen::MatrixXd vd_junction_dgerm_transition_;
 
 
-  // Eigen::MatrixXd vd_junction_transition_;
-  // Eigen::MatrixXd vd_junction_dgerm_transition_;
-  //
 
   void InitializeHMMStateSpace(const std::unordered_map<std::string, GermlineGene>& ggenes);
 
@@ -83,13 +81,14 @@ typedef std::shared_ptr<NewData> NewDataPtr;
 NewDataPtr ReadNewData(std::string csv_path, std::string dir_path);
 
 
-void FillTransition(const GermlineGene& from_ggene, const GermlineGene& to_ggene,
-                    int germ_ind_start,
-                    int n_rowcol_start, int n_rowcol_length,
-                    int germ_row_start, int germ_col_start, int germ_row_length, int germ_col_length,
-                    Eigen::MatrixXd& transition_);
-
-
+void FillHMMTransition(const GermlineGene& from_ggene,
+                       const GermlineGene& to_ggene, GermlineType left_gtype,
+                       GermlineType right_gtype, int germ_ind_row_start,
+                       int germ_ind_col_start, int site_ind_row_start,
+                       int site_ind_col_start, int n_row_start, int n_col_start,
+                       int n_row_length, int n_col_length, int germ_row_start,
+                       int germ_col_start, int germ_row_length,
+                       int germ_col_length, Eigen::MatrixXd& transition_);
 }
 
 #endif  // LINEARHAM_NEWDATA_
