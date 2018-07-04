@@ -74,8 +74,8 @@ class NewData {
   const std::vector<std::string>& vgerm_state_strs() const { return vgerm_state_strs_; };
   const std::vector<std::string>& vd_junction_state_strs() const { return vd_junction_state_strs_; };
   const std::map<std::string, std::pair<int, int>>& vd_junction_ggene_ranges() const { return vd_junction_ggene_ranges_; };
-  const std::vector<int> vd_junction_germ_bases() const { return vd_junction_germ_bases_; };
-  const std::vector<int>&  vd_junction_germ_inds() const { return vd_junction_germ_inds_; };
+  const std::vector<int>& vd_junction_germ_bases() const { return vd_junction_germ_bases_; };
+  const std::vector<int>& vd_junction_germ_inds() const { return vd_junction_germ_inds_; };
   const std::vector<int>& vd_junction_site_inds() const { return vd_junction_site_inds_; };
   const std::vector<std::string>& dgerm_state_strs() const { return dgerm_state_strs_; };
   const std::vector<std::string>& dj_junction_state_strs() const { return dj_junction_state_strs_; };
