@@ -23,7 +23,10 @@ class NewData {
   //// HMM state space information
   // V "germline" states
   std::vector<std::string> vgerm_state_strs_;
-  std::vector<GermlineGene> vgerm_ggenes_;
+  std::map<std::string, std::pair<int, int>> vgerm_ggene_ranges_;
+  std::vector<int> vgerm_germ_bases_;
+  std::vector<int> vgerm_germ_inds_;
+  std::vector<int> vgerm_site_inds_;
 
   // V-D "junction" states
   std::vector<std::string> vd_junction_state_strs_;
@@ -34,7 +37,10 @@ class NewData {
 
   // D "germline" states
   std::vector<std::string> dgerm_state_strs_;
-  std::vector<GermlineGene> dgerm_ggenes_;
+  std::map<std::string, std::pair<int, int>> dgerm_ggene_ranges_;
+  std::vector<int> dgerm_germ_bases_;
+  std::vector<int> dgerm_germ_inds_;
+  std::vector<int> dgerm_site_inds_;
 
   // D-J "junction" states
   std::vector<std::string> dj_junction_state_strs_;
@@ -45,24 +51,33 @@ class NewData {
 
   // J "germline" states
   std::vector<std::string> jgerm_state_strs_;
-  std::vector<GermlineGene> jgerm_ggenes_;
+  std::map<std::string, std::pair<int, int>> jgerm_ggene_ranges_;
+  std::vector<int> jgerm_germ_bases_;
+  std::vector<int> jgerm_germ_inds_;
+  std::vector<int> jgerm_site_inds_;
 
   //// HMM transition probability matrices
-  Eigen::MatrixXd vgerm_vd_junction_transition_;
-  Eigen::MatrixXd vd_junction_transition_;
-  Eigen::MatrixXd vd_junction_dgerm_transition_;
-
-
+  // Eigen::MatrixXd vgerm_vd_junction_transition_;
+  // Eigen::MatrixXd vd_junction_transition_;
+  // Eigen::MatrixXd vd_junction_dgerm_transition_;
 
   void InitializeHMMStateSpace(const std::unordered_map<std::string, GermlineGene>& ggenes);
 
-  void CacheHMMJunctionStates(const GermlineGene& ggene, const std::string& left_flexbounds_name,
-                              const std::string& right_flexbounds_name, bool left_end,
-                              std::vector<std::string>& junction_state_strs_,
-                              std::map<std::string, std::pair<int, int>>& junction_ggene_ranges_,
-                              std::vector<int>& junction_germ_bases_,
-                              std::vector<int>& junction_germ_inds_,
-                              std::vector<int>& junction_site_inds_);
+  void CacheHMMGermlineStates(
+           const GermlineGene& ggene, const std::string& left_flexbounds_name,
+           const std::string& right_flexbounds_name, bool left_end, bool right_end,
+           std::vector<std::string>& state_strs_,
+           std::map<std::string, std::pair<int, int>>& ggene_ranges_,
+           std::vector<int>& germ_bases_, std::vector<int>& germ_inds_,
+           std::vector<int>& site_inds_);
+
+  void CacheHMMJunctionStates(
+           const GermlineGene& ggene, const std::string& left_flexbounds_name,
+           const std::string& right_flexbounds_name, bool left_end,
+           std::vector<std::string>& state_strs_,
+           std::map<std::string, std::pair<int, int>>& ggene_ranges_,
+           std::vector<int>& germ_bases_, std::vector<int>& germ_inds_,
+           std::vector<int>& site_inds_);
 
  public:
   NewData(){};
@@ -72,20 +87,32 @@ class NewData {
   const std::map<std::string, std::pair<int, int>>& flexbounds() const { return flexbounds_; };
   const std::map<std::string, int>& relpos() const { return relpos_; };
   const std::vector<std::string>& vgerm_state_strs() const { return vgerm_state_strs_; };
+  const std::map<std::string, std::pair<int, int>>& vgerm_ggene_ranges() const { return vgerm_ggene_ranges_; };
+  const std::vector<int>& vgerm_germ_bases() const { return vgerm_germ_bases_; };
+  const std::vector<int>& vgerm_germ_inds() const { return vgerm_germ_inds_; };
+  const std::vector<int>& vgerm_site_inds() const { return vgerm_site_inds_; };
   const std::vector<std::string>& vd_junction_state_strs() const { return vd_junction_state_strs_; };
   const std::map<std::string, std::pair<int, int>>& vd_junction_ggene_ranges() const { return vd_junction_ggene_ranges_; };
   const std::vector<int>& vd_junction_germ_bases() const { return vd_junction_germ_bases_; };
   const std::vector<int>& vd_junction_germ_inds() const { return vd_junction_germ_inds_; };
   const std::vector<int>& vd_junction_site_inds() const { return vd_junction_site_inds_; };
   const std::vector<std::string>& dgerm_state_strs() const { return dgerm_state_strs_; };
+  const std::map<std::string, std::pair<int, int>>& dgerm_ggene_ranges() const { return dgerm_ggene_ranges_; };
+  const std::vector<int>& dgerm_germ_bases() const { return dgerm_germ_bases_; };
+  const std::vector<int>& dgerm_germ_inds() const { return dgerm_germ_inds_; };
+  const std::vector<int>& dgerm_site_inds() const { return dgerm_site_inds_; };
   const std::vector<std::string>& dj_junction_state_strs() const { return dj_junction_state_strs_; };
   const std::map<std::string, std::pair<int, int>>& dj_junction_ggene_ranges() const { return dj_junction_ggene_ranges_; };
   const std::vector<int>& dj_junction_germ_bases() const { return dj_junction_germ_bases_; };
   const std::vector<int>& dj_junction_germ_inds() const { return dj_junction_germ_inds_; };
   const std::vector<int>& dj_junction_site_inds() const { return dj_junction_site_inds_; };
   const std::vector<std::string>& jgerm_state_strs() const { return jgerm_state_strs_; };
+  const std::map<std::string, std::pair<int, int>>& jgerm_ggene_ranges() const { return jgerm_ggene_ranges_; };
+  const std::vector<int>& jgerm_germ_bases() const { return jgerm_germ_bases_; };
+  const std::vector<int>& jgerm_germ_inds() const { return jgerm_germ_inds_; };
+  const std::vector<int>& jgerm_site_inds() const { return jgerm_site_inds_; };
 
-  const Eigen::MatrixXd& tmp() const { return vd_junction_dgerm_transition_; };
+  //const Eigen::MatrixXd& tmp() const { return vd_junction_dgerm_transition_; };
 };
 
 

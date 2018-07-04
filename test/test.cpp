@@ -874,6 +874,11 @@ TEST_CASE("NewData", "[newdata]") {
   std::map<std::string, int> VDJ_relpos = {
       {"IGHV_ex*01", 1}, {"IGHD_ex*01", 5}, {"IGHJ_ex*01", 10}};
   std::vector<std::string> VDJ_vgerm_state_strs = {"IGHV_ex*01"};
+  std::map<std::string, std::pair<int, int>> VDJ_vgerm_ggene_ranges =
+      {{"IGHV_ex*01", {0, 3}}};
+  std::vector<int> VDJ_vgerm_germ_bases = {0, 3, 2};
+  std::vector<int> VDJ_vgerm_germ_inds = {0, 1, 2};
+  std::vector<int> VDJ_vgerm_site_inds = {1, 2, 3};
   std::vector<std::string> VDJ_vd_junction_state_strs =
       {"IGHD_ex*01:N_A", "IGHD_ex*01:N_C", "IGHD_ex*01:N_G", "IGHD_ex*01:N_T",
        "IGHD_ex*01:0", "IGHD_ex*01:1", "IGHD_ex*01:2", "IGHV_ex*01:3", "IGHV_ex*01:4"};
@@ -883,6 +888,11 @@ TEST_CASE("NewData", "[newdata]") {
   std::vector<int> VDJ_vd_junction_germ_inds = {-1, -1, -1, -1, 0, 1, 2, 3, 4};
   std::vector<int> VDJ_vd_junction_site_inds = {-1, -1, -1, -1, 5, 6, 7, 4, 5};
   std::vector<std::string> VDJ_dgerm_state_strs = {"IGHD_ex*01"};
+  std::map<std::string, std::pair<int, int>> VDJ_dgerm_ggene_ranges =
+      {{"IGHD_ex*01", {0, 1}}};
+  std::vector<int> VDJ_dgerm_germ_bases = {0};
+  std::vector<int> VDJ_dgerm_germ_inds = {3};
+  std::vector<int> VDJ_dgerm_site_inds = {8};
   std::vector<std::string> VDJ_dj_junction_state_strs =
       {"IGHD_ex*01:4", "IGHJ_ex*01:N_A", "IGHJ_ex*01:N_C", "IGHJ_ex*01:N_G",
        "IGHJ_ex*01:N_T", "IGHJ_ex*01:0", "IGHJ_ex*01:1"};
@@ -892,38 +902,64 @@ TEST_CASE("NewData", "[newdata]") {
   std::vector<int> VDJ_dj_junction_germ_inds = {4, -1, -1, -1, -1, 0, 1};
   std::vector<int> VDJ_dj_junction_site_inds = {9, -1, -1, -1, -1, 10, 11};
   std::vector<std::string> VDJ_jgerm_state_strs = {"IGHJ_ex*01"};
+  std::map<std::string, std::pair<int, int>> VDJ_jgerm_ggene_ranges =
+      {{"IGHJ_ex*01", {0, 1}}};
+  std::vector<int> VDJ_jgerm_germ_bases = {2};
+  std::vector<int> VDJ_jgerm_germ_inds = {2};
+  std::vector<int> VDJ_jgerm_site_inds = {12};
 
   // Eigen::MatrixXd tmp(1, 9);
   // tmp << 0.2*0.1, 0.2*0.2, 0.2*0.1, 0.2*0.05, 0, 0, 0, 0.8, 0;
-  Eigen::MatrixXd tmp2(9, 9);
-  tmp2 << 0.075, 0.175, 0.05, 0.025, 0.45, 0.125, 0.1,   0,   0,
-          0.075, 0.175, 0.05, 0.025, 0.45, 0.125, 0.1,   0,   0,
-          0.075, 0.175, 0.05, 0.025, 0.45, 0.125, 0.1,   0,   0,
-          0.075, 0.175, 0.05, 0.025, 0.45, 0.125, 0.1,   0,   0,
-              0,     0,    0,     0,    0,    0.98,  0,   0,  0,
-              0,     0,    0,     0,    0,     0,   0.95,   0, 0,
-              0,     0,    0,     0,    0,     0,    0,   0 ,  0,
-          0.5*0.1, 0.5*0.2, 0.5*0.1, 0.5*0.05, 0.5*0.4, 0 , 0, 0, 0.5,
-          1*0.1, 1*0.2, 1*0.1, 1*0.05, 0, 1*0.1 , 0, 0, 0;
-
+  // Eigen::MatrixXd tmp2(9, 9);
+  // tmp2 << 0.075, 0.175, 0.05, 0.025, 0.45, 0.125, 0.1,   0,   0,
+  //         0.075, 0.175, 0.05, 0.025, 0.45, 0.125, 0.1,   0,   0,
+  //         0.075, 0.175, 0.05, 0.025, 0.45, 0.125, 0.1,   0,   0,
+  //         0.075, 0.175, 0.05, 0.025, 0.45, 0.125, 0.1,   0,   0,
+  //             0,     0,    0,     0,    0,    0.98,  0,   0,  0,
+  //             0,     0,    0,     0,    0,     0,   0.95,   0, 0,
+  //             0,     0,    0,     0,    0,     0,    0,   0 ,  0,
+  //         0.5*0.1, 0.5*0.2, 0.5*0.1, 0.5*0.05, 0.5*0.4, 0 , 0, 0, 0.5,
+  //         1*0.1, 1*0.2, 1*0.1, 1*0.05, 0, 1*0.1 , 0, 0, 0;
+  Eigen::MatrixXd tmp2(9,1);
+  tmp2 << 0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0.6,
+          0,
+          0;
 
   REQUIRE(new_data_ptr->flexbounds() == VDJ_flexbounds);
   REQUIRE(new_data_ptr->relpos() == VDJ_relpos);
   REQUIRE(new_data_ptr->vgerm_state_strs() == VDJ_vgerm_state_strs);
+  REQUIRE(new_data_ptr->vgerm_ggene_ranges() == VDJ_vgerm_ggene_ranges);
+  REQUIRE(new_data_ptr->vgerm_germ_bases() == VDJ_vgerm_germ_bases);
+  REQUIRE(new_data_ptr->vgerm_germ_inds() == VDJ_vgerm_germ_inds);
+  REQUIRE(new_data_ptr->vgerm_site_inds() == VDJ_vgerm_site_inds);
   REQUIRE(new_data_ptr->vd_junction_state_strs() == VDJ_vd_junction_state_strs);
   REQUIRE(new_data_ptr->vd_junction_ggene_ranges() == VDJ_vd_junction_ggene_ranges);
   REQUIRE(new_data_ptr->vd_junction_germ_bases() == VDJ_vd_junction_germ_bases);
   REQUIRE(new_data_ptr->vd_junction_germ_inds() == VDJ_vd_junction_germ_inds);
   REQUIRE(new_data_ptr->vd_junction_site_inds() == VDJ_vd_junction_site_inds);
   REQUIRE(new_data_ptr->dgerm_state_strs() == VDJ_dgerm_state_strs);
+  REQUIRE(new_data_ptr->dgerm_ggene_ranges() == VDJ_dgerm_ggene_ranges);
+  REQUIRE(new_data_ptr->dgerm_germ_bases() == VDJ_dgerm_germ_bases);
+  REQUIRE(new_data_ptr->dgerm_germ_inds() == VDJ_dgerm_germ_inds);
+  REQUIRE(new_data_ptr->dgerm_site_inds() == VDJ_dgerm_site_inds);
   REQUIRE(new_data_ptr->dj_junction_state_strs() == VDJ_dj_junction_state_strs);
   REQUIRE(new_data_ptr->dj_junction_ggene_ranges() == VDJ_dj_junction_ggene_ranges);
   REQUIRE(new_data_ptr->dj_junction_germ_bases() == VDJ_dj_junction_germ_bases);
   REQUIRE(new_data_ptr->dj_junction_germ_inds() == VDJ_dj_junction_germ_inds);
   REQUIRE(new_data_ptr->dj_junction_site_inds() == VDJ_dj_junction_site_inds);
   REQUIRE(new_data_ptr->jgerm_state_strs() == VDJ_jgerm_state_strs);
+  REQUIRE(new_data_ptr->jgerm_ggene_ranges() == VDJ_jgerm_ggene_ranges);
+  REQUIRE(new_data_ptr->jgerm_germ_bases() == VDJ_jgerm_germ_bases);
+  REQUIRE(new_data_ptr->jgerm_germ_inds() == VDJ_jgerm_germ_inds);
+  REQUIRE(new_data_ptr->jgerm_site_inds() == VDJ_jgerm_site_inds);
 
-  REQUIRE(new_data_ptr->tmp() == tmp2);
+  //REQUIRE(new_data_ptr->tmp() == tmp2);
 }
 //
 //

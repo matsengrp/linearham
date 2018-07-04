@@ -25,30 +25,68 @@ NewData::NewData(const std::string& flexbounds_str,
   InitializeHMMStateSpace(ggenes);
 
   // Initialize the HMM transition probability matrices.
-  ComputeHMMGermlineJunctionTransition(
-      vgerm_state_strs_, vgerm_ggenes_, vd_junction_state_strs_,
-      vd_junction_ggene_ranges_, vd_junction_germ_inds_, vd_junction_site_inds_,
-      GermlineType::V, GermlineType::D, ggenes, vgerm_vd_junction_transition_);
-  ComputeHMMJunctionTransition(
-      vd_junction_state_strs_, vd_junction_ggene_ranges_,
-      vd_junction_germ_inds_, vd_junction_site_inds_, GermlineType::V,
-      GermlineType::D, ggenes, vd_junction_transition_);
-  ComputeHMMJunctionGermlineTransition(
-      vd_junction_state_strs_, vd_junction_ggene_ranges_,
-      vd_junction_germ_inds_, vd_junction_site_inds_, dgerm_state_strs_,
-      dgerm_ggenes_, GermlineType::V, GermlineType::D, ggenes,
-      vd_junction_dgerm_transition_);
+  // ComputeHMMGermlineJunctionTransition(
+  //     vgerm_state_strs_, vgerm_ggenes_, vd_junction_state_strs_,
+  //     vd_junction_ggene_ranges_, vd_junction_germ_inds_,
+  //     vd_junction_site_inds_, GermlineType::V, GermlineType::D, ggenes,
+  //     vgerm_vd_junction_transition_);
+  // ComputeHMMJunctionTransition(
+  //     vd_junction_state_strs_, vd_junction_ggene_ranges_,
+  //     vd_junction_germ_inds_, vd_junction_site_inds_, GermlineType::V,
+  //     GermlineType::D, ggenes, vd_junction_transition_);
+  // ComputeHMMJunctionGermlineTransition(
+  //     vd_junction_state_strs_, vd_junction_ggene_ranges_,
+  //     vd_junction_germ_inds_, vd_junction_site_inds_, dgerm_state_strs_,
+  //     dgerm_ggenes_, GermlineType::V, GermlineType::D, ggenes,
+  //     vd_junction_dgerm_transition_);
+};
+
+
+void NewData::CacheHMMGermlineStates(
+    const GermlineGene& ggene, const std::string& left_flexbounds_name,
+    const std::string& right_flexbounds_name, bool left_end, bool right_end,
+    std::vector<std::string>& state_strs_,
+    std::map<std::string, std::pair<int, int>>& ggene_ranges_,
+    std::vector<int>& germ_bases_, std::vector<int>& germ_inds_,
+    std::vector<int>& site_inds_) {
+  // Extract the left/right flexbounds, germline pointer, and relpos.
+  std::pair<int, int> left_flexbounds = flexbounds_.at(left_flexbounds_name);
+  std::pair<int, int> right_flexbounds = flexbounds_.at(right_flexbounds_name);
+  GermlinePtr germ_ptr = ggene.germ_ptr;
+  int relpos = relpos_.at(germ_ptr->name());
+
+  // Compute the site positions that correspond to the start/end of the germline
+  // gene in the "germline" region.
+  int site_start = left_end ? std::max(relpos, left_flexbounds.first)
+                            : left_flexbounds.second;
+  int site_end =
+      right_end ? std::min(relpos + germ_ptr->length(), right_flexbounds.second)
+                : right_flexbounds.first;
+
+  // Calculate the start/end indices that map to the current "germline" state.
+  int range_start = germ_bases_.size();
+  int range_end = germ_bases_.size() + (site_end - site_start);
+  ggene_ranges_.emplace(germ_ptr->name(),
+                        std::pair<int, int>({range_start, range_end}));
+
+  // Store the germline-related state information.
+  state_strs_.push_back(germ_ptr->name());
+
+  for (int i = site_start; i < site_end; i++) {
+    germ_bases_.push_back(germ_ptr->bases()[i - relpos]);
+    germ_inds_.push_back(i - relpos);
+    site_inds_.push_back(i);
+  }
 };
 
 
 void NewData::CacheHMMJunctionStates(
     const GermlineGene& ggene, const std::string& left_flexbounds_name,
     const std::string& right_flexbounds_name, bool left_end,
-    std::vector<std::string>& junction_state_strs_,
-    std::map<std::string, std::pair<int, int>>& junction_ggene_ranges_,
-    std::vector<int>& junction_germ_bases_,
-    std::vector<int>& junction_germ_inds_,
-    std::vector<int>& junction_site_inds_) {
+    std::vector<std::string>& state_strs_,
+    std::map<std::string, std::pair<int, int>>& ggene_ranges_,
+    std::vector<int>& germ_bases_, std::vector<int>& germ_inds_,
+    std::vector<int>& site_inds_) {
   // Extract the left/right flexbounds, germline pointer, and relpos.
   std::pair<int, int> left_flexbounds = flexbounds_.at(left_flexbounds_name);
   std::pair<int, int> right_flexbounds = flexbounds_.at(right_flexbounds_name);
@@ -63,30 +101,28 @@ void NewData::CacheHMMJunctionStates(
 
   // Calculate the start/end indices that map to the "junction" states
   // associated with the current germline gene.
-  int range_start = junction_state_strs_.size();
-  int range_end = junction_state_strs_.size() + (site_end - site_start);
+  int range_start = state_strs_.size();
+  int range_end = state_strs_.size() + (site_end - site_start);
   if (left_end) range_end += germ_ptr->alphabet().size();
-  junction_ggene_ranges_.emplace(germ_ptr->name(),
-                                 std::pair<int, int>({range_start, range_end}));
+  ggene_ranges_.emplace(germ_ptr->name(),
+                        std::pair<int, int>({range_start, range_end}));
 
   // If necessary, cache the NTI-related state information.
   if (left_end) {
     for (int i = 0; i < germ_ptr->alphabet().size(); i++) {
-      junction_state_strs_.push_back(germ_ptr->name() + ":N_" +
-                                     germ_ptr->alphabet()[i]);
-      junction_germ_bases_.push_back(i);
-      junction_germ_inds_.push_back(-1);
-      junction_site_inds_.push_back(-1);
+      state_strs_.push_back(germ_ptr->name() + ":N_" + germ_ptr->alphabet()[i]);
+      germ_bases_.push_back(i);
+      germ_inds_.push_back(-1);
+      site_inds_.push_back(-1);
     }
   }
 
   // Store the germline-related state information.
   for (int i = site_start; i < site_end; i++) {
-    junction_state_strs_.push_back(germ_ptr->name() + ":" +
-                                   std::to_string(i - relpos));
-    junction_germ_bases_.push_back(germ_ptr->bases()[i - relpos]);
-    junction_germ_inds_.push_back(i - relpos);
-    junction_site_inds_.push_back(i);
+    state_strs_.push_back(germ_ptr->name() + ":" + std::to_string(i - relpos));
+    germ_bases_.push_back(germ_ptr->bases()[i - relpos]);
+    germ_inds_.push_back(i - relpos);
+    site_inds_.push_back(i);
   }
 };
 
@@ -103,8 +139,10 @@ void NewData::InitializeHMMStateSpace(
 
     if (ggene.type == GermlineType::V) {
       // Cache the V "germline" state.
-      vgerm_state_strs_.push_back(gname);
-      vgerm_ggenes_.push_back(ggene);
+      CacheHMMGermlineStates(ggene, "v_l", "v_r", true, false,
+                             vgerm_state_strs_, vgerm_ggene_ranges_,
+                             vgerm_germ_bases_, vgerm_germ_inds_,
+                             vgerm_site_inds_);
 
       // Cache the V-D "junction" states.
       CacheHMMJunctionStates(ggene, "v_r", "d_l", false,
@@ -112,14 +150,16 @@ void NewData::InitializeHMMStateSpace(
                              vd_junction_germ_bases_, vd_junction_germ_inds_,
                              vd_junction_site_inds_);
     } else if (ggene.type == GermlineType::D) {
-      // Cache the D "germline" state.
-      dgerm_state_strs_.push_back(gname);
-      dgerm_ggenes_.push_back(ggene);
-
       // Cache the V-D "junction" states.
       CacheHMMJunctionStates(ggene, "v_r", "d_l", true, vd_junction_state_strs_,
                              vd_junction_ggene_ranges_, vd_junction_germ_bases_,
                              vd_junction_germ_inds_, vd_junction_site_inds_);
+
+      // Cache the D "germline" state.
+      CacheHMMGermlineStates(ggene, "d_l", "d_r", false, false,
+                             dgerm_state_strs_, dgerm_ggene_ranges_,
+                             dgerm_germ_bases_, dgerm_germ_inds_,
+                             dgerm_site_inds_);
 
       // Cache the D-J "junction" states.
       CacheHMMJunctionStates(ggene, "d_r", "j_l", false,
@@ -129,14 +169,16 @@ void NewData::InitializeHMMStateSpace(
     } else {
       assert(ggene.type == GermlineType::J);
 
-      // Cache the J "germline" state.
-      jgerm_state_strs_.push_back(gname);
-      jgerm_ggenes_.push_back(ggene);
-
       // Cache the D-J "junction" states.
       CacheHMMJunctionStates(ggene, "d_r", "j_l", true, dj_junction_state_strs_,
                              dj_junction_ggene_ranges_, dj_junction_germ_bases_,
                              dj_junction_germ_inds_, dj_junction_site_inds_);
+
+      // Cache the J "germline" state.
+      CacheHMMGermlineStates(ggene, "j_l", "j_r", false, true,
+                             jgerm_state_strs_, jgerm_ggene_ranges_,
+                             jgerm_germ_bases_, jgerm_germ_inds_,
+                             jgerm_site_inds_);
     }
   }
 };
