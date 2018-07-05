@@ -907,29 +907,52 @@ TEST_CASE("NewData", "[newdata]") {
   std::vector<int> VDJ_jgerm_germ_bases = {2};
   std::vector<int> VDJ_jgerm_germ_inds = {2};
   std::vector<int> VDJ_jgerm_site_inds = {12};
-
-  // Eigen::MatrixXd tmp(1, 9);
-  // tmp << 0.2*0.1, 0.2*0.2, 0.2*0.1, 0.2*0.05, 0, 0, 0, 0.8, 0;
-  // Eigen::MatrixXd tmp2(9, 9);
-  // tmp2 << 0.075, 0.175, 0.05, 0.025, 0.45, 0.125, 0.1,   0,   0,
-  //         0.075, 0.175, 0.05, 0.025, 0.45, 0.125, 0.1,   0,   0,
-  //         0.075, 0.175, 0.05, 0.025, 0.45, 0.125, 0.1,   0,   0,
-  //         0.075, 0.175, 0.05, 0.025, 0.45, 0.125, 0.1,   0,   0,
-  //             0,     0,    0,     0,    0,    0.98,  0,   0,  0,
-  //             0,     0,    0,     0,    0,     0,   0.95,   0, 0,
-  //             0,     0,    0,     0,    0,     0,    0,   0 ,  0,
-  //         0.5*0.1, 0.5*0.2, 0.5*0.1, 0.5*0.05, 0.5*0.4, 0 , 0, 0, 0.5,
-  //         1*0.1, 1*0.2, 1*0.1, 1*0.05, 0, 1*0.1 , 0, 0, 0;
-  Eigen::MatrixXd tmp2(9,1);
-  tmp2 << 0,
-          0,
-          0,
-          0,
-          0,
-          0,
-          0.6,
-          0,
-          0;
+  Eigen::MatrixXd VDJ_vgerm_vd_junction_transition(1, 9);
+  VDJ_vgerm_vd_junction_transition <<
+  0.2*0.1, 0.2*0.2, 0.2*0.1, 0.2*0.05, 0, 0, 0, 0.8, 0;
+  Eigen::MatrixXd VDJ_vd_junction_transition(9, 9);
+  VDJ_vd_junction_transition <<
+    0.075,   0.175,    0.05,    0.025,    0.45, 0.125,  0.1, 0,   0,
+    0.075,   0.175,    0.05,    0.025,    0.45, 0.125,  0.1, 0,   0,
+    0.075,   0.175,    0.05,    0.025,    0.45, 0.125,  0.1, 0,   0,
+    0.075,   0.175,    0.05,    0.025,    0.45, 0.125,  0.1, 0,   0,
+        0,       0,       0,        0,       0,  0.98,    0, 0,   0,
+        0,       0,       0,        0,       0,     0, 0.95, 0,   0,
+        0,       0,       0,        0,       0,     0,    0, 0,   0,
+  0.5*0.1, 0.5*0.2, 0.5*0.1, 0.5*0.05, 0.5*0.4,     0,    0, 0, 0.5,
+    1*0.1,   1*0.2,   1*0.1,   1*0.05,       0, 1*0.1,    0, 0,   0;
+  Eigen::MatrixXd VDJ_vd_junction_dgerm_transition(9, 1);
+  VDJ_vd_junction_dgerm_transition <<
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+  0.6,
+    0,
+    0;
+  Eigen::MatrixXd VDJ_dgerm_dj_junction_transition(1, 7);
+  VDJ_dgerm_dj_junction_transition <<
+  0.35, 0.65*0.1, 0.65*0.2, 0.65*0.2, 0.65*0.2, 0, 0;
+  Eigen::MatrixXd VDJ_dj_junction_transition(7, 7);
+  VDJ_dj_junction_transition <<
+  0, 1*0.1, 1*0.2, 1*0.2, 1*0.2, 1*0.25,    0,
+  0,  0.05,  0.15, 0.075, 0.075,    0.4, 0.25,
+  0,  0.05,  0.15, 0.075, 0.075,    0.4, 0.25,
+  0,  0.05,  0.15, 0.075, 0.075,    0.4, 0.25,
+  0,  0.05,  0.15, 0.075, 0.075,    0.4, 0.25,
+  0,     0,     0,     0,     0,      0,    1,
+  0,     0,     0,     0,     0,      0,    0;
+  Eigen::MatrixXd VDJ_dj_junction_jgerm_transition(7, 1);
+  VDJ_dj_junction_jgerm_transition <<
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  1;
 
   REQUIRE(new_data_ptr->flexbounds() == VDJ_flexbounds);
   REQUIRE(new_data_ptr->relpos() == VDJ_relpos);
@@ -958,8 +981,12 @@ TEST_CASE("NewData", "[newdata]") {
   REQUIRE(new_data_ptr->jgerm_germ_bases() == VDJ_jgerm_germ_bases);
   REQUIRE(new_data_ptr->jgerm_germ_inds() == VDJ_jgerm_germ_inds);
   REQUIRE(new_data_ptr->jgerm_site_inds() == VDJ_jgerm_site_inds);
-
-  //REQUIRE(new_data_ptr->tmp() == tmp2);
+  REQUIRE(new_data_ptr->vgerm_vd_junction_transition() == VDJ_vgerm_vd_junction_transition);
+  REQUIRE(new_data_ptr->vd_junction_transition() == VDJ_vd_junction_transition);
+  REQUIRE(new_data_ptr->vd_junction_dgerm_transition() == VDJ_vd_junction_dgerm_transition);
+  REQUIRE(new_data_ptr->dgerm_dj_junction_transition() == VDJ_dgerm_dj_junction_transition);
+  REQUIRE(new_data_ptr->dj_junction_transition() == VDJ_dj_junction_transition);
+  REQUIRE(new_data_ptr->dj_junction_jgerm_transition() == VDJ_dj_junction_jgerm_transition);
 }
 //
 //

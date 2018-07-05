@@ -57,11 +57,16 @@ class NewData {
   std::vector<int> jgerm_site_inds_;
 
   //// HMM transition probability matrices
-  // Eigen::MatrixXd vgerm_vd_junction_transition_;
-  // Eigen::MatrixXd vd_junction_transition_;
-  // Eigen::MatrixXd vd_junction_dgerm_transition_;
+  Eigen::MatrixXd vgerm_vd_junction_transition_;
+  Eigen::MatrixXd vd_junction_transition_;
+  Eigen::MatrixXd vd_junction_dgerm_transition_;
+  Eigen::MatrixXd dgerm_dj_junction_transition_;
+  Eigen::MatrixXd dj_junction_transition_;
+  Eigen::MatrixXd dj_junction_jgerm_transition_;
 
   void InitializeHMMStateSpace(const std::unordered_map<std::string, GermlineGene>& ggenes);
+
+  void InitializeHMMTransition(const std::unordered_map<std::string, GermlineGene>& ggenes);
 
   void CacheHMMGermlineStates(
            const GermlineGene& ggene, const std::string& left_flexbounds_name,
@@ -80,7 +85,6 @@ class NewData {
            std::vector<int>& site_inds_);
 
  public:
-  NewData(){};
   NewData(const std::string& flexbounds_str, const std::string& relpos_str,
           const std::unordered_map<std::string, GermlineGene>& ggenes);
 
@@ -111,8 +115,12 @@ class NewData {
   const std::vector<int>& jgerm_germ_bases() const { return jgerm_germ_bases_; };
   const std::vector<int>& jgerm_germ_inds() const { return jgerm_germ_inds_; };
   const std::vector<int>& jgerm_site_inds() const { return jgerm_site_inds_; };
-
-  //const Eigen::MatrixXd& tmp() const { return vd_junction_dgerm_transition_; };
+  const Eigen::MatrixXd& vgerm_vd_junction_transition() const { return vgerm_vd_junction_transition_; };
+  const Eigen::MatrixXd& vd_junction_transition() const { return vd_junction_transition_; };
+  const Eigen::MatrixXd& vd_junction_dgerm_transition() const { return vd_junction_dgerm_transition_; };
+  const Eigen::MatrixXd& dgerm_dj_junction_transition() const { return dgerm_dj_junction_transition_; };
+  const Eigen::MatrixXd& dj_junction_transition() const { return dj_junction_transition_; };
+  const Eigen::MatrixXd& dj_junction_jgerm_transition() const { return dj_junction_jgerm_transition_; };
 };
 
 
@@ -124,7 +132,9 @@ NewDataPtr ReadNewData(std::string csv_path, std::string dir_path);
 
 void ComputeHMMGermlineJunctionTransition(
     const std::vector<std::string>& germ_state_strs_,
-    const std::vector<GermlineGene>& germ_ggenes_,
+    const std::map<std::string, std::pair<int, int>>& germ_ggene_ranges_,
+    const std::vector<int>& germ_germ_inds_,
+    const std::vector<int>& germ_site_inds_,
     const std::vector<std::string>& junction_state_strs_,
     const std::map<std::string, std::pair<int, int>>& junction_ggene_ranges_,
     const std::vector<int>& junction_germ_inds_,
@@ -150,7 +160,9 @@ void ComputeHMMJunctionGermlineTransition(
     const std::vector<int>& junction_germ_inds_,
     const std::vector<int>& junction_site_inds_,
     const std::vector<std::string>& germ_state_strs_,
-    const std::vector<GermlineGene>& germ_ggenes_, GermlineType left_gtype,
+    const std::map<std::string, std::pair<int, int>>& germ_ggene_ranges_,
+    const std::vector<int>& germ_germ_inds_,
+    const std::vector<int>& germ_site_inds_, GermlineType left_gtype,
     GermlineType right_gtype,
     const std::unordered_map<std::string, GermlineGene>& ggenes,
     Eigen::MatrixXd& junction_germ_transition_);
@@ -163,7 +175,8 @@ void FillHMMTransition(const GermlineGene& from_ggene,
                        int site_ind_col_start, int n_row_start, int n_col_start,
                        int n_row_length, int n_col_length, int germ_row_start,
                        int germ_col_start, int germ_row_length,
-                       int germ_col_length, Eigen::MatrixXd& transition_);
+                       int germ_col_length,
+                       Eigen::Ref<Eigen::MatrixXd> transition_);
 }
 
 #endif  // LINEARHAM_NEWDATA_
