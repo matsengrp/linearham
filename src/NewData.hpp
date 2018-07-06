@@ -64,6 +64,13 @@ class NewData {
   Eigen::MatrixXd dj_junction_transition_;
   Eigen::MatrixXd dj_junction_jgerm_transition_;
 
+  //// HMM emission probability matrices
+  Eigen::VectorXd vgerm_emission_;
+  Eigen::MatrixXd vd_junction_emission_;
+  Eigen::VectorXd dgerm_emission_;
+  Eigen::MatrixXd dj_junction_emission_;
+  Eigen::VectorXd jgerm_emission_;
+
   void InitializeHMMStateSpace(const std::unordered_map<std::string, GermlineGene>& ggenes);
 
   void InitializeHMMTransition(const std::unordered_map<std::string, GermlineGene>& ggenes);
@@ -177,6 +184,13 @@ void FillHMMTransition(const GermlineGene& from_ggene,
                        int germ_col_start, int germ_row_length,
                        int germ_col_length,
                        Eigen::Ref<Eigen::MatrixXd> transition_);
+
+
+Eigen::VectorXi ConvertSeqToInts2(
+   const std::string& seq, const std::string& alphabet);
+
+std::string ConvertIntsToSeq2(const Eigen::Ref<const Eigen::VectorXi>& seq_ints,
+                            const std::string& alphabet);
 }
 
 #endif  // LINEARHAM_NEWDATA_

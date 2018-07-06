@@ -18,6 +18,7 @@
 #include "SimpleData.hpp"
 #include "PhyloData.hpp"
 #include "NewData.hpp"
+#include "NewPhyloData.hpp"
 
 
 namespace test {
@@ -987,6 +988,88 @@ TEST_CASE("NewData", "[newdata]") {
   REQUIRE(new_data_ptr->dgerm_dj_junction_transition() == VDJ_dgerm_dj_junction_transition);
   REQUIRE(new_data_ptr->dj_junction_transition() == VDJ_dj_junction_transition);
   REQUIRE(new_data_ptr->dj_junction_jgerm_transition() == VDJ_dj_junction_jgerm_transition);
+}
+
+
+// NewPhyloData tests
+
+TEST_CASE("NewPhyloData", "[newphylodata]") {
+  // Test the NewPhyloData class using the example files.
+  std::string csv_path = "data/SimpleData_ex/hmm_input.csv";
+  std::string dir_path = "data/SimpleData_ex/hmm_params";
+  std::string newick_path = "data/PhyloData_ex/newton.tre";
+  std::string fasta_path = "data/PhyloData_ex/newton.fasta";
+  std::string raxml_path = "data/PhyloData_ex/RAxML_info.newton";
+  NewPhyloDataPtr new_phylo_data_ptr =
+      ReadNewPhyloData(csv_path, dir_path, newick_path, fasta_path, raxml_path, 4);
+
+  // For a diagram of the S-W alignment, see
+  // https://github.com/matsengrp/linearham/issues/44#issue-336348821.
+
+  Eigen::MatrixXi VDJ_msa(3,13);
+  VDJ_msa <<
+  3, 0, 0, 0, 0, 2, 0, 3, 1, 0, 0, 3, 3,
+  1, 0, 1, 0, 1, 2, 3, 3, 1, 2, 0, 2, 3,
+  1, 2, 3, 0, 2, 3, 0, 2, 2, 0, 1, 3, 1;
+  Eigen::MatrixXi VDJ_xmsa(4, 33);
+  VDJ_xmsa <<
+  0, 0, 0, 0, 2, 0, 3, 0, 2, 0, 3, 0, 2, 0, 3, 0, 2, 0, 3, 1, 0, 0, 0, 3, 0, 3, 0, 0, 3, 0, 0, 3, 3,
+  0, 1, 0, 1, 2, 3, 3, 1, 2, 3, 3, 1, 2, 3, 3, 1, 2, 3, 3, 1, 2, 2, 0, 2, 0, 2, 2, 0, 2, 2, 0, 2, 3,
+  0, 3, 2, 0, 0, 0, 0, 1, 1, 1, 1, 2, 2, 2, 2, 3, 3, 3, 3, 0, 1, 0, 0, 0, 1, 1, 2, 2, 2, 3, 3, 3, 2,
+  2, 3, 0, 2, 3, 0, 2, 2, 3, 0, 2, 2, 3, 0, 2, 2, 3, 0, 2, 2, 0, 0, 1, 3, 1, 3, 0, 1, 3, 0, 1, 3, 1;
+  std::vector<std::string> VDJ_xmsa_labels = {"0", "1", "root", "3"};
+  std::vector<std::string> VDJ_xmsa_seqs = {
+      "AAAAGATAGATAGATAGATCAAATATAATAATT", "ACACGTTCGTTCGTTCGTTCGGAGAGGAGGAGT",
+      "ATGAAAACCCCGGGGTTTTACAAACCGGGTTTG", "GTAGTAGGTAGGTAGGTAGGAACTCTACTACTC"};
+  int VDJ_xmsa_root_ind = std::find(VDJ_xmsa_labels.begin(),
+                                    VDJ_xmsa_labels.end(), "root")
+                          - VDJ_xmsa_labels.begin();
+  Eigen::VectorXd VDJ_xmsa_emission(33);
+  VDJ_xmsa_emission << 0.0233122, 0.00563729, 0.0107866, 0.00342739, 0.0177109,
+                       0.0279823, 0.0215197, 0.00270654, 0.0177109, 0.00399037,
+                       0.0215197, 0.00437549, 0.0446185, 0.00399037, 0.0609261,
+                       0.00225322, 0.0406717, 0.00429863, 0.0400067, 0.00783313,
+                       0.00255793, 0.0179374, 0.0177172, 0.0118535,  0.019866,
+                       0.0118535, 0.00286619, 0.00514627, 0.0134759, 0.00255793,
+                       0.00514627, 0.0322063,  0.016355;
+  Eigen::VectorXi VDJ_vgerm_xmsa_inds(3);
+  VDJ_vgerm_xmsa_inds << 0, 1, 2;
+  Eigen::MatrixXi VDJ_vd_junction_xmsa_inds(9, 4);
+  VDJ_vd_junction_xmsa_inds <<
+   3,  4,  5,  6,
+   7,  8,  9, 10,
+  11, 12, 13, 14,
+  15, 16, 17, 18,
+  -1, 12, -1, -1,
+  -1, -1, 13, -1,
+  -1, -1, -1, 18,
+   3, -1, -1, -1,
+  -1,  8, -1, -1;
+  Eigen::VectorXi VDJ_dgerm_xmsa_inds(1);
+  VDJ_dgerm_xmsa_inds << 19;
+  Eigen::MatrixXi VDJ_dj_junction_xmsa_inds(7, 3);
+  VDJ_dj_junction_xmsa_inds <<
+  20, -1, -1,
+  21, 22, 23,
+  20, 24, 25,
+  26, 27, 28,
+  29, 30, 31,
+  -1, 22, -1,
+  -1, -1, 31;
+  Eigen::VectorXi VDJ_jgerm_xmsa_inds(1);
+  VDJ_jgerm_xmsa_inds << 32;
+
+  REQUIRE(new_phylo_data_ptr->msa() == VDJ_msa);
+  REQUIRE(new_phylo_data_ptr->xmsa() == VDJ_xmsa);
+  REQUIRE(new_phylo_data_ptr->xmsa_labels() == VDJ_xmsa_labels);
+  REQUIRE(new_phylo_data_ptr->xmsa_seqs() == VDJ_xmsa_seqs);
+  REQUIRE(new_phylo_data_ptr->xmsa_root_ind() == VDJ_xmsa_root_ind);
+  REQUIRE(new_phylo_data_ptr->xmsa_emission().isApprox(VDJ_xmsa_emission, 1e-5));
+  REQUIRE(new_phylo_data_ptr->vgerm_xmsa_inds() == VDJ_vgerm_xmsa_inds);
+  REQUIRE(new_phylo_data_ptr->vd_junction_xmsa_inds() == VDJ_vd_junction_xmsa_inds);
+  REQUIRE(new_phylo_data_ptr->dgerm_xmsa_inds() == VDJ_dgerm_xmsa_inds);
+  REQUIRE(new_phylo_data_ptr->dj_junction_xmsa_inds() == VDJ_dj_junction_xmsa_inds);
+  REQUIRE(new_phylo_data_ptr->jgerm_xmsa_inds() == VDJ_jgerm_xmsa_inds);
 }
 //
 //

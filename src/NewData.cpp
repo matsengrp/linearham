@@ -527,4 +527,32 @@ void FillHMMTransition(const GermlineGene& from_ggene,
 };
 
 
+
+
+Eigen::VectorXi ConvertSeqToInts2(
+    const std::string& seq, const std::string& alphabet) {
+  Eigen::VectorXi seq_ints(seq.size());
+  for (std::size_t i = 0; i < seq.size(); i++) {
+    auto it = std::find(alphabet.begin(), alphabet.end(), seq[i]);
+    assert(it != alphabet.end());
+    seq_ints[i] = it - alphabet.begin();
+  }
+
+  return seq_ints;
+};
+
+
+
+std::string ConvertIntsToSeq2(const Eigen::Ref<const Eigen::VectorXi>& seq_ints,
+                             const std::string& alphabet) {
+  std::string seq(seq_ints.size(), ' ');
+  for (std::size_t i = 0; i < seq_ints.size(); i++) {
+    seq[i] = alphabet.at(seq_ints[i]);
+  }
+
+  return seq;
+};
+
+
+
 }  // namespace linearham
