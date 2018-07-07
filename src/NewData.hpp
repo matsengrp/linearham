@@ -71,9 +71,18 @@ class NewData {
   Eigen::MatrixXd dj_junction_emission_;
   Eigen::VectorXd jgerm_emission_;
 
+  //// HMM forward probability matrices
+  Eigen::RowVectorXd vgerm_forward_;
+  Eigen::MatrixXd vd_junction_forward_;
+  Eigen::RowVectorXd dgerm_forward_;
+  Eigen::MatrixXd dj_junction_forward_;
+  Eigen::RowVectorXd jgerm_forward_;
+
   void InitializeHMMStateSpace(const std::unordered_map<std::string, GermlineGene>& ggenes);
 
   void InitializeHMMTransition(const std::unordered_map<std::string, GermlineGene>& ggenes);
+
+
 
   void CacheHMMGermlineStates(
            const GermlineGene& ggene, const std::string& left_flexbounds_name,
@@ -90,6 +99,13 @@ class NewData {
            std::map<std::string, std::pair<int, int>>& ggene_ranges_,
            std::vector<int>& germ_bases_, std::vector<int>& germ_inds_,
            std::vector<int>& site_inds_);
+
+ private:
+  virtual void InitializeHMMEmission(const std::unordered_map<std::string, GermlineGene>& ggenes) = 0;
+
+  virtual void FillHMMGermlineEmission(const std::unordered_map<std::string, GermlineGene>& ggenes, const Eigen::VectorXi& xmsa_inds_, Eigen::VectorXd& emission_) = 0;
+
+  virtual void FillHMMJunctionEmission(const std::unordered_map<std::string, GermlineGene>& ggenes, const Eigen::MatrixXi& xmsa_inds_, Eigen::MatrixXd& emission_) = 0;
 
  public:
   NewData(const std::string& flexbounds_str, const std::string& relpos_str,
@@ -128,13 +144,15 @@ class NewData {
   const Eigen::MatrixXd& dgerm_dj_junction_transition() const { return dgerm_dj_junction_transition_; };
   const Eigen::MatrixXd& dj_junction_transition() const { return dj_junction_transition_; };
   const Eigen::MatrixXd& dj_junction_jgerm_transition() const { return dj_junction_jgerm_transition_; };
+
+  double LogLikelihood(const std::unordered_map<std::string, GermlineGene>& ggenes);
 };
 
 
 typedef std::shared_ptr<NewData> NewDataPtr;
 
 
-NewDataPtr ReadNewData(std::string csv_path, std::string dir_path);
+// NewDataPtr ReadNewData(std::string csv_path, std::string dir_path);
 
 
 void ComputeHMMGermlineJunctionTransition(

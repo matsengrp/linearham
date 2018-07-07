@@ -43,6 +43,8 @@ NewPhyloData::NewPhyloData(
     xmsa_emission_[i] -= log(root_prob);
   }
   xmsa_emission_.array() = xmsa_emission_.array().exp();
+
+  InitializeHMMEmission(ggenes);
 };
 
 
@@ -87,6 +89,16 @@ void NewPhyloData::InitializeXmsaStructs(const std::string& alphabet) {
 
 
 
+void NewPhyloData::InitializeHMMEmission(const std::unordered_map<std::string, GermlineGene>& ggenes) {
+  FillHMMGermlineEmission(ggenes, vgerm_xmsa_inds_, vgerm_emission_);
+  FillHMMJunctionEmission(ggenes, vd_junction_xmsa_inds_, vd_junction_emission_);
+  FillHMMGermlineEmission(ggenes, dgerm_xmsa_inds_, dgerm_emission_);
+  FillHMMJunctionEmission(ggenes, dj_junction_xmsa_inds_, dj_junction_emission_);
+  FillHMMGermlineEmission(ggenes, jgerm_xmsa_inds_, jgerm_emission_);
+};
+
+
+
 void NewPhyloData::BuildXmsa(
     const std::map<std::pair<int, int>, int>& xmsa_ids,
     const std::string& alphabet) {
@@ -112,6 +124,30 @@ void NewPhyloData::BuildXmsa(
   }
 };
 
+
+
+void NewPhyloData::FillHMMGermlineEmission(const std::unordered_map<std::string, GermlineGene>& ggenes, const Eigen::VectorXi& xmsa_inds_, Eigen::VectorXd& emission_) {
+  emission_.setZero(xmsa_inds_.size());
+
+  // Loop through the "germline" states and cache the associated PhyloHMM emission probabilities.
+  for (int i = 0; i < xmsa_inds_.size(); i++) {
+    emission_[i] = xmsa_emission_[xmsa_inds_[i]];
+  }
+};
+
+
+void NewPhyloData::FillHMMJunctionEmission(const std::unordered_map<std::string, GermlineGene>& ggenes, const Eigen::MatrixXi& xmsa_inds_, Eigen::MatrixXd& emission_) {
+  emission_.setZero(xmsa_inds_.rows(), xmsa_inds_.cols());
+
+  // Loop through the "junction" states and cache the associated PhyloHMM emission probabilities.
+  for (int i = 0; i < xmsa_inds_.rows(); i++) {
+    for (int j = 0; j < xmsa_inds_.cols(); j++) {
+      if (xmsa_inds_(i, j) != -1) {
+        emission_(i, j) = xmsa_emission_[xmsa_inds_(i, j)];
+      }
+    }
+  }
+};
 
 
 

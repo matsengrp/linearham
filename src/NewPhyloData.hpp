@@ -36,9 +36,15 @@ class NewPhyloData : public NewData {
 
   void InitializeXmsaStructs(const std::string& alphabet);
 
+  void InitializeHMMEmission(const std::unordered_map<std::string, GermlineGene>& ggenes) override;
+
   void BuildXmsa(
       const std::map<std::pair<int, int>, int>& xmsa_ids,
       const std::string& alphabet);
+
+  void FillHMMGermlineEmission(const std::unordered_map<std::string, GermlineGene>& ggenes, const Eigen::VectorXi& xmsa_inds_, Eigen::VectorXd& emission_) override;
+
+  void FillHMMJunctionEmission(const std::unordered_map<std::string, GermlineGene>& ggenes, const Eigen::MatrixXi& xmsa_inds_, Eigen::MatrixXd& emission_) override;
 
  public:
    NewPhyloData(

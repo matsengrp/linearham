@@ -204,26 +204,109 @@ void NewData::CacheHMMJunctionStates(
 };
 
 
-NewDataPtr ReadNewData(std::string csv_path, std::string dir_path) {
-  // Create the GermlineGene map needed for the PhyloData constructor.
-  std::unordered_map<std::string, GermlineGene> ggenes =
-      CreateGermlineGeneMap(dir_path);
+double NewData::LogLikelihood(const std::unordered_map<std::string, GermlineGene>& ggenes) {
+  // Cache the V "germline" forward probabilities.
+  vgerm_forward_.setZero(vgerm_state_strs_.size());
 
-  // Initialize CSV parser and associated variables.
-  assert(csv_path.substr(csv_path.length() - 3, 3) == "csv");
-  io::CSVReader<2, io::trim_chars<>, io::double_quote_escape<' ', '\"'>> in(
-      csv_path);
-  in.read_header(io::ignore_extra_column, "flexbounds", "relpos");
+  for (int i = 0; i < vgerm_state_strs_.size(); i++) {
+    // Obtain the start/end indices that map to the current "germline" state.
+    const std::string& gname = vgerm_state_strs_[i];
+    int range_start, range_end;
+    std::tie(range_start, range_end) = vgerm_ggene_ranges_.at(gname);
 
-  std::string flexbounds_str, relpos_str;
+    // Extract the "germline" state information.
+    const GermlineGene& ggene = ggenes.at(gname);
+    int germ_ind_start = vgerm_germ_inds_[range_start];
 
-  in.read_row(flexbounds_str, relpos_str);
-  NewDataPtr new_data_ptr =
-      std::make_shared<NewData>(flexbounds_str, relpos_str, ggenes);
-  assert(!in.read_row(flexbounds_str, relpos_str));
+    // Compute the forward probability.
+    vgerm_forward_[i] = ggene.germ_ptr->gene_prob();
+    vgerm_forward_[i] *= ggene.germ_ptr->next_transition().segment(germ_ind_start, range_end - range_start - 1).prod();
+    vgerm_forward_[i] *= vgerm_emission_.segment(range_start, range_end - range_start).prod();
+  }
 
-  return new_data_ptr;
+  // Cache the V-D "junction" forward probabilities.
+  vd_junction_forward_.setZero(vd_junction_emission_.rows(), vd_junction_emission_.cols());
+
+  for (int i = 0; i < vd_junction_emission_.cols(); i++) {
+    if (i == 0) {
+      // Case 1: "germline" to "junction" transition.
+      vd_junction_forward_.col(i) = (vgerm_forward_ * vgerm_vd_junction_transition_).transpose();
+      vd_junction_forward_.col(i).array() *= vd_junction_emission_.col(i).array();
+    } else {
+      // Case 2: "junction" to "junction" transition.
+      vd_junction_forward_.col(i) = (vd_junction_forward_.col(i - 1).transpose() * vd_junction_transition_).transpose();
+      vd_junction_forward_.col(i).array() *= vd_junction_emission_.col(i).array();
+    }
+  }
+// std::cout << vd_junction_forward_ << std::endl;
+  // Cache the D "germline" forward probabilities.
+  dgerm_forward_.setZero(dgerm_state_strs_.size());
+  dgerm_forward_ = vd_junction_forward_.col(vd_junction_forward_.cols() - 1).transpose() * vd_junction_dgerm_transition_;
+
+  for (int i = 0; i < dgerm_state_strs_.size(); i++) {
+    // Obtain the start/end indices that map to the current "germline" state.
+    const std::string& gname = dgerm_state_strs_[i];
+    int range_start, range_end;
+    std::tie(range_start, range_end) = dgerm_ggene_ranges_.at(gname);
+
+    // Compute the forward probability.
+    dgerm_forward_[i] *= dgerm_emission_.segment(range_start, range_end - range_start).prod();
+  }
+
+  // Cache the D-J "junction" forward probabilities.
+  dj_junction_forward_.setZero(dj_junction_emission_.rows(), dj_junction_emission_.cols());
+
+  for (int i = 0; i < dj_junction_emission_.cols(); i++) {
+    if (i == 0) {
+      // Case 1: "germline" to "junction" transition.
+      dj_junction_forward_.col(i) = (dgerm_forward_ * dgerm_dj_junction_transition_).transpose();
+      dj_junction_forward_.col(i).array() *= dj_junction_emission_.col(i).array();
+    } else {
+      // Case 2: "junction" to "junction" transition.
+      dj_junction_forward_.col(i) = (dj_junction_forward_.col(i - 1).transpose() * dj_junction_transition_).transpose();
+      dj_junction_forward_.col(i).array() *= dj_junction_emission_.col(i).array();
+    }
+  }
+
+  // Cache the J "germline" forward probabilities.
+  jgerm_forward_.setZero(jgerm_state_strs_.size());
+  jgerm_forward_ = dj_junction_forward_.col(dj_junction_forward_.cols() - 1).transpose() * dj_junction_jgerm_transition_;
+
+  for (int i = 0; i < jgerm_state_strs_.size(); i++) {
+    // Obtain the start/end indices that map to the current "germline" state.
+    const std::string& gname = jgerm_state_strs_[i];
+    int range_start, range_end;
+    std::tie(range_start, range_end) = jgerm_ggene_ranges_.at(gname);
+
+    // Compute the forward probability.
+    jgerm_forward_[i] *= jgerm_emission_.segment(range_start, range_end - range_start).prod();
+  }
+
+  return log(jgerm_forward_.sum());
 };
+
+
+
+// NewDataPtr ReadNewData(std::string csv_path, std::string dir_path) {
+//   // Create the GermlineGene map needed for the PhyloData constructor.
+//   std::unordered_map<std::string, GermlineGene> ggenes =
+//       CreateGermlineGeneMap(dir_path);
+//
+//   // Initialize CSV parser and associated variables.
+//   assert(csv_path.substr(csv_path.length() - 3, 3) == "csv");
+//   io::CSVReader<2, io::trim_chars<>, io::double_quote_escape<' ', '\"'>> in(
+//       csv_path);
+//   in.read_header(io::ignore_extra_column, "flexbounds", "relpos");
+//
+//   std::string flexbounds_str, relpos_str;
+//
+//   in.read_row(flexbounds_str, relpos_str);
+//   NewDataPtr new_data_ptr =
+//       std::make_shared<NewData>(flexbounds_str, relpos_str, ggenes);
+//   assert(!in.read_row(flexbounds_str, relpos_str));
+//
+//   return new_data_ptr;
+// };
 
 
 void ComputeHMMGermlineJunctionTransition(
@@ -479,6 +562,7 @@ void FillHMMTransition(const GermlineGene& from_ggene,
       ColVecMatCwise(from_ggene.germ_ptr->landing_out().segment(
                          germ_ind_row_start, germ_row_length),
                      transition_block, transition_block);
+      transition_block *= to_ggene.germ_ptr->gene_prob();
       RowVecMatCwise(n_landing_in, transition_block, transition_block);
     }
 
@@ -518,7 +602,7 @@ void FillHMMTransition(const GermlineGene& from_ggene,
       transition_block.diagonal().array() =
           from_ggene.germ_ptr->landing_out()
               .segment(germ_ind_row_start + match_row_diff, match_length)
-              .array() *
+              .array() * to_ggene.germ_ptr->gene_prob() *
           to_ggene.germ_ptr->landing_in()
               .segment(germ_ind_col_start + match_col_diff, match_length)
               .array();
