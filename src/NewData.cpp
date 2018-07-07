@@ -1,5 +1,12 @@
 #include "NewData.hpp"
 
+#include <algorithm>
+#include <cstddef>
+#include <tuple>
+
+#include <yaml-cpp/yaml.h>
+#include "linalg.hpp"
+
 /// @file NewData.cpp
 /// @brief Partial implementation of the pure virtual NewData base class.
 
@@ -29,58 +36,68 @@ NewData::NewData(const std::string& flexbounds_str,
 };
 
 
+// Initialization Functions
+
+
 void NewData::InitializeHMMStateSpace(
     const std::unordered_map<std::string, GermlineGene>& ggenes) {
   // Iterate across the relpos map from left to right.
   for (auto it = relpos_.begin(); it != relpos_.end(); ++it) {
     // This map has germline gene names as keys and relpos as values.
     const std::string& gname = it->first;
+    int relpos = it->second;
 
     // Cache the HMM "germline" and "junction" states.
     const GermlineGene& ggene = ggenes.at(gname);
 
     if (ggene.type == GermlineType::V) {
       // Cache the V "germline" state.
-      CacheHMMGermlineStates(ggene, "v_l", "v_r", true, false,
-                             vgerm_state_strs_, vgerm_ggene_ranges_,
-                             vgerm_germ_bases_, vgerm_germ_inds_,
-                             vgerm_site_inds_);
+      CacheHMMGermlineStates(
+          ggene.germ_ptr, flexbounds_.at("v_l"), flexbounds_.at("v_r"), relpos,
+          true, false, vgerm_state_strs_, vgerm_ggene_ranges_,
+          vgerm_naive_bases_, vgerm_germ_inds_, vgerm_site_inds_);
 
       // Cache the V-D "junction" states.
-      CacheHMMJunctionStates(ggene, "v_r", "d_l", false,
+      CacheHMMJunctionStates(ggene.germ_ptr, flexbounds_.at("v_r"),
+                             flexbounds_.at("d_l"), relpos, false,
                              vd_junction_state_strs_, vd_junction_ggene_ranges_,
-                             vd_junction_germ_bases_, vd_junction_germ_inds_,
+                             vd_junction_naive_bases_, vd_junction_germ_inds_,
                              vd_junction_site_inds_);
     } else if (ggene.type == GermlineType::D) {
       // Cache the V-D "junction" states.
-      CacheHMMJunctionStates(ggene, "v_r", "d_l", true, vd_junction_state_strs_,
-                             vd_junction_ggene_ranges_, vd_junction_germ_bases_,
-                             vd_junction_germ_inds_, vd_junction_site_inds_);
+      CacheHMMJunctionStates(ggene.germ_ptr, flexbounds_.at("v_r"),
+                             flexbounds_.at("d_l"), relpos, true,
+                             vd_junction_state_strs_, vd_junction_ggene_ranges_,
+                             vd_junction_naive_bases_, vd_junction_germ_inds_,
+                             vd_junction_site_inds_);
 
       // Cache the D "germline" state.
-      CacheHMMGermlineStates(ggene, "d_l", "d_r", false, false,
-                             dgerm_state_strs_, dgerm_ggene_ranges_,
-                             dgerm_germ_bases_, dgerm_germ_inds_,
-                             dgerm_site_inds_);
+      CacheHMMGermlineStates(
+          ggene.germ_ptr, flexbounds_.at("d_l"), flexbounds_.at("d_r"), relpos,
+          false, false, dgerm_state_strs_, dgerm_ggene_ranges_,
+          dgerm_naive_bases_, dgerm_germ_inds_, dgerm_site_inds_);
 
       // Cache the D-J "junction" states.
-      CacheHMMJunctionStates(ggene, "d_r", "j_l", false,
+      CacheHMMJunctionStates(ggene.germ_ptr, flexbounds_.at("d_r"),
+                             flexbounds_.at("j_l"), relpos, false,
                              dj_junction_state_strs_, dj_junction_ggene_ranges_,
-                             dj_junction_germ_bases_, dj_junction_germ_inds_,
+                             dj_junction_naive_bases_, dj_junction_germ_inds_,
                              dj_junction_site_inds_);
     } else {
       assert(ggene.type == GermlineType::J);
 
       // Cache the D-J "junction" states.
-      CacheHMMJunctionStates(ggene, "d_r", "j_l", true, dj_junction_state_strs_,
-                             dj_junction_ggene_ranges_, dj_junction_germ_bases_,
-                             dj_junction_germ_inds_, dj_junction_site_inds_);
+      CacheHMMJunctionStates(ggene.germ_ptr, flexbounds_.at("d_r"),
+                             flexbounds_.at("j_l"), relpos, true,
+                             dj_junction_state_strs_, dj_junction_ggene_ranges_,
+                             dj_junction_naive_bases_, dj_junction_germ_inds_,
+                             dj_junction_site_inds_);
 
       // Cache the J "germline" state.
-      CacheHMMGermlineStates(ggene, "j_l", "j_r", false, true,
-                             jgerm_state_strs_, jgerm_ggene_ranges_,
-                             jgerm_germ_bases_, jgerm_germ_inds_,
-                             jgerm_site_inds_);
+      CacheHMMGermlineStates(
+          ggene.germ_ptr, flexbounds_.at("j_l"), flexbounds_.at("j_r"), relpos,
+          false, true, jgerm_state_strs_, jgerm_ggene_ranges_,
+          jgerm_naive_bases_, jgerm_germ_inds_, jgerm_site_inds_);
     }
   }
 };
@@ -119,19 +136,115 @@ void NewData::InitializeHMMTransition(
 };
 
 
-void NewData::CacheHMMGermlineStates(
-    const GermlineGene& ggene, const std::string& left_flexbounds_name,
-    const std::string& right_flexbounds_name, bool left_end, bool right_end,
-    std::vector<std::string>& state_strs_,
-    std::map<std::string, std::pair<int, int>>& ggene_ranges_,
-    std::vector<int>& germ_bases_, std::vector<int>& germ_inds_,
-    std::vector<int>& site_inds_) {
-  // Extract the left/right flexbounds, germline pointer, and relpos.
-  std::pair<int, int> left_flexbounds = flexbounds_.at(left_flexbounds_name);
-  std::pair<int, int> right_flexbounds = flexbounds_.at(right_flexbounds_name);
-  GermlinePtr germ_ptr = ggene.germ_ptr;
-  int relpos = relpos_.at(germ_ptr->name());
+// double NewData::LogLikelihood(const std::unordered_map<std::string,
+// GermlineGene>& ggenes) {
+//   // Cache the V "germline" forward probabilities.
+//   vgerm_forward_.setZero(vgerm_state_strs_.size());
+//
+//   for (int i = 0; i < vgerm_state_strs_.size(); i++) {
+//     // Obtain the start/end indices that map to the current "germline" state.
+//     const std::string& gname = vgerm_state_strs_[i];
+//     int range_start, range_end;
+//     std::tie(range_start, range_end) = vgerm_ggene_ranges_.at(gname);
+//
+//     // Extract the "germline" state information.
+//     const GermlineGene& ggene = ggenes.at(gname);
+//     int germ_ind_start = vgerm_germ_inds_[range_start];
+//
+//     // Compute the forward probability.
+//     vgerm_forward_[i] = ggene.germ_ptr->gene_prob();
+//     vgerm_forward_[i] *=
+//     ggene.germ_ptr->next_transition().segment(germ_ind_start, range_end -
+//     range_start - 1).prod(); vgerm_forward_[i] *=
+//     vgerm_emission_.segment(range_start, range_end - range_start).prod();
+//   }
+//
+//   // Cache the V-D "junction" forward probabilities.
+//   vd_junction_forward_.setZero(vd_junction_emission_.rows(),
+//   vd_junction_emission_.cols());
+//
+//   for (int i = 0; i < vd_junction_emission_.cols(); i++) {
+//     if (i == 0) {
+//       // Case 1: "germline" to "junction" transition.
+//       vd_junction_forward_.col(i) = (vgerm_forward_ *
+//       vgerm_vd_junction_transition_).transpose();
+//       vd_junction_forward_.col(i).array() *=
+//       vd_junction_emission_.col(i).array();
+//     } else {
+//       // Case 2: "junction" to "junction" transition.
+//       vd_junction_forward_.col(i) = (vd_junction_forward_.col(i -
+//       1).transpose() * vd_junction_transition_).transpose();
+//       vd_junction_forward_.col(i).array() *=
+//       vd_junction_emission_.col(i).array();
+//     }
+//   }
+//
+//   // Cache the D "germline" forward probabilities.
+//   dgerm_forward_.setZero(dgerm_state_strs_.size());
+//   dgerm_forward_ = vd_junction_forward_.col(vd_junction_forward_.cols() -
+//   1).transpose() * vd_junction_dgerm_transition_;
+//
+//   for (int i = 0; i < dgerm_state_strs_.size(); i++) {
+//     // Obtain the start/end indices that map to the current "germline" state.
+//     const std::string& gname = dgerm_state_strs_[i];
+//     int range_start, range_end;
+//     std::tie(range_start, range_end) = dgerm_ggene_ranges_.at(gname);
+//
+//     // Compute the forward probability.
+//     dgerm_forward_[i] *= dgerm_emission_.segment(range_start, range_end -
+//     range_start).prod();
+//   }
+//
+//   // Cache the D-J "junction" forward probabilities.
+//   dj_junction_forward_.setZero(dj_junction_emission_.rows(),
+//   dj_junction_emission_.cols());
+//
+//   for (int i = 0; i < dj_junction_emission_.cols(); i++) {
+//     if (i == 0) {
+//       // Case 1: "germline" to "junction" transition.
+//       dj_junction_forward_.col(i) = (dgerm_forward_ *
+//       dgerm_dj_junction_transition_).transpose();
+//       dj_junction_forward_.col(i).array() *=
+//       dj_junction_emission_.col(i).array();
+//     } else {
+//       // Case 2: "junction" to "junction" transition.
+//       dj_junction_forward_.col(i) = (dj_junction_forward_.col(i -
+//       1).transpose() * dj_junction_transition_).transpose();
+//       dj_junction_forward_.col(i).array() *=
+//       dj_junction_emission_.col(i).array();
+//     }
+//   }
+//
+//   // Cache the J "germline" forward probabilities.
+//   jgerm_forward_.setZero(jgerm_state_strs_.size());
+//   jgerm_forward_ = dj_junction_forward_.col(dj_junction_forward_.cols() -
+//   1).transpose() * dj_junction_jgerm_transition_;
+//
+//   for (int i = 0; i < jgerm_state_strs_.size(); i++) {
+//     // Obtain the start/end indices that map to the current "germline" state.
+//     const std::string& gname = jgerm_state_strs_[i];
+//     int range_start, range_end;
+//     std::tie(range_start, range_end) = jgerm_ggene_ranges_.at(gname);
+//
+//     // Compute the forward probability.
+//     jgerm_forward_[i] *= jgerm_emission_.segment(range_start, range_end -
+//     range_start).prod();
+//   }
+//
+//   return log(jgerm_forward_.sum());
+// };
 
+
+// Auxiliary Functions
+
+
+void CacheHMMGermlineStates(
+    GermlinePtr germ_ptr, std::pair<int, int> left_flexbounds,
+    std::pair<int, int> right_flexbounds, int relpos, bool left_end,
+    bool right_end, std::vector<std::string>& state_strs_,
+    std::map<std::string, std::pair<int, int>>& ggene_ranges_,
+    std::vector<int>& naive_bases_, std::vector<int>& germ_inds_,
+    std::vector<int>& site_inds_) {
   // Compute the site positions that correspond to the start/end of the germline
   // gene in the "germline" region.
   int site_start = left_end ? std::max(relpos, left_flexbounds.first)
@@ -141,8 +254,8 @@ void NewData::CacheHMMGermlineStates(
                 : right_flexbounds.first;
 
   // Calculate the start/end indices that map to the current "germline" state.
-  int range_start = germ_bases_.size();
-  int range_end = germ_bases_.size() + (site_end - site_start);
+  int range_start = naive_bases_.size();
+  int range_end = naive_bases_.size() + (site_end - site_start);
   ggene_ranges_.emplace(germ_ptr->name(),
                         std::pair<int, int>({range_start, range_end}));
 
@@ -150,45 +263,41 @@ void NewData::CacheHMMGermlineStates(
   state_strs_.push_back(germ_ptr->name());
 
   for (int i = site_start; i < site_end; i++) {
-    germ_bases_.push_back(germ_ptr->bases()[i - relpos]);
+    naive_bases_.push_back(germ_ptr->bases()[i - relpos]);
     germ_inds_.push_back(i - relpos);
     site_inds_.push_back(i);
   }
 };
 
 
-void NewData::CacheHMMJunctionStates(
-    const GermlineGene& ggene, const std::string& left_flexbounds_name,
-    const std::string& right_flexbounds_name, bool left_end,
+void CacheHMMJunctionStates(
+    GermlinePtr germ_ptr, std::pair<int, int> left_flexbounds,
+    std::pair<int, int> right_flexbounds, int relpos, bool left_end,
     std::vector<std::string>& state_strs_,
     std::map<std::string, std::pair<int, int>>& ggene_ranges_,
-    std::vector<int>& germ_bases_, std::vector<int>& germ_inds_,
+    std::vector<int>& naive_bases_, std::vector<int>& germ_inds_,
     std::vector<int>& site_inds_) {
-  // Extract the left/right flexbounds, germline pointer, and relpos.
-  std::pair<int, int> left_flexbounds = flexbounds_.at(left_flexbounds_name);
-  std::pair<int, int> right_flexbounds = flexbounds_.at(right_flexbounds_name);
-  GermlinePtr germ_ptr = ggene.germ_ptr;
-  int relpos = relpos_.at(germ_ptr->name());
-
   // Compute the site positions that correspond to the start/end of the germline
   // gene in the "junction" region.
-  int site_start = left_end ? relpos : left_flexbounds.first;
+  int site_start = left_end ? std::max(relpos, left_flexbounds.first)
+                            : left_flexbounds.first;
   int site_end =
-      left_end ? right_flexbounds.second : relpos + germ_ptr->length();
+      left_end ? right_flexbounds.second
+               : std::min(relpos + germ_ptr->length(), right_flexbounds.second);
 
   // Calculate the start/end indices that map to the "junction" states
   // associated with the current germline gene.
-  int range_start = germ_bases_.size();
-  int range_end = germ_bases_.size() + (site_end - site_start);
+  int range_start = naive_bases_.size();
+  int range_end = naive_bases_.size() + (site_end - site_start);
   if (left_end) range_end += germ_ptr->alphabet().size();
   ggene_ranges_.emplace(germ_ptr->name(),
                         std::pair<int, int>({range_start, range_end}));
 
   // If necessary, cache the NTI-related state information.
   if (left_end) {
-    for (int i = 0; i < germ_ptr->alphabet().size(); i++) {
+    for (std::size_t i = 0; i < germ_ptr->alphabet().size(); i++) {
       state_strs_.push_back(germ_ptr->name() + ":N_" + germ_ptr->alphabet()[i]);
-      germ_bases_.push_back(i);
+      naive_bases_.push_back(i);
       germ_inds_.push_back(-1);
       site_inds_.push_back(-1);
     }
@@ -197,116 +306,11 @@ void NewData::CacheHMMJunctionStates(
   // Store the germline-related state information.
   for (int i = site_start; i < site_end; i++) {
     state_strs_.push_back(germ_ptr->name() + ":" + std::to_string(i - relpos));
-    germ_bases_.push_back(germ_ptr->bases()[i - relpos]);
+    naive_bases_.push_back(germ_ptr->bases()[i - relpos]);
     germ_inds_.push_back(i - relpos);
     site_inds_.push_back(i);
   }
 };
-
-
-double NewData::LogLikelihood(const std::unordered_map<std::string, GermlineGene>& ggenes) {
-  // Cache the V "germline" forward probabilities.
-  vgerm_forward_.setZero(vgerm_state_strs_.size());
-
-  for (int i = 0; i < vgerm_state_strs_.size(); i++) {
-    // Obtain the start/end indices that map to the current "germline" state.
-    const std::string& gname = vgerm_state_strs_[i];
-    int range_start, range_end;
-    std::tie(range_start, range_end) = vgerm_ggene_ranges_.at(gname);
-
-    // Extract the "germline" state information.
-    const GermlineGene& ggene = ggenes.at(gname);
-    int germ_ind_start = vgerm_germ_inds_[range_start];
-
-    // Compute the forward probability.
-    vgerm_forward_[i] = ggene.germ_ptr->gene_prob();
-    vgerm_forward_[i] *= ggene.germ_ptr->next_transition().segment(germ_ind_start, range_end - range_start - 1).prod();
-    vgerm_forward_[i] *= vgerm_emission_.segment(range_start, range_end - range_start).prod();
-  }
-
-  // Cache the V-D "junction" forward probabilities.
-  vd_junction_forward_.setZero(vd_junction_emission_.rows(), vd_junction_emission_.cols());
-
-  for (int i = 0; i < vd_junction_emission_.cols(); i++) {
-    if (i == 0) {
-      // Case 1: "germline" to "junction" transition.
-      vd_junction_forward_.col(i) = (vgerm_forward_ * vgerm_vd_junction_transition_).transpose();
-      vd_junction_forward_.col(i).array() *= vd_junction_emission_.col(i).array();
-    } else {
-      // Case 2: "junction" to "junction" transition.
-      vd_junction_forward_.col(i) = (vd_junction_forward_.col(i - 1).transpose() * vd_junction_transition_).transpose();
-      vd_junction_forward_.col(i).array() *= vd_junction_emission_.col(i).array();
-    }
-  }
-// std::cout << vd_junction_forward_ << std::endl;
-  // Cache the D "germline" forward probabilities.
-  dgerm_forward_.setZero(dgerm_state_strs_.size());
-  dgerm_forward_ = vd_junction_forward_.col(vd_junction_forward_.cols() - 1).transpose() * vd_junction_dgerm_transition_;
-
-  for (int i = 0; i < dgerm_state_strs_.size(); i++) {
-    // Obtain the start/end indices that map to the current "germline" state.
-    const std::string& gname = dgerm_state_strs_[i];
-    int range_start, range_end;
-    std::tie(range_start, range_end) = dgerm_ggene_ranges_.at(gname);
-
-    // Compute the forward probability.
-    dgerm_forward_[i] *= dgerm_emission_.segment(range_start, range_end - range_start).prod();
-  }
-
-  // Cache the D-J "junction" forward probabilities.
-  dj_junction_forward_.setZero(dj_junction_emission_.rows(), dj_junction_emission_.cols());
-
-  for (int i = 0; i < dj_junction_emission_.cols(); i++) {
-    if (i == 0) {
-      // Case 1: "germline" to "junction" transition.
-      dj_junction_forward_.col(i) = (dgerm_forward_ * dgerm_dj_junction_transition_).transpose();
-      dj_junction_forward_.col(i).array() *= dj_junction_emission_.col(i).array();
-    } else {
-      // Case 2: "junction" to "junction" transition.
-      dj_junction_forward_.col(i) = (dj_junction_forward_.col(i - 1).transpose() * dj_junction_transition_).transpose();
-      dj_junction_forward_.col(i).array() *= dj_junction_emission_.col(i).array();
-    }
-  }
-
-  // Cache the J "germline" forward probabilities.
-  jgerm_forward_.setZero(jgerm_state_strs_.size());
-  jgerm_forward_ = dj_junction_forward_.col(dj_junction_forward_.cols() - 1).transpose() * dj_junction_jgerm_transition_;
-
-  for (int i = 0; i < jgerm_state_strs_.size(); i++) {
-    // Obtain the start/end indices that map to the current "germline" state.
-    const std::string& gname = jgerm_state_strs_[i];
-    int range_start, range_end;
-    std::tie(range_start, range_end) = jgerm_ggene_ranges_.at(gname);
-
-    // Compute the forward probability.
-    jgerm_forward_[i] *= jgerm_emission_.segment(range_start, range_end - range_start).prod();
-  }
-
-  return log(jgerm_forward_.sum());
-};
-
-
-
-// NewDataPtr ReadNewData(std::string csv_path, std::string dir_path) {
-//   // Create the GermlineGene map needed for the PhyloData constructor.
-//   std::unordered_map<std::string, GermlineGene> ggenes =
-//       CreateGermlineGeneMap(dir_path);
-//
-//   // Initialize CSV parser and associated variables.
-//   assert(csv_path.substr(csv_path.length() - 3, 3) == "csv");
-//   io::CSVReader<2, io::trim_chars<>, io::double_quote_escape<' ', '\"'>> in(
-//       csv_path);
-//   in.read_header(io::ignore_extra_column, "flexbounds", "relpos");
-//
-//   std::string flexbounds_str, relpos_str;
-//
-//   in.read_row(flexbounds_str, relpos_str);
-//   NewDataPtr new_data_ptr =
-//       std::make_shared<NewData>(flexbounds_str, relpos_str, ggenes);
-//   assert(!in.read_row(flexbounds_str, relpos_str));
-//
-//   return new_data_ptr;
-// };
 
 
 void ComputeHMMGermlineJunctionTransition(
@@ -602,7 +606,8 @@ void FillHMMTransition(const GermlineGene& from_ggene,
       transition_block.diagonal().array() =
           from_ggene.germ_ptr->landing_out()
               .segment(germ_ind_row_start + match_row_diff, match_length)
-              .array() * to_ggene.germ_ptr->gene_prob() *
+              .array() *
+          to_ggene.germ_ptr->gene_prob() *
           to_ggene.germ_ptr->landing_in()
               .segment(germ_ind_col_start + match_col_diff, match_length)
               .array();
@@ -611,32 +616,30 @@ void FillHMMTransition(const GermlineGene& from_ggene,
 };
 
 
-
-
-Eigen::VectorXi ConvertSeqToInts2(
-    const std::string& seq, const std::string& alphabet) {
+Eigen::VectorXi ConvertSeqToInts2(const std::string& seq,
+                                  const std::string& alphabet) {
   Eigen::VectorXi seq_ints(seq.size());
+
   for (std::size_t i = 0; i < seq.size(); i++) {
-    auto it = std::find(alphabet.begin(), alphabet.end(), seq[i]);
-    assert(it != alphabet.end());
-    seq_ints[i] = it - alphabet.begin();
+    auto find_it = std::find(alphabet.begin(), alphabet.end(), seq[i]);
+    assert(find_it != alphabet.end());
+    seq_ints[i] = find_it - alphabet.begin();
   }
 
   return seq_ints;
 };
 
 
-
-std::string ConvertIntsToSeq2(const Eigen::Ref<const Eigen::VectorXi>& seq_ints,
-                             const std::string& alphabet) {
+std::string ConvertIntsToSeq2(const Eigen::VectorXi& seq_ints,
+                              const std::string& alphabet) {
   std::string seq(seq_ints.size(), ' ');
+
   for (std::size_t i = 0; i < seq_ints.size(); i++) {
     seq[i] = alphabet.at(seq_ints[i]);
   }
 
   return seq;
 };
-
 
 
 }  // namespace linearham
