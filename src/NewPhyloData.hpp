@@ -4,7 +4,6 @@
 #include <map>
 #include <memory>
 #include <string>
-#include <unordered_map>
 #include <utility>
 #include <vector>
 
@@ -12,7 +11,6 @@
 #include <Eigen/Dense>
 #include <pll_partition.hpp>
 #include "NewData.hpp"
-#include "VDJGermline.hpp"
 
 /// @file NewPhyloData.hpp
 /// @brief Header for the NewPhyloData class.
@@ -41,17 +39,14 @@ class NewPhyloData : public NewData {
 
   // Initialization Functions
   void InitializeMsa(const std::vector<std::string>& msa_seqs,
-                     unsigned int tip_node_count, unsigned int sites,
-                     const std::string& alphabet);
+                     unsigned int tip_node_count, unsigned int sites);
 
-  void InitializeXmsaStructs(const std::string& alphabet);
+  void InitializeXmsaStructs();
 
-  void InitializeHMMEmission(
-      const std::unordered_map<std::string, GermlineGene>& ggenes) override;
+  void InitializeHMMEmission() override;
 
   // Auxiliary Functions
-  void BuildXmsa(const std::map<std::pair<int, int>, int>& xmsa_ids,
-                 const std::string& alphabet);
+  void BuildXmsa(const std::map<std::pair<int, int>, int>& xmsa_ids);
 
   void FillHMMGermlineEmission(const Eigen::VectorXi& xmsa_inds_,
                                Eigen::VectorXd& emission_);
@@ -61,7 +56,6 @@ class NewPhyloData : public NewData {
 
  public:
   NewPhyloData(const std::string& flexbounds_str, const std::string& relpos_str,
-               const std::unordered_map<std::string, GermlineGene>& ggenes,
                const std::string& newick_path, const std::string& fasta_path,
                const std::string& raxml_path);
   ~NewPhyloData();
@@ -87,15 +81,6 @@ class NewPhyloData : public NewData {
 
 
 typedef std::shared_ptr<NewPhyloData> NewPhyloDataPtr;
-
-
-// Constructor Function
-
-NewPhyloDataPtr ReadNewPhyloData(const std::string& csv_path,
-                                 const std::string& dir_path,
-                                 const std::string& newick_path,
-                                 const std::string& fasta_path,
-                                 const std::string& raxml_path);
 
 
 // Auxiliary Functions

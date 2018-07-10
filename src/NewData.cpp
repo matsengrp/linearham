@@ -4,6 +4,7 @@
 #include <cstddef>
 #include <tuple>
 
+#include <csv.h>
 #include <yaml-cpp/yaml.h>
 #include "linalg.hpp"
 
@@ -13,34 +14,37 @@
 namespace linearham {
 
 
-/// @brief Constructor for NewData.
-/// @param[in] flexbounds_str
-/// The JSON string with the flexbounds map.
-/// @param[in] relpos_str
-/// The JSON string with the relpos map.
-/// @param[in] ggenes
-/// A map holding (germline name, GermlineGene) pairs.
-NewData::NewData(const std::string& flexbounds_str,
-                 const std::string& relpos_str,
-                 const std::unordered_map<std::string, GermlineGene>& ggenes) {
+NewData::NewData(const std::string& csv_path, const std::string& dir_path) {
+  // Initialize CSV parser and associated variables.
+  assert(csv_path.substr(csv_path.length() - 3, 3) == "csv");
+  io::CSVReader<2, io::trim_chars<>, io::double_quote_escape<' ', '\"'>> in(
+      csv_path);
+  in.read_header(io::ignore_extra_column, "flexbounds", "relpos");
+
+  std::string flexbounds_str, relpos_str;
+  in.read_row(flexbounds_str, relpos_str);
+  assert(!in.read_row(flexbounds_str, relpos_str));
+
   // Parse the `flexbounds` and `relpos` JSON strings.
   flexbounds_ = YAML::Load(flexbounds_str)
                     .as<std::map<std::string, std::pair<int, int>>>();
   relpos_ = YAML::Load(relpos_str).as<std::map<std::string, int>>();
 
+  // Create the map holding (germline name, GermlineGene) pairs.
+  ggenes_ = CreateGermlineGeneMap(dir_path);
+
   // Initialize the HMM state space.
-  InitializeHMMStateSpace(ggenes);
+  InitializeHMMStateSpace();
 
   // Initialize the HMM transition probability matrices.
-  InitializeHMMTransition(ggenes);
+  InitializeHMMTransition();
 };
 
 
 // Initialization Functions
 
 
-void NewData::InitializeHMMStateSpace(
-    const std::unordered_map<std::string, GermlineGene>& ggenes) {
+void NewData::InitializeHMMStateSpace() {
   // Iterate across the relpos map from left to right.
   for (auto it = relpos_.begin(); it != relpos_.end(); ++it) {
     // This map has germline gene names as keys and relpos as values.
@@ -48,7 +52,7 @@ void NewData::InitializeHMMStateSpace(
     int relpos = it->second;
 
     // Cache the HMM "germline" and "junction" states.
-    const GermlineGene& ggene = ggenes.at(gname);
+    const GermlineGene& ggene = ggenes_.at(gname);
 
     if (ggene.type == GermlineType::V) {
       // Cache the V "germline" state.
@@ -103,36 +107,35 @@ void NewData::InitializeHMMStateSpace(
 };
 
 
-void NewData::InitializeHMMTransition(
-    const std::unordered_map<std::string, GermlineGene>& ggenes) {
+void NewData::InitializeHMMTransition() {
   ComputeHMMGermlineJunctionTransition(
       vgerm_state_strs_, vgerm_ggene_ranges_, vgerm_germ_inds_,
       vgerm_site_inds_, vd_junction_state_strs_, vd_junction_ggene_ranges_,
       vd_junction_germ_inds_, vd_junction_site_inds_, GermlineType::V,
-      GermlineType::D, ggenes, vgerm_vd_junction_transition_);
+      GermlineType::D, ggenes_, vgerm_vd_junction_transition_);
   ComputeHMMJunctionTransition(
       vd_junction_state_strs_, vd_junction_ggene_ranges_,
       vd_junction_germ_inds_, vd_junction_site_inds_, GermlineType::V,
-      GermlineType::D, ggenes, vd_junction_transition_);
+      GermlineType::D, ggenes_, vd_junction_transition_);
   ComputeHMMJunctionGermlineTransition(
       vd_junction_state_strs_, vd_junction_ggene_ranges_,
       vd_junction_germ_inds_, vd_junction_site_inds_, dgerm_state_strs_,
       dgerm_ggene_ranges_, dgerm_germ_inds_, dgerm_site_inds_, GermlineType::V,
-      GermlineType::D, ggenes, vd_junction_dgerm_transition_);
+      GermlineType::D, ggenes_, vd_junction_dgerm_transition_);
   ComputeHMMGermlineJunctionTransition(
       dgerm_state_strs_, dgerm_ggene_ranges_, dgerm_germ_inds_,
       dgerm_site_inds_, dj_junction_state_strs_, dj_junction_ggene_ranges_,
       dj_junction_germ_inds_, dj_junction_site_inds_, GermlineType::D,
-      GermlineType::J, ggenes, dgerm_dj_junction_transition_);
+      GermlineType::J, ggenes_, dgerm_dj_junction_transition_);
   ComputeHMMJunctionTransition(
       dj_junction_state_strs_, dj_junction_ggene_ranges_,
       dj_junction_germ_inds_, dj_junction_site_inds_, GermlineType::D,
-      GermlineType::J, ggenes, dj_junction_transition_);
+      GermlineType::J, ggenes_, dj_junction_transition_);
   ComputeHMMJunctionGermlineTransition(
       dj_junction_state_strs_, dj_junction_ggene_ranges_,
       dj_junction_germ_inds_, dj_junction_site_inds_, jgerm_state_strs_,
       jgerm_ggene_ranges_, jgerm_germ_inds_, jgerm_site_inds_, GermlineType::D,
-      GermlineType::J, ggenes, dj_junction_jgerm_transition_);
+      GermlineType::J, ggenes_, dj_junction_jgerm_transition_);
 };
 
 

@@ -3,7 +3,6 @@
 #include <cmath>
 #include <cstddef>
 
-#include <csv.h>
 #include <model.hpp>
 #include <pll_util.hpp>
 
@@ -13,12 +12,12 @@
 namespace linearham {
 
 
-NewPhyloData::NewPhyloData(
-    const std::string& flexbounds_str, const std::string& relpos_str,
-    const std::unordered_map<std::string, GermlineGene>& ggenes,
-    const std::string& newick_path, const std::string& fasta_path,
-    const std::string& raxml_path)
-    : NewData(flexbounds_str, relpos_str, ggenes) {
+NewPhyloData::NewPhyloData(const std::string& csv_path,
+                           const std::string& dir_path,
+                           const std::string& newick_path,
+                           const std::string& fasta_path,
+                           const std::string& raxml_path)
+    : NewData(csv_path, dir_path) {
   // Initialize the phylogenetic tree object.
   tree_ = pll_utree_parse_newick(newick_path.c_str());
 
@@ -28,11 +27,10 @@ NewPhyloData::NewPhyloData(
       pt::pll::ParseFasta(fasta_path, tree_->tip_count, xmsa_labels_, msa_seqs);
 
   // Initialize the MSA.
-  const std::string& alphabet = ggenes.begin()->second.germ_ptr->alphabet();
-  InitializeMsa(msa_seqs, tree_->tip_count, sites, alphabet);
+  InitializeMsa(msa_seqs, tree_->tip_count, sites);
 
   // Initialize the xMSA data structures.
-  InitializeXmsaStructs(alphabet);
+  InitializeXmsaStructs();
 
   // Initialize the partition object.
   pt::pll::Model model_params = pt::pll::ParseRaxmlInfo(raxml_path, 4);
@@ -52,7 +50,7 @@ NewPhyloData::NewPhyloData(
   xmsa_emission_.array() = xmsa_emission_.array().exp();
 
   // Initialize the HMM emission probability matrices.
-  InitializeHMMEmission(ggenes);
+  InitializeHMMEmission();
 };
 
 
@@ -66,12 +64,13 @@ NewPhyloData::~NewPhyloData() {
 
 void NewPhyloData::InitializeMsa(const std::vector<std::string>& msa_seqs,
                                  unsigned int tip_node_count,
-                                 unsigned int sites,
-                                 const std::string& alphabet) {
+                                 unsigned int sites) {
   assert(msa_seqs.size() == tip_node_count);
   assert(msa_seqs[0].size() == sites);
 
+  const std::string& alphabet = ggenes_.begin()->second.germ_ptr->alphabet();
   msa_.setConstant(tip_node_count - 1, sites, -1);
+
   for (std::size_t i = 0, row_ind = 0; i < msa_seqs.size(); i++) {
     if (xmsa_labels_[i] != "root") {
       msa_.row(row_ind++) = ConvertSeqToInts2(msa_seqs[i], alphabet);
@@ -82,7 +81,7 @@ void NewPhyloData::InitializeMsa(const std::vector<std::string>& msa_seqs,
 };
 
 
-void NewPhyloData::InitializeXmsaStructs(const std::string& alphabet) {
+void NewPhyloData::InitializeXmsaStructs() {
   // This map holds ({naive base, MSA position}, xMSA position) pairs.
   // We use this map to keep track of the unique xMSA site indices.
   std::map<std::pair<int, int>, int> xmsa_ids;
@@ -102,12 +101,11 @@ void NewPhyloData::InitializeXmsaStructs(const std::string& alphabet) {
                            jgerm_xmsa_inds_);
 
   // Build the xMSA and the vector of xMSA sequence strings.
-  BuildXmsa(xmsa_ids, alphabet);
+  BuildXmsa(xmsa_ids);
 };
 
 
-void NewPhyloData::InitializeHMMEmission(
-    const std::unordered_map<std::string, GermlineGene>& ggenes) {
+void NewPhyloData::InitializeHMMEmission() {
   FillHMMGermlineEmission(vgerm_xmsa_inds_, vgerm_emission_);
   FillHMMJunctionEmission(vd_junction_xmsa_inds_, vd_junction_emission_);
   FillHMMGermlineEmission(dgerm_xmsa_inds_, dgerm_emission_);
@@ -119,8 +117,8 @@ void NewPhyloData::InitializeHMMEmission(
 // Auxiliary Functions
 
 
-void NewPhyloData::BuildXmsa(const std::map<std::pair<int, int>, int>& xmsa_ids,
-                             const std::string& alphabet) {
+void NewPhyloData::BuildXmsa(
+    const std::map<std::pair<int, int>, int>& xmsa_ids) {
   xmsa_.setConstant(msa_.rows() + 1, xmsa_ids.size(), -1);
   xmsa_seqs_.resize(msa_.rows() + 1);
 
@@ -138,6 +136,7 @@ void NewPhyloData::BuildXmsa(const std::map<std::pair<int, int>, int>& xmsa_ids,
   }
 
   // Create the vector of xMSA sequence strings.
+  const std::string& alphabet = ggenes_.begin()->second.germ_ptr->alphabet();
   for (std::size_t i = 0; i < xmsa_.rows(); i++) {
     xmsa_seqs_[i] = ConvertIntsToSeq2(xmsa_.row(i), alphabet);
   }
@@ -169,35 +168,6 @@ void NewPhyloData::FillHMMJunctionEmission(const Eigen::MatrixXi& xmsa_inds_,
       }
     }
   }
-};
-
-
-// Constructor Function
-
-
-NewPhyloDataPtr ReadNewPhyloData(const std::string& csv_path,
-                                 const std::string& dir_path,
-                                 const std::string& newick_path,
-                                 const std::string& fasta_path,
-                                 const std::string& raxml_path) {
-  // Create the GermlineGene map needed for the PhyloData constructor.
-  std::unordered_map<std::string, GermlineGene> ggenes =
-      CreateGermlineGeneMap(dir_path);
-
-  // Initialize CSV parser and associated variables.
-  assert(csv_path.substr(csv_path.length() - 3, 3) == "csv");
-  io::CSVReader<2, io::trim_chars<>, io::double_quote_escape<' ', '\"'>> in(
-      csv_path);
-  in.read_header(io::ignore_extra_column, "flexbounds", "relpos");
-
-  std::string flexbounds_str, relpos_str;
-
-  in.read_row(flexbounds_str, relpos_str);
-  NewPhyloDataPtr new_phylo_data_ptr = std::make_shared<NewPhyloData>(
-      flexbounds_str, relpos_str, ggenes, newick_path, fasta_path, raxml_path);
-  assert(!in.read_row(flexbounds_str, relpos_str));
-
-  return new_phylo_data_ptr;
 };
 
 

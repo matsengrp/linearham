@@ -24,6 +24,9 @@ class NewData {
   std::map<std::string, std::pair<int, int>> flexbounds_;
   std::map<std::string, int> relpos_;
 
+  // HMM (germline name, GermlineGene) map
+  std::unordered_map<std::string, GermlineGene> ggenes_;
+
   // HMM state space information
   // V "germline" states
   std::vector<std::string> vgerm_state_strs_;
@@ -83,19 +86,15 @@ class NewData {
   Eigen::RowVectorXd jgerm_forward_;
 
   // Initialization Functions
-  void InitializeHMMStateSpace(
-      const std::unordered_map<std::string, GermlineGene>& ggenes);
+  void InitializeHMMStateSpace();
 
-  void InitializeHMMTransition(
-      const std::unordered_map<std::string, GermlineGene>& ggenes);
+  void InitializeHMMTransition();
 
  private:
-  virtual void InitializeHMMEmission(
-      const std::unordered_map<std::string, GermlineGene>& ggenes) = 0;
+  virtual void InitializeHMMEmission() = 0;
 
  public:
-  NewData(const std::string& flexbounds_str, const std::string& relpos_str,
-          const std::unordered_map<std::string, GermlineGene>& ggenes);
+  NewData(const std::string& csv_path, const std::string& dir_path);
   virtual ~NewData(){};
 
   const std::map<std::string, std::pair<int, int>>& flexbounds() const {
