@@ -101,6 +101,9 @@ class NewData {
     return flexbounds_;
   };
   const std::map<std::string, int>& relpos() const { return relpos_; };
+  const std::unordered_map<std::string, GermlineGene>& ggenes() const {
+    return ggenes_;
+  };
   const std::vector<std::string>& vgerm_state_strs() const {
     return vgerm_state_strs_;
   };
