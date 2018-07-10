@@ -238,7 +238,7 @@ void ComputeHMMGermlineJunctionTransition(
     const std::vector<int>& junction_germ_inds_,
     const std::vector<int>& junction_site_inds_, GermlineType left_gtype,
     GermlineType right_gtype,
-    const std::unordered_map<std::string, GermlineGene>& ggenes,
+    const std::unordered_map<std::string, GermlineGene>& ggenes_,
     Eigen::MatrixXd& germ_junction_transition_);
 
 void ComputeHMMJunctionTransition(
@@ -247,7 +247,7 @@ void ComputeHMMJunctionTransition(
     const std::vector<int>& junction_germ_inds_,
     const std::vector<int>& junction_site_inds_, GermlineType left_gtype,
     GermlineType right_gtype,
-    const std::unordered_map<std::string, GermlineGene>& ggenes,
+    const std::unordered_map<std::string, GermlineGene>& ggenes_,
     Eigen::MatrixXd& junction_transition_);
 
 void ComputeHMMJunctionGermlineTransition(
@@ -260,7 +260,7 @@ void ComputeHMMJunctionGermlineTransition(
     const std::vector<int>& germ_germ_inds_,
     const std::vector<int>& germ_site_inds_, GermlineType left_gtype,
     GermlineType right_gtype,
-    const std::unordered_map<std::string, GermlineGene>& ggenes,
+    const std::unordered_map<std::string, GermlineGene>& ggenes_,
     Eigen::MatrixXd& junction_germ_transition_);
 
 void FillHMMTransition(const GermlineGene& from_ggene,

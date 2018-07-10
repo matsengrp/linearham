@@ -326,7 +326,7 @@ void ComputeHMMGermlineJunctionTransition(
     const std::vector<int>& junction_germ_inds_,
     const std::vector<int>& junction_site_inds_, GermlineType left_gtype,
     GermlineType right_gtype,
-    const std::unordered_map<std::string, GermlineGene>& ggenes,
+    const std::unordered_map<std::string, GermlineGene>& ggenes_,
     Eigen::MatrixXd& germ_junction_transition_) {
   germ_junction_transition_.setZero(germ_state_strs_.size(),
                                     junction_state_strs_.size());
@@ -340,7 +340,7 @@ void ComputeHMMGermlineJunctionTransition(
     std::tie(from_range_start, from_range_end) = from_it->second;
 
     // Extract the "germline" state information.
-    const GermlineGene& from_ggene = ggenes.at(from_gname);
+    const GermlineGene& from_ggene = ggenes_.at(from_gname);
     int from_germ_ind_start = germ_germ_inds_[from_range_end - 1];
     int from_site_ind_start = germ_site_inds_[from_range_end - 1];
 
@@ -352,7 +352,7 @@ void ComputeHMMGermlineJunctionTransition(
       std::tie(to_range_start, to_range_end) = to_it->second;
 
       // Extract the "junction" state information.
-      const GermlineGene& to_ggene = ggenes.at(to_gname);
+      const GermlineGene& to_ggene = ggenes_.at(to_gname);
       int n_col_length = (to_ggene.type == right_gtype)
                              ? to_ggene.germ_ptr->alphabet().size()
                              : 0;
@@ -382,7 +382,7 @@ void ComputeHMMJunctionTransition(
     const std::vector<int>& junction_germ_inds_,
     const std::vector<int>& junction_site_inds_, GermlineType left_gtype,
     GermlineType right_gtype,
-    const std::unordered_map<std::string, GermlineGene>& ggenes,
+    const std::unordered_map<std::string, GermlineGene>& ggenes_,
     Eigen::MatrixXd& junction_transition_) {
   junction_transition_.setZero(junction_state_strs_.size(),
                                junction_state_strs_.size());
@@ -395,7 +395,7 @@ void ComputeHMMJunctionTransition(
     std::tie(from_range_start, from_range_end) = from_it->second;
 
     // Extract the "junction" state information.
-    const GermlineGene& from_ggene = ggenes.at(from_gname);
+    const GermlineGene& from_ggene = ggenes_.at(from_gname);
     int n_row_length = (from_ggene.type == right_gtype)
                            ? from_ggene.germ_ptr->alphabet().size()
                            : 0;
@@ -412,7 +412,7 @@ void ComputeHMMJunctionTransition(
       std::tie(to_range_start, to_range_end) = to_it->second;
 
       // Extract the "junction" state information.
-      const GermlineGene& to_ggene = ggenes.at(to_gname);
+      const GermlineGene& to_ggene = ggenes_.at(to_gname);
       int n_col_length = (to_ggene.type == right_gtype)
                              ? to_ggene.germ_ptr->alphabet().size()
                              : 0;
@@ -443,7 +443,7 @@ void ComputeHMMJunctionGermlineTransition(
     const std::vector<int>& germ_germ_inds_,
     const std::vector<int>& germ_site_inds_, GermlineType left_gtype,
     GermlineType right_gtype,
-    const std::unordered_map<std::string, GermlineGene>& ggenes,
+    const std::unordered_map<std::string, GermlineGene>& ggenes_,
     Eigen::MatrixXd& junction_germ_transition_) {
   junction_germ_transition_.setZero(junction_state_strs_.size(),
                                     germ_state_strs_.size());
@@ -456,7 +456,7 @@ void ComputeHMMJunctionGermlineTransition(
     std::tie(from_range_start, from_range_end) = from_it->second;
 
     // Extract the "junction" state information.
-    const GermlineGene& from_ggene = ggenes.at(from_gname);
+    const GermlineGene& from_ggene = ggenes_.at(from_gname);
     int n_row_length = (from_ggene.type == right_gtype)
                            ? from_ggene.germ_ptr->alphabet().size()
                            : 0;
@@ -474,7 +474,7 @@ void ComputeHMMJunctionGermlineTransition(
       std::tie(to_range_start, to_range_end) = to_it->second;
 
       // Extract the "germline" state information.
-      const GermlineGene& to_ggene = ggenes.at(to_gname);
+      const GermlineGene& to_ggene = ggenes_.at(to_gname);
       int to_germ_ind_start = germ_germ_inds_[to_range_start];
       int to_site_ind_start = germ_site_inds_[to_range_start];
 
