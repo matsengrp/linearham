@@ -85,10 +85,13 @@ class NewData {
   Eigen::MatrixXd dj_junction_forward_;
   Eigen::RowVectorXd jgerm_forward_;
 
-  // Initialization Functions
+  // Initialization functions
   void InitializeHMMStateSpace();
 
   void InitializeHMMTransition();
+
+  // Auxiliary functions
+  void InitializeHMMForwardProbabilities();
 
  private:
   virtual void InitializeHMMEmission() = 0;
@@ -205,15 +208,16 @@ class NewData {
     return dj_junction_forward_;
   };
   const Eigen::RowVectorXd& jgerm_forward() const { return jgerm_forward_; };
-  // double LogLikelihood(const std::unordered_map<std::string, GermlineGene>&
-  // ggenes);
+
+  // HMM forward/backward traversal functions
+  double LogLikelihood();
 };
 
 
 typedef std::shared_ptr<NewData> NewDataPtr;
 
 
-// Auxiliary Functions
+// Auxiliary functions
 
 void CacheHMMGermlineStates(
     GermlinePtr germ_ptr, std::pair<int, int> left_flexbounds,
@@ -275,6 +279,20 @@ void FillHMMTransition(const GermlineGene& from_ggene,
                        int germ_col_start, int germ_row_length,
                        int germ_col_length,
                        Eigen::Ref<Eigen::MatrixXd> transition_);
+
+void ComputeHMMJunctionForwardProbabilities(
+    const Eigen::RowVectorXd& germ_forward_,
+    const Eigen::MatrixXd& germ_junction_transition_,
+    const Eigen::MatrixXd& junction_transition_,
+    const Eigen::MatrixXd& junction_emission_,
+    Eigen::MatrixXd& junction_forward_);
+
+void ComputeHMMGermlineForwardProbabilities(
+    const Eigen::MatrixXd& junction_forward_,
+    const Eigen::MatrixXd& junction_germ_transition_,
+    const std::vector<std::string>& germ_state_strs_,
+    const std::map<std::string, std::pair<int, int>>& germ_ggene_ranges_,
+    const Eigen::VectorXd& germ_emission_, Eigen::RowVectorXd& germ_forward_);
 
 Eigen::RowVectorXi ConvertSeqToInts2(const std::string& seq,
                                      const std::string& alphabet);

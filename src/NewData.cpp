@@ -1,6 +1,7 @@
 #include "NewData.hpp"
 
 #include <algorithm>
+#include <cmath>
 #include <cstddef>
 #include <tuple>
 
@@ -41,7 +42,7 @@ NewData::NewData(const std::string& csv_path, const std::string& dir_path) {
 };
 
 
-// Initialization Functions
+// Initialization functions
 
 
 void NewData::InitializeHMMStateSpace() {
@@ -139,106 +140,57 @@ void NewData::InitializeHMMTransition() {
 };
 
 
-// double NewData::LogLikelihood(const std::unordered_map<std::string,
-// GermlineGene>& ggenes) {
-//   // Cache the V "germline" forward probabilities.
-//   vgerm_forward_.setZero(vgerm_state_strs_.size());
-//
-//   for (int i = 0; i < vgerm_state_strs_.size(); i++) {
-//     // Obtain the start/end indices that map to the current "germline" state.
-//     const std::string& gname = vgerm_state_strs_[i];
-//     int range_start, range_end;
-//     std::tie(range_start, range_end) = vgerm_ggene_ranges_.at(gname);
-//
-//     // Extract the "germline" state information.
-//     const GermlineGene& ggene = ggenes.at(gname);
-//     int germ_ind_start = vgerm_germ_inds_[range_start];
-//
-//     // Compute the forward probability.
-//     vgerm_forward_[i] = ggene.germ_ptr->gene_prob();
-//     vgerm_forward_[i] *=
-//     ggene.germ_ptr->next_transition().segment(germ_ind_start, range_end -
-//     range_start - 1).prod(); vgerm_forward_[i] *=
-//     vgerm_emission_.segment(range_start, range_end - range_start).prod();
-//   }
-//
-//   // Cache the V-D "junction" forward probabilities.
-//   vd_junction_forward_.setZero(vd_junction_emission_.rows(),
-//   vd_junction_emission_.cols());
-//
-//   for (int i = 0; i < vd_junction_emission_.cols(); i++) {
-//     if (i == 0) {
-//       // Case 1: "germline" to "junction" transition.
-//       vd_junction_forward_.col(i) = (vgerm_forward_ *
-//       vgerm_vd_junction_transition_).transpose();
-//       vd_junction_forward_.col(i).array() *=
-//       vd_junction_emission_.col(i).array();
-//     } else {
-//       // Case 2: "junction" to "junction" transition.
-//       vd_junction_forward_.col(i) = (vd_junction_forward_.col(i -
-//       1).transpose() * vd_junction_transition_).transpose();
-//       vd_junction_forward_.col(i).array() *=
-//       vd_junction_emission_.col(i).array();
-//     }
-//   }
-//
-//   // Cache the D "germline" forward probabilities.
-//   dgerm_forward_.setZero(dgerm_state_strs_.size());
-//   dgerm_forward_ = vd_junction_forward_.col(vd_junction_forward_.cols() -
-//   1).transpose() * vd_junction_dgerm_transition_;
-//
-//   for (int i = 0; i < dgerm_state_strs_.size(); i++) {
-//     // Obtain the start/end indices that map to the current "germline" state.
-//     const std::string& gname = dgerm_state_strs_[i];
-//     int range_start, range_end;
-//     std::tie(range_start, range_end) = dgerm_ggene_ranges_.at(gname);
-//
-//     // Compute the forward probability.
-//     dgerm_forward_[i] *= dgerm_emission_.segment(range_start, range_end -
-//     range_start).prod();
-//   }
-//
-//   // Cache the D-J "junction" forward probabilities.
-//   dj_junction_forward_.setZero(dj_junction_emission_.rows(),
-//   dj_junction_emission_.cols());
-//
-//   for (int i = 0; i < dj_junction_emission_.cols(); i++) {
-//     if (i == 0) {
-//       // Case 1: "germline" to "junction" transition.
-//       dj_junction_forward_.col(i) = (dgerm_forward_ *
-//       dgerm_dj_junction_transition_).transpose();
-//       dj_junction_forward_.col(i).array() *=
-//       dj_junction_emission_.col(i).array();
-//     } else {
-//       // Case 2: "junction" to "junction" transition.
-//       dj_junction_forward_.col(i) = (dj_junction_forward_.col(i -
-//       1).transpose() * dj_junction_transition_).transpose();
-//       dj_junction_forward_.col(i).array() *=
-//       dj_junction_emission_.col(i).array();
-//     }
-//   }
-//
-//   // Cache the J "germline" forward probabilities.
-//   jgerm_forward_.setZero(jgerm_state_strs_.size());
-//   jgerm_forward_ = dj_junction_forward_.col(dj_junction_forward_.cols() -
-//   1).transpose() * dj_junction_jgerm_transition_;
-//
-//   for (int i = 0; i < jgerm_state_strs_.size(); i++) {
-//     // Obtain the start/end indices that map to the current "germline" state.
-//     const std::string& gname = jgerm_state_strs_[i];
-//     int range_start, range_end;
-//     std::tie(range_start, range_end) = jgerm_ggene_ranges_.at(gname);
-//
-//     // Compute the forward probability.
-//     jgerm_forward_[i] *= jgerm_emission_.segment(range_start, range_end -
-//     range_start).prod();
-//   }
-//
-//   return log(jgerm_forward_.sum());
-// };
+// Auxiliary functions
 
 
-// Auxiliary Functions
+void NewData::InitializeHMMForwardProbabilities() {
+  vgerm_forward_.setConstant(vgerm_state_strs_.size(), -1);
+
+  for (std::size_t i = 0; i < vgerm_state_strs_.size(); i++) {
+    // Obtain the start/end indices that map to the current "germline" state.
+    const std::string& gname = vgerm_state_strs_[i];
+    int range_start, range_end;
+    std::tie(range_start, range_end) = vgerm_ggene_ranges_.at(gname);
+
+    // Extract the "germline" state information.
+    const GermlineGene& ggene = ggenes_.at(gname);
+    int germ_ind_start = vgerm_germ_inds_[range_start];
+
+    // Compute the forward probability for the current "germline" state.
+    vgerm_forward_[i] = ggene.germ_ptr->gene_prob();
+    vgerm_forward_[i] *=
+        ggene.germ_ptr->next_transition()
+            .segment(germ_ind_start, range_end - range_start - 1)
+            .prod();
+    vgerm_forward_[i] *=
+        vgerm_emission_.segment(range_start, range_end - range_start).prod();
+  }
+};
+
+
+// HMM forward/backward traversal functions
+
+
+double NewData::LogLikelihood() {
+  InitializeHMMForwardProbabilities();
+  ComputeHMMJunctionForwardProbabilities(
+      vgerm_forward_, vgerm_vd_junction_transition_, vd_junction_transition_,
+      vd_junction_emission_, vd_junction_forward_);
+  ComputeHMMGermlineForwardProbabilities(
+      vd_junction_forward_, vd_junction_dgerm_transition_, dgerm_state_strs_,
+      dgerm_ggene_ranges_, dgerm_emission_, dgerm_forward_);
+  ComputeHMMJunctionForwardProbabilities(
+      dgerm_forward_, dgerm_dj_junction_transition_, dj_junction_transition_,
+      dj_junction_emission_, dj_junction_forward_);
+  ComputeHMMGermlineForwardProbabilities(
+      dj_junction_forward_, dj_junction_jgerm_transition_, jgerm_state_strs_,
+      jgerm_ggene_ranges_, jgerm_emission_, jgerm_forward_);
+
+  return std::log(jgerm_forward_.sum());
+};
+
+
+// Auxiliary functions
 
 
 void CacheHMMGermlineStates(
@@ -615,6 +567,50 @@ void FillHMMTransition(const GermlineGene& from_ggene,
               .segment(germ_ind_col_start + match_col_diff, match_length)
               .array();
     }
+  }
+};
+
+
+void ComputeHMMJunctionForwardProbabilities(
+    const Eigen::RowVectorXd& germ_forward_,
+    const Eigen::MatrixXd& germ_junction_transition_,
+    const Eigen::MatrixXd& junction_transition_,
+    const Eigen::MatrixXd& junction_emission_,
+    Eigen::MatrixXd& junction_forward_) {
+  junction_forward_.setConstant(junction_emission_.rows(),
+                                junction_emission_.cols(), -1);
+
+  for (std::size_t i = 0; i < junction_emission_.rows(); i++) {
+    // Are we transitioning from a "germline" state?
+    if (i == 0) {
+      junction_forward_.row(i) = germ_forward_ * germ_junction_transition_;
+    } else {
+      junction_forward_.row(i) =
+          junction_forward_.row(i - 1) * junction_transition_;
+    }
+
+    junction_forward_.row(i).array() *= junction_emission_.row(i).array();
+  }
+};
+
+
+void ComputeHMMGermlineForwardProbabilities(
+    const Eigen::MatrixXd& junction_forward_,
+    const Eigen::MatrixXd& junction_germ_transition_,
+    const std::vector<std::string>& germ_state_strs_,
+    const std::map<std::string, std::pair<int, int>>& germ_ggene_ranges_,
+    const Eigen::VectorXd& germ_emission_, Eigen::RowVectorXd& germ_forward_) {
+  germ_forward_ = junction_forward_.bottomRows(1) * junction_germ_transition_;
+
+  for (std::size_t i = 0; i < germ_state_strs_.size(); i++) {
+    // Obtain the start/end indices that map to the current "germline" state.
+    const std::string& gname = germ_state_strs_[i];
+    int range_start, range_end;
+    std::tie(range_start, range_end) = germ_ggene_ranges_.at(gname);
+
+    // Compute the forward probability for the current "germline" state.
+    germ_forward_[i] *=
+        germ_emission_.segment(range_start, range_end - range_start).prod();
   }
 };
 

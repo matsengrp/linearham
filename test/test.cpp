@@ -1022,28 +1022,19 @@ TEST_CASE("NewPhyloData", "[newphylodata]") {
                        0.00514627, 0.0322063,  0.016355;
   Eigen::VectorXi VDJ_vgerm_xmsa_inds(3);
   VDJ_vgerm_xmsa_inds << 0, 1, 2;
-  Eigen::MatrixXi VDJ_vd_junction_xmsa_inds(9, 4);
+  Eigen::MatrixXi VDJ_vd_junction_xmsa_inds(4, 9);
   VDJ_vd_junction_xmsa_inds <<
-   3,  4,  5,  6,
-   7,  8,  9, 10,
-  11, 12, 13, 14,
-  15, 16, 17, 18,
-  -1, 12, -1, -1,
-  -1, -1, 13, -1,
-  -1, -1, -1, 18,
-   3, -1, -1, -1,
-  -1,  8, -1, -1;
+  3,  7,  11, 15, -1, -1, -1,  3, -1,
+  4,  8,  12, 16, 12, -1, -1, -1,  8,
+  5,  9,  13, 17, -1, 13, -1, -1, -1,
+  6, 10,  14, 18, -1, -1, 18, -1, -1;
   Eigen::VectorXi VDJ_dgerm_xmsa_inds(1);
   VDJ_dgerm_xmsa_inds << 19;
-  Eigen::MatrixXi VDJ_dj_junction_xmsa_inds(7, 3);
+  Eigen::MatrixXi VDJ_dj_junction_xmsa_inds(3, 7);
   VDJ_dj_junction_xmsa_inds <<
-  20, -1, -1,
-  21, 22, 23,
-  20, 24, 25,
-  26, 27, 28,
-  29, 30, 31,
-  -1, 22, -1,
-  -1, -1, 31;
+  20, 21, 20, 26, 29, -1, -1,
+  -1, 22, 24, 27, 30, 22, -1,
+  -1, 23, 25, 28, 31, -1, 31;
   Eigen::VectorXi VDJ_jgerm_xmsa_inds(1);
   VDJ_jgerm_xmsa_inds << 32;
 
@@ -1058,6 +1049,8 @@ TEST_CASE("NewPhyloData", "[newphylodata]") {
   REQUIRE(new_phylo_data_ptr->dgerm_xmsa_inds() == VDJ_dgerm_xmsa_inds);
   REQUIRE(new_phylo_data_ptr->dj_junction_xmsa_inds() == VDJ_dj_junction_xmsa_inds);
   REQUIRE(new_phylo_data_ptr->jgerm_xmsa_inds() == VDJ_jgerm_xmsa_inds);
+
+  REQUIRE(new_phylo_data_ptr->LogLikelihood() == Approx(-66.1867));
 }
 //
 //

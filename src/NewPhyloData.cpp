@@ -59,7 +59,7 @@ NewPhyloData::~NewPhyloData() {
 };
 
 
-// Initialization Functions
+// Initialization functions
 
 
 void NewPhyloData::InitializeMsa(const std::vector<std::string>& msa_seqs,
@@ -114,7 +114,7 @@ void NewPhyloData::InitializeHMMEmission() {
 };
 
 
-// Auxiliary Functions
+// Auxiliary functions
 
 
 void NewPhyloData::BuildXmsa(
@@ -171,7 +171,7 @@ void NewPhyloData::FillHMMJunctionEmission(const Eigen::MatrixXi& xmsa_inds_,
 };
 
 
-// Auxiliary Functions
+// Auxiliary functions
 
 
 void StoreGermlineXmsaIndices(const std::vector<int>& naive_bases_,
@@ -196,7 +196,7 @@ void StoreJunctionXmsaIndices(const std::vector<int>& naive_bases_,
                               Eigen::MatrixXi& xmsa_inds_) {
   int site_start = left_flexbounds.first;
   int site_end = right_flexbounds.second;
-  xmsa_inds_.setConstant(naive_bases_.size(), site_end - site_start, -1);
+  xmsa_inds_.setConstant(site_end - site_start, naive_bases_.size(), -1);
 
   // Loop through the "junction" states and store the associated xMSA site
   // indices.
@@ -205,11 +205,11 @@ void StoreJunctionXmsaIndices(const std::vector<int>& naive_bases_,
     if (site_inds_[i] == -1) {
       for (int site_ind = site_start; site_ind < site_end; site_ind++) {
         StoreXmsaIndex({naive_bases_[i], site_ind}, xmsa_ids,
-                       xmsa_inds_(i, site_ind - site_start));
+                       xmsa_inds_(site_ind - site_start, i));
       }
     } else {
       StoreXmsaIndex({naive_bases_[i], site_inds_[i]}, xmsa_ids,
-                     xmsa_inds_(i, site_inds_[i] - site_start));
+                     xmsa_inds_(site_inds_[i] - site_start, i));
     }
   }
 };

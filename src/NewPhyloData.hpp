@@ -37,7 +37,7 @@ class NewPhyloData : public NewData {
   Eigen::MatrixXi dj_junction_xmsa_inds_;
   Eigen::VectorXi jgerm_xmsa_inds_;
 
-  // Initialization Functions
+  // Initialization functions
   void InitializeMsa(const std::vector<std::string>& msa_seqs,
                      unsigned int tip_node_count, unsigned int sites);
 
@@ -45,7 +45,7 @@ class NewPhyloData : public NewData {
 
   void InitializeHMMEmission() override;
 
-  // Auxiliary Functions
+  // Auxiliary functions
   void BuildXmsa(const std::map<std::pair<int, int>, int>& xmsa_ids);
 
   void FillHMMGermlineEmission(const Eigen::VectorXi& xmsa_inds_,
@@ -83,7 +83,7 @@ class NewPhyloData : public NewData {
 typedef std::shared_ptr<NewPhyloData> NewPhyloDataPtr;
 
 
-// Auxiliary Functions
+// Auxiliary functions
 
 void StoreGermlineXmsaIndices(const std::vector<int>& naive_bases_,
                               const std::vector<int>& site_inds_,
