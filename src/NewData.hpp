@@ -274,10 +274,10 @@ void FillHMMTransition(const GermlineGene& from_ggene,
                        int germ_col_length,
                        Eigen::Ref<Eigen::MatrixXd> transition_);
 
-Eigen::VectorXi ConvertSeqToInts2(const std::string& seq,
-                                  const std::string& alphabet);
+Eigen::RowVectorXi ConvertSeqToInts2(const std::string& seq,
+                                     const std::string& alphabet);
 
-std::string ConvertIntsToSeq2(const Eigen::VectorXi& seq_ints,
+std::string ConvertIntsToSeq2(const Eigen::RowVectorXi& seq_ints,
                               const std::string& alphabet);
 
 
