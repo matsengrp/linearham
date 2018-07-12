@@ -1,0 +1,15 @@
+{
+  "events" : [ {
+    "input_seqs" : ["NNNACAGTACCCTGTTNN"],
+    "relpos" : {"IGHD_ex*01" : 5, "IGHJ_ex*01" : 10, "IGHV_ex*01" : 1},
+    "flexbounds" : {
+      "v_r" : [ 4, 6 ],
+      "d_r" : [ 9, 10 ],
+      "j_l" : [ 11, 12 ],
+      "j_r" : [ 13, 13 ],
+      "d_l" : [ 7, 8 ],
+      "v_l" : [ 0, 2 ]
+    },
+    "unique_ids" : ["read1"],
+  } ]
+}
