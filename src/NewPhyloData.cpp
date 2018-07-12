@@ -12,12 +12,12 @@
 namespace linearham {
 
 
-NewPhyloData::NewPhyloData(const std::string& csv_path,
+NewPhyloData::NewPhyloData(const std::string& yaml_path,
                            const std::string& dir_path,
                            const std::string& newick_path,
                            const std::string& fasta_path,
                            const std::string& raxml_path)
-    : NewData(csv_path, dir_path) {
+    : NewData(yaml_path, dir_path) {
   // Initialize the phylogenetic tree object.
   tree_ = pll_utree_parse_newick(newick_path.c_str());
 

@@ -97,7 +97,7 @@ class NewData {
   virtual void InitializeHMMEmission() = 0;
 
  public:
-  NewData(const std::string& csv_path, const std::string& dir_path);
+  NewData(const std::string& yaml_path, const std::string& dir_path);
   virtual ~NewData(){};
 
   const std::map<std::string, std::pair<int, int>>& flexbounds() const {

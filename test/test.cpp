@@ -863,13 +863,13 @@ TEST_CASE("PhyloData", "[phylodata]") {
 
 TEST_CASE("NewPhyloData", "[newphylodata]") {
   // Test the NewPhyloData class using the example files.
-  std::string csv_path = "data/SimpleData_ex/hmm_input.csv";
+  std::string yaml_path = "data/SimpleData_ex/hmm_input.yaml";
   std::string dir_path = "data/SimpleData_ex/hmm_params";
   std::string newick_path = "data/PhyloData_ex/newton.tre";
   std::string fasta_path = "data/PhyloData_ex/newton.fasta";
   std::string raxml_path = "data/PhyloData_ex/RAxML_info.newton";
   NewPhyloDataPtr new_phylo_data_ptr = std::make_shared<NewPhyloData>(
-      csv_path, dir_path, newick_path, fasta_path, raxml_path);
+      yaml_path, dir_path, newick_path, fasta_path, raxml_path);
 
   // For a diagram of the S-W alignment, see
   // https://github.com/matsengrp/linearham/issues/44#issue-336348821.

@@ -5,7 +5,6 @@
 #include <cstddef>
 #include <tuple>
 
-#include <csv.h>
 #include <yaml-cpp/yaml.h>
 #include "linalg.hpp"
 
@@ -15,21 +14,12 @@
 namespace linearham {
 
 
-NewData::NewData(const std::string& csv_path, const std::string& dir_path) {
-  // Initialize CSV parser and associated variables.
-  assert(csv_path.substr(csv_path.length() - 3, 3) == "csv");
-  io::CSVReader<2, io::trim_chars<>, io::double_quote_escape<' ', '\"'>> in(
-      csv_path);
-  in.read_header(io::ignore_extra_column, "flexbounds", "relpos");
-
-  std::string flexbounds_str, relpos_str;
-  in.read_row(flexbounds_str, relpos_str);
-  assert(!in.read_row(flexbounds_str, relpos_str));
-
-  // Parse the `flexbounds` and `relpos` JSON strings.
-  flexbounds_ = YAML::Load(flexbounds_str)
+NewData::NewData(const std::string& yaml_path, const std::string& dir_path) {
+  // Parse the `flexbounds` and `relpos` YAML data.
+  YAML::Node root = YAML::LoadFile(yaml_path);
+  flexbounds_ = root["events"][0]["flexbounds"]
                     .as<std::map<std::string, std::pair<int, int>>>();
-  relpos_ = YAML::Load(relpos_str).as<std::map<std::string, int>>();
+  relpos_ = root["events"][0]["relpos"].as<std::map<std::string, int>>();
 
   // Create the map holding (germline name, GermlineGene) pairs.
   ggenes_ = CreateGermlineGeneMap(dir_path);
