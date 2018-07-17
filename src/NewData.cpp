@@ -433,7 +433,8 @@ void ComputeHMMJunctionGermlineTransition(
                         from_range_start, 0, n_row_length, 0, germ_row_start, 0,
                         germ_row_length, 1, junction_germ_transition_col);
 
-      junction_germ_transition_col *=
+      junction_germ_transition_col.block(
+          from_range_start, 0, from_range_end - from_range_start, 1) *=
           to_ggene.germ_ptr->next_transition()
               .segment(to_germ_ind_start, to_range_end - to_range_start - 1)
               .prod();
