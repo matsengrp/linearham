@@ -9,19 +9,19 @@ namespace linearham {
 /// @brief Constructor for SimpleData.
 /// @param[in] seq_str
 /// The "trimmed" sequence (i.e. without N's).
-/// @param[in] flexbounds_str
-/// The JSON string with the flexbounds map.
-/// @param[in] relpos_str
-/// The JSON string with the relpos map.
+/// @param[in] flexbounds
+/// The flexbounds.
+/// @param[in] relpos
+/// The relpos.
 /// @param[in] n_read_counts
 /// The number of N's on the left/right of the "untrimmed" sequence.
 /// @param[in] ggenes
 /// A map holding (germline name, GermlineGene) pairs.
 SimpleData::SimpleData(
-    const std::string& seq_str, const std::string& flexbounds_str,
-    const std::string& relpos_str, std::pair<int, int> n_read_counts,
+    const std::string& seq_str, const std::map<std::string, std::pair<int, int>>& flexbounds,
+    const std::map<std::string, int>& relpos, std::pair<int, int> n_read_counts,
     const std::unordered_map<std::string, GermlineGene>& ggenes)
-    : Data(flexbounds_str, relpos_str) {
+    : Data(flexbounds, relpos) {
   // Convert the read sequence string to a vector of integers (according to the
   // alphabet).
   seq_ = ConvertSeqToInts(seq_str,
@@ -101,27 +101,24 @@ Eigen::RowVectorXd SimpleData::NTIEmissionVector(NTInsertionPtr nti_ptr,
 
 
 /// @brief Builds a vector of SimpleData pointers (each entry corresponding to a
-/// row in the partis CSV file).
-/// @param[in] csv_path
-/// Path to a partis "CSV" file, which is actually space-delimited.
+/// event in the partis YAML file).
+/// @param[in] yaml_path
+/// Path to a partis YAML file.
 /// @param[in] dir_path
 /// Path to a directory of germline gene HMM YAML files.
 /// @return
 /// A vector of SimpleData pointers.
-std::vector<SimpleDataPtr> ReadSimpleData(std::string csv_path,
+std::vector<SimpleDataPtr> ReadSimpleData(std::string yaml_path,
                                           std::string dir_path) {
   // Create the GermlineGene map needed for the SimpleData constructor.
   std::unordered_map<std::string, GermlineGene> ggenes =
       CreateGermlineGeneMap(dir_path);
 
-  // Initialize CSV parser and associated variables.
-  assert(csv_path.substr(csv_path.length() - 3, 3) == "csv");
-  io::CSVReader<3, io::trim_chars<>, io::double_quote_escape<' ', '\"'>> in(
-      csv_path);
-  in.read_header(io::ignore_extra_column, "seqs", "flexbounds", "relpos");
+  // Parse the `flexbounds`, `relpos`, and `seqs` YAML data.
+  YAML::Node root = YAML::LoadFile(yaml_path);
+  YAML::Node events = root["events"];
 
   std::vector<SimpleDataPtr> simple_data_ptrs;
-  std::string seq_str, flexbounds_str, relpos_str;
   std::pair<int, int> n_read_counts;
 
   // This regex is used to count the numbers of N's on both sides of the read
@@ -130,11 +127,16 @@ std::vector<SimpleDataPtr> ReadSimpleData(std::string csv_path,
                   "]+)(N*)$");
   std::smatch match;
 
-  while (in.read_row(seq_str, flexbounds_str, relpos_str)) {
+  int i = 0;
+  for (auto it = events.begin(); it != events.end(); ++it) {
+    std::string seq_str = events[i]["input_seqs"][0].as<std::string>();
+
     assert(std::regex_match(seq_str, match, nrgx));
     n_read_counts = {match[1].length(), match[3].length()};
     simple_data_ptrs.push_back(std::make_shared<SimpleData>(
-        match[2], flexbounds_str, relpos_str, n_read_counts, ggenes));
+        match[2], events[i]["flexbounds"].as<std::map<std::string, std::pair<int, int>>>(),
+        events[i]["relpos"].as<std::map<std::string, int>>(), n_read_counts, ggenes));
+    i++;
   }
 
   return simple_data_ptrs;

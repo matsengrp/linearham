@@ -73,7 +73,8 @@ class PhyloData : public Data {
 
  public:
   PhyloData(){};
-  PhyloData(const std::string& flexbounds_str, const std::string& relpos_str,
+  PhyloData(const std::map<std::string, std::pair<int, int>>& flexbounds,
+            const std::map<std::string, int>& relpos,
             const std::unordered_map<std::string, GermlineGene>& ggenes,
             std::string newick_path, std::string fasta_path,
             std::string raxml_path, size_t rate_categories);

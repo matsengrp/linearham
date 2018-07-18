@@ -7,10 +7,10 @@ namespace linearham {
 
 
 /// @brief Constructor for PhyloData.
-/// @param[in] flexbounds_str
-/// The JSON string with the flexbounds map.
-/// @param[in] relpos_str
-/// The JSON string with the relpos map.
+/// @param[in] flexbounds
+/// The flexbounds.
+/// @param[in] relpos
+/// The relpos.
 /// @param[in] ggenes
 /// A map holding (germline name, GermlineGene) pairs.
 /// @param[in] newick_path
@@ -22,11 +22,13 @@ namespace linearham {
 /// @param[in] rate_categories
 /// The number of discrete-gamma rate categories to use.
 PhyloData::PhyloData(
-    const std::string& flexbounds_str, const std::string& relpos_str,
+    const std::map<std::string, std::pair<int, int>>& flexbounds,
+    const std::map<std::string, int>& relpos,
     const std::unordered_map<std::string, GermlineGene>& ggenes,
     std::string newick_path, std::string fasta_path, std::string raxml_path,
     size_t rate_categories)
-    : Data(flexbounds_str, relpos_str) {
+    : Data(flexbounds, relpos) {
+
   // Initialize `tree_`.
   tree_ = pll_utree_parse_newick(newick_path.c_str());
 
@@ -576,10 +578,10 @@ std::vector<SmooshishPtr> FindDirtySmooshables(SmooshishPtr sp) {
 // PhyloDataPtr Function
 
 
-/// @brief Builds a PhyloData pointer (corresponding to the single-row in the
-/// partis CSV file).
-/// @param[in] csv_path
-/// Path to a partis "CSV" file, which is actually space-delimited.
+/// @brief Builds a PhyloData pointer (corresponding to the single event in the
+/// partis YAML file).
+/// @param[in] yaml_path
+/// Path to a partis YAML file.
 /// @param[in] dir_path
 /// Path to a directory of germline gene HMM YAML files.
 /// @param[in] newick_path
@@ -592,25 +594,20 @@ std::vector<SmooshishPtr> FindDirtySmooshables(SmooshishPtr sp) {
 /// The number of discrete-gamma rate categories to use.
 /// @return
 /// A PhyloData pointer.
-PhyloDataPtr ReadPhyloData(std::string csv_path, std::string dir_path,
+PhyloDataPtr ReadPhyloData(std::string yaml_path, std::string dir_path,
                            std::string newick_path, std::string fasta_path,
                            std::string raxml_path, size_t rate_categories) {
   // Create the GermlineGene map needed for the PhyloData constructor.
   std::unordered_map<std::string, GermlineGene> ggenes =
       CreateGermlineGeneMap(dir_path);
 
-  // Initialize CSV parser and associated variables.
-  assert(csv_path.substr(csv_path.length() - 3, 3) == "csv");
-  io::CSVReader<2, io::trim_chars<>, io::double_quote_escape<' ', '\"'>> in(
-      csv_path);
-  in.read_header(io::ignore_extra_column, "flexbounds", "relpos");
+  // Parse the `flexbounds` and `relpos` YAML data.
+  YAML::Node root = YAML::LoadFile(yaml_path);
 
-  std::string flexbounds_str, relpos_str;
-
-  in.read_row(flexbounds_str, relpos_str);
   PhyloDataPtr phylo_data_ptr = std::make_shared<PhyloData>(
-      flexbounds_str, relpos_str, ggenes, newick_path, fasta_path, raxml_path, rate_categories);
-  assert(!in.read_row(flexbounds_str, relpos_str));
+    root["events"][0]["flexbounds"].as<std::map<std::string, std::pair<int, int>>>(),
+    root["events"][0]["relpos"].as<std::map<std::string, int>>(),
+    ggenes, newick_path, fasta_path, raxml_path, rate_categories);
 
   return phylo_data_ptr;
 };

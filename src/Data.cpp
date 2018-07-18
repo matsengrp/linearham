@@ -7,15 +7,14 @@ namespace linearham {
 
 
 /// @brief Constructor for Data.
-/// @param[in] flexbounds_str
-/// The JSON string with the flexbounds map.
-/// @param[in] relpos_str
-/// The JSON string with the relpos map.
-Data::Data(const std::string& flexbounds_str, const std::string& relpos_str) {
-  // Parse the `flexbounds` and `relpos` JSON strings.
-  flexbounds_ = YAML::Load(flexbounds_str)
-                    .as<std::map<std::string, std::pair<int, int>>>();
-  relpos_ = YAML::Load(relpos_str).as<std::map<std::string, int>>();
+/// @param[in] flexbounds
+/// The flexbounds.
+/// @param[in] relpos
+/// The relpos.
+Data::Data(const std::map<std::string, std::pair<int, int>>& flexbounds,
+           const std::map<std::string, int>& relpos) {
+  flexbounds_ = flexbounds;
+  relpos_ = relpos;
 };
 
 

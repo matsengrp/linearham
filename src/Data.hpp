@@ -69,7 +69,8 @@ class Data {
 
  public:
   Data(){};
-  Data(const std::string& flexbounds_str, const std::string& relpos_str);
+  Data(const std::map<std::string, std::pair<int, int>>& flexbounds,
+       const std::map<std::string, int>& relpos);
   virtual ~Data(){};
 
   const std::map<std::string, std::pair<int, int>>& flexbounds() const {

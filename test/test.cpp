@@ -593,7 +593,7 @@ TEST_CASE("SmooshableChainPile", "[smooshablechainpile]") {
 TEST_CASE("SimpleData", "[simpledata]") {
   // Test the SimpleData class using the example HMM files.
   std::vector<SimpleDataPtr> ex_simple_data_ptrs = ReadSimpleData(
-      "data/SimpleData_ex/hmm_input.csv", "data/SimpleData_ex/hmm_params");
+      "data/SimpleData_ex/hmm_input.yaml", "data/SimpleData_ex/hmm_params");
 
   // For a diagram of the S-W alignment, see
   // https://github.com/matsengrp/linearham/issues/44#issue-336348821.
@@ -684,13 +684,13 @@ TEST_CASE("SimpleData", "[simpledata]") {
 
 TEST_CASE("PhyloData", "[phylodata]") {
   // Test the PhyloData class using the example files.
-  std::string csv_path = "data/SimpleData_ex/hmm_input.csv";
+  std::string yaml_path = "data/SimpleData_ex/hmm_input.yaml";
   std::string dir_path = "data/SimpleData_ex/hmm_params";
   std::string newick_path = "data/PhyloData_ex/newton.tre";
   std::string fasta_path = "data/PhyloData_ex/newton.fasta";
   std::string raxml_path = "data/PhyloData_ex/RAxML_info.newton";
   PhyloDataPtr phylo_data_ptr =
-      ReadPhyloData(csv_path, dir_path, newick_path, fasta_path, raxml_path, 4);
+      ReadPhyloData(yaml_path, dir_path, newick_path, fasta_path, raxml_path, 4);
 
   // For a diagram of the S-W alignment, see
   // https://github.com/matsengrp/linearham/issues/44#issue-336348821.
@@ -830,10 +830,10 @@ TEST_CASE("PhyloData", "[phylodata]") {
 
   // Test the phylogenetic likelihood calculation using the R package "phylomd".
   // For more details, see https://github.com/dunleavy005/phylomd.
-  csv_path = "data/PhyloData_ex/phylolikelihood_hmm_input.csv";
+  yaml_path = "data/PhyloData_ex/phylolikelihood_hmm_input.yaml";
   dir_path = "data/PhyloData_ex/phylolikelihood_hmm_params";
   PhyloDataPtr phylo_likelihood_ptr =
-      ReadPhyloData(csv_path, dir_path, newick_path, fasta_path, raxml_path, 1);
+      ReadPhyloData(yaml_path, dir_path, newick_path, fasta_path, raxml_path, 1);
 
   // library(ape)
   // library(phylomd)
