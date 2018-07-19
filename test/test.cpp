@@ -717,13 +717,13 @@ TEST_CASE("PhyloData", "[phylodata]") {
   2, 3, 3, 1, 2, 0, 2, 3, 0, 1, 0, 1, 2, 1, 1, 1, 2, 2, 3, 3, 3, 3, 3, 3, 2, 2, 2, 0, 0, 0, 2, 2, 2,
   2, 2, 3, 0, 1, 0, 3, 2, 0, 3, 2, 0, 1, 1, 2, 3, 0, 3, 0, 1, 3, 0, 1, 2, 0, 2, 3, 1, 2, 3, 0, 1, 2,
   3, 0, 2, 2, 0, 1, 3, 1, 2, 3, 0, 2, 3, 2, 2, 2, 3, 3, 0, 0, 0, 2, 2, 2, 0, 0, 0, 1, 1, 1, 3, 3, 3;
-  std::vector<std::string> VDJ_xmsa_labels = {"0", "1", "root", "3"};
+  std::vector<std::string> VDJ_xmsa_labels = {"0", "1", "naive", "3"};
   std::vector<std::string> VDJ_xmsa_seqs = {
       "GATCAATTAAAAGAAAGGAAATTTAAAAAATTT", "GTTCGAGTACACGCCCGGTTTTTTGGGAAAGGG",
       "GGTACATGATGACCGTATACTACGAGTCGTACG", "TAGGACTCGTAGTGGGTTAAAGGGAAACCCTTT"};
-  int VDJ_xmsa_root_index = std::find(VDJ_xmsa_labels.begin(),
-                                      VDJ_xmsa_labels.end(), "root")
-                            - VDJ_xmsa_labels.begin();
+  int VDJ_xmsa_naive_index = std::find(VDJ_xmsa_labels.begin(),
+                                       VDJ_xmsa_labels.end(), "naive")
+                             - VDJ_xmsa_labels.begin();
   Eigen::VectorXd VDJ_xmsa_rates(33);
   VDJ_xmsa_rates << 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
                     1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1;
@@ -780,7 +780,7 @@ TEST_CASE("PhyloData", "[phylodata]") {
   REQUIRE(phylo_data_ptr->xmsa() == VDJ_xmsa);
   REQUIRE(phylo_data_ptr->xmsa_labels() == VDJ_xmsa_labels);
   REQUIRE(phylo_data_ptr->xmsa_seqs() == VDJ_xmsa_seqs);
-  REQUIRE(phylo_data_ptr->xmsa_root_index() == VDJ_xmsa_root_index);
+  REQUIRE(phylo_data_ptr->xmsa_naive_index() == VDJ_xmsa_naive_index);
   REQUIRE(phylo_data_ptr->xmsa_rates() == VDJ_xmsa_rates);
   REQUIRE(phylo_data_ptr->xmsa_emission().isApprox(VDJ_xmsa_emission, 1e-5));
   REQUIRE(phylo_data_ptr->germ_xmsa_indices() == VDJ_germ_xmsa_indices);
@@ -841,8 +841,8 @@ TEST_CASE("PhyloData", "[phylodata]") {
   // tree = read.tree("newton.tre")
   // tree = root(tree, outgroup=1, resolve.root=T)
   // msa = toupper(read.dna("newton.fasta", format="fasta", as.character=T))
-  // xmsa.root.seq = c("A", "T", "G", "A", "C", "G", "G", "T", "A", "C", "A", "T", "G")
-  // msa["root",] = xmsa.root.seq
+  // xmsa.naive.seq = c("A", "T", "G", "A", "C", "G", "G", "T", "A", "C", "A", "T", "G")
+  // msa["naive",] = xmsa.naive.seq
   // subst.mod = GTR(1, 1, 1, 1, 1, 1, c(0.17, 0.19, 0.25, 0.39), scale=T)
   //
   // likelihoods = rep(NA, ncol(msa))
@@ -850,9 +850,9 @@ TEST_CASE("PhyloData", "[phylodata]") {
   //   likelihoods[i] = phylo.t.derivatives(tree, subst.mod, 0, msa[,i])
   // }
   //
-  // root.probs = subst.mod$pi[match(msa["root",], subst.mod$states)]
+  // naive.probs = subst.mod$pi[match(msa["naive",], subst.mod$states)]
   //
-  // log(prod(likelihoods / root.probs))
+  // log(prod(likelihoods / naive.probs))
   // # -55.73483
 
   REQUIRE(phylo_likelihood_ptr->MarginalLogLikelihood() == Approx(-55.73483));
@@ -1005,13 +1005,13 @@ TEST_CASE("NewPhyloData", "[newphylodata]") {
   0, 1, 0, 1, 2, 3, 3, 1, 2, 3, 3, 1, 2, 3, 3, 1, 2, 3, 3, 1, 2, 2, 0, 2, 0, 2, 2, 0, 2, 2, 0, 2, 3,
   0, 3, 2, 0, 0, 0, 0, 1, 1, 1, 1, 2, 2, 2, 2, 3, 3, 3, 3, 0, 1, 0, 0, 0, 1, 1, 2, 2, 2, 3, 3, 3, 2,
   2, 3, 0, 2, 3, 0, 2, 2, 3, 0, 2, 2, 3, 0, 2, 2, 3, 0, 2, 2, 0, 0, 1, 3, 1, 3, 0, 1, 3, 0, 1, 3, 1;
-  std::vector<std::string> VDJ_xmsa_labels = {"0", "1", "root", "3"};
+  std::vector<std::string> VDJ_xmsa_labels = {"0", "1", "naive", "3"};
   std::vector<std::string> VDJ_xmsa_seqs = {
       "AAAAGATAGATAGATAGATCAAATATAATAATT", "ACACGTTCGTTCGTTCGTTCGGAGAGGAGGAGT",
       "ATGAAAACCCCGGGGTTTTACAAACCGGGTTTG", "GTAGTAGGTAGGTAGGTAGGAACTCTACTACTC"};
   int VDJ_xmsa_naive_ind = std::find(VDJ_xmsa_labels.begin(),
-                                    VDJ_xmsa_labels.end(), "root")
-                          - VDJ_xmsa_labels.begin();
+                                     VDJ_xmsa_labels.end(), "naive")
+                           - VDJ_xmsa_labels.begin();
   Eigen::VectorXd VDJ_xmsa_emission(33);
   VDJ_xmsa_emission << 0.0233122, 0.00563729, 0.0107866, 0.00342739, 0.0177109,
                        0.0279823, 0.0215197, 0.00270654, 0.0177109, 0.00399037,

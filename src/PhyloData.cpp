@@ -37,7 +37,7 @@ PhyloData::PhyloData(
   unsigned int sites =
       pt::pll::ParseFasta(fasta_path, tree_->tip_count, xmsa_labels_, msa_seqs);
 
-  // Initialize `msa_` and `xmsa_root_index_`.
+  // Initialize `msa_` and `xmsa_naive_index_`.
   InitializeMsa(msa_seqs, tree_->tip_count, sites,
                 ggenes.begin()->second.germ_ptr->alphabet());
 
@@ -60,8 +60,8 @@ PhyloData::PhyloData(
   partition_->LogLikelihood(root_node, xmsa_emission_.data());
   // Apply the naive sequence correction to the phylogenetic likelihoods.
   for (int i = 0; i < xmsa_emission_.size(); i++) {
-    double root_prob = model_params.frequencies[xmsa_(xmsa_root_index_, i)];
-    xmsa_emission_[i] -= log(root_prob);
+    double naive_prob = model_params.frequencies[xmsa_(xmsa_naive_index_, i)];
+    xmsa_emission_[i] -= log(naive_prob);
   }
   xmsa_emission_.array() = xmsa_emission_.array().exp();
 
@@ -159,11 +159,11 @@ void PhyloData::InitializeMsa(const std::vector<std::string>& msa_seqs,
   msa_.resize(tip_node_count - 1, sites);
   int row_index = 0;
   for (int i = 0; i < msa_seqs.size(); i++) {
-    if (xmsa_labels_[i] != "root") {
+    if (xmsa_labels_[i] != "naive") {
       msa_.row(row_index++) =
           ConvertSeqToInts(msa_seqs[i], alphabet).transpose();
     } else {
-      xmsa_root_index_ = i;
+      xmsa_naive_index_ = i;
     }
   }
 };
@@ -466,9 +466,9 @@ void PhyloData::BuildXmsa(
     int msa_index = std::get<kMsaIndex>(id);
     int xmsa_index = it->second;
 
-    xmsa_.col(xmsa_index) << msa_.col(msa_index).segment(0, xmsa_root_index_),
+    xmsa_.col(xmsa_index) << msa_.col(msa_index).segment(0, xmsa_naive_index_),
         germ_base,
-        msa_.col(msa_index).segment(xmsa_root_index_, msa_.rows() - xmsa_root_index_);
+        msa_.col(msa_index).segment(xmsa_naive_index_, msa_.rows() - xmsa_naive_index_);
     xmsa_rates_[xmsa_index] = germ_rate;
   }
 

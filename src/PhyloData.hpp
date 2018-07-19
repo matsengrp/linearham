@@ -19,7 +19,7 @@ class PhyloData : public Data {
   Eigen::MatrixXi xmsa_;
   std::vector<std::string> xmsa_labels_;
   std::vector<std::string> xmsa_seqs_;
-  int xmsa_root_index_;
+  int xmsa_naive_index_;
   Eigen::VectorXd xmsa_rates_;
   Eigen::VectorXd xmsa_emission_;
   std::map<std::array<std::string, 2>, Eigen::VectorXi> germ_xmsa_indices_;
@@ -84,7 +84,7 @@ class PhyloData : public Data {
   const Eigen::MatrixXi& xmsa() const { return xmsa_; };
   const std::vector<std::string>& xmsa_labels() const { return xmsa_labels_; };
   const std::vector<std::string>& xmsa_seqs() const { return xmsa_seqs_; };
-  int xmsa_root_index() const { return xmsa_root_index_; };
+  int xmsa_naive_index() const { return xmsa_naive_index_; };
   const Eigen::VectorXd& xmsa_rates() const { return xmsa_rates_; };
   const Eigen::VectorXd& xmsa_emission() const { return xmsa_emission_; };
   const std::map<std::array<std::string, 2>, Eigen::VectorXi>&

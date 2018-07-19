@@ -72,7 +72,7 @@ void NewPhyloData::InitializeMsa(const std::vector<std::string>& msa_seqs,
   msa_.setConstant(tip_node_count - 1, sites, -1);
 
   for (std::size_t i = 0, row_ind = 0; i < msa_seqs.size(); i++) {
-    if (xmsa_labels_[i] != "root") {
+    if (xmsa_labels_[i] != "naive") {
       msa_.row(row_ind++) = ConvertSeqToInts2(msa_seqs[i], alphabet);
     } else {
       xmsa_naive_ind_ = i;
