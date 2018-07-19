@@ -1,0 +1,63 @@
+extras: {gene_prob: 0.17}
+name: IGHV_ex_star_99
+states:
+- emissions: null
+  extras: {}
+  name: init
+  transitions: {IGHV_ex_star_99_0: 0.66, insert_left_N: 0.34}
+- emissions:
+    probs: {A: 0.25, C: 0.25, G: 0.25, T: 0.25}
+    track: nukes
+  extras: {ambiguous_emission_prob: 0.25, germline: N}
+  name: insert_left_N
+  transitions: {IGHV_ex_star_99_0: 0.66, insert_left_N: 0.34}
+- emissions:
+    probs: {A: 0.05, C: 0.85, G: 0.05, T: 0.05}
+    track: nukes
+  extras: {germline: C}
+  name: IGHV_ex_star_99_0
+  transitions: {IGHV_ex_star_99_1: 1.0}
+- emissions:
+    probs: {A: 0.7, C: 0.1, G: 0.1, T: 0.1}
+    track: nukes
+  extras: {germline: A}
+  name: IGHV_ex_star_99_1
+  transitions: {IGHV_ex_star_99_2: 1.0}
+- emissions:
+    probs: {A: 0.01, C: 0.01, G: 0.97, T: 0.01}
+    track: nukes
+  extras: {germline: G}
+  name: IGHV_ex_star_99_2
+  transitions: {IGHV_ex_star_99_3: 1.0}
+- emissions:
+    probs: {A: 0.15, C: 0.15, G: 0.55, T: 0.15}
+    track: nukes
+  extras: {germline: G}
+  name: IGHV_ex_star_99_3
+  transitions: {IGHV_ex_star_99_4: 1.0}
+- emissions:
+    probs: {A: 0.55, C: 0.15, G: 0.15, T: 0.15}
+    track: nukes
+  extras: {germline: A}
+  name: IGHV_ex_star_99_4
+  transitions: {IGHV_ex_star_99_5: 0.75, end: 0.25}
+- emissions:
+    probs: {A: 0.1, C: 0.1, G: 0.1, T: 0.7}
+    track: nukes
+  extras: {germline: T}
+  name: IGHV_ex_star_99_5
+  transitions: {IGHV_ex_star_99_6: 0.5, end: 0.5}
+- emissions:
+    probs: {A: 0.15, C: 0.55, G: 0.15, T: 0.15}
+    track: nukes
+  extras: {germline: C}
+  name: IGHV_ex_star_99_6
+  transitions: {IGHV_ex_star_99_7: 0.5, end: 0.5}
+- emissions:
+    probs: {A: 0.125, C: 0.625, G: 0.125, T: 0.125}
+    track: nukes
+  extras: {germline: C}
+  name: IGHV_ex_star_99_7
+  transitions: {end: 1.0}
+tracks:
+  nukes: [A, C, G, T]
