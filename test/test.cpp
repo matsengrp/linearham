@@ -1059,7 +1059,8 @@ TEST_CASE("NewPhyloData", "[newphylodata]") {
   new_phylo_data_ptr = std::make_shared<NewPhyloData>(
       yaml_path, dir_path, newick_path, fasta_path, raxml_path);
 
-  // ADD DIAGRAM!!!!
+  // For a diagram of the S-W alignment, see
+  // https://github.com/matsengrp/linearham/issues/44#issuecomment-406625914.
 
   VDJ_flexbounds = {{"v_l", {0, 2}},  {"v_r", {4, 6}},   {"d_l", {4, 6}},
                     {"d_r", {8, 10}}, {"j_l", {8, 10}}, {"j_r", {13, 13}}};
