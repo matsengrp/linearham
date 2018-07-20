@@ -959,6 +959,11 @@ TEST_CASE("NewPhyloData", "[newphylodata]") {
   0,
   0,
   1;
+  int VDJ_vgerm_scaler_count = 0;
+  std::vector<int> VDJ_vd_junction_scaler_counts = {0, 0, 0, 0};
+  int VDJ_dgerm_scaler_count = 0;
+  std::vector<int> VDJ_dj_junction_scaler_counts = {0, 0, 0};
+  int VDJ_jgerm_scaler_count = 0;
 
   REQUIRE(new_phylo_data_ptr->flexbounds() == VDJ_flexbounds);
   REQUIRE(new_phylo_data_ptr->relpos() == VDJ_relpos);
@@ -1051,6 +1056,11 @@ TEST_CASE("NewPhyloData", "[newphylodata]") {
   REQUIRE(new_phylo_data_ptr->jgerm_xmsa_inds() == VDJ_jgerm_xmsa_inds);
 
   REQUIRE(new_phylo_data_ptr->LogLikelihood() == Approx(-66.1867));
+  REQUIRE(new_phylo_data_ptr->vgerm_scaler_count() == VDJ_vgerm_scaler_count);
+  REQUIRE(new_phylo_data_ptr->vd_junction_scaler_counts() == VDJ_vd_junction_scaler_counts);
+  REQUIRE(new_phylo_data_ptr->dgerm_scaler_count() == VDJ_dgerm_scaler_count);
+  REQUIRE(new_phylo_data_ptr->dj_junction_scaler_counts() == VDJ_dj_junction_scaler_counts);
+  REQUIRE(new_phylo_data_ptr->jgerm_scaler_count() == VDJ_jgerm_scaler_count);
 
   // For clarity, we run an additional NewPhyloData test.
   yaml_path = "data/SimpleData_ex/hmm_input_extra.yaml";
@@ -1175,6 +1185,11 @@ TEST_CASE("NewPhyloData", "[newphylodata]") {
                  0, 0,
                  0, 0,
                  0, 1;
+  VDJ_vgerm_scaler_count = 0;
+  VDJ_vd_junction_scaler_counts = {0, 0};
+  VDJ_dgerm_scaler_count = 0;
+  VDJ_dj_junction_scaler_counts = {0, 0};
+  VDJ_jgerm_scaler_count = 0;
 
   REQUIRE(new_phylo_data_ptr->flexbounds() == VDJ_flexbounds);
   REQUIRE(new_phylo_data_ptr->relpos() == VDJ_relpos);
@@ -1251,6 +1266,11 @@ TEST_CASE("NewPhyloData", "[newphylodata]") {
 
   REQUIRE(new_phylo_data_ptr->LogLikelihood() == Approx(-65.4853));
   REQUIRE(new_phylo_data_ptr->LogLikelihood() == phylo_data_ptr->MarginalLogLikelihood());
+  REQUIRE(new_phylo_data_ptr->vgerm_scaler_count() == VDJ_vgerm_scaler_count);
+  REQUIRE(new_phylo_data_ptr->vd_junction_scaler_counts() == VDJ_vd_junction_scaler_counts);
+  REQUIRE(new_phylo_data_ptr->dgerm_scaler_count() == VDJ_dgerm_scaler_count);
+  REQUIRE(new_phylo_data_ptr->dj_junction_scaler_counts() == VDJ_dj_junction_scaler_counts);
+  REQUIRE(new_phylo_data_ptr->jgerm_scaler_count() == VDJ_jgerm_scaler_count);
 }
 //
 //
