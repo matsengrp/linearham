@@ -2,6 +2,7 @@
 
 #include <cmath>
 #include <cstddef>
+#include <tuple>
 
 #include <model.hpp>
 #include <pll_util.hpp>
@@ -106,11 +107,14 @@ void NewPhyloData::InitializeXmsaStructs() {
 
 
 void NewPhyloData::InitializeHMMEmission() {
-  FillHMMGermlineEmission(vgerm_xmsa_inds_, vgerm_emission_);
+  FillHMMGermlineEmission(vgerm_ggene_ranges_, vgerm_xmsa_inds_,
+                          vgerm_emission_);
   FillHMMJunctionEmission(vd_junction_xmsa_inds_, vd_junction_emission_);
-  FillHMMGermlineEmission(dgerm_xmsa_inds_, dgerm_emission_);
+  FillHMMGermlineEmission(dgerm_ggene_ranges_, dgerm_xmsa_inds_,
+                          dgerm_emission_);
   FillHMMJunctionEmission(dj_junction_xmsa_inds_, dj_junction_emission_);
-  FillHMMGermlineEmission(jgerm_xmsa_inds_, jgerm_emission_);
+  FillHMMGermlineEmission(jgerm_ggene_ranges_, jgerm_xmsa_inds_,
+                          jgerm_emission_);
 };
 
 
@@ -143,14 +147,22 @@ void NewPhyloData::BuildXmsa(
 };
 
 
-void NewPhyloData::FillHMMGermlineEmission(const Eigen::VectorXi& xmsa_inds_,
-                                           Eigen::VectorXd& emission_) {
-  emission_.setZero(xmsa_inds_.size());
+void NewPhyloData::FillHMMGermlineEmission(
+    const std::map<std::string, std::pair<int, int>>& ggene_ranges_,
+    const Eigen::VectorXi& xmsa_inds_, Eigen::RowVectorXd& emission_) {
+  emission_.setOnes(ggene_ranges_.size());
 
   // Loop through the "germline" states and cache the associated PhyloHMM
   // emission probabilities.
-  for (std::size_t i = 0; i < xmsa_inds_.size(); i++) {
-    emission_[i] = xmsa_emission_[xmsa_inds_[i]];
+  int i = 0;
+  for (auto it = ggene_ranges_.begin(); it != ggene_ranges_.end(); ++it, i++) {
+    // Obtain the start/end indices that map to the current "germline" state.
+    int range_start, range_end;
+    std::tie(range_start, range_end) = it->second;
+
+    for (int j = range_start; j < range_end; j++) {
+      emission_[i] *= xmsa_emission_[xmsa_inds_[j]];
+    }
   }
 };
 

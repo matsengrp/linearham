@@ -48,8 +48,9 @@ class NewPhyloData : public NewData {
   // Auxiliary functions
   void BuildXmsa(const std::map<std::pair<int, int>, int>& xmsa_ids);
 
-  void FillHMMGermlineEmission(const Eigen::VectorXi& xmsa_inds_,
-                               Eigen::VectorXd& emission_);
+  void FillHMMGermlineEmission(
+      const std::map<std::string, std::pair<int, int>>& ggene_ranges_,
+      const Eigen::VectorXi& xmsa_inds_, Eigen::RowVectorXd& emission_);
 
   void FillHMMJunctionEmission(const Eigen::MatrixXi& xmsa_inds_,
                                Eigen::MatrixXd& emission_);

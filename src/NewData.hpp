@@ -9,6 +9,7 @@
 #include <utility>
 #include <vector>
 
+#include <yaml-cpp/yaml.h>
 #include <Eigen/Dense>
 #include "Germline.hpp"
 #include "VDJGermline.hpp"
@@ -21,6 +22,9 @@ namespace linearham {
 
 class NewData {
  protected:
+  // Partis YAML file root
+  YAML::Node yaml_root_;
+
   // Smith-Waterman alignment information
   std::map<std::string, std::pair<int, int>> flexbounds_;
   std::map<std::string, int> relpos_;
@@ -73,11 +77,11 @@ class NewData {
   Eigen::MatrixXd dj_junction_jgerm_transition_;
 
   // HMM emission probability matrices
-  Eigen::VectorXd vgerm_emission_;
+  Eigen::RowVectorXd vgerm_emission_;
   Eigen::MatrixXd vd_junction_emission_;
-  Eigen::VectorXd dgerm_emission_;
+  Eigen::RowVectorXd dgerm_emission_;
   Eigen::MatrixXd dj_junction_emission_;
-  Eigen::VectorXd jgerm_emission_;
+  Eigen::RowVectorXd jgerm_emission_;
 
   // HMM forward probability matrices
   Eigen::RowVectorXd vgerm_forward_;
@@ -108,6 +112,7 @@ class NewData {
   NewData(const std::string& yaml_path, const std::string& dir_path);
   virtual ~NewData(){};
 
+  const YAML::Node& yaml_root() const { return yaml_root_; };
   const std::map<std::string, std::pair<int, int>>& flexbounds() const {
     return flexbounds_;
   };
@@ -198,15 +203,15 @@ class NewData {
   const Eigen::MatrixXd& dj_junction_jgerm_transition() const {
     return dj_junction_jgerm_transition_;
   };
-  const Eigen::VectorXd& vgerm_emission() const { return vgerm_emission_; };
+  const Eigen::RowVectorXd& vgerm_emission() const { return vgerm_emission_; };
   const Eigen::MatrixXd& vd_junction_emission() const {
     return vd_junction_emission_;
   };
-  const Eigen::VectorXd& dgerm_emission() const { return dgerm_emission_; };
+  const Eigen::RowVectorXd& dgerm_emission() const { return dgerm_emission_; };
   const Eigen::MatrixXd& dj_junction_emission() const {
     return dj_junction_emission_;
   };
-  const Eigen::VectorXd& jgerm_emission() const { return jgerm_emission_; };
+  const Eigen::RowVectorXd& jgerm_emission() const { return jgerm_emission_; };
   const Eigen::RowVectorXd& vgerm_forward() const { return vgerm_forward_; };
   const Eigen::MatrixXd& vd_junction_forward() const {
     return vd_junction_forward_;
@@ -312,17 +317,15 @@ void ComputeHMMGermlineForwardProbabilities(
     const Eigen::MatrixXd& junction_forward_,
     const std::vector<int>& junction_scaler_counts_,
     const Eigen::MatrixXd& junction_germ_transition_,
-    const std::vector<std::string>& germ_state_strs_,
-    const std::map<std::string, std::pair<int, int>>& germ_ggene_ranges_,
-    const Eigen::VectorXd& germ_emission_, Eigen::RowVectorXd& germ_forward_,
+    const Eigen::RowVectorXd& germ_emission_, Eigen::RowVectorXd& germ_forward_,
     int& germ_scaler_count_);
 
 int ScaleMatrix2(Eigen::Ref<Eigen::MatrixXd> m);
 
-Eigen::RowVectorXi ConvertSeqToInts2(const std::string& seq,
+Eigen::RowVectorXi ConvertSeqToInts2(const std::string& seq_str,
                                      const std::string& alphabet);
 
-std::string ConvertIntsToSeq2(const Eigen::RowVectorXi& seq_ints,
+std::string ConvertIntsToSeq2(const Eigen::RowVectorXi& seq,
                               const std::string& alphabet);
 
 

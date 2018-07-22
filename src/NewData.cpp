@@ -4,7 +4,6 @@
 #include <cstddef>
 #include <tuple>
 
-#include <yaml-cpp/yaml.h>
 #include "linalg.hpp"
 
 /// @file NewData.cpp
@@ -15,10 +14,10 @@ namespace linearham {
 
 NewData::NewData(const std::string& yaml_path, const std::string& dir_path) {
   // Parse the `flexbounds` and `relpos` YAML data.
-  YAML::Node root = YAML::LoadFile(yaml_path);
-  flexbounds_ = root["events"][0]["flexbounds"]
+  yaml_root_ = YAML::LoadFile(yaml_path);
+  flexbounds_ = yaml_root_["events"][0]["flexbounds"]
                     .as<std::map<std::string, std::pair<int, int>>>();
-  relpos_ = root["events"][0]["relpos"].as<std::map<std::string, int>>();
+  relpos_ = yaml_root_["events"][0]["relpos"].as<std::map<std::string, int>>();
 
   // Create the map holding (germline name, GermlineGene) pairs.
   ggenes_ = CreateGermlineGeneMap(dir_path);
@@ -133,13 +132,15 @@ void NewData::InitializeHMMTransition() {
 
 
 void NewData::InitializeHMMForwardProbabilities() {
-  vgerm_forward_.setConstant(vgerm_state_strs_.size(), -1);
+  vgerm_forward_.setZero(vgerm_state_strs_.size());
 
-  for (std::size_t i = 0; i < vgerm_state_strs_.size(); i++) {
-    // Obtain the start/end indices that map to the current "germline" state.
-    const std::string& gname = vgerm_state_strs_[i];
+  int i = 0;
+  for (auto it = vgerm_ggene_ranges_.begin(); it != vgerm_ggene_ranges_.end();
+       ++it, i++) {
+    // Obtain the (key, value) pairs from the "germline" state index map.
+    const std::string& gname = it->first;
     int range_start, range_end;
-    std::tie(range_start, range_end) = vgerm_ggene_ranges_.at(gname);
+    std::tie(range_start, range_end) = it->second;
 
     // Extract the "germline" state information.
     const GermlineGene& ggene = ggenes_.at(gname);
@@ -151,8 +152,7 @@ void NewData::InitializeHMMForwardProbabilities() {
         ggene.germ_ptr->next_transition()
             .segment(germ_ind_start, range_end - range_start - 1)
             .prod();
-    vgerm_forward_[i] *=
-        vgerm_emission_.segment(range_start, range_end - range_start).prod();
+    vgerm_forward_[i] *= vgerm_emission_[i];
   }
 
   // Scale the forward probabilities.
@@ -171,16 +171,16 @@ double NewData::LogLikelihood() {
       vd_junction_scaler_counts_);
   ComputeHMMGermlineForwardProbabilities(
       vd_junction_forward_, vd_junction_scaler_counts_,
-      vd_junction_dgerm_transition_, dgerm_state_strs_, dgerm_ggene_ranges_,
-      dgerm_emission_, dgerm_forward_, dgerm_scaler_count_);
+      vd_junction_dgerm_transition_, dgerm_emission_, dgerm_forward_,
+      dgerm_scaler_count_);
   ComputeHMMJunctionForwardProbabilities(
       dgerm_forward_, dgerm_scaler_count_, dgerm_dj_junction_transition_,
       dj_junction_transition_, dj_junction_emission_, dj_junction_forward_,
       dj_junction_scaler_counts_);
   ComputeHMMGermlineForwardProbabilities(
       dj_junction_forward_, dj_junction_scaler_counts_,
-      dj_junction_jgerm_transition_, jgerm_state_strs_, jgerm_ggene_ranges_,
-      jgerm_emission_, jgerm_forward_, jgerm_scaler_count_);
+      dj_junction_jgerm_transition_, jgerm_emission_, jgerm_forward_,
+      jgerm_scaler_count_);
 
   return std::log(jgerm_forward_.sum()) -
          jgerm_scaler_count_ * std::log(SCALE_FACTOR2);
@@ -582,8 +582,8 @@ void ComputeHMMJunctionForwardProbabilities(
     const Eigen::MatrixXd& junction_emission_,
     Eigen::MatrixXd& junction_forward_,
     std::vector<int>& junction_scaler_counts_) {
-  junction_forward_.setConstant(junction_emission_.rows(),
-                                junction_emission_.cols(), -1);
+  junction_forward_.setZero(junction_emission_.rows(),
+                            junction_emission_.cols());
   junction_scaler_counts_.resize(junction_emission_.rows(), -1);
 
   for (std::size_t i = 0; i < junction_emission_.rows(); i++) {
@@ -614,22 +614,11 @@ void ComputeHMMGermlineForwardProbabilities(
     const Eigen::MatrixXd& junction_forward_,
     const std::vector<int>& junction_scaler_counts_,
     const Eigen::MatrixXd& junction_germ_transition_,
-    const std::vector<std::string>& germ_state_strs_,
-    const std::map<std::string, std::pair<int, int>>& germ_ggene_ranges_,
-    const Eigen::VectorXd& germ_emission_, Eigen::RowVectorXd& germ_forward_,
+    const Eigen::RowVectorXd& germ_emission_, Eigen::RowVectorXd& germ_forward_,
     int& germ_scaler_count_) {
+  // Compute the forward probabilities for the "germline" states.
   germ_forward_ = junction_forward_.bottomRows(1) * junction_germ_transition_;
-
-  for (std::size_t i = 0; i < germ_state_strs_.size(); i++) {
-    // Obtain the start/end indices that map to the current "germline" state.
-    const std::string& gname = germ_state_strs_[i];
-    int range_start, range_end;
-    std::tie(range_start, range_end) = germ_ggene_ranges_.at(gname);
-
-    // Compute the forward probability for the current "germline" state.
-    germ_forward_[i] *=
-        germ_emission_.segment(range_start, range_end - range_start).prod();
-  }
+  germ_forward_.array() *= germ_emission_.array();
 
   // Scale the forward probabilities.
   germ_scaler_count_ =
@@ -650,29 +639,29 @@ int ScaleMatrix2(Eigen::Ref<Eigen::MatrixXd> m) {
 };
 
 
-Eigen::RowVectorXi ConvertSeqToInts2(const std::string& seq,
+Eigen::RowVectorXi ConvertSeqToInts2(const std::string& seq_str,
                                      const std::string& alphabet) {
-  Eigen::RowVectorXi seq_ints(seq.size());
+  Eigen::RowVectorXi seq(seq_str.size());
 
-  for (std::size_t i = 0; i < seq.size(); i++) {
-    auto find_it = std::find(alphabet.begin(), alphabet.end(), seq[i]);
+  for (std::size_t i = 0; i < seq_str.size(); i++) {
+    auto find_it = std::find(alphabet.begin(), alphabet.end(), seq_str[i]);
     assert(find_it != alphabet.end());
-    seq_ints[i] = find_it - alphabet.begin();
-  }
-
-  return seq_ints;
-};
-
-
-std::string ConvertIntsToSeq2(const Eigen::RowVectorXi& seq_ints,
-                              const std::string& alphabet) {
-  std::string seq(seq_ints.size(), ' ');
-
-  for (std::size_t i = 0; i < seq_ints.size(); i++) {
-    seq[i] = alphabet.at(seq_ints[i]);
+    seq[i] = find_it - alphabet.begin();
   }
 
   return seq;
+};
+
+
+std::string ConvertIntsToSeq2(const Eigen::RowVectorXi& seq,
+                              const std::string& alphabet) {
+  std::string seq_str(seq.size(), ' ');
+
+  for (std::size_t i = 0; i < seq.size(); i++) {
+    seq_str[i] = alphabet.at(seq[i]);
+  }
+
+  return seq_str;
 };
 
 
