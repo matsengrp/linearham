@@ -45,7 +45,7 @@ NTInsertion::NTInsertion(const YAML::Node& root) {
   // Initialize the NTInsertion data structures.
   n_landing_in_.setZero(alphabet.size());
   n_landing_out_.setZero(alphabet.size(), gcount);
-  n_emission_matrix_.setZero(alphabet.size(), alphabet.size());
+  n_emission_.setZero(alphabet.size(), alphabet.size());
   n_transition_.setZero(alphabet.size(), alphabet.size());
 
   // Parse the init state.
@@ -97,7 +97,7 @@ NTInsertion::NTInsertion(const YAML::Node& root) {
 
     for (std::size_t j = 0; j < state_names.size(); j++) {
       int emit_base = GetAlphabetIndex(alphabet, state_names[j][0]);
-      n_emission_matrix_(emit_base, nbase) = probs[j];
+      n_emission_(emit_base, nbase) = probs[j];
     }
   }
 };

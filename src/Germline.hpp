@@ -31,10 +31,10 @@ class Germline {
   std::string name_;      // The germline gene name.
 
   // Germline information for SimpleData
-  Eigen::MatrixXd emission_matrix_;  // A matrix of HMM emission probabilities.
-                                     // The rows denote the different emitted
-                                     // bases and the columns denote the
-                                     // different germline positions.
+  Eigen::MatrixXd emission_;  // A matrix of HMM emission probabilities.
+                              // The rows denote the different emitted
+                              // bases and the columns denote the
+                              // different germline positions.
 
   // Germline information for PhyloData
   Eigen::VectorXi bases_;  // A vector of germline bases.
@@ -50,7 +50,7 @@ class Germline {
   double gene_prob() const { return gene_prob_; };
   const std::string& alphabet() const { return alphabet_; };
   const std::string& name() const { return name_; };
-  const Eigen::MatrixXd& emission_matrix() const { return emission_matrix_; };
+  const Eigen::MatrixXd& emission() const { return emission_; };
   const Eigen::VectorXi& bases() const { return bases_; };
   const Eigen::VectorXd& rates() const { return rates_; };
   int length() const { return transition_.cols(); };

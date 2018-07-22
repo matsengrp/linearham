@@ -28,10 +28,10 @@ class NTInsertion {
   Eigen::MatrixXd n_transition_;   // The NTI transition probability matrix.
 
   // NTInsertion information for SimpleData
-  Eigen::MatrixXd n_emission_matrix_;  // The NTI emission probability matrix.
-                                       // The rows denote the different emitted
-                                       // bases and the columns denote the
-                                       // different NTI bases.
+  Eigen::MatrixXd n_emission_;  // The NTI emission probability matrix.
+                                // The rows denote the different emitted
+                                // bases and the columns denote the
+                                // different NTI bases.
 
  public:
   NTInsertion(const YAML::Node& root);
@@ -39,9 +39,7 @@ class NTInsertion {
   const Eigen::VectorXd& n_landing_in() const { return n_landing_in_; };
   const Eigen::MatrixXd& n_landing_out() const { return n_landing_out_; };
   const Eigen::MatrixXd& n_transition() const { return n_transition_; };
-  const Eigen::MatrixXd& n_emission_matrix() const {
-    return n_emission_matrix_;
-  };
+  const Eigen::MatrixXd& n_emission() const { return n_emission_; };
 };
 
 

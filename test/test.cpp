@@ -108,12 +108,12 @@ TEST_CASE("VectorByIndices", "[linalg]") {
 
 
 TEST_CASE("BinaryMax", "[linalg]") {
-  Eigen::MatrixXd left_matrix(2,3);
-  left_matrix <<
+  Eigen::MatrixXd left(2,3);
+  left <<
   0.50, 0.71, 0.13,
   0.29, 0.31, 0.37;
-  Eigen::MatrixXd right_matrix(3,2);
-  right_matrix <<
+  Eigen::MatrixXd right(3,2);
+  right <<
   0.30, 0.37,
   0.29, 0.41,
   0.11, 0.97;
@@ -129,7 +129,7 @@ TEST_CASE("BinaryMax", "[linalg]") {
   correct_C_idx <<
   1,1,
   1,2;
-  BinaryMax(left_matrix, right_matrix, C, C_idx);
+  BinaryMax(left, right, C, C_idx);
   REQUIRE(C == correct_C);
   REQUIRE(C_idx == correct_C_idx);
 }
@@ -170,8 +170,8 @@ TEST_CASE("Germline", "[germline]") {
   double V_gene_prob = 0.07;
   std::string V_alphabet = "ACGT";
   std::string V_name = "IGHV_ex*01";
-  Eigen::MatrixXd V_emission_matrix(4,5);
-  V_emission_matrix <<
+  Eigen::MatrixXd V_emission(4,5);
+  V_emission <<
   0.79, 0.1, 0.01, 0.55, 0.125,
   0.07, 0.1, 0.01, 0.15, 0.625,
   0.07, 0.1, 0.97, 0.15, 0.125,
@@ -190,7 +190,7 @@ TEST_CASE("Germline", "[germline]") {
   REQUIRE(V_Germline.gene_prob() == V_gene_prob);
   REQUIRE(V_Germline.alphabet() == V_alphabet);
   REQUIRE(V_Germline.name() == V_name);
-  REQUIRE(V_Germline.emission_matrix() == V_emission_matrix);
+  REQUIRE(V_Germline.emission() == V_emission);
   REQUIRE(V_Germline.bases() == V_bases);
   REQUIRE(V_Germline.rates() == V_rates);
   REQUIRE(V_Germline.length() == V_length);
@@ -210,8 +210,8 @@ TEST_CASE("Germline", "[germline]") {
   double D_gene_prob = 0.035;
   std::string D_alphabet = "ACGT";
   std::string D_name = "IGHD_ex*01";
-  Eigen::MatrixXd D_emission_matrix(4,5);
-  D_emission_matrix <<
+  Eigen::MatrixXd D_emission(4,5);
+  D_emission <<
   0.12, 0.07, 0.05, 0.55, 0.01,
   0.12, 0.07, 0.05, 0.15, 0.97,
   0.64, 0.79, 0.05, 0.15, 0.01,
@@ -230,7 +230,7 @@ TEST_CASE("Germline", "[germline]") {
   REQUIRE(D_Germline.gene_prob() == D_gene_prob);
   REQUIRE(D_Germline.alphabet() == D_alphabet);
   REQUIRE(D_Germline.name() == D_name);
-  REQUIRE(D_Germline.emission_matrix() == D_emission_matrix);
+  REQUIRE(D_Germline.emission() == D_emission);
   REQUIRE(D_Germline.bases() == D_bases);
   REQUIRE(D_Germline.rates() == D_rates);
   REQUIRE(D_Germline.length() == D_length);
@@ -250,8 +250,8 @@ TEST_CASE("Germline", "[germline]") {
   double J_gene_prob = 0.015;
   std::string J_alphabet = "ACGT";
   std::string J_name = "IGHJ_ex*01";
-  Eigen::MatrixXd J_emission_matrix(4,5);
-  J_emission_matrix <<
+  Eigen::MatrixXd J_emission(4,5);
+  J_emission <<
   0.91, 0.1, 0.06, 0.01, 0.08,
   0.03, 0.1, 0.06, 0.97, 0.08,
   0.03, 0.1, 0.82, 0.01, 0.76,
@@ -270,7 +270,7 @@ TEST_CASE("Germline", "[germline]") {
   REQUIRE(J_Germline.gene_prob() == J_gene_prob);
   REQUIRE(J_Germline.alphabet() == J_alphabet);
   REQUIRE(J_Germline.name() == J_name);
-  REQUIRE(J_Germline.emission_matrix() == J_emission_matrix);
+  REQUIRE(J_Germline.emission() == J_emission);
   REQUIRE(J_Germline.bases() == J_bases);
   REQUIRE(J_Germline.rates() == J_rates);
   REQUIRE(J_Germline.length() == J_length);
@@ -300,8 +300,8 @@ TEST_CASE("NTInsertion", "[ntinsertion]") {
   0.075, 0.175, 0.05, 0.025,
   0.075, 0.175, 0.05, 0.025,
   0.075, 0.175, 0.05, 0.025;
-  Eigen::MatrixXd D_n_emission_matrix(4,4);
-  D_n_emission_matrix <<
+  Eigen::MatrixXd D_n_emission(4,4);
+  D_n_emission <<
   0.7, 0.05, 0.1, 0.1,
   0.1, 0.75, 0.1, 0.1,
   0.1, 0.1,  0.7, 0.,
@@ -312,7 +312,7 @@ TEST_CASE("NTInsertion", "[ntinsertion]") {
   REQUIRE(D_NTInsertion.n_landing_in() == D_n_landing_in);
   REQUIRE(D_NTInsertion.n_landing_out() == D_n_landing_out);
   REQUIRE(D_NTInsertion.n_transition() == D_n_transition);
-  REQUIRE(D_NTInsertion.n_emission_matrix() == D_n_emission_matrix);
+  REQUIRE(D_NTInsertion.n_emission() == D_n_emission);
 
   // J tests
   Eigen::VectorXd J_n_landing_in(4);
@@ -329,8 +329,8 @@ TEST_CASE("NTInsertion", "[ntinsertion]") {
   0.05, 0.15, 0.075, 0.075,
   0.05, 0.15, 0.075, 0.075,
   0.05, 0.15, 0.075, 0.075;
-  Eigen::MatrixXd J_n_emission_matrix(4,4);
-  J_n_emission_matrix <<
+  Eigen::MatrixXd J_n_emission(4,4);
+  J_n_emission <<
   0.94, 0.02, 0.02, 0.02,
   0.02, 0.94, 0.02, 0.02,
   0.02, 0.02, 0.94, 0.02,
@@ -341,7 +341,7 @@ TEST_CASE("NTInsertion", "[ntinsertion]") {
   REQUIRE(J_NTInsertion.n_landing_in() == J_n_landing_in);
   REQUIRE(J_NTInsertion.n_landing_out() == J_n_landing_out);
   REQUIRE(J_NTInsertion.n_transition() == J_n_transition);
-  REQUIRE(J_NTInsertion.n_emission_matrix() == J_n_emission_matrix);
+  REQUIRE(J_NTInsertion.n_emission() == J_n_emission);
 }
 
 

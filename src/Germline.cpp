@@ -45,7 +45,7 @@ Germline::Germline(const YAML::Node& root) {
   // Initialize the Germline data structures.
   landing_in_.setZero(gcount);
   landing_out_.setZero(gcount);
-  emission_matrix_.setZero(alphabet_.size(), gcount);
+  emission_.setZero(alphabet_.size(), gcount);
   bases_.setZero(gcount);
   rates_.setZero(gcount);
   next_transition_.setZero(gcount - 1);
@@ -105,7 +105,7 @@ Germline::Germline(const YAML::Node& root) {
 
     for (std::size_t j = 0; j < state_names.size(); j++) {
       int emit_base = GetAlphabetIndex(alphabet_, state_names[j][0]);
-      emission_matrix_(emit_base, gindex) = probs[j];
+      emission_(emit_base, gindex) = probs[j];
     }
 
     // Parse the germline base and rate.
@@ -119,7 +119,7 @@ Germline::Germline(const YAML::Node& root) {
   // Build the germline transition probability matrix.
   transition_ = BuildTransition(next_transition_);
   assert(transition_.rows() == transition_.cols());
-  assert(transition_.cols() == emission_matrix_.cols());
+  assert(transition_.cols() == emission_.cols());
 };
 
 
