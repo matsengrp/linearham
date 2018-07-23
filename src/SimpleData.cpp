@@ -71,8 +71,8 @@ Eigen::VectorXd SimpleData::GermlineEmissionVector(
   // Compute the emission probability vector.
   Eigen::VectorXd emission(match_end - match_start);
   VectorByIndices(
-      germ_ptr->emission_matrix().block(0, match_start - relpos,
-                                        germ_ptr->emission_matrix().rows(),
+      germ_ptr->emission().block(0, match_start - relpos,
+                                        germ_ptr->emission().rows(),
                                         match_end - match_start),
       seq_.segment(match_start, match_end - match_start), emission);
 
@@ -93,7 +93,7 @@ Eigen::VectorXd SimpleData::GermlineEmissionVector(
 /// position `site_pos` from all possible germline bases.
 Eigen::RowVectorXd SimpleData::NTIEmissionVector(NTInsertionPtr nti_ptr,
                                                  int site_pos) const {
-  return nti_ptr->n_emission_matrix().row(seq_[site_pos]);
+  return nti_ptr->n_emission().row(seq_[site_pos]);
 };
 
 
