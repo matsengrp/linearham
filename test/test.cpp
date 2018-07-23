@@ -18,6 +18,7 @@
 #include "SimpleData.hpp"
 #include "PhyloData.hpp"
 #include "NewData.hpp"
+#include "NewSimpleData.hpp"
 #include "NewPhyloData.hpp"
 
 
@@ -611,13 +612,13 @@ TEST_CASE("SimpleData", "[simpledata]") {
       {{"IGHJ_ex*01", "j_l"}, {11, 13, 1, 0, 0, 0}}};
   Eigen::VectorXi VDJ_seq(13);
   VDJ_seq << 0, 1, 0, 2, 3, 0, 1, 1, 1, 3, 2, 3, 3;
-  std::pair<int, int> VDJ_n_read_counts = {3,2};
+  // std::pair<int, int> VDJ_n_read_counts = {3,2};
 
   REQUIRE(ex_simple_data_ptrs[0]->flexbounds() == VDJ_flexbounds);
   REQUIRE(ex_simple_data_ptrs[0]->relpos() == VDJ_relpos);
   REQUIRE(ex_simple_data_ptrs[0]->match_indices() == VDJ_match_indices);
   REQUIRE(ex_simple_data_ptrs[0]->seq() == VDJ_seq);
-  REQUIRE(ex_simple_data_ptrs[0]->n_read_counts() == VDJ_n_read_counts);
+  // REQUIRE(ex_simple_data_ptrs[0]->n_read_counts() == VDJ_n_read_counts);
   REQUIRE(ex_simple_data_ptrs[0]->length() == VDJ_seq.size());
 
   Eigen::MatrixXd V_marginal(1,3);
@@ -677,6 +678,331 @@ TEST_CASE("SimpleData", "[simpledata]") {
   // for (int i = 0; i < viterbi_logprobs.size(); i++) {
   //   REQUIRE(std::fabs(bcrham_simple_data_ptrs[i]->vdj_pile()[0]->FinalViterbiLogProb() - viterbi_logprobs[i]) <= 1e-3);
   // }
+}
+
+
+// NewSimpleData tests
+
+TEST_CASE("NewSimpleData", "[newsimpledata]") {
+  // Test the SimpleData class using the example HMM files.
+  std::string yaml_path = "data/SimpleData_ex/hmm_input.yaml";
+  std::string dir_path = "data/SimpleData_ex/hmm_params";
+  NewSimpleDataPtr new_simple_data_ptr =
+      std::make_shared<NewSimpleData>(yaml_path, dir_path);
+
+  // For a diagram of the S-W alignment, see
+  // https://github.com/matsengrp/linearham/issues/44#issue-336348821.
+
+  std::map<std::string, std::pair<int, int>> VDJ_flexbounds = {
+      {"v_l", {0, 2}},  {"v_r", {4, 6}},   {"d_l", {7, 8}},
+      {"d_r", {9, 10}}, {"j_l", {11, 12}}, {"j_r", {13, 13}}};
+  std::map<std::string, int> VDJ_relpos = {
+      {"IGHV_ex*01", 1}, {"IGHD_ex*01", 5}, {"IGHJ_ex*01", 10}};
+  std::vector<std::string> VDJ_vgerm_state_strs = {"IGHV_ex*01"};
+  std::map<std::string, std::pair<int, int>> VDJ_vgerm_ggene_ranges =
+      {{"IGHV_ex*01", {0, 3}}};
+  std::vector<int> VDJ_vgerm_naive_bases = {0, 3, 2};
+  std::vector<int> VDJ_vgerm_germ_inds = {0, 1, 2};
+  std::vector<int> VDJ_vgerm_site_inds = {1, 2, 3};
+  std::vector<std::string> VDJ_vd_junction_state_strs =
+      {"IGHD_ex*01:N_A", "IGHD_ex*01:N_C", "IGHD_ex*01:N_G", "IGHD_ex*01:N_T",
+       "IGHD_ex*01:0", "IGHD_ex*01:1", "IGHD_ex*01:2", "IGHV_ex*01:3", "IGHV_ex*01:4"};
+  std::map<std::string, std::pair<int, int>> VDJ_vd_junction_ggene_ranges =
+      {{"IGHD_ex*01", {0, 7}}, {"IGHV_ex*01", {7, 9}}};
+  std::vector<int> VDJ_vd_junction_naive_bases = {0, 1, 2, 3, 2, 2, 3, 0, 1};
+  std::vector<int> VDJ_vd_junction_germ_inds = {-1, -1, -1, -1, 0, 1, 2, 3, 4};
+  std::vector<int> VDJ_vd_junction_site_inds = {-1, -1, -1, -1, 5, 6, 7, 4, 5};
+  std::vector<std::string> VDJ_dgerm_state_strs = {"IGHD_ex*01"};
+  std::map<std::string, std::pair<int, int>> VDJ_dgerm_ggene_ranges =
+      {{"IGHD_ex*01", {0, 1}}};
+  std::vector<int> VDJ_dgerm_naive_bases = {0};
+  std::vector<int> VDJ_dgerm_germ_inds = {3};
+  std::vector<int> VDJ_dgerm_site_inds = {8};
+  std::vector<std::string> VDJ_dj_junction_state_strs =
+      {"IGHD_ex*01:4", "IGHJ_ex*01:N_A", "IGHJ_ex*01:N_C", "IGHJ_ex*01:N_G",
+       "IGHJ_ex*01:N_T", "IGHJ_ex*01:0", "IGHJ_ex*01:1"};
+  std::map<std::string, std::pair<int, int>> VDJ_dj_junction_ggene_ranges =
+      {{"IGHD_ex*01", {0, 1}}, {"IGHJ_ex*01", {1, 7}}};
+  std::vector<int> VDJ_dj_junction_naive_bases = {1, 0, 1, 2, 3, 0, 3};
+  std::vector<int> VDJ_dj_junction_germ_inds = {4, -1, -1, -1, -1, 0, 1};
+  std::vector<int> VDJ_dj_junction_site_inds = {9, -1, -1, -1, -1, 10, 11};
+  std::vector<std::string> VDJ_jgerm_state_strs = {"IGHJ_ex*01"};
+  std::map<std::string, std::pair<int, int>> VDJ_jgerm_ggene_ranges =
+      {{"IGHJ_ex*01", {0, 1}}};
+  std::vector<int> VDJ_jgerm_naive_bases = {2};
+  std::vector<int> VDJ_jgerm_germ_inds = {2};
+  std::vector<int> VDJ_jgerm_site_inds = {12};
+  Eigen::MatrixXd VDJ_vgerm_vd_junction_transition(1, 9);
+  VDJ_vgerm_vd_junction_transition <<
+  0.035*0.2*0.1, 0.035*0.2*0.2, 0.035*0.2*0.1, 0.035*0.2*0.05, 0, 0, 0, 0.8, 0;
+  Eigen::MatrixXd VDJ_vd_junction_transition(9, 9);
+  VDJ_vd_junction_transition <<
+          0.075,         0.175,          0.05,          0.025,          0.45,       0.125,  0.1, 0,   0,
+          0.075,         0.175,          0.05,          0.025,          0.45,       0.125,  0.1, 0,   0,
+          0.075,         0.175,          0.05,          0.025,          0.45,       0.125,  0.1, 0,   0,
+          0.075,         0.175,          0.05,          0.025,          0.45,       0.125,  0.1, 0,   0,
+              0,             0,             0,              0,             0,        0.98,    0, 0,   0,
+              0,             0,             0,              0,             0,           0, 0.95, 0,   0,
+              0,             0,             0,              0,             0,           0,    0, 0,   0,
+  0.035*0.5*0.1, 0.035*0.5*0.2, 0.035*0.5*0.1, 0.035*0.5*0.05, 0.035*0.5*0.4,           0,    0, 0, 0.5,
+    0.035*1*0.1,   0.035*1*0.2,   0.035*1*0.1,   0.035*1*0.05,             0, 0.035*1*0.1,    0, 0,   0;
+  Eigen::MatrixXd VDJ_vd_junction_dgerm_transition(9, 1);
+  VDJ_vd_junction_dgerm_transition <<
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+  0.6,
+    0,
+    0;
+  Eigen::MatrixXd VDJ_dgerm_dj_junction_transition(1, 7);
+  VDJ_dgerm_dj_junction_transition <<
+  0.35, 0.015*0.65*0.1, 0.015*0.65*0.2, 0.015*0.65*0.2, 0.015*0.65*0.2, 0, 0;
+  Eigen::MatrixXd VDJ_dj_junction_transition(7, 7);
+  VDJ_dj_junction_transition <<
+  0, 0.015*1*0.1, 0.015*1*0.2, 0.015*1*0.2, 0.015*1*0.2, 0.015*1*0.25,    0,
+  0,        0.05,        0.15,       0.075,       0.075,          0.4, 0.25,
+  0,        0.05,        0.15,       0.075,       0.075,          0.4, 0.25,
+  0,        0.05,        0.15,       0.075,       0.075,          0.4, 0.25,
+  0,        0.05,        0.15,       0.075,       0.075,          0.4, 0.25,
+  0,           0,           0,           0,           0,            0,    1,
+  0,           0,           0,           0,           0,            0,    0;
+  Eigen::MatrixXd VDJ_dj_junction_jgerm_transition(7, 1);
+  VDJ_dj_junction_jgerm_transition <<
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  1;
+  int VDJ_vgerm_scaler_count = 0;
+  std::vector<int> VDJ_vd_junction_scaler_counts = {0, 0, 0, 0};
+  int VDJ_dgerm_scaler_count = 0;
+  std::vector<int> VDJ_dj_junction_scaler_counts = {0, 0, 0};
+  int VDJ_jgerm_scaler_count = 0;
+
+  REQUIRE(new_simple_data_ptr->flexbounds() == VDJ_flexbounds);
+  REQUIRE(new_simple_data_ptr->relpos() == VDJ_relpos);
+  REQUIRE(new_simple_data_ptr->vgerm_state_strs() == VDJ_vgerm_state_strs);
+  REQUIRE(new_simple_data_ptr->vgerm_ggene_ranges() == VDJ_vgerm_ggene_ranges);
+  REQUIRE(new_simple_data_ptr->vgerm_naive_bases() == VDJ_vgerm_naive_bases);
+  REQUIRE(new_simple_data_ptr->vgerm_germ_inds() == VDJ_vgerm_germ_inds);
+  REQUIRE(new_simple_data_ptr->vgerm_site_inds() == VDJ_vgerm_site_inds);
+  REQUIRE(new_simple_data_ptr->vd_junction_state_strs() == VDJ_vd_junction_state_strs);
+  REQUIRE(new_simple_data_ptr->vd_junction_ggene_ranges() == VDJ_vd_junction_ggene_ranges);
+  REQUIRE(new_simple_data_ptr->vd_junction_naive_bases() == VDJ_vd_junction_naive_bases);
+  REQUIRE(new_simple_data_ptr->vd_junction_germ_inds() == VDJ_vd_junction_germ_inds);
+  REQUIRE(new_simple_data_ptr->vd_junction_site_inds() == VDJ_vd_junction_site_inds);
+  REQUIRE(new_simple_data_ptr->dgerm_state_strs() == VDJ_dgerm_state_strs);
+  REQUIRE(new_simple_data_ptr->dgerm_ggene_ranges() == VDJ_dgerm_ggene_ranges);
+  REQUIRE(new_simple_data_ptr->dgerm_naive_bases() == VDJ_dgerm_naive_bases);
+  REQUIRE(new_simple_data_ptr->dgerm_germ_inds() == VDJ_dgerm_germ_inds);
+  REQUIRE(new_simple_data_ptr->dgerm_site_inds() == VDJ_dgerm_site_inds);
+  REQUIRE(new_simple_data_ptr->dj_junction_state_strs() == VDJ_dj_junction_state_strs);
+  REQUIRE(new_simple_data_ptr->dj_junction_ggene_ranges() == VDJ_dj_junction_ggene_ranges);
+  REQUIRE(new_simple_data_ptr->dj_junction_naive_bases() == VDJ_dj_junction_naive_bases);
+  REQUIRE(new_simple_data_ptr->dj_junction_germ_inds() == VDJ_dj_junction_germ_inds);
+  REQUIRE(new_simple_data_ptr->dj_junction_site_inds() == VDJ_dj_junction_site_inds);
+  REQUIRE(new_simple_data_ptr->jgerm_state_strs() == VDJ_jgerm_state_strs);
+  REQUIRE(new_simple_data_ptr->jgerm_ggene_ranges() == VDJ_jgerm_ggene_ranges);
+  REQUIRE(new_simple_data_ptr->jgerm_naive_bases() == VDJ_jgerm_naive_bases);
+  REQUIRE(new_simple_data_ptr->jgerm_germ_inds() == VDJ_jgerm_germ_inds);
+  REQUIRE(new_simple_data_ptr->jgerm_site_inds() == VDJ_jgerm_site_inds);
+  REQUIRE(new_simple_data_ptr->vgerm_vd_junction_transition() == VDJ_vgerm_vd_junction_transition);
+  REQUIRE(new_simple_data_ptr->vd_junction_transition() == VDJ_vd_junction_transition);
+  REQUIRE(new_simple_data_ptr->vd_junction_dgerm_transition() == VDJ_vd_junction_dgerm_transition);
+  REQUIRE(new_simple_data_ptr->dgerm_dj_junction_transition() == VDJ_dgerm_dj_junction_transition);
+  REQUIRE(new_simple_data_ptr->dj_junction_transition() == VDJ_dj_junction_transition);
+  REQUIRE(new_simple_data_ptr->dj_junction_jgerm_transition() == VDJ_dj_junction_jgerm_transition);
+
+  Eigen::RowVectorXi VDJ_seq(13);
+  VDJ_seq << 0, 1, 0, 2, 3, 0, 1, 1, 1, 3, 2, 3, 3;
+  std::string VDJ_seq_str = "ACAGTACCCTGTT";
+
+  REQUIRE(new_simple_data_ptr->seq() == VDJ_seq);
+  REQUIRE(new_simple_data_ptr->seq_str() == VDJ_seq_str);
+
+  REQUIRE(new_simple_data_ptr->LogLikelihood() == Approx(-36.7033));
+  REQUIRE(new_simple_data_ptr->vgerm_scaler_count() == VDJ_vgerm_scaler_count);
+  REQUIRE(new_simple_data_ptr->vd_junction_scaler_counts() == VDJ_vd_junction_scaler_counts);
+  REQUIRE(new_simple_data_ptr->dgerm_scaler_count() == VDJ_dgerm_scaler_count);
+  REQUIRE(new_simple_data_ptr->dj_junction_scaler_counts() == VDJ_dj_junction_scaler_counts);
+  REQUIRE(new_simple_data_ptr->jgerm_scaler_count() == VDJ_jgerm_scaler_count);
+
+  // For clarity, we run an additional NewSimpleData test.
+  yaml_path = "data/SimpleData_ex/hmm_input_extra.yaml";
+  SimpleDataPtr simple_data_ptr = ReadSimpleData(yaml_path, dir_path)[0];
+  new_simple_data_ptr = std::make_shared<NewSimpleData>(yaml_path, dir_path);
+
+  // For a diagram of the S-W alignment, see
+  // https://github.com/matsengrp/linearham/issues/44#issuecomment-406625914.
+
+  VDJ_flexbounds = {{"v_l", {0, 2}},  {"v_r", {4, 6}},   {"d_l", {4, 6}},
+                    {"d_r", {8, 10}}, {"j_l", {8, 10}}, {"j_r", {13, 13}}};
+  VDJ_relpos = {{"IGHV_ex*01", 1}, {"IGHD_ex*01", 5}, {"IGHJ_ex*01", 10},
+                {"IGHV_ex*99", 1}, {"IGHD_ex*99", 3}, {"IGHJ_ex*99", 7}};
+  VDJ_vgerm_state_strs = {"IGHV_ex*01", "IGHV_ex*99"};
+  VDJ_vgerm_ggene_ranges = {{"IGHV_ex*01", {0, 3}}, {"IGHV_ex*99", {3, 6}}};
+  VDJ_vgerm_naive_bases = {0, 3, 2, 1, 0, 2};
+  VDJ_vgerm_germ_inds = {0, 1, 2, 0, 1, 2};
+  VDJ_vgerm_site_inds = {1, 2, 3, 1, 2, 3};
+  VDJ_vd_junction_state_strs =
+      {"IGHD_ex*01:N_A", "IGHD_ex*01:N_C", "IGHD_ex*01:N_G", "IGHD_ex*01:N_T",
+       "IGHD_ex*01:0", "IGHD_ex*99:N_A", "IGHD_ex*99:N_C", "IGHD_ex*99:N_G",
+       "IGHD_ex*99:N_T", "IGHD_ex*99:1", "IGHD_ex*99:2", "IGHV_ex*01:3",
+       "IGHV_ex*01:4", "IGHV_ex*99:3", "IGHV_ex*99:4"};
+  VDJ_vd_junction_ggene_ranges = {{"IGHD_ex*01", {0, 5}}, {"IGHD_ex*99", {5, 11}},
+                                  {"IGHV_ex*01", {11, 13}}, {"IGHV_ex*99", {13, 15}}};
+  VDJ_vd_junction_naive_bases = {0, 1, 2, 3, 2, 0, 1, 2, 3, 2, 3, 0, 1, 2, 0};
+  VDJ_vd_junction_germ_inds = {-1, -1, -1, -1, 0, -1, -1, -1, -1, 1, 2, 3, 4, 3, 4};
+  VDJ_vd_junction_site_inds = {-1, -1, -1, -1, 5, -1, -1, -1, -1, 4, 5, 4, 5, 4, 5};
+  VDJ_dgerm_state_strs = {"IGHD_ex*01", "IGHD_ex*99"};
+  VDJ_dgerm_ggene_ranges = {{"IGHD_ex*01", {0, 2}}, {"IGHD_ex*99", {2, 4}}};
+  VDJ_dgerm_naive_bases = {2, 3, 1, 0};
+  VDJ_dgerm_germ_inds = {1, 2, 3, 4};
+  VDJ_dgerm_site_inds = {6, 7, 6, 7};
+  VDJ_dj_junction_state_strs =
+      {"IGHD_ex*01:3", "IGHD_ex*01:4", "IGHD_ex*99:5", "IGHD_ex*99:6",
+       "IGHJ_ex*01:N_A", "IGHJ_ex*01:N_C", "IGHJ_ex*01:N_G", "IGHJ_ex*01:N_T",
+       "IGHJ_ex*99:N_A", "IGHJ_ex*99:N_C", "IGHJ_ex*99:N_G", "IGHJ_ex*99:N_T",
+       "IGHJ_ex*99:1", "IGHJ_ex*99:2"};
+  VDJ_dj_junction_ggene_ranges = {{"IGHD_ex*01", {0, 2}}, {"IGHD_ex*99", {2, 4}},
+                                  {"IGHJ_ex*01", {4, 8}}, {"IGHJ_ex*99", {8, 14}}};
+  VDJ_dj_junction_naive_bases = {0, 1, 0, 1, 0, 1, 2, 3, 0, 1, 2, 3, 3, 2};
+  VDJ_dj_junction_germ_inds = {3, 4, 5, 6, -1, -1, -1, -1, -1, -1, -1, -1, 1, 2};
+  VDJ_dj_junction_site_inds = {8, 9, 8, 9, -1, -1, -1, -1, -1, -1, -1, -1, 8, 9};
+  VDJ_jgerm_state_strs = {"IGHJ_ex*01", "IGHJ_ex*99"};
+  VDJ_jgerm_ggene_ranges = {{"IGHJ_ex*01", {0, 3}}, {"IGHJ_ex*99", {3, 6}}};
+  VDJ_jgerm_naive_bases = {0, 3, 2, 1, 0, 3};
+  VDJ_jgerm_germ_inds = {0, 1, 2, 3, 4, 5};
+  VDJ_jgerm_site_inds = {10, 11, 12, 10, 11, 12};
+  VDJ_vgerm_vd_junction_transition.resize(2, 15);
+  VDJ_vgerm_vd_junction_transition <<
+  0.2*0.035*0.1, 0.2*0.035*0.2, 0.2*0.035*0.1, 0.2*0.035*0.05, 0, 0.2*0.086*0.1, 0.2*0.086*0.2, 0.2*0.086*0.1, 0.2*0.086*0.1, 0.2*0.086*0.15, 0, 0.8, 0, 0, 0,
+              0,             0,             0,              0, 0,             0,             0,             0,             0,              0, 0,   0, 0, 1, 0;
+  VDJ_vd_junction_transition.resize(15, 15);
+  VDJ_vd_junction_transition <<
+           0.075,          0.175,           0.05,           0.025,          0.45,              0,              0,              0,              0,    0,               0, 0,   0, 0, 0,
+           0.075,          0.175,           0.05,           0.025,          0.45,              0,              0,              0,              0,    0,               0, 0,   0, 0, 0,
+           0.075,          0.175,           0.05,           0.025,          0.45,              0,              0,              0,              0,    0,               0, 0,   0, 0, 0,
+           0.075,          0.175,           0.05,           0.025,          0.45,              0,              0,              0,              0,    0,               0, 0,   0, 0, 0,
+               0,              0,              0,               0,             0,              0,              0,              0,              0,    0,               0, 0,   0, 0, 0,
+               0,              0,              0,               0,             0,           0.16,           0.08,           0.08,           0.08, 0.15,            0.05, 0,   0, 0, 0,
+               0,              0,              0,               0,             0,           0.16,           0.08,           0.08,           0.08, 0.15,            0.05, 0,   0, 0, 0,
+               0,              0,              0,               0,             0,           0.16,           0.08,           0.08,           0.08, 0.15,            0.05, 0,   0, 0, 0,
+               0,              0,              0,               0,             0,           0.16,           0.08,           0.08,           0.08, 0.15,            0.05, 0,   0, 0, 0,
+               0,              0,              0,               0,             0,              0,              0,              0,              0,    0,            0.95, 0,   0, 0, 0,
+               0,              0,              0,               0,             0,              0,              0,              0,              0,    0,               0, 0,   0, 0, 0,
+   0.5*0.035*0.1,  0.5*0.035*0.2,  0.5*0.035*0.1,  0.5*0.035*0.05, 0.5*0.035*0.4,  0.5*0.086*0.1,  0.5*0.086*0.2,  0.5*0.086*0.1,  0.5*0.086*0.1,    0, 0.5*0.086*0.025, 0, 0.5, 0, 0,
+     1*0.035*0.1,    1*0.035*0.2,    1*0.035*0.1,    1*0.035*0.05,             0,    1*0.086*0.1,    1*0.086*0.2,    1*0.086*0.1,    1*0.086*0.1,    0,               0, 0,   0, 0, 0,
+               0,              0,              0,               0,             0,              0,              0,              0,              0,    0,               0, 0,   0, 0, 1,
+  0.25*0.035*0.1, 0.25*0.035*0.2, 0.25*0.035*0.1, 0.25*0.035*0.05,             0, 0.25*0.086*0.1, 0.25*0.086*0.2, 0.25*0.086*0.1, 0.25*0.086*0.1,    0,               0, 0,   0, 0, 0;
+  VDJ_vd_junction_dgerm_transition.resize(15, 2);
+  VDJ_vd_junction_dgerm_transition <<
+           0.125*0.95,                    0,
+           0.125*0.95,                    0,
+           0.125*0.95,                    0,
+           0.125*0.95,                    0,
+            0.98*0.95,                    0,
+                    0,             0.05*0.5,
+                    0,             0.05*0.5,
+                    0,             0.05*0.5,
+                    0,             0.05*0.5,
+                    0,                    0,
+                    0,              0.6*0.5,
+                    0,                    0,
+     1*0.035*0.1*0.95,    1*0.086*0.025*0.5,
+                    0,                    0,
+  0.25*0.035*0.1*0.95, 0.25*0.086*0.025*0.5;
+  VDJ_dgerm_dj_junction_transition.resize(2, 14);
+  VDJ_dgerm_dj_junction_transition <<
+  0.6, 0,    0, 0,  0.4*0.015*0.1,  0.4*0.015*0.2,  0.4*0.015*0.2,  0.4*0.015*0.2,  0.4*0.155*0.1,  0.4*0.155*0.2,  0.4*0.155*0.2,  0.4*0.155*0.2,  0.4*0.155*0.05, 0,
+    0, 0, 0.35, 0, 0.65*0.015*0.1, 0.65*0.015*0.2, 0.65*0.015*0.2, 0.65*0.015*0.2, 0.65*0.155*0.1, 0.65*0.155*0.2, 0.65*0.155*0.2, 0.65*0.155*0.2, 0.65*0.155*0.05, 0;
+  VDJ_dj_junction_transition.resize(14, 14);
+  VDJ_dj_junction_transition <<
+  0, 0.35, 0,   0, 0.65*0.015*0.1, 0.65*0.015*0.2, 0.65*0.015*0.2, 0.65*0.015*0.2, 0.65*0.155*0.1, 0.65*0.155*0.2, 0.65*0.155*0.2, 0.65*0.155*0.2,    0, 0,
+  0,    0, 0,   0,    1*0.015*0.1,    1*0.015*0.2,    1*0.015*0.2,    1*0.015*0.2,    1*0.155*0.1,    1*0.155*0.2,    1*0.155*0.2,    1*0.155*0.2,    0, 0,
+  0,    0, 0, 0.2,  0.8*0.015*0.1,  0.8*0.015*0.2,  0.8*0.015*0.2,  0.8*0.015*0.2,  0.8*0.155*0.1,  0.8*0.155*0.2,  0.8*0.155*0.2,  0.8*0.155*0.2,    0, 0,
+  0,    0, 0,   0,    1*0.015*0.1,    1*0.015*0.2,    1*0.015*0.2,    1*0.015*0.2,    1*0.155*0.1,    1*0.155*0.2,    1*0.155*0.2,    1*0.155*0.2,    0, 0,
+  0,    0, 0,   0,           0.05,           0.15,          0.075,          0.075,              0,              0,              0,              0,    0, 0,
+  0,    0, 0,   0,           0.05,           0.15,          0.075,          0.075,              0,              0,              0,              0,    0, 0,
+  0,    0, 0,   0,           0.05,           0.15,          0.075,          0.075,              0,              0,              0,              0,    0, 0,
+  0,    0, 0,   0,           0.05,           0.15,          0.075,          0.075,              0,              0,              0,              0,    0, 0,
+  0,    0, 0,   0,              0,              0,              0,              0,           0.05,           0.15,          0.075,          0.075, 0.25, 0,
+  0,    0, 0,   0,              0,              0,              0,              0,           0.05,           0.15,          0.075,          0.075, 0.25, 0,
+  0,    0, 0,   0,              0,              0,              0,              0,           0.05,           0.15,          0.075,          0.075, 0.25, 0,
+  0,    0, 0,   0,              0,              0,              0,              0,           0.05,           0.15,          0.075,          0.075, 0.25, 0,
+  0,    0, 0,   0,              0,              0,              0,              0,              0,              0,              0,              0,    0, 1,
+  0,    0, 0,   0,              0,              0,              0,              0,              0,              0,              0,              0,    0, 0;
+  VDJ_dj_junction_jgerm_transition.resize(14, 2);
+  VDJ_dj_junction_jgerm_transition <<
+                 0, 0,
+  1*0.015*0.25*1*1, 0,
+                 0, 0,
+  1*0.015*0.25*1*1, 0,
+               0.4, 0,
+               0.4, 0,
+               0.4, 0,
+               0.4, 0,
+                 0, 0,
+                 0, 0,
+                 0, 0,
+                 0, 0,
+                 0, 0,
+                 0, 1;
+  VDJ_vgerm_scaler_count = 0;
+  VDJ_vd_junction_scaler_counts = {0, 0};
+  VDJ_dgerm_scaler_count = 0;
+  VDJ_dj_junction_scaler_counts = {0, 0};
+  VDJ_jgerm_scaler_count = 0;
+
+  REQUIRE(new_simple_data_ptr->flexbounds() == VDJ_flexbounds);
+  REQUIRE(new_simple_data_ptr->relpos() == VDJ_relpos);
+  REQUIRE(new_simple_data_ptr->vgerm_state_strs() == VDJ_vgerm_state_strs);
+  REQUIRE(new_simple_data_ptr->vgerm_ggene_ranges() == VDJ_vgerm_ggene_ranges);
+  REQUIRE(new_simple_data_ptr->vgerm_naive_bases() == VDJ_vgerm_naive_bases);
+  REQUIRE(new_simple_data_ptr->vgerm_germ_inds() == VDJ_vgerm_germ_inds);
+  REQUIRE(new_simple_data_ptr->vgerm_site_inds() == VDJ_vgerm_site_inds);
+  REQUIRE(new_simple_data_ptr->vd_junction_state_strs() == VDJ_vd_junction_state_strs);
+  REQUIRE(new_simple_data_ptr->vd_junction_ggene_ranges() == VDJ_vd_junction_ggene_ranges);
+  REQUIRE(new_simple_data_ptr->vd_junction_naive_bases() == VDJ_vd_junction_naive_bases);
+  REQUIRE(new_simple_data_ptr->vd_junction_germ_inds() == VDJ_vd_junction_germ_inds);
+  REQUIRE(new_simple_data_ptr->vd_junction_site_inds() == VDJ_vd_junction_site_inds);
+  REQUIRE(new_simple_data_ptr->dgerm_state_strs() == VDJ_dgerm_state_strs);
+  REQUIRE(new_simple_data_ptr->dgerm_ggene_ranges() == VDJ_dgerm_ggene_ranges);
+  REQUIRE(new_simple_data_ptr->dgerm_naive_bases() == VDJ_dgerm_naive_bases);
+  REQUIRE(new_simple_data_ptr->dgerm_germ_inds() == VDJ_dgerm_germ_inds);
+  REQUIRE(new_simple_data_ptr->dgerm_site_inds() == VDJ_dgerm_site_inds);
+  REQUIRE(new_simple_data_ptr->dj_junction_state_strs() == VDJ_dj_junction_state_strs);
+  REQUIRE(new_simple_data_ptr->dj_junction_ggene_ranges() == VDJ_dj_junction_ggene_ranges);
+  REQUIRE(new_simple_data_ptr->dj_junction_naive_bases() == VDJ_dj_junction_naive_bases);
+  REQUIRE(new_simple_data_ptr->dj_junction_germ_inds() == VDJ_dj_junction_germ_inds);
+  REQUIRE(new_simple_data_ptr->dj_junction_site_inds() == VDJ_dj_junction_site_inds);
+  REQUIRE(new_simple_data_ptr->jgerm_state_strs() == VDJ_jgerm_state_strs);
+  REQUIRE(new_simple_data_ptr->jgerm_ggene_ranges() == VDJ_jgerm_ggene_ranges);
+  REQUIRE(new_simple_data_ptr->jgerm_naive_bases() == VDJ_jgerm_naive_bases);
+  REQUIRE(new_simple_data_ptr->jgerm_germ_inds() == VDJ_jgerm_germ_inds);
+  REQUIRE(new_simple_data_ptr->jgerm_site_inds() == VDJ_jgerm_site_inds);
+  REQUIRE(new_simple_data_ptr->vgerm_vd_junction_transition() == VDJ_vgerm_vd_junction_transition);
+  REQUIRE(new_simple_data_ptr->vd_junction_transition() == VDJ_vd_junction_transition);
+  REQUIRE(new_simple_data_ptr->vd_junction_dgerm_transition() == VDJ_vd_junction_dgerm_transition);
+  REQUIRE(new_simple_data_ptr->dgerm_dj_junction_transition() == VDJ_dgerm_dj_junction_transition);
+  REQUIRE(new_simple_data_ptr->dj_junction_transition() == VDJ_dj_junction_transition);
+  REQUIRE(new_simple_data_ptr->dj_junction_jgerm_transition() == VDJ_dj_junction_jgerm_transition);
+
+  REQUIRE(new_simple_data_ptr->seq() == VDJ_seq);
+  REQUIRE(new_simple_data_ptr->seq_str() == VDJ_seq_str);
+
+  REQUIRE(new_simple_data_ptr->LogLikelihood() == Approx(-31.0359719787));
+  REQUIRE(new_simple_data_ptr->LogLikelihood() == simple_data_ptr->MarginalLogLikelihood());
+  REQUIRE(new_simple_data_ptr->vgerm_scaler_count() == VDJ_vgerm_scaler_count);
+  REQUIRE(new_simple_data_ptr->vd_junction_scaler_counts() == VDJ_vd_junction_scaler_counts);
+  REQUIRE(new_simple_data_ptr->dgerm_scaler_count() == VDJ_dgerm_scaler_count);
+  REQUIRE(new_simple_data_ptr->dj_junction_scaler_counts() == VDJ_dj_junction_scaler_counts);
+  REQUIRE(new_simple_data_ptr->jgerm_scaler_count() == VDJ_jgerm_scaler_count);
 }
 
 

@@ -14,7 +14,7 @@ namespace linearham {
 class SimpleData : public Data {
  private:
   Eigen::VectorXi seq_;
-  std::pair<int, int> n_read_counts_;
+  // std::pair<int, int> n_read_counts_;
 
   Eigen::VectorXd GermlineEmissionVector(
       GermlinePtr germ_ptr, std::string left_flexbounds_name) const override;
@@ -26,11 +26,11 @@ class SimpleData : public Data {
   SimpleData(){};
   SimpleData(const std::string& seq_str,
              const std::map<std::string, std::pair<int, int>>& flexbounds,
-             const std::map<std::string, int>& relpos, std::pair<int, int> n_read_counts,
+             const std::map<std::string, int>& relpos,
              const std::unordered_map<std::string, GermlineGene>& ggenes);
 
   const Eigen::VectorXi& seq() const { return seq_; };
-  std::pair<int, int> n_read_counts() const { return n_read_counts_; };
+  // std::pair<int, int> n_read_counts() const { return n_read_counts_; };
   int length() const override { return seq_.size(); };
 };
 

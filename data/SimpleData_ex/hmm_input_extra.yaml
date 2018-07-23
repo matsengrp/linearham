@@ -1,6 +1,6 @@
 {
   "events" : [ {
-    "input_seqs" : ["NNNACAGTACCCTGTTNN"],
+    "input_seqs" : ["ACAGTACCCTGTT"],
     "relpos" : {
       "IGHD_ex*01" : 5,
       "IGHJ_ex*01" : 10,

@@ -13,13 +13,11 @@ namespace linearham {
 /// The flexbounds.
 /// @param[in] relpos
 /// The relpos.
-/// @param[in] n_read_counts
-/// The number of N's on the left/right of the "untrimmed" sequence.
 /// @param[in] ggenes
 /// A map holding (germline name, GermlineGene) pairs.
 SimpleData::SimpleData(
     const std::string& seq_str, const std::map<std::string, std::pair<int, int>>& flexbounds,
-    const std::map<std::string, int>& relpos, std::pair<int, int> n_read_counts,
+    const std::map<std::string, int>& relpos,
     const std::unordered_map<std::string, GermlineGene>& ggenes)
     : Data(flexbounds, relpos) {
   // Convert the read sequence string to a vector of integers (according to the
@@ -27,8 +25,8 @@ SimpleData::SimpleData(
   seq_ = ConvertSeqToInts(seq_str,
                           ggenes.begin()->second.germ_ptr->alphabet());
 
-  // Store `n_read_counts`.
-  n_read_counts_ = n_read_counts;
+  // // Store `n_read_counts`.
+  // n_read_counts_ = n_read_counts;
 
   // Initialize `match_indices_`.
   InitializeMatchIndices(ggenes);
@@ -119,23 +117,23 @@ std::vector<SimpleDataPtr> ReadSimpleData(std::string yaml_path,
   YAML::Node events = root["events"];
 
   std::vector<SimpleDataPtr> simple_data_ptrs;
-  std::pair<int, int> n_read_counts;
+  // std::pair<int, int> n_read_counts;
 
-  // This regex is used to count the numbers of N's on both sides of the read
-  // sequences.
-  std::regex nrgx("^(N*)([" + ggenes.begin()->second.germ_ptr->alphabet() +
-                  "]+)(N*)$");
-  std::smatch match;
+  // // This regex is used to count the numbers of N's on both sides of the read
+  // // sequences.
+  // std::regex nrgx("^(N*)([" + ggenes.begin()->second.germ_ptr->alphabet() +
+  //                 "]+)(N*)$");
+  // std::smatch match;
 
   int i = 0;
   for (auto it = events.begin(); it != events.end(); ++it) {
     std::string seq_str = events[i]["input_seqs"][0].as<std::string>();
 
-    assert(std::regex_match(seq_str, match, nrgx));
-    n_read_counts = {match[1].length(), match[3].length()};
+    // assert(std::regex_match(seq_str, match, nrgx));
+    // n_read_counts = {match[1].length(), match[3].length()};
     simple_data_ptrs.push_back(std::make_shared<SimpleData>(
-        match[2], events[i]["flexbounds"].as<std::map<std::string, std::pair<int, int>>>(),
-        events[i]["relpos"].as<std::map<std::string, int>>(), n_read_counts, ggenes));
+        seq_str, events[i]["flexbounds"].as<std::map<std::string, std::pair<int, int>>>(),
+        events[i]["relpos"].as<std::map<std::string, int>>(), ggenes));
     i++;
   }
 
