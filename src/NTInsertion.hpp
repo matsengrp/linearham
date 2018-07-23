@@ -29,9 +29,9 @@ class NTInsertion {
 
   // NTInsertion information for SimpleData
   Eigen::MatrixXd n_emission_;  // The NTI emission probability matrix.
-                                // The rows denote the different emitted
-                                // bases and the columns denote the
-                                // different NTI bases.
+                                // The rows denote the different emitted bases
+                                // and the columns denote the different NTI
+                                // bases.
 
  public:
   NTInsertion(const YAML::Node& root);

@@ -32,9 +32,9 @@ class Germline {
 
   // Germline information for SimpleData
   Eigen::MatrixXd emission_;  // A matrix of HMM emission probabilities.
-                              // The rows denote the different emitted
-                              // bases and the columns denote the
-                              // different germline positions.
+                              // The rows denote the different emitted bases and
+                              // the columns denote the different germline
+                              // positions.
 
   // Germline information for PhyloData
   Eigen::VectorXi bases_;  // A vector of germline bases.

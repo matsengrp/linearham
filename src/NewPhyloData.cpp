@@ -124,7 +124,7 @@ void NewPhyloData::InitializeHMMEmission() {
 void NewPhyloData::BuildXmsa(
     const std::map<std::pair<int, int>, int>& xmsa_ids) {
   xmsa_.setConstant(msa_.rows() + 1, xmsa_ids.size(), -1);
-  xmsa_seqs_.resize(msa_.rows() + 1);
+  xmsa_seqs_.resize(msa_.rows() + 1, "");
 
   // Iterate across the elements in `xmsa_ids` and incrementally build the xMSA.
   for (auto it = xmsa_ids.begin(); it != xmsa_ids.end(); ++it) {
