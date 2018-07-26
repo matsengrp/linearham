@@ -5,6 +5,7 @@
 #include <tuple>
 
 #include "linalg.hpp"
+#include "utils.hpp"
 
 /// @file NewData.cpp
 /// @brief Partial implementation of the pure virtual NewData base class.
@@ -644,9 +645,7 @@ Eigen::RowVectorXi ConvertSeqToInts2(const std::string& seq_str,
   Eigen::RowVectorXi seq(seq_str.size());
 
   for (std::size_t i = 0; i < seq_str.size(); i++) {
-    auto find_it = std::find(alphabet.begin(), alphabet.end(), seq_str[i]);
-    assert(find_it != alphabet.end());
-    seq[i] = find_it - alphabet.begin();
+    seq[i] = GetAlphabetIndex(alphabet, seq_str[i]);
   }
 
   return seq;
