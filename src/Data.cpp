@@ -121,7 +121,7 @@ Eigen::MatrixXd Data::NTIProbMatrix(NTInsertionPtr nti_ptr,
 
   Eigen::MatrixXd cache_matrix =
       Eigen::MatrixXd::Zero(left_flexbounds.second - left_flexbounds.first + 1,
-                            nti_ptr->n_transition().cols());
+                            nti_ptr->nti_transition().cols());
   Eigen::MatrixXd nti_prob_matrix = Eigen::MatrixXd::Zero(
       left_flexbounds.second - left_flexbounds.first + 1,
       right_flexbounds.second - right_flexbounds.first + 1);
@@ -135,21 +135,21 @@ Eigen::MatrixXd Data::NTIProbMatrix(NTInsertionPtr nti_ptr,
     if (i <= left_flexbounds.second) {
       if (i != left_flexbounds.first) {
         cache_matrix.topRows(i - left_flexbounds.first) *=
-            nti_ptr->n_transition();
+            nti_ptr->nti_transition();
       }
-      cache_matrix.row(i - left_flexbounds.first) = nti_ptr->n_landing_in();
+      cache_matrix.row(i - left_flexbounds.first) = nti_ptr->nti_landing_in();
       RowVecMatCwise(emission,
                      cache_matrix.topRows(i - left_flexbounds.first + 1),
                      cache_matrix.topRows(i - left_flexbounds.first + 1));
     } else {
-      cache_matrix *= nti_ptr->n_transition();
+      cache_matrix *= nti_ptr->nti_transition();
       RowVecMatCwise(emission, cache_matrix, cache_matrix);
     }
 
     // Store the NTI path probabilities in the output matrix.
     if (i >= std::max(right_flexbounds.first, right_relpos) - 1) {
       nti_prob_matrix.col(i - (right_flexbounds.first - 1)) =
-          cache_matrix * nti_ptr->n_landing_out().col(i + 1 - right_relpos);
+          cache_matrix * nti_ptr->nti_landing_out().col(i + 1 - right_relpos);
     }
   }
 

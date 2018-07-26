@@ -16,18 +16,16 @@ namespace linearham {
 /// left (right) of V (J) genes.
 class NPadding {
  protected:
-  double n_transition_prob_;
-  double ambig_emission_prob_;
-  Eigen::VectorXd n_emission_vector_;
+  double n_transition_;
+  double ambiguous_emission_;
+  Eigen::VectorXd n_emission_;
 
  public:
   NPadding(const YAML::Node& root);
 
-  double n_transition_prob() const { return n_transition_prob_; };
-  double ambig_emission_prob() const { return ambig_emission_prob_; };
-  const Eigen::VectorXd& n_emission_vector() const {
-    return n_emission_vector_;
-  };
+  double n_transition() const { return n_transition_; };
+  double ambiguous_emission() const { return ambiguous_emission_; };
+  const Eigen::VectorXd& n_emission() const { return n_emission_; };
 
   double NPaddingProb(std::pair<int, int> flexbounds,
                       const Eigen::Ref<const Eigen::VectorXi>& emission_indices,

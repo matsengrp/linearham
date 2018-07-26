@@ -18,28 +18,28 @@ namespace linearham {
 class NTInsertion {
  protected:
   // NTInsertion information for (Simple|Phylo)Data
-  Eigen::VectorXd n_landing_in_;   // A vector of landing probabilities to begin
-                                   // a NTI segment.
-  Eigen::MatrixXd n_landing_out_;  // A matrix of landing probabilities to end a
-                                   // NTI segment and begin a germline match
-                                   // segment.  The rows denote the different
-                                   // NTI bases and the columns denote the
-                                   // different germline positions.
-  Eigen::MatrixXd n_transition_;   // The NTI transition probability matrix.
+  Eigen::VectorXd nti_landing_in_;   // A vector of landing probabilities to
+                                     // begin a NTI segment.
+  Eigen::MatrixXd nti_landing_out_;  // A matrix of landing probabilities to end
+                                     // a NTI segment and begin a germline match
+                                     // segment.  The rows denote the different
+                                     // NTI bases and the columns denote the
+                                     // different germline positions.
+  Eigen::MatrixXd nti_transition_;   // The NTI transition probability matrix.
 
   // NTInsertion information for SimpleData
-  Eigen::MatrixXd n_emission_;  // The NTI emission probability matrix.
-                                // The rows denote the different emitted bases
-                                // and the columns denote the different NTI
-                                // bases.
+  Eigen::MatrixXd nti_emission_;  // The NTI emission probability matrix.
+                                  // The rows denote the different emitted bases
+                                  // and the columns denote the different NTI
+                                  // bases.
 
  public:
   NTInsertion(const YAML::Node& root);
 
-  const Eigen::VectorXd& n_landing_in() const { return n_landing_in_; };
-  const Eigen::MatrixXd& n_landing_out() const { return n_landing_out_; };
-  const Eigen::MatrixXd& n_transition() const { return n_transition_; };
-  const Eigen::MatrixXd& n_emission() const { return n_emission_; };
+  const Eigen::VectorXd& nti_landing_in() const { return nti_landing_in_; };
+  const Eigen::MatrixXd& nti_landing_out() const { return nti_landing_out_; };
+  const Eigen::MatrixXd& nti_transition() const { return nti_transition_; };
+  const Eigen::MatrixXd& nti_emission() const { return nti_emission_; };
 };
 
 

@@ -287,22 +287,22 @@ TEST_CASE("NTInsertion", "[ntinsertion]") {
   // NTInsertion V_NTInsertion = NTInsertion(V_root);
 
   // D tests
-  Eigen::VectorXd D_n_landing_in(4);
-  D_n_landing_in << 0.1, 0.2, 0.1, 0.05;
-  Eigen::MatrixXd D_n_landing_out(4,5);
-  D_n_landing_out <<
+  Eigen::VectorXd D_nti_landing_in(4);
+  D_nti_landing_in << 0.1, 0.2, 0.1, 0.05;
+  Eigen::MatrixXd D_nti_landing_out(4,5);
+  D_nti_landing_out <<
   0.45, 0.125, 0.1, 0, 0,
   0.45, 0.125, 0.1, 0, 0,
   0.45, 0.125, 0.1, 0, 0,
   0.45, 0.125, 0.1, 0, 0;
-  Eigen::MatrixXd D_n_transition(4,4);
-  D_n_transition <<
+  Eigen::MatrixXd D_nti_transition(4,4);
+  D_nti_transition <<
   0.075, 0.175, 0.05, 0.025,
   0.075, 0.175, 0.05, 0.025,
   0.075, 0.175, 0.05, 0.025,
   0.075, 0.175, 0.05, 0.025;
-  Eigen::MatrixXd D_n_emission(4,4);
-  D_n_emission <<
+  Eigen::MatrixXd D_nti_emission(4,4);
+  D_nti_emission <<
   0.7, 0.05, 0.1, 0.1,
   0.1, 0.75, 0.1, 0.1,
   0.1, 0.1,  0.7, 0.,
@@ -310,28 +310,28 @@ TEST_CASE("NTInsertion", "[ntinsertion]") {
 
   NTInsertion D_NTInsertion(D_root);
 
-  REQUIRE(D_NTInsertion.n_landing_in() == D_n_landing_in);
-  REQUIRE(D_NTInsertion.n_landing_out() == D_n_landing_out);
-  REQUIRE(D_NTInsertion.n_transition() == D_n_transition);
-  REQUIRE(D_NTInsertion.n_emission() == D_n_emission);
+  REQUIRE(D_NTInsertion.nti_landing_in() == D_nti_landing_in);
+  REQUIRE(D_NTInsertion.nti_landing_out() == D_nti_landing_out);
+  REQUIRE(D_NTInsertion.nti_transition() == D_nti_transition);
+  REQUIRE(D_NTInsertion.nti_emission() == D_nti_emission);
 
   // J tests
-  Eigen::VectorXd J_n_landing_in(4);
-  J_n_landing_in << 0.1, 0.2, 0.2, 0.2;
-  Eigen::MatrixXd J_n_landing_out(4,5);
-  J_n_landing_out <<
+  Eigen::VectorXd J_nti_landing_in(4);
+  J_nti_landing_in << 0.1, 0.2, 0.2, 0.2;
+  Eigen::MatrixXd J_nti_landing_out(4,5);
+  J_nti_landing_out <<
   0.4, 0.25, 0, 0, 0,
   0.4, 0.25, 0, 0, 0,
   0.4, 0.25, 0, 0, 0,
   0.4, 0.25, 0, 0, 0;
-  Eigen::MatrixXd J_n_transition(4,4);
-  J_n_transition <<
+  Eigen::MatrixXd J_nti_transition(4,4);
+  J_nti_transition <<
   0.05, 0.15, 0.075, 0.075,
   0.05, 0.15, 0.075, 0.075,
   0.05, 0.15, 0.075, 0.075,
   0.05, 0.15, 0.075, 0.075;
-  Eigen::MatrixXd J_n_emission(4,4);
-  J_n_emission <<
+  Eigen::MatrixXd J_nti_emission(4,4);
+  J_nti_emission <<
   0.94, 0.02, 0.02, 0.02,
   0.02, 0.94, 0.02, 0.02,
   0.02, 0.02, 0.94, 0.02,
@@ -339,10 +339,10 @@ TEST_CASE("NTInsertion", "[ntinsertion]") {
 
   NTInsertion J_NTInsertion(J_root);
 
-  REQUIRE(J_NTInsertion.n_landing_in() == J_n_landing_in);
-  REQUIRE(J_NTInsertion.n_landing_out() == J_n_landing_out);
-  REQUIRE(J_NTInsertion.n_transition() == J_n_transition);
-  REQUIRE(J_NTInsertion.n_emission() == J_n_emission);
+  REQUIRE(J_NTInsertion.nti_landing_in() == J_nti_landing_in);
+  REQUIRE(J_NTInsertion.nti_landing_out() == J_nti_landing_out);
+  REQUIRE(J_NTInsertion.nti_transition() == J_nti_transition);
+  REQUIRE(J_NTInsertion.nti_emission() == J_nti_emission);
 }
 
 
@@ -355,16 +355,16 @@ TEST_CASE("NPadding", "[npadding]") {
   // at https://github.com/matsengrp/linearham/issues/35#issuecomment-270037356.
 
   // V tests
-  double V_n_transition_prob = 0.34;
-  double V_ambig_emission_prob = 0.25;
-  Eigen::VectorXd V_n_emission_vector(4);
-  V_n_emission_vector << 0.25, 0.25, 0.25, 0.25;
+  double V_n_transition = 0.34;
+  double V_ambiguous_emission = 0.25;
+  Eigen::VectorXd V_n_emission(4);
+  V_n_emission << 0.25, 0.25, 0.25, 0.25;
 
   NPadding V_NPadding(V_root);
 
-  REQUIRE(V_NPadding.n_transition_prob() == V_n_transition_prob);
-  REQUIRE(V_NPadding.ambig_emission_prob() == V_ambig_emission_prob);
-  REQUIRE(V_NPadding.n_emission_vector() == V_n_emission_vector);
+  REQUIRE(V_NPadding.n_transition() == V_n_transition);
+  REQUIRE(V_NPadding.ambiguous_emission() == V_ambiguous_emission);
+  REQUIRE(V_NPadding.n_emission() == V_n_emission);
 
   // Case 1
   int V_read_pos = 2;
@@ -395,16 +395,16 @@ TEST_CASE("NPadding", "[npadding]") {
   // NPadding D_NPadding = NPadding(D_root);
 
   // J tests
-  double J_n_transition_prob = 0.96;
-  double J_ambig_emission_prob = 0.25;
-  Eigen::VectorXd J_n_emission_vector(4);
-  J_n_emission_vector << 0.25, 0.25, 0.25, 0.25;
+  double J_n_transition = 0.96;
+  double J_ambiguous_emission = 0.25;
+  Eigen::VectorXd J_n_emission(4);
+  J_n_emission << 0.25, 0.25, 0.25, 0.25;
 
   NPadding J_NPadding(J_root);
 
-  REQUIRE(J_NPadding.n_transition_prob() == J_n_transition_prob);
-  REQUIRE(J_NPadding.ambig_emission_prob() == J_ambig_emission_prob);
-  REQUIRE(J_NPadding.n_emission_vector() == J_n_emission_vector);
+  REQUIRE(J_NPadding.n_transition() == J_n_transition);
+  REQUIRE(J_NPadding.ambiguous_emission() == J_ambiguous_emission);
+  REQUIRE(J_NPadding.n_emission() == J_n_emission);
 
   // Case 1
   int J_read_pos = 10;

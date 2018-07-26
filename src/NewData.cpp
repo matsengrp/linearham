@@ -468,25 +468,25 @@ void FillHMMTransition(const GermlineGene& from_ggene,
       // Are we in the V-D or D-J "junction" region?
       if (n_col_length > 0) {
         // Fill in the N -> N transition probabilities.
-        const Eigen::MatrixXd& n_transition =
+        const Eigen::MatrixXd& nti_transition =
             (from_ggene.type == GermlineType::D)
-                ? from_ggene.DGermlinePtrCast()->n_transition()
-                : from_ggene.JGermlinePtrCast()->n_transition();
+                ? from_ggene.DGermlinePtrCast()->nti_transition()
+                : from_ggene.JGermlinePtrCast()->nti_transition();
         transition_.block(n_row_start, n_col_start, n_row_length,
-                          n_col_length) = n_transition;
+                          n_col_length) = nti_transition;
       }
 
       // Are the N -> D or N -> J transitions possible?
       if (germ_col_length > 0) {
         // Fill in the N -> D or N -> J transition probabilities.
-        const Eigen::MatrixXd& n_landing_out =
+        const Eigen::MatrixXd& nti_landing_out =
             (from_ggene.type == GermlineType::D)
-                ? from_ggene.DGermlinePtrCast()->n_landing_out()
-                : from_ggene.JGermlinePtrCast()->n_landing_out();
+                ? from_ggene.DGermlinePtrCast()->nti_landing_out()
+                : from_ggene.JGermlinePtrCast()->nti_landing_out();
         transition_.block(n_row_start, germ_col_start, n_row_length,
                           germ_col_length) =
-            n_landing_out.block(0, germ_ind_col_start, n_landing_out.rows(),
-                                germ_col_length);
+            nti_landing_out.block(0, germ_ind_col_start, nti_landing_out.rows(),
+                                  germ_col_length);
       }
     }
 
@@ -515,10 +515,10 @@ void FillHMMTransition(const GermlineGene& from_ggene,
     // Are we in or transitioning to the V-D or D-J "junction" region?
     if (germ_row_length > 0 && n_col_length > 0) {
       // Fill in the V -> N or D -> N transition probabilities.
-      const Eigen::VectorXd& n_landing_in =
+      const Eigen::VectorXd& nti_landing_in =
           (to_ggene.type == GermlineType::D)
-              ? to_ggene.DGermlinePtrCast()->n_landing_in()
-              : to_ggene.JGermlinePtrCast()->n_landing_in();
+              ? to_ggene.DGermlinePtrCast()->nti_landing_in()
+              : to_ggene.JGermlinePtrCast()->nti_landing_in();
       Eigen::Ref<Eigen::MatrixXd> transition_block = transition_.block(
           germ_row_start, n_col_start, germ_row_length, n_col_length);
 
@@ -527,7 +527,7 @@ void FillHMMTransition(const GermlineGene& from_ggene,
                          germ_ind_row_start, germ_row_length),
                      transition_block, transition_block);
       transition_block *= to_ggene.germ_ptr->gene_prob();
-      RowVecMatCwise(n_landing_in, transition_block, transition_block);
+      RowVecMatCwise(nti_landing_in, transition_block, transition_block);
     }
 
     // Is there a match region between the two genes?

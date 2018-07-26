@@ -96,14 +96,14 @@ void NewSimpleData::FillHMMJunctionEmission(
     for (int i = range_start; i < range_end; i++) {
       // Is the current "junction" state a NTI state?
       if (site_inds_[i] == -1) {
-        const Eigen::MatrixXd& n_emission =
+        const Eigen::MatrixXd& nti_emission =
             (ggene.type == GermlineType::D)
-                ? ggene.DGermlinePtrCast()->n_emission()
-                : ggene.JGermlinePtrCast()->n_emission();
+                ? ggene.DGermlinePtrCast()->nti_emission()
+                : ggene.JGermlinePtrCast()->nti_emission();
 
         for (int site_ind = site_start; site_ind < site_end; site_ind++) {
           emission_(site_ind - site_start, i) =
-              n_emission(seq_[site_ind], naive_bases_[i]);
+              nti_emission(seq_[site_ind], naive_bases_[i]);
         }
       } else {
         emission_(site_inds_[i] - site_start, i) =

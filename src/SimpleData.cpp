@@ -91,7 +91,7 @@ Eigen::VectorXd SimpleData::GermlineEmissionVector(
 /// position `site_pos` from all possible germline bases.
 Eigen::RowVectorXd SimpleData::NTIEmissionVector(NTInsertionPtr nti_ptr,
                                                  int site_pos) const {
-  return nti_ptr->n_emission().row(seq_[site_pos]);
+  return nti_ptr->nti_emission().row(seq_[site_pos]);
 };
 
 

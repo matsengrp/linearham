@@ -43,10 +43,10 @@ NTInsertion::NTInsertion(const YAML::Node& root) {
   int gcount = gend - gstart + 1;
 
   // Initialize the NTInsertion data structures.
-  n_landing_in_.setZero(alphabet.size());
-  n_landing_out_.setZero(alphabet.size(), gcount);
-  n_emission_.setZero(alphabet.size(), alphabet.size());
-  n_transition_.setZero(alphabet.size(), alphabet.size());
+  nti_landing_in_.setZero(alphabet.size());
+  nti_landing_out_.setZero(alphabet.size(), gcount);
+  nti_emission_.setZero(alphabet.size(), alphabet.size());
+  nti_transition_.setZero(alphabet.size(), alphabet.size());
 
   // Parse the init state.
   YAML::Node init_state = root["states"][0];
@@ -60,7 +60,7 @@ NTInsertion::NTInsertion(const YAML::Node& root) {
   for (std::size_t i = 0; i < state_names.size(); i++) {
     if (std::regex_match(state_names[i], match, nrgx)) {
       int nbase = GetAlphabetIndex(alphabet, match.str(1)[0]);
-      n_landing_in_[nbase] = probs[i];
+      nti_landing_in_[nbase] = probs[i];
     } else {
       // If the init state does not land in a NTI state, it must land in the
       // germline gene.
@@ -81,12 +81,12 @@ NTInsertion::NTInsertion(const YAML::Node& root) {
     for (std::size_t j = 0; j < state_names.size(); j++) {
       if (std::regex_match(state_names[j], match, grgx)) {
         // We can transition to a germline base...
-        n_landing_out_(nbase, std::stoi(match.str(1))) = probs[j];
+        nti_landing_out_(nbase, std::stoi(match.str(1))) = probs[j];
       } else {
         // ... or we can transition to a NTI state.
         assert(std::regex_match(state_names[j], match, nrgx));
         int trans_base = GetAlphabetIndex(alphabet, match.str(1)[0]);
-        n_transition_(nbase, trans_base) = probs[j];
+        nti_transition_(nbase, trans_base) = probs[j];
       }
     }
 
@@ -97,7 +97,7 @@ NTInsertion::NTInsertion(const YAML::Node& root) {
 
     for (std::size_t j = 0; j < state_names.size(); j++) {
       int emit_base = GetAlphabetIndex(alphabet, state_names[j][0]);
-      n_emission_(emit_base, nbase) = probs[j];
+      nti_emission_(emit_base, nbase) = probs[j];
     }
   }
 };

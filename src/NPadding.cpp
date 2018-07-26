@@ -34,7 +34,7 @@ NPadding::NPadding(const YAML::Node& root) {
   assert((gstart == 2) || (gend == (root["states"].size() - 2)));
 
   // Initialize the NPadding data structures.
-  n_emission_vector_.setZero(alphabet.size());
+  n_emission_.setZero(alphabet.size());
 
   // Initialize local variables.
   int n_index, n_check_ind;
@@ -84,7 +84,7 @@ NPadding::NPadding(const YAML::Node& root) {
   // or enters the [first germline|end] state.
   for (std::size_t i = 0; i < state_names.size(); i++) {
     if (state_names[i] == nname) {
-      n_transition_prob_ = probs[i];
+      n_transition_ = probs[i];
     } else {
       assert(state_names[i] == next_name);
     }
@@ -98,14 +98,14 @@ NPadding::NPadding(const YAML::Node& root) {
   for (std::size_t i = 0; i < state_names.size(); i++) {
     assert(probs[i] == 0.25);
     int emit_base = GetAlphabetIndex(alphabet, state_names[i][0]);
-    n_emission_vector_[emit_base] = probs[i];
+    n_emission_[emit_base] = probs[i];
   }
 
   // Store the ambiguous emission probability for the "insert_[left|right]_N"
   // state.
   assert(nstate["extras"]["germline"].as<std::string>() == "N");
   assert(nstate["extras"]["ambiguous_emission_prob"].as<double>() == 0.25);
-  ambig_emission_prob_ =
+  ambiguous_emission_ =
       nstate["extras"]["ambiguous_emission_prob"].as<double>();
 };
 
@@ -161,13 +161,13 @@ double NPadding::NPaddingProb(
   int n_flex_count = flex_pad_end - flex_pad_start;
 
   // Compute the probability of the padding path.
-  prob *= std::pow(n_transition_prob_,
-                   n_flex_count + n_read_count - n_exclude_count);
-  prob *= (1 - n_transition_prob_);
+  prob *=
+      std::pow(n_transition_, n_flex_count + n_read_count - n_exclude_count);
+  prob *= (1 - n_transition_);
   for (int i = flex_pad_start; i < flex_pad_end; i++) {
-    prob *= n_emission_vector_[emission_indices[i]];
+    prob *= n_emission_[emission_indices[i]];
   }
-  prob *= std::pow(ambig_emission_prob_, n_read_count);
+  prob *= std::pow(ambiguous_emission_, n_read_count);
 
   return prob;
 };
