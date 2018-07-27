@@ -1087,8 +1087,8 @@ TEST_CASE("PhyloData", "[phylodata]") {
   3, 0, 2, 2, 0, 1, 3, 1, 2, 3, 0, 2, 3, 1, 2, 2, 2, 3, 3, 0, 0, 0, 2, 2, 2, 0, 0, 0, 1, 1, 1, 3, 3, 3;
   std::vector<std::string> VDJ_xmsa_labels = {"0", "1", "naive", "3"};
   std::vector<std::string> VDJ_xmsa_seqs = {
-    "GATCAATTAAAAGTAAAGGAAATTTAAAAAATTT", "GTTCGAGTACACGCCCCGGTTTTTTGGGAAAGGG",
-    "GGTACATGATGACNCGTATACTACGAGTCGTACG", "TAGGACTCGTAGTCGGGTTAAAGGGAAACCCTTT"};
+      "GATCAATTAAAAGTAAAGGAAATTTAAAAAATTT", "GTTCGAGTACACGCCCCGGTTTTTTGGGAAAGGG",
+      "GGTACATGATGACNCGTATACTACGAGTCGTACG", "TAGGACTCGTAGTCGGGTTAAAGGGAAACCCTTT"};
   int VDJ_xmsa_naive_index = std::find(VDJ_xmsa_labels.begin(),
                                        VDJ_xmsa_labels.end(), "naive")
                              - VDJ_xmsa_labels.begin();
