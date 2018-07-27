@@ -32,7 +32,15 @@ class NewData {
   // HMM (germline name, GermlineGene) map
   std::unordered_map<std::string, GermlineGene> ggenes_;
 
+  // Nucleotide alphabet
+  std::string alphabet_;
+
   // HMM state space information
+  // V "padding" states
+  std::map<std::string, std::pair<int, int>> vpadding_ggene_ranges_;
+  std::vector<int> vpadding_naive_bases_;
+  std::vector<int> vpadding_site_inds_;
+
   // V "germline" states
   std::vector<std::string> vgerm_state_strs_;
   std::map<std::string, std::pair<int, int>> vgerm_ggene_ranges_;
@@ -68,20 +76,29 @@ class NewData {
   std::vector<int> jgerm_germ_inds_;
   std::vector<int> jgerm_site_inds_;
 
+  // J "padding" states
+  std::map<std::string, std::pair<int, int>> jpadding_ggene_ranges_;
+  std::vector<int> jpadding_naive_bases_;
+  std::vector<int> jpadding_site_inds_;
+
   // HMM transition probability matrices
+  Eigen::RowVectorXd vpadding_transition_;
   Eigen::MatrixXd vgerm_vd_junction_transition_;
   Eigen::MatrixXd vd_junction_transition_;
   Eigen::MatrixXd vd_junction_dgerm_transition_;
   Eigen::MatrixXd dgerm_dj_junction_transition_;
   Eigen::MatrixXd dj_junction_transition_;
   Eigen::MatrixXd dj_junction_jgerm_transition_;
+  Eigen::RowVectorXd jpadding_transition_;
 
   // HMM emission probability matrices
+  Eigen::RowVectorXd vpadding_emission_;
   Eigen::RowVectorXd vgerm_emission_;
   Eigen::MatrixXd vd_junction_emission_;
   Eigen::RowVectorXd dgerm_emission_;
   Eigen::MatrixXd dj_junction_emission_;
   Eigen::RowVectorXd jgerm_emission_;
+  Eigen::RowVectorXd jpadding_emission_;
 
   // HMM forward probability matrices
   Eigen::RowVectorXd vgerm_forward_;
@@ -119,6 +136,17 @@ class NewData {
   const std::map<std::string, int>& relpos() const { return relpos_; };
   const std::unordered_map<std::string, GermlineGene>& ggenes() const {
     return ggenes_;
+  };
+  const std::string& alphabet() const { return alphabet_; };
+  const std::map<std::string, std::pair<int, int>>& vpadding_ggene_ranges()
+      const {
+    return vpadding_ggene_ranges_;
+  };
+  const std::vector<int>& vpadding_naive_bases() const {
+    return vpadding_naive_bases_;
+  };
+  const std::vector<int>& vpadding_site_inds() const {
+    return vpadding_site_inds_;
   };
   const std::vector<std::string>& vgerm_state_strs() const {
     return vgerm_state_strs_;
@@ -185,6 +213,19 @@ class NewData {
   };
   const std::vector<int>& jgerm_germ_inds() const { return jgerm_germ_inds_; };
   const std::vector<int>& jgerm_site_inds() const { return jgerm_site_inds_; };
+  const std::map<std::string, std::pair<int, int>>& jpadding_ggene_ranges()
+      const {
+    return jpadding_ggene_ranges_;
+  };
+  const std::vector<int>& jpadding_naive_bases() const {
+    return jpadding_naive_bases_;
+  };
+  const std::vector<int>& jpadding_site_inds() const {
+    return jpadding_site_inds_;
+  };
+  const Eigen::RowVectorXd& vpadding_transition() const {
+    return vpadding_transition_;
+  };
   const Eigen::MatrixXd& vgerm_vd_junction_transition() const {
     return vgerm_vd_junction_transition_;
   };
@@ -203,6 +244,12 @@ class NewData {
   const Eigen::MatrixXd& dj_junction_jgerm_transition() const {
     return dj_junction_jgerm_transition_;
   };
+  const Eigen::RowVectorXd& jpadding_transition() const {
+    return jpadding_transition_;
+  };
+  const Eigen::RowVectorXd& vpadding_emission() const {
+    return vpadding_emission_;
+  };
   const Eigen::RowVectorXd& vgerm_emission() const { return vgerm_emission_; };
   const Eigen::MatrixXd& vd_junction_emission() const {
     return vd_junction_emission_;
@@ -212,6 +259,9 @@ class NewData {
     return dj_junction_emission_;
   };
   const Eigen::RowVectorXd& jgerm_emission() const { return jgerm_emission_; };
+  const Eigen::RowVectorXd& jpadding_emission() const {
+    return jpadding_emission_;
+  };
   const Eigen::RowVectorXd& vgerm_forward() const { return vgerm_forward_; };
   const Eigen::MatrixXd& vd_junction_forward() const {
     return vd_junction_forward_;
@@ -260,6 +310,11 @@ void CacheHMMJunctionStates(
     std::vector<int>& naive_bases_, std::vector<int>& germ_inds_,
     std::vector<int>& site_inds_);
 
+void CacheHMMPaddingStates(
+    GermlinePtr germ_ptr, std::pair<int, int> leftright_flexbounds, int relpos,
+    bool left_end, std::map<std::string, std::pair<int, int>>& ggene_ranges_,
+    std::vector<int>& naive_bases_, std::vector<int>& site_inds_);
+
 void ComputeHMMGermlineJunctionTransition(
     const std::vector<std::string>& germ_state_strs_,
     const std::map<std::string, std::pair<int, int>>& germ_ggene_ranges_,
@@ -295,6 +350,11 @@ void ComputeHMMJunctionGermlineTransition(
     const std::unordered_map<std::string, GermlineGene>& ggenes_,
     Eigen::MatrixXd& junction_germ_transition_);
 
+void ComputeHMMPaddingTransition(
+    const std::map<std::string, std::pair<int, int>>& ggene_ranges_,
+    const std::unordered_map<std::string, GermlineGene>& ggenes_,
+    Eigen::RowVectorXd& transition_);
+
 void FillHMMTransition(const GermlineGene& from_ggene,
                        const GermlineGene& to_ggene, GermlineType left_gtype,
                        GermlineType right_gtype, int germ_ind_row_start,
@@ -317,8 +377,10 @@ void ComputeHMMGermlineForwardProbabilities(
     const Eigen::MatrixXd& junction_forward_,
     const std::vector<int>& junction_scaler_counts_,
     const Eigen::MatrixXd& junction_germ_transition_,
-    const Eigen::RowVectorXd& germ_emission_, Eigen::RowVectorXd& germ_forward_,
-    int& germ_scaler_count_);
+    const Eigen::RowVectorXd& germ_emission_,
+    const Eigen::RowVectorXd& padding_transition_,
+    const Eigen::RowVectorXd& padding_emission_,
+    Eigen::RowVectorXd& germ_forward_, int& germ_scaler_count_);
 
 int ScaleMatrix2(Eigen::Ref<Eigen::MatrixXd> m);
 

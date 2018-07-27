@@ -59,8 +59,12 @@ PhyloData::PhyloData(
   partition_->TraversalUpdate(root_node, pt::pll::TraversalType::FULL);
   partition_->LogLikelihood(root_node, xmsa_emission_.data());
   // Apply the naive sequence correction to the phylogenetic likelihoods.
+  const std::string& alphabet = ggenes.begin()->second.germ_ptr->alphabet();
   for (int i = 0; i < xmsa_emission_.size(); i++) {
-    double naive_prob = model_params.frequencies[xmsa_(xmsa_naive_index_, i)];
+    double naive_prob =
+        (xmsa_(xmsa_naive_index_, i) != alphabet.size())
+            ? model_params.frequencies[xmsa_(xmsa_naive_index_, i)]
+            : 1;
     xmsa_emission_[i] -= log(naive_prob);
   }
   xmsa_emission_.array() = xmsa_emission_.array().exp();
@@ -137,6 +141,23 @@ Eigen::RowVectorXd PhyloData::NTIEmissionVector(NTInsertionPtr nti_ptr,
 };
 
 
+
+double PhyloData::PaddingProb(GermlinePtr germ_ptr,std::string type,int relpos) const {
+  Eigen::VectorXi xmsa_indices = padding_xmsa_indices_.at(germ_ptr->name());
+
+  // Compute the emission probability vector.
+  Eigen::RowVectorXd emission(xmsa_indices.size());
+  for (int i = 0; i < emission.size(); i++) {
+    emission[i] = xmsa_emission_[xmsa_indices[i]];
+  }
+
+  double n_transition = (type == "v") ? std::static_pointer_cast<VGermline>(germ_ptr)->n_transition() : std::static_pointer_cast<JGermline>(germ_ptr)->n_transition();
+
+  return emission.prod() * (1 - n_transition) * std::pow(n_transition, xmsa_indices.size());
+};
+
+
+
 // Initialization Functions
 
 
@@ -161,7 +182,7 @@ void PhyloData::InitializeMsa(const std::vector<std::string>& msa_seqs,
   for (int i = 0; i < msa_seqs.size(); i++) {
     if (xmsa_labels_[i] != "naive") {
       msa_.row(row_index++) =
-          ConvertSeqToInts(msa_seqs[i], alphabet).transpose();
+          ConvertSeqToInts(msa_seqs[i], alphabet+"N").transpose();
     } else {
       xmsa_naive_index_ = i;
     }
@@ -192,6 +213,7 @@ void PhyloData::InitializeXmsaStructs(
 
     if (ggene.type == GermlineType::V) {
       CacheGermlineXmsaIndices(ggene.germ_ptr, "v_l", xmsa_ids);
+      CachePaddingXmsaIndices(ggene.germ_ptr, "v_l", it->second, xmsa_ids);
     } else if (ggene.type == GermlineType::D) {
       CacheGermlineXmsaIndices(ggene.germ_ptr, "v_r", xmsa_ids);
       CacheGermlineXmsaIndices(ggene.germ_ptr, "d_l", xmsa_ids);
@@ -199,6 +221,7 @@ void PhyloData::InitializeXmsaStructs(
       assert(ggene.type == GermlineType::J);
       CacheGermlineXmsaIndices(ggene.germ_ptr, "d_r", xmsa_ids);
       CacheGermlineXmsaIndices(ggene.germ_ptr, "j_l", xmsa_ids);
+      CachePaddingXmsaIndices(ggene.germ_ptr, "j_r", it->second, xmsa_ids);
     }
   }
 
@@ -210,7 +233,7 @@ void PhyloData::InitializeXmsaStructs(
 
   // Build the xMSA, the associated per-site rate vector, and the vector of xMSA
   // sequence strings.
-  BuildXmsa(xmsa_ids, ggenes.begin()->second.germ_ptr->alphabet());
+  BuildXmsa(xmsa_ids, ggenes.begin()->second.germ_ptr->alphabet()+"N");
 };
 
 
@@ -443,6 +466,27 @@ void PhyloData::CacheNTIXmsaIndices(
 };
 
 
+
+void PhyloData::CachePaddingXmsaIndices(GermlinePtr germ_ptr, std::string flexbounds_name,
+  int relpos, std::map<std::tuple<int, double, int>, int>& xmsa_ids) {
+    std::pair<int, int> flexbounds = flexbounds_.at(flexbounds_name);
+
+    int site_start = (flexbounds_name == "v_l") ? flexbounds.first
+                              : std::min(relpos + germ_ptr->length(),
+                                         flexbounds.second);
+    int site_end = (flexbounds_name == "v_l") ? std::max(relpos, flexbounds.first)
+                            : flexbounds.second;
+
+    Eigen::VectorXi pad_xmsa_inds(site_end-site_start);
+    for (int i = site_start; i < site_end; i++) {
+      auto id = std::make_tuple(germ_ptr->alphabet().size(), 1.0, i);
+      StoreXmsaIndex(id, xmsa_ids, pad_xmsa_inds[i-site_start]);
+    }
+
+    padding_xmsa_indices_.emplace(germ_ptr->name(), pad_xmsa_inds);
+};
+
+
 /// @brief Builds the xMSA, the associated per-site rate vector, and the vector
 /// of xMSA sequence strings.
 /// @param[in] xmsa_ids
@@ -474,7 +518,7 @@ void PhyloData::BuildXmsa(
 
   // Fill `xmsa_seqs_` with the xMSA sequence strings.
   for (int i = 0; i < xmsa_.rows(); i++) {
-    xmsa_seqs_[i] = ConvertIntsToSeq(xmsa_.row(i), alphabet);
+    xmsa_seqs_[i] = ConvertIntsToSeq(xmsa_.row(i), alphabet+"N");
   }
 };
 

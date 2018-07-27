@@ -37,6 +37,10 @@ class NewSimpleData : public NewData {
       const std::vector<int>& site_inds_, std::pair<int, int> left_flexbounds,
       std::pair<int, int> right_flexbounds, Eigen::MatrixXd& emission_);
 
+  void FillHMMPaddingEmission(
+      const std::map<std::string, std::pair<int, int>>& ggene_ranges_,
+      const std::vector<int>& site_inds_, Eigen::RowVectorXd& emission_);
+
  public:
   NewSimpleData(const std::string& yaml_path, const std::string& dir_path);
 

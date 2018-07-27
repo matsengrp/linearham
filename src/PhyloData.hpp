@@ -24,6 +24,7 @@ class PhyloData : public Data {
   Eigen::VectorXd xmsa_emission_;
   std::map<std::array<std::string, 2>, Eigen::VectorXi> germ_xmsa_indices_;
   std::map<int, Eigen::VectorXi> nti_xmsa_indices_;
+  std::map<std::string, Eigen::VectorXi> padding_xmsa_indices_;
   pll_utree_t* tree_;
   std::unique_ptr<pt::pll::Partition> partition_;
 
@@ -32,6 +33,8 @@ class PhyloData : public Data {
 
   Eigen::RowVectorXd NTIEmissionVector(NTInsertionPtr nti_ptr,
                                        int site_pos) const override;
+
+  double PaddingProb(GermlinePtr germ_ptr,std::string,int) const override;
 
   // Initialization Functions
   void InitializeMsa(const std::vector<std::string>& msa_seqs,
@@ -65,6 +68,9 @@ class PhyloData : public Data {
       int alphabet_size, std::string left_flexbounds_name,
       std::string right_flexbounds_name,
       std::map<std::tuple<int, double, int>, int>& xmsa_ids);
+
+      void CachePaddingXmsaIndices(GermlinePtr germ_ptr, std::string flexbounds_name,
+        int relpos, std::map<std::tuple<int, double, int>, int>& xmsa_ids);
 
   void BuildXmsa(const std::map<std::tuple<int, double, int>, int>& xmsa_ids,
                  const std::string& alphabet);

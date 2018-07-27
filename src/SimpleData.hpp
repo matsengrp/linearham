@@ -22,6 +22,8 @@ class SimpleData : public Data {
   Eigen::RowVectorXd NTIEmissionVector(NTInsertionPtr nti_ptr,
                                        int site_pos) const override;
 
+  double PaddingProb(GermlinePtr germ_ptr,std::string,int) const override;
+
  public:
   SimpleData(){};
   SimpleData(const std::string& seq_str,

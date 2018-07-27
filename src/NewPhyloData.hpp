@@ -31,11 +31,13 @@ class NewPhyloData : public NewData {
   std::unique_ptr<pt::pll::Partition> partition_;
 
   // PhyloHMM xMSA site indices
+  Eigen::VectorXi vpadding_xmsa_inds_;
   Eigen::VectorXi vgerm_xmsa_inds_;
   Eigen::MatrixXi vd_junction_xmsa_inds_;
   Eigen::VectorXi dgerm_xmsa_inds_;
   Eigen::MatrixXi dj_junction_xmsa_inds_;
   Eigen::VectorXi jgerm_xmsa_inds_;
+  Eigen::VectorXi jpadding_xmsa_inds_;
 
   // Initialization functions
   void InitializeMsa(const std::vector<std::string>& msa_seqs,
@@ -43,12 +45,14 @@ class NewPhyloData : public NewData {
 
   void InitializeXmsaStructs();
 
+  void InitializeXmsaEmission(const pt::pll::Model& model_params);
+
   void InitializeHMMEmission() override;
 
   // Auxiliary functions
   void BuildXmsa(const std::map<std::pair<int, int>, int>& xmsa_ids);
 
-  void FillHMMGermlineEmission(
+  void FillHMMGermlinePaddingEmission(
       const std::map<std::string, std::pair<int, int>>& ggene_ranges_,
       const Eigen::VectorXi& xmsa_inds_, Eigen::RowVectorXd& emission_);
 
@@ -69,6 +73,9 @@ class NewPhyloData : public NewData {
   const Eigen::VectorXd& xmsa_emission() const { return xmsa_emission_; };
   const pll_utree_t& tree() const { return *tree_; };
   const pt::pll::Partition& partition() const { return *partition_; };
+  const Eigen::VectorXi& vpadding_xmsa_inds() const {
+    return vpadding_xmsa_inds_;
+  };
   const Eigen::VectorXi& vgerm_xmsa_inds() const { return vgerm_xmsa_inds_; };
   const Eigen::MatrixXi& vd_junction_xmsa_inds() const {
     return vd_junction_xmsa_inds_;
@@ -78,6 +85,9 @@ class NewPhyloData : public NewData {
     return dj_junction_xmsa_inds_;
   };
   const Eigen::VectorXi& jgerm_xmsa_inds() const { return jgerm_xmsa_inds_; };
+  const Eigen::VectorXi& jpadding_xmsa_inds() const {
+    return jpadding_xmsa_inds_;
+  };
 };
 
 
@@ -86,10 +96,9 @@ typedef std::shared_ptr<NewPhyloData> NewPhyloDataPtr;
 
 // Auxiliary functions
 
-void StoreGermlineXmsaIndices(const std::vector<int>& naive_bases_,
-                              const std::vector<int>& site_inds_,
-                              std::map<std::pair<int, int>, int>& xmsa_ids,
-                              Eigen::VectorXi& xmsa_inds_);
+void StoreGermlinePaddingXmsaIndices(
+    const std::vector<int>& naive_bases_, const std::vector<int>& site_inds_,
+    std::map<std::pair<int, int>, int>& xmsa_ids, Eigen::VectorXi& xmsa_inds_);
 
 void StoreJunctionXmsaIndices(const std::vector<int>& naive_bases_,
                               const std::vector<int>& site_inds_,

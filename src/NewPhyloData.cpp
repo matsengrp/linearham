@@ -39,16 +39,7 @@ NewPhyloData::NewPhyloData(const std::string& yaml_path,
                                           xmsa_seqs_, false));
 
   // Initialize the xMSA per-site emission probability vector.
-  xmsa_emission_.setZero(xmsa_.cols());
-  pll_unode_t* root_node = pt::pll::GetVirtualRoot(tree_);
-  partition_->TraversalUpdate(root_node, pt::pll::TraversalType::FULL);
-  partition_->LogLikelihood(root_node, xmsa_emission_.data());
-  // Apply the naive sequence correction to the phylogenetic likelihoods.
-  for (std::size_t i = 0; i < xmsa_emission_.size(); i++) {
-    double naive_prob = model_params.frequencies[xmsa_(xmsa_naive_ind_, i)];
-    xmsa_emission_[i] -= std::log(naive_prob);
-  }
-  xmsa_emission_.array() = xmsa_emission_.array().exp();
+  InitializeXmsaEmission(model_params);
 
   // Initialize the HMM emission probability matrices.
   InitializeHMMEmission();
@@ -68,13 +59,11 @@ void NewPhyloData::InitializeMsa(const std::vector<std::string>& msa_seqs,
                                  unsigned int sites) {
   assert(msa_seqs.size() == tip_node_count);
   assert(msa_seqs[0].size() == sites);
-
-  const std::string& alphabet = ggenes_.begin()->second.germ_ptr->alphabet();
   msa_.setConstant(tip_node_count - 1, sites, -1);
 
   for (std::size_t i = 0, row_ind = 0; i < msa_seqs.size(); i++) {
     if (xmsa_labels_[i] != "naive") {
-      msa_.row(row_ind++) = ConvertSeqToInts2(msa_seqs[i], alphabet);
+      msa_.row(row_ind++) = ConvertSeqToInts2(msa_seqs[i], alphabet_ + "N");
     } else {
       xmsa_naive_ind_ = i;
     }
@@ -87,34 +76,64 @@ void NewPhyloData::InitializeXmsaStructs() {
   // We use this map to keep track of the unique xMSA site indices.
   std::map<std::pair<int, int>, int> xmsa_ids;
 
-  // Cache the xMSA site indices in the "germline" and "junction" regions.
-  StoreGermlineXmsaIndices(vgerm_naive_bases_, vgerm_site_inds_, xmsa_ids,
-                           vgerm_xmsa_inds_);
+  // Cache the xMSA site indices in the "germline", "junction", and "padding"
+  // regions.
+  StoreGermlinePaddingXmsaIndices(vpadding_naive_bases_, vpadding_site_inds_,
+                                  xmsa_ids, vpadding_xmsa_inds_);
+  StoreGermlinePaddingXmsaIndices(vgerm_naive_bases_, vgerm_site_inds_,
+                                  xmsa_ids, vgerm_xmsa_inds_);
   StoreJunctionXmsaIndices(vd_junction_naive_bases_, vd_junction_site_inds_,
                            flexbounds_.at("v_r"), flexbounds_.at("d_l"),
                            xmsa_ids, vd_junction_xmsa_inds_);
-  StoreGermlineXmsaIndices(dgerm_naive_bases_, dgerm_site_inds_, xmsa_ids,
-                           dgerm_xmsa_inds_);
+  StoreGermlinePaddingXmsaIndices(dgerm_naive_bases_, dgerm_site_inds_,
+                                  xmsa_ids, dgerm_xmsa_inds_);
   StoreJunctionXmsaIndices(dj_junction_naive_bases_, dj_junction_site_inds_,
                            flexbounds_.at("d_r"), flexbounds_.at("j_l"),
                            xmsa_ids, dj_junction_xmsa_inds_);
-  StoreGermlineXmsaIndices(jgerm_naive_bases_, jgerm_site_inds_, xmsa_ids,
-                           jgerm_xmsa_inds_);
+  StoreGermlinePaddingXmsaIndices(jgerm_naive_bases_, jgerm_site_inds_,
+                                  xmsa_ids, jgerm_xmsa_inds_);
+  StoreGermlinePaddingXmsaIndices(jpadding_naive_bases_, jpadding_site_inds_,
+                                  xmsa_ids, jpadding_xmsa_inds_);
 
   // Build the xMSA and the vector of xMSA sequence strings.
   BuildXmsa(xmsa_ids);
 };
 
 
+void NewPhyloData::InitializeXmsaEmission(const pt::pll::Model& model_params) {
+  xmsa_emission_.setZero(xmsa_.cols());
+
+  // Compute the per-site phylogenetic log-likelihoods.
+  pll_unode_t* root_node = pt::pll::GetVirtualRoot(tree_);
+  partition_->TraversalUpdate(root_node, pt::pll::TraversalType::FULL);
+  partition_->LogLikelihood(root_node, xmsa_emission_.data());
+
+  // Apply the naive sequence correction to the phylogenetic log-likelihoods.
+  for (std::size_t i = 0; i < xmsa_emission_.size(); i++) {
+    // Is the current naive base an unambiguous nucleotide?
+    if (xmsa_(xmsa_naive_ind_, i) != alphabet_.size()) {
+      double naive_prob = model_params.frequencies[xmsa_(xmsa_naive_ind_, i)];
+      xmsa_emission_[i] -= std::log(naive_prob);
+    }
+  }
+
+  xmsa_emission_.array() = xmsa_emission_.array().exp();
+};
+
+
 void NewPhyloData::InitializeHMMEmission() {
-  FillHMMGermlineEmission(vgerm_ggene_ranges_, vgerm_xmsa_inds_,
-                          vgerm_emission_);
+  FillHMMGermlinePaddingEmission(vpadding_ggene_ranges_, vpadding_xmsa_inds_,
+                                 vpadding_emission_);
+  FillHMMGermlinePaddingEmission(vgerm_ggene_ranges_, vgerm_xmsa_inds_,
+                                 vgerm_emission_);
   FillHMMJunctionEmission(vd_junction_xmsa_inds_, vd_junction_emission_);
-  FillHMMGermlineEmission(dgerm_ggene_ranges_, dgerm_xmsa_inds_,
-                          dgerm_emission_);
+  FillHMMGermlinePaddingEmission(dgerm_ggene_ranges_, dgerm_xmsa_inds_,
+                                 dgerm_emission_);
   FillHMMJunctionEmission(dj_junction_xmsa_inds_, dj_junction_emission_);
-  FillHMMGermlineEmission(jgerm_ggene_ranges_, jgerm_xmsa_inds_,
-                          jgerm_emission_);
+  FillHMMGermlinePaddingEmission(jgerm_ggene_ranges_, jgerm_xmsa_inds_,
+                                 jgerm_emission_);
+  FillHMMGermlinePaddingEmission(jpadding_ggene_ranges_, jpadding_xmsa_inds_,
+                                 jpadding_emission_);
 };
 
 
@@ -140,23 +159,23 @@ void NewPhyloData::BuildXmsa(
   }
 
   // Create the vector of xMSA sequence strings.
-  const std::string& alphabet = ggenes_.begin()->second.germ_ptr->alphabet();
   for (std::size_t i = 0; i < xmsa_.rows(); i++) {
-    xmsa_seqs_[i] = ConvertIntsToSeq2(xmsa_.row(i), alphabet);
+    xmsa_seqs_[i] = ConvertIntsToSeq2(xmsa_.row(i), alphabet_ + "N");
   }
 };
 
 
-void NewPhyloData::FillHMMGermlineEmission(
+void NewPhyloData::FillHMMGermlinePaddingEmission(
     const std::map<std::string, std::pair<int, int>>& ggene_ranges_,
     const Eigen::VectorXi& xmsa_inds_, Eigen::RowVectorXd& emission_) {
   emission_.setOnes(ggene_ranges_.size());
 
-  // Loop through the "germline" states and cache the associated PhyloHMM
-  // emission probabilities.
+  // Loop through the ["germline"|"padding"] states and cache the associated
+  // PhyloHMM emission probabilities.
   int i = 0;
   for (auto it = ggene_ranges_.begin(); it != ggene_ranges_.end(); ++it, i++) {
-    // Obtain the start/end indices that map to the current "germline" state.
+    // Obtain the start/end indices that map to the current
+    // ["germline"|"padding"] state.
     int range_start, range_end;
     std::tie(range_start, range_end) = it->second;
 
@@ -186,14 +205,13 @@ void NewPhyloData::FillHMMJunctionEmission(const Eigen::MatrixXi& xmsa_inds_,
 // Auxiliary functions
 
 
-void StoreGermlineXmsaIndices(const std::vector<int>& naive_bases_,
-                              const std::vector<int>& site_inds_,
-                              std::map<std::pair<int, int>, int>& xmsa_ids,
-                              Eigen::VectorXi& xmsa_inds_) {
+void StoreGermlinePaddingXmsaIndices(
+    const std::vector<int>& naive_bases_, const std::vector<int>& site_inds_,
+    std::map<std::pair<int, int>, int>& xmsa_ids, Eigen::VectorXi& xmsa_inds_) {
   xmsa_inds_.setConstant(naive_bases_.size(), -1);
 
-  // Loop through the "germline" states and store the associated xMSA site
-  // indices.
+  // Loop through the ["germline"|"padding"] states and store the associated
+  // xMSA site indices.
   for (std::size_t i = 0; i < naive_bases_.size(); i++) {
     StoreXmsaIndex({naive_bases_[i], site_inds_[i]}, xmsa_ids, xmsa_inds_[i]);
   }

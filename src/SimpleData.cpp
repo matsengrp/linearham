@@ -95,6 +95,30 @@ Eigen::RowVectorXd SimpleData::NTIEmissionVector(NTInsertionPtr nti_ptr,
 };
 
 
+double SimpleData::PaddingProb(GermlinePtr germ_ptr,std::string type, int relpos) const {
+  std::pair<int, int> flexbounds = (type == "v") ? flexbounds_.at("v_l") : flexbounds_.at("j_r");
+
+  int site_start = (type == "v") ? flexbounds.first
+                            : std::min(relpos + germ_ptr->length(),
+                                       flexbounds.second);
+  int site_end = (type == "v") ? std::max(relpos, flexbounds.first)
+                          : flexbounds.second;
+
+  double n_transition = (type == "v") ? std::static_pointer_cast<VGermline>(germ_ptr)->n_transition() : std::static_pointer_cast<JGermline>(germ_ptr)->n_transition();
+
+  double emission = 1;
+  for (int i = site_start; i < site_end; i++) {
+    if (seq_[i] == germ_ptr->alphabet().size()) {
+      emission *= 1;
+    } else {
+      emission *= 0.25;
+    }
+  }
+
+  return emission * (1 - n_transition) * std::pow(n_transition, site_end-site_start);
+};
+
+
 // SimpleDataPtr Function
 
 

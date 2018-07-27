@@ -15,8 +15,7 @@ NewSimpleData::NewSimpleData(const std::string& yaml_path,
     : NewData(yaml_path, dir_path) {
   // Parse the `input_seqs` YAML data.
   seq_str_ = yaml_root_["events"][0]["input_seqs"][0].as<std::string>();
-  seq_ =
-      ConvertSeqToInts2(seq_str_, ggenes_.begin()->second.germ_ptr->alphabet());
+  seq_ = ConvertSeqToInts2(seq_str_, alphabet_ + "N");
 
   // Initialize the HMM emission probability matrices.
   InitializeHMMEmission();
@@ -27,6 +26,8 @@ NewSimpleData::NewSimpleData(const std::string& yaml_path,
 
 
 void NewSimpleData::InitializeHMMEmission() {
+  FillHMMPaddingEmission(vpadding_ggene_ranges_, vpadding_site_inds_,
+                         vpadding_emission_);
   FillHMMGermlineEmission(vgerm_ggene_ranges_, vgerm_germ_inds_,
                           vgerm_site_inds_, vgerm_emission_);
   FillHMMJunctionEmission(vd_junction_ggene_ranges_, vd_junction_naive_bases_,
@@ -41,6 +42,8 @@ void NewSimpleData::InitializeHMMEmission() {
                           dj_junction_emission_);
   FillHMMGermlineEmission(jgerm_ggene_ranges_, jgerm_germ_inds_,
                           jgerm_site_inds_, jgerm_emission_);
+  FillHMMPaddingEmission(jpadding_ggene_ranges_, jpadding_site_inds_,
+                         jpadding_emission_);
 };
 
 
@@ -108,6 +111,37 @@ void NewSimpleData::FillHMMJunctionEmission(
       } else {
         emission_(site_inds_[i] - site_start, i) =
             ggene.germ_ptr->emission()(seq_[site_inds_[i]], germ_inds_[i]);
+      }
+    }
+  }
+};
+
+
+void NewSimpleData::FillHMMPaddingEmission(
+    const std::map<std::string, std::pair<int, int>>& ggene_ranges_,
+    const std::vector<int>& site_inds_, Eigen::RowVectorXd& emission_) {
+  emission_.setOnes(ggene_ranges_.size());
+
+  // Loop through the "padding" states and cache the associated HMM emission
+  // probabilities.
+  int i = 0;
+  for (auto it = ggene_ranges_.begin(); it != ggene_ranges_.end(); ++it, i++) {
+    // Obtain the (key, value) pairs from the "padding" state index map.
+    const std::string& gname = it->first;
+    int range_start, range_end;
+    std::tie(range_start, range_end) = it->second;
+
+    // Extract the "padding" state information.
+    const GermlineGene& ggene = ggenes_.at(gname);
+    const Eigen::VectorXd& n_emission =
+        (ggene.type == GermlineType::V)
+            ? ggene.VGermlinePtrCast()->n_emission()
+            : ggene.JGermlinePtrCast()->n_emission();
+
+    for (int j = range_start; j < range_end; j++) {
+      // Is the current emitted base an unambiguous nucleotide?
+      if (seq_[site_inds_[j]] != alphabet_.size()) {
+        emission_[i] *= n_emission[seq_[site_inds_[j]]];
       }
     }
   }

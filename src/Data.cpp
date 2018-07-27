@@ -247,11 +247,7 @@ SmooshablePtr Data::VSmooshable(VGermlinePtr vgerm_ptr) const {
 
   // Multiply in the associated gene and padding probabilities.
   match_matrix *= vgerm_ptr->gene_prob();
-  // double npadding_prob =
-  //     vgerm_data.NPaddingProb(flexbounds.at("v_l"), emission_indices,
-  //     v_relpos,
-  //                            n_read_counts.first, true);
-  // germ_prob_matrix *= npadding_prob;
+  match_matrix *= PaddingProb(vgerm_ptr,"v",relpos_.at(vgerm_ptr->name()));
 
   // Construct a germline match matrix with per-site emission probabilities.
   Eigen::MatrixXd emission_match_matrix =
@@ -357,11 +353,8 @@ std::pair<SmooshablePtrVect, SmooshablePtrVect> Data::JSmooshables(
   // Multiply in the associated gene and padding probabilities.
   xmatch_matrix *= jgerm_ptr->gene_prob();
   nmatch_matrix *= jgerm_ptr->gene_prob();
-  // double npadding_prob = jgerm_data.NPaddingProb(
-  //     flexbounds.at("j_r"), emission_indices, j_relpos + jgerm_data.length(),
-  //     n_read_counts.second, false);
-  // xgerm_prob_matrix *= npadding_prob;
-  // ngerm_prob_matrix *= npadding_prob;
+  xmatch_matrix *= PaddingProb(jgerm_ptr,"j",relpos_.at(jgerm_ptr->name()));
+  nmatch_matrix *= PaddingProb(jgerm_ptr,"j",relpos_.at(jgerm_ptr->name()));
 
   // Construct germline match matrices with per-site emission probabilities.
   Eigen::MatrixXd emission_xmatch_matrix =

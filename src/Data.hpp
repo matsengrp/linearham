@@ -67,6 +67,8 @@ class Data {
   virtual Eigen::RowVectorXd NTIEmissionVector(NTInsertionPtr nti_ptr,
                                                int site_pos) const = 0;
 
+  virtual double PaddingProb(GermlinePtr, std::string,int) const = 0;
+
  public:
   Data(){};
   Data(const std::map<std::string, std::pair<int, int>>& flexbounds,

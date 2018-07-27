@@ -23,6 +23,9 @@ NewData::NewData(const std::string& yaml_path, const std::string& dir_path) {
   // Create the map holding (germline name, GermlineGene) pairs.
   ggenes_ = CreateGermlineGeneMap(dir_path);
 
+  // Initialize the nucleotide alphabet.
+  alphabet_ = ggenes_.begin()->second.germ_ptr->alphabet();
+
   // Initialize the HMM state space.
   InitializeHMMStateSpace();
 
@@ -45,6 +48,11 @@ void NewData::InitializeHMMStateSpace() {
     const GermlineGene& ggene = ggenes_.at(gname);
 
     if (ggene.type == GermlineType::V) {
+      // Cache the V "padding" state.
+      CacheHMMPaddingStates(ggene.germ_ptr, flexbounds_.at("v_l"), relpos, true,
+                            vpadding_ggene_ranges_, vpadding_naive_bases_,
+                            vpadding_site_inds_);
+
       // Cache the V "germline" state.
       CacheHMMGermlineStates(
           ggene.germ_ptr, flexbounds_.at("v_l"), flexbounds_.at("v_r"), relpos,
@@ -92,12 +100,19 @@ void NewData::InitializeHMMStateSpace() {
           ggene.germ_ptr, flexbounds_.at("j_l"), flexbounds_.at("j_r"), relpos,
           false, true, jgerm_state_strs_, jgerm_ggene_ranges_,
           jgerm_naive_bases_, jgerm_germ_inds_, jgerm_site_inds_);
+
+      // Cache the J "padding" state.
+      CacheHMMPaddingStates(ggene.germ_ptr, flexbounds_.at("j_r"), relpos,
+                            false, jpadding_ggene_ranges_,
+                            jpadding_naive_bases_, jpadding_site_inds_);
     }
   }
 };
 
 
 void NewData::InitializeHMMTransition() {
+  ComputeHMMPaddingTransition(vpadding_ggene_ranges_, ggenes_,
+                              vpadding_transition_);
   ComputeHMMGermlineJunctionTransition(
       vgerm_state_strs_, vgerm_ggene_ranges_, vgerm_germ_inds_,
       vgerm_site_inds_, vd_junction_state_strs_, vd_junction_ggene_ranges_,
@@ -126,6 +141,8 @@ void NewData::InitializeHMMTransition() {
       dj_junction_germ_inds_, dj_junction_site_inds_, jgerm_state_strs_,
       jgerm_ggene_ranges_, jgerm_germ_inds_, jgerm_site_inds_, GermlineType::D,
       GermlineType::J, ggenes_, dj_junction_jgerm_transition_);
+  ComputeHMMPaddingTransition(jpadding_ggene_ranges_, ggenes_,
+                              jpadding_transition_);
 };
 
 
@@ -149,6 +166,8 @@ void NewData::InitializeHMMForwardProbabilities() {
 
     // Compute the forward probability for the current "germline" state.
     vgerm_forward_[i] = ggene.germ_ptr->gene_prob();
+    vgerm_forward_[i] *= vpadding_transition_[i];
+    vgerm_forward_[i] *= vpadding_emission_[i];
     vgerm_forward_[i] *=
         ggene.germ_ptr->next_transition()
             .segment(germ_ind_start, range_end - range_start - 1)
@@ -172,7 +191,9 @@ double NewData::LogLikelihood() {
       vd_junction_scaler_counts_);
   ComputeHMMGermlineForwardProbabilities(
       vd_junction_forward_, vd_junction_scaler_counts_,
-      vd_junction_dgerm_transition_, dgerm_emission_, dgerm_forward_,
+      vd_junction_dgerm_transition_, dgerm_emission_,
+      Eigen::RowVectorXd::Ones(dgerm_state_strs_.size()),
+      Eigen::RowVectorXd::Ones(dgerm_state_strs_.size()), dgerm_forward_,
       dgerm_scaler_count_);
   ComputeHMMJunctionForwardProbabilities(
       dgerm_forward_, dgerm_scaler_count_, dgerm_dj_junction_transition_,
@@ -180,8 +201,8 @@ double NewData::LogLikelihood() {
       dj_junction_scaler_counts_);
   ComputeHMMGermlineForwardProbabilities(
       dj_junction_forward_, dj_junction_scaler_counts_,
-      dj_junction_jgerm_transition_, jgerm_emission_, jgerm_forward_,
-      jgerm_scaler_count_);
+      dj_junction_jgerm_transition_, jgerm_emission_, jpadding_transition_,
+      jpadding_emission_, jgerm_forward_, jgerm_scaler_count_);
 
   return std::log(jgerm_forward_.sum()) -
          jgerm_scaler_count_ * std::log(SCALE_FACTOR2);
@@ -261,6 +282,33 @@ void CacheHMMJunctionStates(
     state_strs_.push_back(germ_ptr->name() + ":" + std::to_string(i - relpos));
     naive_bases_.push_back(germ_ptr->bases()[i - relpos]);
     germ_inds_.push_back(i - relpos);
+    site_inds_.push_back(i);
+  }
+};
+
+
+void CacheHMMPaddingStates(
+    GermlinePtr germ_ptr, std::pair<int, int> leftright_flexbounds, int relpos,
+    bool left_end, std::map<std::string, std::pair<int, int>>& ggene_ranges_,
+    std::vector<int>& naive_bases_, std::vector<int>& site_inds_) {
+  // Compute the site positions that correspond to the start/end of the padding
+  // state in the "germline" region.
+  int site_start = left_end ? leftright_flexbounds.first
+                            : std::min(relpos + germ_ptr->length(),
+                                       leftright_flexbounds.second);
+  int site_end = left_end ? std::max(relpos, leftright_flexbounds.first)
+                          : leftright_flexbounds.second;
+
+  // Calculate the start/end indices that map to the "padding" state associated
+  // with the current germline gene.
+  int range_start = naive_bases_.size();
+  int range_end = naive_bases_.size() + (site_end - site_start);
+  ggene_ranges_.emplace(germ_ptr->name(),
+                        std::pair<int, int>({range_start, range_end}));
+
+  // Store the padding-related state information.
+  for (int i = site_start; i < site_end; i++) {
+    naive_bases_.push_back(germ_ptr->alphabet().size());
     site_inds_.push_back(i);
   }
 };
@@ -451,6 +499,33 @@ void ComputeHMMJunctionGermlineTransition(
 };
 
 
+void ComputeHMMPaddingTransition(
+    const std::map<std::string, std::pair<int, int>>& ggene_ranges_,
+    const std::unordered_map<std::string, GermlineGene>& ggenes_,
+    Eigen::RowVectorXd& transition_) {
+  transition_.setZero(ggene_ranges_.size());
+
+  // Loop through the "padding" states and cache the associated HMM transition
+  // probabilities.
+  int i = 0;
+  for (auto it = ggene_ranges_.begin(); it != ggene_ranges_.end(); ++it, i++) {
+    // Obtain the (key, value) pairs from the "padding" state index map.
+    const std::string& gname = it->first;
+    int range_start, range_end;
+    std::tie(range_start, range_end) = it->second;
+
+    // Extract the "padding" state information.
+    const GermlineGene& ggene = ggenes_.at(gname);
+    double n_transition = (ggene.type == GermlineType::V)
+                              ? ggene.VGermlinePtrCast()->n_transition()
+                              : ggene.JGermlinePtrCast()->n_transition();
+
+    transition_[i] =
+        (1.0 - n_transition) * std::pow(n_transition, range_end - range_start);
+  }
+};
+
+
 void FillHMMTransition(const GermlineGene& from_ggene,
                        const GermlineGene& to_ggene, GermlineType left_gtype,
                        GermlineType right_gtype, int germ_ind_row_start,
@@ -615,11 +690,15 @@ void ComputeHMMGermlineForwardProbabilities(
     const Eigen::MatrixXd& junction_forward_,
     const std::vector<int>& junction_scaler_counts_,
     const Eigen::MatrixXd& junction_germ_transition_,
-    const Eigen::RowVectorXd& germ_emission_, Eigen::RowVectorXd& germ_forward_,
-    int& germ_scaler_count_) {
+    const Eigen::RowVectorXd& germ_emission_,
+    const Eigen::RowVectorXd& padding_transition_,
+    const Eigen::RowVectorXd& padding_emission_,
+    Eigen::RowVectorXd& germ_forward_, int& germ_scaler_count_) {
   // Compute the forward probabilities for the "germline" states.
   germ_forward_ = junction_forward_.bottomRows(1) * junction_germ_transition_;
   germ_forward_.array() *= germ_emission_.array();
+  germ_forward_.array() *= padding_transition_.array();
+  germ_forward_.array() *= padding_emission_.array();
 
   // Scale the forward probabilities.
   germ_scaler_count_ =
