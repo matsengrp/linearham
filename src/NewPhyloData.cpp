@@ -4,7 +4,6 @@
 #include <cstddef>
 #include <tuple>
 
-#include <model.hpp>
 #include <pll_util.hpp>
 
 /// @file NewPhyloData.cpp

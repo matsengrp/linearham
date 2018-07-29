@@ -9,6 +9,7 @@
 
 #include <libpll/pll.h>
 #include <Eigen/Dense>
+#include <model.hpp>
 #include <pll_partition.hpp>
 #include "NewData.hpp"
 
