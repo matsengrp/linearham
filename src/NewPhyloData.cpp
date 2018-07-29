@@ -62,7 +62,7 @@ void NewPhyloData::InitializeMsa(const std::vector<std::string>& msa_seqs,
 
   for (std::size_t i = 0, row_ind = 0; i < msa_seqs.size(); i++) {
     if (xmsa_labels_[i] != "naive") {
-      msa_.row(row_ind++) = ConvertSeqToInts2(msa_seqs[i], alphabet_ + "N");
+      msa_.row(row_ind++) = ConvertSeqToInts2(msa_seqs[i], alphabet_);
     } else {
       xmsa_naive_ind_ = i;
     }
@@ -110,7 +110,7 @@ void NewPhyloData::InitializeXmsaEmission(const pt::pll::Model& model_params) {
   // Apply the naive sequence correction to the phylogenetic log-likelihoods.
   for (std::size_t i = 0; i < xmsa_emission_.size(); i++) {
     // Is the current naive base an unambiguous nucleotide?
-    if (xmsa_(xmsa_naive_ind_, i) != alphabet_.size()) {
+    if (xmsa_(xmsa_naive_ind_, i) != alphabet_.size() - 1) {
       double naive_prob = model_params.frequencies[xmsa_(xmsa_naive_ind_, i)];
       xmsa_emission_[i] -= std::log(naive_prob);
     }
@@ -159,7 +159,7 @@ void NewPhyloData::BuildXmsa(
 
   // Create the vector of xMSA sequence strings.
   for (std::size_t i = 0; i < xmsa_.rows(); i++) {
-    xmsa_seqs_[i] = ConvertIntsToSeq2(xmsa_.row(i), alphabet_ + "N");
+    xmsa_seqs_[i] = ConvertIntsToSeq2(xmsa_.row(i), alphabet_);
   }
 };
 

@@ -698,7 +698,7 @@ TEST_CASE("NewSimpleData", "[newsimpledata]") {
       {"d_r", {9, 10}}, {"j_l", {11, 12}}, {"j_r", {13, 13}}};
   std::map<std::string, int> VDJ_relpos = {
       {"IGHV_ex*01", 1}, {"IGHD_ex*01", 5}, {"IGHJ_ex*01", 10}};
-  std::string VDJ_alphabet = "ACGT";
+  std::string VDJ_alphabet = "ACGTN";
   std::map<std::string, std::pair<int, int>> VDJ_vpadding_ggene_ranges =
       {{"IGHV_ex*01", {0, 1}}};
   std::vector<int> VDJ_vpadding_naive_bases = {4};
@@ -866,7 +866,7 @@ TEST_CASE("NewSimpleData", "[newsimpledata]") {
                     {"d_r", {8, 10}}, {"j_l", {8, 10}}, {"j_r", {13, 13}}};
   VDJ_relpos = {{"IGHV_ex*01", 1}, {"IGHD_ex*01", 5}, {"IGHJ_ex*01", 10},
                 {"IGHV_ex*99", 1}, {"IGHD_ex*99", 3}, {"IGHJ_ex*99", 7}};
-  VDJ_alphabet = "ACGT";
+  VDJ_alphabet = "ACGTN";
   VDJ_vpadding_ggene_ranges = {{"IGHV_ex*01", {0, 1}}, {"IGHV_ex*99", {1, 2}}};
   VDJ_vpadding_naive_bases = {4, 4};
   VDJ_vpadding_site_inds = {0, 0};
@@ -1247,7 +1247,7 @@ TEST_CASE("NewPhyloData", "[newphylodata]") {
       {"d_r", {9, 10}}, {"j_l", {11, 12}}, {"j_r", {13, 13}}};
   std::map<std::string, int> VDJ_relpos = {
       {"IGHV_ex*01", 1}, {"IGHD_ex*01", 5}, {"IGHJ_ex*01", 10}};
-  std::string VDJ_alphabet = "ACGT";
+  std::string VDJ_alphabet = "ACGTN";
   std::map<std::string, std::pair<int, int>> VDJ_vpadding_ggene_ranges =
       {{"IGHV_ex*01", {0, 1}}};
   std::vector<int> VDJ_vpadding_naive_bases = {4};
@@ -1471,7 +1471,7 @@ TEST_CASE("NewPhyloData", "[newphylodata]") {
                     {"d_r", {8, 10}}, {"j_l", {8, 10}}, {"j_r", {13, 13}}};
   VDJ_relpos = {{"IGHV_ex*01", 1}, {"IGHD_ex*01", 5}, {"IGHJ_ex*01", 10},
                 {"IGHV_ex*99", 1}, {"IGHD_ex*99", 3}, {"IGHJ_ex*99", 7}};
-  VDJ_alphabet = "ACGT";
+  VDJ_alphabet = "ACGTN";
   VDJ_vpadding_ggene_ranges = {{"IGHV_ex*01", {0, 1}}, {"IGHV_ex*99", {1, 2}}};
   VDJ_vpadding_naive_bases = {4, 4};
   VDJ_vpadding_site_inds = {0, 0};

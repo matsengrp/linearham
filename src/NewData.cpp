@@ -24,7 +24,7 @@ NewData::NewData(const std::string& yaml_path, const std::string& dir_path) {
   ggenes_ = CreateGermlineGeneMap(dir_path);
 
   // Initialize the nucleotide alphabet.
-  alphabet_ = ggenes_.begin()->second.germ_ptr->alphabet();
+  alphabet_ = ggenes_.begin()->second.germ_ptr->alphabet() + "N";
 
   // Initialize the HMM state space.
   InitializeHMMStateSpace();

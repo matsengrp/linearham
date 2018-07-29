@@ -15,7 +15,7 @@ NewSimpleData::NewSimpleData(const std::string& yaml_path,
     : NewData(yaml_path, dir_path) {
   // Parse the `input_seqs` YAML data.
   seq_str_ = yaml_root_["events"][0]["input_seqs"][0].as<std::string>();
-  seq_ = ConvertSeqToInts2(seq_str_, alphabet_ + "N");
+  seq_ = ConvertSeqToInts2(seq_str_, alphabet_);
 
   // Initialize the HMM emission probability matrices.
   InitializeHMMEmission();
@@ -140,7 +140,7 @@ void NewSimpleData::FillHMMPaddingEmission(
 
     for (int j = range_start; j < range_end; j++) {
       // Is the current emitted base an unambiguous nucleotide?
-      if (seq_[site_inds_[j]] != alphabet_.size()) {
+      if (seq_[site_inds_[j]] != alphabet_.size() - 1) {
         emission_[i] *= n_emission[seq_[site_inds_[j]]];
       }
     }
