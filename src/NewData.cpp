@@ -31,6 +31,11 @@ NewData::NewData(const std::string& yaml_path, const std::string& dir_path) {
 
   // Initialize the HMM transition probability matrices.
   InitializeHMMTransition();
+
+  // Initialize the HMM "germline" scaler counts.
+  vgerm_scaler_count_ = 0;
+  dgerm_scaler_count_ = 0;
+  jgerm_scaler_count_ = 0;
 };
 
 
@@ -176,7 +181,7 @@ void NewData::InitializeHMMForwardProbabilities() {
   }
 
   // Scale the forward probabilities.
-  vgerm_scaler_count_ = ScaleMatrix2(vgerm_forward_);
+  vgerm_scaler_count_ += ScaleMatrix2(vgerm_forward_);
 };
 
 
@@ -701,7 +706,7 @@ void ComputeHMMGermlineForwardProbabilities(
   germ_forward_.array() *= padding_emission_.array();
 
   // Scale the forward probabilities.
-  germ_scaler_count_ =
+  germ_scaler_count_ +=
       junction_scaler_counts_.back() + ScaleMatrix2(germ_forward_);
 };
 

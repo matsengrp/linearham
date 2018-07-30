@@ -27,23 +27,26 @@ NewSimpleData::NewSimpleData(const std::string& yaml_path,
 
 void NewSimpleData::InitializeHMMEmission() {
   FillHMMPaddingEmission(vpadding_ggene_ranges_, vpadding_site_inds_,
-                         vpadding_emission_);
+                         vpadding_emission_, vgerm_scaler_count_);
   FillHMMGermlineEmission(vgerm_ggene_ranges_, vgerm_germ_inds_,
-                          vgerm_site_inds_, vgerm_emission_);
+                          vgerm_site_inds_, vgerm_emission_,
+                          vgerm_scaler_count_);
   FillHMMJunctionEmission(vd_junction_ggene_ranges_, vd_junction_naive_bases_,
                           vd_junction_germ_inds_, vd_junction_site_inds_,
                           flexbounds_.at("v_r"), flexbounds_.at("d_l"),
                           vd_junction_emission_);
   FillHMMGermlineEmission(dgerm_ggene_ranges_, dgerm_germ_inds_,
-                          dgerm_site_inds_, dgerm_emission_);
+                          dgerm_site_inds_, dgerm_emission_,
+                          dgerm_scaler_count_);
   FillHMMJunctionEmission(dj_junction_ggene_ranges_, dj_junction_naive_bases_,
                           dj_junction_germ_inds_, dj_junction_site_inds_,
                           flexbounds_.at("d_r"), flexbounds_.at("j_l"),
                           dj_junction_emission_);
   FillHMMGermlineEmission(jgerm_ggene_ranges_, jgerm_germ_inds_,
-                          jgerm_site_inds_, jgerm_emission_);
+                          jgerm_site_inds_, jgerm_emission_,
+                          jgerm_scaler_count_);
   FillHMMPaddingEmission(jpadding_ggene_ranges_, jpadding_site_inds_,
-                         jpadding_emission_);
+                         jpadding_emission_, jgerm_scaler_count_);
 };
 
 
@@ -53,7 +56,7 @@ void NewSimpleData::InitializeHMMEmission() {
 void NewSimpleData::FillHMMGermlineEmission(
     const std::map<std::string, std::pair<int, int>>& ggene_ranges_,
     const std::vector<int>& germ_inds_, const std::vector<int>& site_inds_,
-    Eigen::RowVectorXd& emission_) {
+    Eigen::RowVectorXd& emission_, int& scaler_count_) {
   emission_.setOnes(ggene_ranges_.size());
 
   // Loop through the "germline" states and cache the associated HMM emission
@@ -71,6 +74,9 @@ void NewSimpleData::FillHMMGermlineEmission(
     for (int j = range_start; j < range_end; j++) {
       emission_[i] *=
           ggene.germ_ptr->emission()(seq_[site_inds_[j]], germ_inds_[j]);
+
+      // Scale the emission probabilities.
+      scaler_count_ += ScaleMatrix2(emission_);
     }
   }
 };
@@ -119,7 +125,8 @@ void NewSimpleData::FillHMMJunctionEmission(
 
 void NewSimpleData::FillHMMPaddingEmission(
     const std::map<std::string, std::pair<int, int>>& ggene_ranges_,
-    const std::vector<int>& site_inds_, Eigen::RowVectorXd& emission_) {
+    const std::vector<int>& site_inds_, Eigen::RowVectorXd& emission_,
+    int& scaler_count_) {
   emission_.setOnes(ggene_ranges_.size());
 
   // Loop through the "padding" states and cache the associated HMM emission
@@ -142,6 +149,9 @@ void NewSimpleData::FillHMMPaddingEmission(
       // Is the current emitted base an unambiguous nucleotide?
       if (seq_[site_inds_[j]] != alphabet_.size() - 1) {
         emission_[i] *= n_emission[seq_[site_inds_[j]]];
+
+        // Scale the emission probabilities.
+        scaler_count_ += ScaleMatrix2(emission_);
       }
     }
   }

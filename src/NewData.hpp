@@ -107,7 +107,7 @@ class NewData {
   Eigen::MatrixXd dj_junction_forward_;
   Eigen::RowVectorXd jgerm_forward_;
 
-  // HMM forward probability scaler counts
+  // HMM scaler counts
   int vgerm_scaler_count_;
   std::vector<int> vd_junction_scaler_counts_;
   int dgerm_scaler_count_;

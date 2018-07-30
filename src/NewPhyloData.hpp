@@ -55,7 +55,8 @@ class NewPhyloData : public NewData {
 
   void FillHMMGermlinePaddingEmission(
       const std::map<std::string, std::pair<int, int>>& ggene_ranges_,
-      const Eigen::VectorXi& xmsa_inds_, Eigen::RowVectorXd& emission_);
+      const Eigen::VectorXi& xmsa_inds_, Eigen::RowVectorXd& emission_,
+      int& scaler_count_);
 
   void FillHMMJunctionEmission(const Eigen::MatrixXi& xmsa_inds_,
                                Eigen::MatrixXd& emission_);

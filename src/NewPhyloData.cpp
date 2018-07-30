@@ -122,17 +122,17 @@ void NewPhyloData::InitializeXmsaEmission(const pt::pll::Model& model_params) {
 
 void NewPhyloData::InitializeHMMEmission() {
   FillHMMGermlinePaddingEmission(vpadding_ggene_ranges_, vpadding_xmsa_inds_,
-                                 vpadding_emission_);
+                                 vpadding_emission_, vgerm_scaler_count_);
   FillHMMGermlinePaddingEmission(vgerm_ggene_ranges_, vgerm_xmsa_inds_,
-                                 vgerm_emission_);
+                                 vgerm_emission_, vgerm_scaler_count_);
   FillHMMJunctionEmission(vd_junction_xmsa_inds_, vd_junction_emission_);
   FillHMMGermlinePaddingEmission(dgerm_ggene_ranges_, dgerm_xmsa_inds_,
-                                 dgerm_emission_);
+                                 dgerm_emission_, dgerm_scaler_count_);
   FillHMMJunctionEmission(dj_junction_xmsa_inds_, dj_junction_emission_);
   FillHMMGermlinePaddingEmission(jgerm_ggene_ranges_, jgerm_xmsa_inds_,
-                                 jgerm_emission_);
+                                 jgerm_emission_, jgerm_scaler_count_);
   FillHMMGermlinePaddingEmission(jpadding_ggene_ranges_, jpadding_xmsa_inds_,
-                                 jpadding_emission_);
+                                 jpadding_emission_, jgerm_scaler_count_);
 };
 
 
@@ -166,7 +166,8 @@ void NewPhyloData::BuildXmsa(
 
 void NewPhyloData::FillHMMGermlinePaddingEmission(
     const std::map<std::string, std::pair<int, int>>& ggene_ranges_,
-    const Eigen::VectorXi& xmsa_inds_, Eigen::RowVectorXd& emission_) {
+    const Eigen::VectorXi& xmsa_inds_, Eigen::RowVectorXd& emission_,
+    int& scaler_count_) {
   emission_.setOnes(ggene_ranges_.size());
 
   // Loop through the ["germline"|"padding"] states and cache the associated
@@ -180,6 +181,9 @@ void NewPhyloData::FillHMMGermlinePaddingEmission(
 
     for (int j = range_start; j < range_end; j++) {
       emission_[i] *= xmsa_emission_[xmsa_inds_[j]];
+
+      // Scale the emission probabilities.
+      scaler_count_ += ScaleMatrix2(emission_);
     }
   }
 };

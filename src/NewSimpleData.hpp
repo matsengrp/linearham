@@ -29,7 +29,7 @@ class NewSimpleData : public NewData {
   void FillHMMGermlineEmission(
       const std::map<std::string, std::pair<int, int>>& ggene_ranges_,
       const std::vector<int>& germ_inds_, const std::vector<int>& site_inds_,
-      Eigen::RowVectorXd& emission_);
+      Eigen::RowVectorXd& emission_, int& scaler_count_);
 
   void FillHMMJunctionEmission(
       const std::map<std::string, std::pair<int, int>>& ggene_ranges_,
@@ -39,7 +39,8 @@ class NewSimpleData : public NewData {
 
   void FillHMMPaddingEmission(
       const std::map<std::string, std::pair<int, int>>& ggene_ranges_,
-      const std::vector<int>& site_inds_, Eigen::RowVectorXd& emission_);
+      const std::vector<int>& site_inds_, Eigen::RowVectorXd& emission_,
+      int& scaler_count_);
 
  public:
   NewSimpleData(const std::string& yaml_path, const std::string& dir_path);
