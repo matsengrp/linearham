@@ -356,10 +356,10 @@ void ComputeHMMGermlineJunctionTransition(
 
       // Extract the "junction" state information.
       const GermlineGene& to_ggene = ggenes_.at(to_gname);
-      int n_col_length = (to_ggene.type == right_gtype)
-                             ? to_ggene.germ_ptr->alphabet().size()
-                             : 0;
-      int germ_col_start = to_range_start + n_col_length;
+      int nti_col_length = (to_ggene.type == right_gtype)
+                               ? to_ggene.germ_ptr->alphabet().size()
+                               : 0;
+      int germ_col_start = to_range_start + nti_col_length;
       int germ_col_length = to_range_end - germ_col_start;
       int to_germ_ind_start =
           (germ_col_length > 0) ? junction_germ_inds_[germ_col_start] : -1;
@@ -374,7 +374,7 @@ void ComputeHMMGermlineJunctionTransition(
       FillHMMTransition(from_ggene, to_ggene, left_gtype, right_gtype,
                         from_germ_ind_start, to_germ_ind_start,
                         from_site_ind_start, to_site_ind_start, 0,
-                        to_range_start, 0, n_col_length, 0, germ_col_start, 1,
+                        to_range_start, 0, nti_col_length, 0, germ_col_start, 1,
                         germ_col_length, germ_junction_transition_row);
     }
   }
@@ -401,10 +401,10 @@ void ComputeHMMJunctionTransition(
 
     // Extract the "junction" state information.
     const GermlineGene& from_ggene = ggenes_.at(from_gname);
-    int n_row_length = (from_ggene.type == right_gtype)
-                           ? from_ggene.germ_ptr->alphabet().size()
-                           : 0;
-    int germ_row_start = from_range_start + n_row_length;
+    int nti_row_length = (from_ggene.type == right_gtype)
+                             ? from_ggene.germ_ptr->alphabet().size()
+                             : 0;
+    int germ_row_start = from_range_start + nti_row_length;
     int germ_row_length = from_range_end - germ_row_start;
     int from_germ_ind_start =
         (germ_row_length > 0) ? junction_germ_inds_[germ_row_start] : -1;
@@ -420,10 +420,10 @@ void ComputeHMMJunctionTransition(
 
       // Extract the "junction" state information.
       const GermlineGene& to_ggene = ggenes_.at(to_gname);
-      int n_col_length = (to_ggene.type == right_gtype)
-                             ? to_ggene.germ_ptr->alphabet().size()
-                             : 0;
-      int germ_col_start = to_range_start + n_col_length;
+      int nti_col_length = (to_ggene.type == right_gtype)
+                               ? to_ggene.germ_ptr->alphabet().size()
+                               : 0;
+      int germ_col_start = to_range_start + nti_col_length;
       int germ_col_length = to_range_end - germ_col_start;
       int to_germ_ind_start =
           (germ_col_length > 0) ? junction_germ_inds_[germ_col_start] : -1;
@@ -434,8 +434,8 @@ void ComputeHMMJunctionTransition(
       FillHMMTransition(from_ggene, to_ggene, left_gtype, right_gtype,
                         from_germ_ind_start, to_germ_ind_start,
                         from_site_ind_start, to_site_ind_start,
-                        from_range_start, to_range_start, n_row_length,
-                        n_col_length, germ_row_start, germ_col_start,
+                        from_range_start, to_range_start, nti_row_length,
+                        nti_col_length, germ_row_start, germ_col_start,
                         germ_row_length, germ_col_length, junction_transition_);
     }
   }
@@ -466,10 +466,10 @@ void ComputeHMMJunctionGermlineTransition(
 
     // Extract the "junction" state information.
     const GermlineGene& from_ggene = ggenes_.at(from_gname);
-    int n_row_length = (from_ggene.type == right_gtype)
-                           ? from_ggene.germ_ptr->alphabet().size()
-                           : 0;
-    int germ_row_start = from_range_start + n_row_length;
+    int nti_row_length = (from_ggene.type == right_gtype)
+                             ? from_ggene.germ_ptr->alphabet().size()
+                             : 0;
+    int germ_row_start = from_range_start + nti_row_length;
     int germ_row_length = from_range_end - germ_row_start;
     int from_germ_ind_start =
         (germ_row_length > 0) ? junction_germ_inds_[germ_row_start] : -1;
@@ -499,8 +499,8 @@ void ComputeHMMJunctionGermlineTransition(
       FillHMMTransition(from_ggene, to_ggene, left_gtype, right_gtype,
                         from_germ_ind_start, to_germ_ind_start,
                         from_site_ind_start, to_site_ind_start,
-                        from_range_start, 0, n_row_length, 0, germ_row_start, 0,
-                        germ_row_length, 1, junction_germ_transition_col);
+                        from_range_start, 0, nti_row_length, 0, germ_row_start,
+                        0, germ_row_length, 1, junction_germ_transition_col);
 
       junction_germ_transition_col.block(
           from_range_start, 0, from_range_end - from_range_start, 1) *=
@@ -543,8 +543,9 @@ void FillHMMTransition(const GermlineGene& from_ggene,
                        const GermlineGene& to_ggene, GermlineType left_gtype,
                        GermlineType right_gtype, int germ_ind_row_start,
                        int germ_ind_col_start, int site_ind_row_start,
-                       int site_ind_col_start, int n_row_start, int n_col_start,
-                       int n_row_length, int n_col_length, int germ_row_start,
+                       int site_ind_col_start, int nti_row_start,
+                       int nti_col_start, int nti_row_length,
+                       int nti_col_length, int germ_row_start,
                        int germ_col_start, int germ_row_length,
                        int germ_col_length,
                        Eigen::Ref<Eigen::MatrixXd> transition_) {
@@ -554,14 +555,14 @@ void FillHMMTransition(const GermlineGene& from_ggene,
     // Are we transitioning from a NTI state in (N, D_i) or (N, J_i)?
     if (from_ggene.type == right_gtype) {
       // Are we in the V-D or D-J "junction" region?
-      if (n_col_length > 0) {
+      if (nti_col_length > 0) {
         // Fill in the N -> N transition probabilities.
         const Eigen::MatrixXd& nti_transition =
             (from_ggene.type == GermlineType::D)
                 ? from_ggene.DGermlinePtrCast()->nti_transition()
                 : from_ggene.JGermlinePtrCast()->nti_transition();
-        transition_.block(n_row_start, n_col_start, n_row_length,
-                          n_col_length) = nti_transition;
+        transition_.block(nti_row_start, nti_col_start, nti_row_length,
+                          nti_col_length) = nti_transition;
       }
 
       // Are the N -> D or N -> J transitions possible?
@@ -571,7 +572,7 @@ void FillHMMTransition(const GermlineGene& from_ggene,
             (from_ggene.type == GermlineType::D)
                 ? from_ggene.DGermlinePtrCast()->nti_landing_out()
                 : from_ggene.JGermlinePtrCast()->nti_landing_out();
-        transition_.block(n_row_start, germ_col_start, n_row_length,
+        transition_.block(nti_row_start, germ_col_start, nti_row_length,
                           germ_col_length) =
             nti_landing_out.block(0, germ_ind_col_start, nti_landing_out.rows(),
                                   germ_col_length);
@@ -601,14 +602,14 @@ void FillHMMTransition(const GermlineGene& from_ggene,
   // [i.e. V_i -> (N, D_j) or D_i -> (N, J_j)]
   if (from_ggene.type == left_gtype && to_ggene.type == right_gtype) {
     // Are we in or transitioning to the V-D or D-J "junction" region?
-    if (germ_row_length > 0 && n_col_length > 0) {
+    if (germ_row_length > 0 && nti_col_length > 0) {
       // Fill in the V -> N or D -> N transition probabilities.
       const Eigen::VectorXd& nti_landing_in =
           (to_ggene.type == GermlineType::D)
               ? to_ggene.DGermlinePtrCast()->nti_landing_in()
               : to_ggene.JGermlinePtrCast()->nti_landing_in();
       Eigen::Ref<Eigen::MatrixXd> transition_block = transition_.block(
-          germ_row_start, n_col_start, germ_row_length, n_col_length);
+          germ_row_start, nti_col_start, germ_row_length, nti_col_length);
 
       transition_block.setOnes();
       ColVecMatCwise(from_ggene.germ_ptr->landing_out().segment(
