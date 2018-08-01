@@ -361,8 +361,10 @@ void ComputeHMMGermlineJunctionTransition(
                              : 0;
       int germ_col_start = to_range_start + n_col_length;
       int germ_col_length = to_range_end - germ_col_start;
-      int to_germ_ind_start = junction_germ_inds_[germ_col_start];
-      int to_site_ind_start = junction_site_inds_[germ_col_start];
+      int to_germ_ind_start =
+          (germ_col_length > 0) ? junction_germ_inds_[germ_col_start] : -1;
+      int to_site_ind_start =
+          (germ_col_length > 0) ? junction_site_inds_[germ_col_start] : -1;
 
       // Fill the "germline"-to-"junction" transition probability matrix.
       Eigen::Ref<Eigen::MatrixXd> germ_junction_transition_row =
@@ -404,8 +406,10 @@ void ComputeHMMJunctionTransition(
                            : 0;
     int germ_row_start = from_range_start + n_row_length;
     int germ_row_length = from_range_end - germ_row_start;
-    int from_germ_ind_start = junction_germ_inds_[germ_row_start];
-    int from_site_ind_start = junction_site_inds_[germ_row_start];
+    int from_germ_ind_start =
+        (germ_row_length > 0) ? junction_germ_inds_[germ_row_start] : -1;
+    int from_site_ind_start =
+        (germ_row_length > 0) ? junction_site_inds_[germ_row_start] : -1;
 
     for (auto to_it = junction_ggene_ranges_.begin();
          to_it != junction_ggene_ranges_.end(); ++to_it) {
@@ -421,8 +425,10 @@ void ComputeHMMJunctionTransition(
                              : 0;
       int germ_col_start = to_range_start + n_col_length;
       int germ_col_length = to_range_end - germ_col_start;
-      int to_germ_ind_start = junction_germ_inds_[germ_col_start];
-      int to_site_ind_start = junction_site_inds_[germ_col_start];
+      int to_germ_ind_start =
+          (germ_col_length > 0) ? junction_germ_inds_[germ_col_start] : -1;
+      int to_site_ind_start =
+          (germ_col_length > 0) ? junction_site_inds_[germ_col_start] : -1;
 
       // Fill the "junction" transition probability matrix.
       FillHMMTransition(from_ggene, to_ggene, left_gtype, right_gtype,
@@ -465,8 +471,10 @@ void ComputeHMMJunctionGermlineTransition(
                            : 0;
     int germ_row_start = from_range_start + n_row_length;
     int germ_row_length = from_range_end - germ_row_start;
-    int from_germ_ind_start = junction_germ_inds_[germ_row_start];
-    int from_site_ind_start = junction_site_inds_[germ_row_start];
+    int from_germ_ind_start =
+        (germ_row_length > 0) ? junction_germ_inds_[germ_row_start] : -1;
+    int from_site_ind_start =
+        (germ_row_length > 0) ? junction_site_inds_[germ_row_start] : -1;
 
     int to_i = 0;
     for (auto to_it = germ_ggene_ranges_.begin();
@@ -610,47 +618,50 @@ void FillHMMTransition(const GermlineGene& from_ggene,
       RowVecMatCwise(nti_landing_in, transition_block, transition_block);
     }
 
-    // Is there a match region between the two genes?
-    int match_row_diff, match_col_diff;
-    bool match_found = false;
+    // Are the V -> D or D -> J transitions possible?
+    if (germ_row_length > 0 && germ_col_length > 0) {
+      // Is there a match region between the two genes?
+      int match_row_diff, match_col_diff;
+      bool match_found = false;
 
-    for (int from_site_ind = site_ind_row_start;
-         from_site_ind < site_ind_row_start + germ_row_length && !match_found;
-         from_site_ind++) {
-      // Can we find the start index of the potential match region?
-      if (from_site_ind == site_ind_col_start - 1) {
-        match_row_diff = from_site_ind - site_ind_row_start;
-        match_col_diff = 0;
-        match_found = true;
+      for (int from_site_ind = site_ind_row_start;
+           from_site_ind < site_ind_row_start + germ_row_length && !match_found;
+           from_site_ind++) {
+        // Can we find the start index of the potential match region?
+        if (from_site_ind == site_ind_col_start - 1) {
+          match_row_diff = from_site_ind - site_ind_row_start;
+          match_col_diff = 0;
+          match_found = true;
+        }
       }
-    }
 
-    for (int to_site_ind = site_ind_col_start + 1;
-         to_site_ind < site_ind_col_start + germ_col_length && !match_found;
-         to_site_ind++) {
-      // Can we find the start index of the potential match region?
-      if (site_ind_row_start == to_site_ind - 1) {
-        match_row_diff = 0;
-        match_col_diff = to_site_ind - site_ind_col_start;
-        match_found = true;
+      for (int to_site_ind = site_ind_col_start + 1;
+           to_site_ind < site_ind_col_start + germ_col_length && !match_found;
+           to_site_ind++) {
+        // Can we find the start index of the potential match region?
+        if (site_ind_row_start == to_site_ind - 1) {
+          match_row_diff = 0;
+          match_col_diff = to_site_ind - site_ind_col_start;
+          match_found = true;
+        }
       }
-    }
 
-    if (match_found) {
-      // Fill in the V -> D or D -> J transition probabilities.
-      Eigen::Ref<Eigen::MatrixXd> transition_block = transition_.block(
-          germ_row_start + match_row_diff, germ_col_start + match_col_diff,
-          germ_row_length - match_row_diff, germ_col_length - match_col_diff);
-      int match_length = transition_block.diagonal().size();
+      if (match_found) {
+        // Fill in the V -> D or D -> J transition probabilities.
+        Eigen::Ref<Eigen::MatrixXd> transition_block = transition_.block(
+            germ_row_start + match_row_diff, germ_col_start + match_col_diff,
+            germ_row_length - match_row_diff, germ_col_length - match_col_diff);
+        int match_length = transition_block.diagonal().size();
 
-      transition_block.diagonal().array() =
-          from_ggene.germ_ptr->landing_out()
-              .segment(germ_ind_row_start + match_row_diff, match_length)
-              .array() *
-          to_ggene.germ_ptr->gene_prob() *
-          to_ggene.germ_ptr->landing_in()
-              .segment(germ_ind_col_start + match_col_diff, match_length)
-              .array();
+        transition_block.diagonal().array() =
+            from_ggene.germ_ptr->landing_out()
+                .segment(germ_ind_row_start + match_row_diff, match_length)
+                .array() *
+            to_ggene.germ_ptr->gene_prob() *
+            to_ggene.germ_ptr->landing_in()
+                .segment(germ_ind_col_start + match_col_diff, match_length)
+                .array();
+      }
     }
   }
 };
