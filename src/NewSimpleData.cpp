@@ -72,11 +72,14 @@ void NewSimpleData::FillHMMGermlineEmission(
     const GermlineGene& ggene = ggenes_.at(gname);
 
     for (int j = range_start; j < range_end; j++) {
-      emission_[i] *=
-          ggene.germ_ptr->emission()(seq_[site_inds_[j]], germ_inds_[j]);
+      // Is the current emitted base an unambiguous nucleotide?
+      if (seq_[site_inds_[j]] != alphabet_.size() - 1) {
+        emission_[i] *=
+            ggene.germ_ptr->emission()(seq_[site_inds_[j]], germ_inds_[j]);
 
-      // Scale the emission probabilities.
-      scaler_count_ += ScaleMatrix2(emission_);
+        // Scale the emission probabilities.
+        scaler_count_ += ScaleMatrix2(emission_);
+      }
     }
   }
 };
@@ -115,8 +118,11 @@ void NewSimpleData::FillHMMJunctionEmission(
               nti_emission(seq_[site_ind], naive_bases_[i]);
         }
       } else {
+        // Is the current emitted base an unambiguous nucleotide?
         emission_(site_inds_[i] - site_start, i) =
-            ggene.germ_ptr->emission()(seq_[site_inds_[i]], germ_inds_[i]);
+            (seq_[site_inds_[i]] != alphabet_.size() - 1)
+                ? ggene.germ_ptr->emission()(seq_[site_inds_[i]], germ_inds_[i])
+                : 1;
       }
     }
   }
