@@ -1693,23 +1693,6 @@ TEST_CASE("NewPhyloData", "[newphylodata]") {
   REQUIRE(new_phylo_data_ptr->dj_junction_scaler_counts() == VDJ_dj_junction_scaler_counts);
   REQUIRE(new_phylo_data_ptr->jgerm_scaler_count() == VDJ_jgerm_scaler_count);
 }
-
-
-TEST_CASE("tmp", "[tmp]") {
-  std::string yaml_path = "data/SimpleData_ex/tmp.yaml";
-  std::string hmm_params_dir =
-  "/home/dunleavy005/partis/_output/testing_amrit_input_seqs/hmm/hmms";
-  std::string trees_path = "data/PhyloData_ex/tmp.tree";
-  std::string fasta_path = "/home/dunleavy005/partis/testing_amrit/partition0/input_seqs.fasta";
-  std::string ctmc_params_path = "data/PhyloData_ex/RAxML_info.newton";
-  NewPhyloDataPtr new_phylo_data_ptr = std::make_shared<NewPhyloData>(
-      yaml_path, hmm_params_dir, trees_path, fasta_path, ctmc_params_path);
-  PhyloDataPtr phylo_data_ptr =
-      ReadPhyloData(yaml_path, hmm_params_dir, trees_path, fasta_path, ctmc_params_path, 4);
-
-  std::cout << new_phylo_data_ptr->LogLikelihood() << std::endl;
-  std::cout << phylo_data_ptr->MarginalLogLikelihood() << std::endl;
-}
 //
 //
 // TEST_CASE("OptimizeAllBranches", "[phylodata]") {
