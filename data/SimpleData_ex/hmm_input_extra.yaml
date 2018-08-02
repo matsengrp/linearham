@@ -1,6 +1,7 @@
 {
   "events" : [ {
     "input_seqs" : ["ACAGTACCCTGTT"],
+    "has_shm_indels" : [false],
     "relpos" : {
       "IGHD_ex*01" : 5,
       "IGHJ_ex*01" : 10,

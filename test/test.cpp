@@ -688,7 +688,7 @@ TEST_CASE("NewSimpleData", "[newsimpledata]") {
   std::string yaml_path = "data/SimpleData_ex/hmm_input.yaml";
   std::string hmm_params_dir = "data/SimpleData_ex/hmm_params";
   NewSimpleDataPtr new_simple_data_ptr =
-      std::make_shared<NewSimpleData>(yaml_path, hmm_params_dir);
+      std::make_shared<NewSimpleData>(yaml_path, 0, 0, hmm_params_dir);
 
   // For a diagram of the S-W alignment, see
   // https://github.com/matsengrp/linearham/issues/44#issue-336348821.
@@ -857,7 +857,7 @@ TEST_CASE("NewSimpleData", "[newsimpledata]") {
   // For clarity, we run an additional NewSimpleData test.
   yaml_path = "data/SimpleData_ex/hmm_input_extra.yaml";
   SimpleDataPtr simple_data_ptr = ReadSimpleData(yaml_path, hmm_params_dir)[0];
-  new_simple_data_ptr = std::make_shared<NewSimpleData>(yaml_path, hmm_params_dir);
+  new_simple_data_ptr = std::make_shared<NewSimpleData>(yaml_path, 0, 0, hmm_params_dir);
 
   // For a diagram of the S-W alignment, see
   // https://github.com/matsengrp/linearham/issues/44#issuecomment-406625914.

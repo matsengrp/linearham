@@ -10,11 +10,16 @@
 namespace linearham {
 
 
-NewSimpleData::NewSimpleData(const std::string& yaml_path,
-                             const std::string& hmm_params_dir)
-    : NewData(yaml_path, 0, hmm_params_dir) {
-  // Parse the `input_seqs` YAML data.
-  seq_str_ = yaml_root_["events"][0]["input_seqs"][0].as<std::string>();
+NewSimpleData::NewSimpleData(const std::string& yaml_path, int cluster_ind,
+                             int seq_ind, const std::string& hmm_params_dir)
+    : NewData(yaml_path, cluster_ind, hmm_params_dir) {
+  // Parse the `indel_reversed_seqs` or `input_seqs` YAML data.
+  std::string seq_type =
+      (yaml_root_["events"][cluster_ind]["has_shm_indels"][seq_ind].as<bool>())
+          ? "indel_reversed_seqs"
+          : "input_seqs";
+  seq_str_ =
+      yaml_root_["events"][cluster_ind][seq_type][seq_ind].as<std::string>();
   seq_ = ConvertSeqToInts2(seq_str_, alphabet_);
 
   // Initialize the HMM emission probability matrices.
