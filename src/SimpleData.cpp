@@ -138,7 +138,8 @@ double SimpleData::PaddingProb(GermlinePtr germ_ptr,std::string type, int relpos
 /// Path to a directory of germline gene HMM YAML files.
 /// @return
 /// A vector of SimpleData pointers.
-std::vector<SimpleDataPtr> ReadSimpleData(std::string yaml_path,
+SimpleDataPtr ReadSimpleData(std::string yaml_path,
+                                          int cluster_ind, int seq_ind,
                                           std::string dir_path) {
   // Create the GermlineGene map needed for the SimpleData constructor.
   std::unordered_map<std::string, GermlineGene> ggenes =
@@ -148,7 +149,7 @@ std::vector<SimpleDataPtr> ReadSimpleData(std::string yaml_path,
   YAML::Node root = YAML::LoadFile(yaml_path);
   YAML::Node events = root["events"];
 
-  std::vector<SimpleDataPtr> simple_data_ptrs;
+
   // std::pair<int, int> n_read_counts;
 
   // // This regex is used to count the numbers of N's on both sides of the read
@@ -157,18 +158,14 @@ std::vector<SimpleDataPtr> ReadSimpleData(std::string yaml_path,
   //                 "]+)(N*)$");
   // std::smatch match;
 
-  int i = 0;
-  for (auto it = events.begin(); it != events.end(); ++it) {
-    std::string seq_str = events[i]["input_seqs"][0].as<std::string>();
+  std::string seq_type =
+      (events[cluster_ind]["has_shm_indels"][seq_ind].as<bool>())
+          ? "indel_reversed_seqs"
+          : "input_seqs";
+    std::string seq_str = events[cluster_ind][seq_type][seq_ind].as<std::string>();
 
-    // assert(std::regex_match(seq_str, match, nrgx));
-    // n_read_counts = {match[1].length(), match[3].length()};
-    simple_data_ptrs.push_back(std::make_shared<SimpleData>(
-        seq_str, events[i]["flexbounds"].as<std::map<std::string, std::pair<int, int>>>(),
-        events[i]["relpos"].as<std::map<std::string, int>>(), ggenes));
-    i++;
-  }
-
-  return simple_data_ptrs;
+  return std::make_shared<SimpleData>(
+      seq_str, events[cluster_ind]["flexbounds"].as<std::map<std::string, std::pair<int, int>>>(),
+      events[cluster_ind]["relpos"].as<std::map<std::string, int>>(), ggenes);
 };
 }

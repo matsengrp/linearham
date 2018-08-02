@@ -593,8 +593,8 @@ TEST_CASE("SmooshableChainPile", "[smooshablechainpile]") {
 
 TEST_CASE("SimpleData", "[simpledata]") {
   // Test the SimpleData class using the example HMM files.
-  std::vector<SimpleDataPtr> ex_simple_data_ptrs = ReadSimpleData(
-      "data/SimpleData_ex/hmm_input.yaml", "data/SimpleData_ex/hmm_params");
+  SimpleDataPtr simple_data_ptr = ReadSimpleData(
+      "data/SimpleData_ex/hmm_input.yaml", 0, 0, "data/SimpleData_ex/hmm_params");
 
   // For a diagram of the S-W alignment, see
   // https://github.com/matsengrp/linearham/issues/44#issue-336348821.
@@ -614,12 +614,12 @@ TEST_CASE("SimpleData", "[simpledata]") {
   VDJ_seq << 0, 1, 0, 2, 3, 0, 1, 1, 1, 3, 2, 3, 3;
   // std::pair<int, int> VDJ_n_read_counts = {3,2};
 
-  REQUIRE(ex_simple_data_ptrs[0]->flexbounds() == VDJ_flexbounds);
-  REQUIRE(ex_simple_data_ptrs[0]->relpos() == VDJ_relpos);
-  REQUIRE(ex_simple_data_ptrs[0]->match_indices() == VDJ_match_indices);
-  REQUIRE(ex_simple_data_ptrs[0]->seq() == VDJ_seq);
-  // REQUIRE(ex_simple_data_ptrs[0]->n_read_counts() == VDJ_n_read_counts);
-  REQUIRE(ex_simple_data_ptrs[0]->length() == VDJ_seq.size());
+  REQUIRE(simple_data_ptr->flexbounds() == VDJ_flexbounds);
+  REQUIRE(simple_data_ptr->relpos() == VDJ_relpos);
+  REQUIRE(simple_data_ptr->match_indices() == VDJ_match_indices);
+  REQUIRE(simple_data_ptr->seq() == VDJ_seq);
+  // REQUIRE(simple_data_ptr->n_read_counts() == VDJ_n_read_counts);
+  REQUIRE(simple_data_ptr->length() == VDJ_seq.size());
 
   Eigen::MatrixXd V_marginal(1,3);
   V_marginal <<
@@ -656,11 +656,11 @@ TEST_CASE("SimpleData", "[simpledata]") {
   0.015*0.7*1*0.06*0.04,
         0.015*0.06*0.04;
 
-  REQUIRE(ex_simple_data_ptrs[0]->vdj_pile()[0]->marginal().isApprox(V_marginal * DX_marginal * JX_marginal, 1e-5));
-  REQUIRE(ex_simple_data_ptrs[0]->vdj_pile()[1]->marginal().isApprox(V_marginal * DX_marginal * JN_nti_marginal * JN_germ_marginal, 1e-5));
-  REQUIRE(ex_simple_data_ptrs[0]->vdj_pile()[2]->marginal().isApprox(V_marginal * DN_nti_marginal * DN_germ_marginal * JX_marginal, 1e-5));
-  REQUIRE(ex_simple_data_ptrs[0]->vdj_pile()[3]->marginal().isApprox(V_marginal * DN_nti_marginal * DN_germ_marginal * JN_nti_marginal * JN_germ_marginal, 1e-5));
-  REQUIRE(ex_simple_data_ptrs[0]->MarginalLogLikelihood() == Approx(-43.478572372));
+  REQUIRE(simple_data_ptr->vdj_pile()[0]->marginal().isApprox(V_marginal * DX_marginal * JX_marginal, 1e-5));
+  REQUIRE(simple_data_ptr->vdj_pile()[1]->marginal().isApprox(V_marginal * DX_marginal * JN_nti_marginal * JN_germ_marginal, 1e-5));
+  REQUIRE(simple_data_ptr->vdj_pile()[2]->marginal().isApprox(V_marginal * DN_nti_marginal * DN_germ_marginal * JX_marginal, 1e-5));
+  REQUIRE(simple_data_ptr->vdj_pile()[3]->marginal().isApprox(V_marginal * DN_nti_marginal * DN_germ_marginal * JN_nti_marginal * JN_germ_marginal, 1e-5));
+  REQUIRE(simple_data_ptr->MarginalLogLikelihood() == Approx(-43.478572372));
 
   // Test the SimpleData class using the BCRHam HMM files.
   // io::CSVReader<1, io::trim_chars<>, io::double_quote_escape<',', '\"'>> in(
@@ -856,7 +856,7 @@ TEST_CASE("NewSimpleData", "[newsimpledata]") {
 
   // For clarity, we run an additional NewSimpleData test.
   yaml_path = "data/SimpleData_ex/hmm_input_extra.yaml";
-  SimpleDataPtr simple_data_ptr = ReadSimpleData(yaml_path, hmm_params_dir)[0];
+  SimpleDataPtr simple_data_ptr = ReadSimpleData(yaml_path, 0, 0, hmm_params_dir);
   new_simple_data_ptr = std::make_shared<NewSimpleData>(yaml_path, 0, 0, hmm_params_dir);
 
   // For a diagram of the S-W alignment, see

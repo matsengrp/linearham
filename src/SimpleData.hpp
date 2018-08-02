@@ -42,7 +42,8 @@ typedef std::shared_ptr<SimpleData> SimpleDataPtr;
 
 // SimpleDataPtr Function
 
-std::vector<SimpleDataPtr> ReadSimpleData(std::string yaml_path,
+SimpleDataPtr ReadSimpleData(std::string yaml_path,
+                                          int cluster_ind, int seq_ind,
                                           std::string dir_path);
 }
 
