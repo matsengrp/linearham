@@ -23,7 +23,7 @@ SimpleData::SimpleData(
   // Convert the read sequence string to a vector of integers (according to the
   // alphabet).
   seq_ = ConvertSeqToInts(seq_str,
-                          ggenes.begin()->second.germ_ptr->alphabet());
+                          ggenes.begin()->second.germ_ptr->alphabet()+"N");
 
   // // Store `n_read_counts`.
   // n_read_counts_ = n_read_counts;
@@ -66,12 +66,16 @@ Eigen::VectorXd SimpleData::GermlineEmissionVector(
   int match_end = match_indices[kMatchEnd];
   int relpos = relpos_.at(germ_ptr->name());
 
+  Eigen::MatrixXd germ_emission(germ_ptr->emission().rows()+1, germ_ptr->emission().cols());
+  germ_emission.block(0,0,germ_ptr->emission().rows(), germ_ptr->emission().cols()) = germ_ptr->emission();
+  germ_emission.bottomRows(1).setConstant(1);
+
   // Compute the emission probability vector.
   Eigen::VectorXd emission(match_end - match_start);
   VectorByIndices(
-      germ_ptr->emission().block(0, match_start - relpos,
-                                        germ_ptr->emission().rows(),
-                                        match_end - match_start),
+    germ_emission.block(0, match_start - relpos,
+                                      germ_emission.rows(),
+                                      match_end - match_start),
       seq_.segment(match_start, match_end - match_start), emission);
 
   return emission;
@@ -91,7 +95,11 @@ Eigen::VectorXd SimpleData::GermlineEmissionVector(
 /// position `site_pos` from all possible germline bases.
 Eigen::RowVectorXd SimpleData::NTIEmissionVector(NTInsertionPtr nti_ptr,
                                                  int site_pos) const {
-  return nti_ptr->nti_emission().row(seq_[site_pos]);
+  Eigen::MatrixXd nti_emission(nti_ptr->nti_emission().rows()+1, nti_ptr->nti_emission().cols());
+  nti_emission.block(0,0,nti_ptr->nti_emission().rows(),nti_ptr->nti_emission().cols()) = nti_ptr->nti_emission();
+  nti_emission.bottomRows(1).setConstant(1);
+
+  return nti_emission.row(seq_[site_pos]);
 };
 
 
