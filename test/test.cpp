@@ -686,9 +686,9 @@ TEST_CASE("SimpleData", "[simpledata]") {
 TEST_CASE("NewSimpleData", "[newsimpledata]") {
   // Test the SimpleData class using the example HMM files.
   std::string yaml_path = "data/SimpleData_ex/hmm_input.yaml";
-  std::string dir_path = "data/SimpleData_ex/hmm_params";
+  std::string hmm_params_dir = "data/SimpleData_ex/hmm_params";
   NewSimpleDataPtr new_simple_data_ptr =
-      std::make_shared<NewSimpleData>(yaml_path, dir_path);
+      std::make_shared<NewSimpleData>(yaml_path, hmm_params_dir);
 
   // For a diagram of the S-W alignment, see
   // https://github.com/matsengrp/linearham/issues/44#issue-336348821.
@@ -856,8 +856,8 @@ TEST_CASE("NewSimpleData", "[newsimpledata]") {
 
   // For clarity, we run an additional NewSimpleData test.
   yaml_path = "data/SimpleData_ex/hmm_input_extra.yaml";
-  SimpleDataPtr simple_data_ptr = ReadSimpleData(yaml_path, dir_path)[0];
-  new_simple_data_ptr = std::make_shared<NewSimpleData>(yaml_path, dir_path);
+  SimpleDataPtr simple_data_ptr = ReadSimpleData(yaml_path, hmm_params_dir)[0];
+  new_simple_data_ptr = std::make_shared<NewSimpleData>(yaml_path, hmm_params_dir);
 
   // For a diagram of the S-W alignment, see
   // https://github.com/matsengrp/linearham/issues/44#issuecomment-406625914.
@@ -1053,12 +1053,12 @@ TEST_CASE("NewSimpleData", "[newsimpledata]") {
 TEST_CASE("PhyloData", "[phylodata]") {
   // Test the PhyloData class using the example files.
   std::string yaml_path = "data/SimpleData_ex/hmm_input.yaml";
-  std::string dir_path = "data/SimpleData_ex/hmm_params";
-  std::string newick_path = "data/PhyloData_ex/newton.tre";
+  std::string hmm_params_dir = "data/SimpleData_ex/hmm_params";
+  std::string trees_path = "data/PhyloData_ex/newton.tre";
   std::string fasta_path = "data/PhyloData_ex/newton.fasta";
-  std::string raxml_path = "data/PhyloData_ex/RAxML_info.newton";
+  std::string ctmc_params_path = "data/PhyloData_ex/RAxML_info.newton";
   PhyloDataPtr phylo_data_ptr =
-      ReadPhyloData(yaml_path, dir_path, newick_path, fasta_path, raxml_path, 4);
+      ReadPhyloData(yaml_path, hmm_params_dir, trees_path, fasta_path, ctmc_params_path, 4);
 
   // For a diagram of the S-W alignment, see
   // https://github.com/matsengrp/linearham/issues/44#issue-336348821.
@@ -1199,9 +1199,9 @@ TEST_CASE("PhyloData", "[phylodata]") {
   // Test the phylogenetic likelihood calculation using the R package "phylomd".
   // For more details, see https://github.com/dunleavy005/phylomd.
   yaml_path = "data/PhyloData_ex/phylolikelihood_hmm_input.yaml";
-  dir_path = "data/PhyloData_ex/phylolikelihood_hmm_params";
+  hmm_params_dir = "data/PhyloData_ex/phylolikelihood_hmm_params";
   PhyloDataPtr phylo_likelihood_ptr =
-      ReadPhyloData(yaml_path, dir_path, newick_path, fasta_path, raxml_path, 1);
+      ReadPhyloData(yaml_path, hmm_params_dir, trees_path, fasta_path, ctmc_params_path, 1);
 
   // library(ape)
   // library(phylomd)
@@ -1232,12 +1232,12 @@ TEST_CASE("PhyloData", "[phylodata]") {
 TEST_CASE("NewPhyloData", "[newphylodata]") {
   // Test the NewPhyloData class using the example files.
   std::string yaml_path = "data/SimpleData_ex/hmm_input.yaml";
-  std::string dir_path = "data/SimpleData_ex/hmm_params";
-  std::string newick_path = "data/PhyloData_ex/newton.tre";
+  std::string hmm_params_dir = "data/SimpleData_ex/hmm_params";
+  std::string trees_path = "data/PhyloData_ex/newton.tre";
   std::string fasta_path = "data/PhyloData_ex/newton.fasta";
-  std::string raxml_path = "data/PhyloData_ex/RAxML_info.newton";
+  std::string ctmc_params_path = "data/PhyloData_ex/RAxML_info.newton";
   NewPhyloDataPtr new_phylo_data_ptr = std::make_shared<NewPhyloData>(
-      yaml_path, dir_path, newick_path, fasta_path, raxml_path);
+      yaml_path, hmm_params_dir, trees_path, fasta_path, ctmc_params_path);
 
   // For a diagram of the S-W alignment, see
   // https://github.com/matsengrp/linearham/issues/44#issue-336348821.
@@ -1460,9 +1460,9 @@ TEST_CASE("NewPhyloData", "[newphylodata]") {
   // For clarity, we run an additional NewPhyloData test.
   yaml_path = "data/SimpleData_ex/hmm_input_extra.yaml";
   PhyloDataPtr phylo_data_ptr =
-      ReadPhyloData(yaml_path, dir_path, newick_path, fasta_path, raxml_path, 4);
+      ReadPhyloData(yaml_path, hmm_params_dir, trees_path, fasta_path, ctmc_params_path, 4);
   new_phylo_data_ptr = std::make_shared<NewPhyloData>(
-      yaml_path, dir_path, newick_path, fasta_path, raxml_path);
+      yaml_path, hmm_params_dir, trees_path, fasta_path, ctmc_params_path);
 
   // For a diagram of the S-W alignment, see
   // https://github.com/matsengrp/linearham/issues/44#issuecomment-406625914.
@@ -1693,22 +1693,39 @@ TEST_CASE("NewPhyloData", "[newphylodata]") {
   REQUIRE(new_phylo_data_ptr->dj_junction_scaler_counts() == VDJ_dj_junction_scaler_counts);
   REQUIRE(new_phylo_data_ptr->jgerm_scaler_count() == VDJ_jgerm_scaler_count);
 }
+
+
+TEST_CASE("tmp", "[tmp]") {
+  std::string yaml_path = "data/SimpleData_ex/tmp.yaml";
+  std::string hmm_params_dir =
+  "/home/dunleavy005/partis/_output/testing_amrit_input_seqs/hmm/hmms";
+  std::string trees_path = "data/PhyloData_ex/tmp.tree";
+  std::string fasta_path = "/home/dunleavy005/partis/testing_amrit/partition0/input_seqs.fasta";
+  std::string ctmc_params_path = "data/PhyloData_ex/RAxML_info.newton";
+  NewPhyloDataPtr new_phylo_data_ptr = std::make_shared<NewPhyloData>(
+      yaml_path, hmm_params_dir, trees_path, fasta_path, ctmc_params_path);
+  PhyloDataPtr phylo_data_ptr =
+      ReadPhyloData(yaml_path, hmm_params_dir, trees_path, fasta_path, ctmc_params_path, 4);
+
+  std::cout << new_phylo_data_ptr->LogLikelihood() << std::endl;
+  std::cout << phylo_data_ptr->MarginalLogLikelihood() << std::endl;
+}
 //
 //
 // TEST_CASE("OptimizeAllBranches", "[phylodata]") {
 //   // Test the branch length optimization in the PhyloData class.
 //   std::string csv_path = "data/PhyloData_ex/brlen_optim_ex/hmm_input.csv";
-//   std::string dir_path = "data/PhyloData_ex/brlen_optim_ex/hmm_params";
-//   std::string newick_path = "data/PhyloData_ex/newton_phyml.tre";
+//   std::string hmm_params_dir = "data/PhyloData_ex/brlen_optim_ex/hmm_params";
+//   std::string trees_path = "data/PhyloData_ex/newton_phyml.tre";
 //   std::string fasta_path = "data/PhyloData_ex/newton.fasta";
-//   std::string raxml_path = "data/PhyloData_ex/RAxML_info.newton";
+//   std::string ctmc_params_path = "data/PhyloData_ex/RAxML_info.newton";
 //   PhyloDataPtr phylo_data_ptr =
-//       ReadPhyloData(csv_path, dir_path, newick_path, fasta_path, raxml_path);
+//       ReadPhyloData(csv_path, hmm_params_dir, trees_path, fasta_path, ctmc_params_path);
 //   phylo_data_ptr->OptimizeAllBranches();
 //
-//   std::string test_newick_path = "data/PhyloData_ex/brlen_optim_ex/newton_optim_phyml.tre";
+//   std::string test_trees_path = "data/PhyloData_ex/brlen_optim_ex/newton_optim_phyml.tre";
 //   PhyloDataPtr test_ptr =
-//       ReadPhyloData(csv_path, dir_path, test_newick_path, fasta_path, raxml_path);
+//       ReadPhyloData(csv_path, hmm_params_dir, test_trees_path, fasta_path, ctmc_params_path);
 //
 //   REQUIRE(phylo_data_ptr->MarginalLogLikelihood() ==
 //           Approx(test_ptr->MarginalLogLikelihood()).epsilon(1e-3));

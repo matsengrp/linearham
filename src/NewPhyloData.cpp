@@ -13,13 +13,13 @@ namespace linearham {
 
 
 NewPhyloData::NewPhyloData(const std::string& yaml_path,
-                           const std::string& dir_path,
-                           const std::string& newick_path,
+                           const std::string& hmm_params_dir,
+                           const std::string& trees_path,
                            const std::string& fasta_path,
-                           const std::string& raxml_path)
-    : NewData(yaml_path, dir_path) {
+                           const std::string& ctmc_params_path)
+    : NewData(yaml_path, hmm_params_dir) {
   // Initialize the phylogenetic tree object.
-  tree_ = pll_utree_parse_newick(newick_path.c_str());
+  tree_ = pll_utree_parse_newick(trees_path.c_str());
 
   // Parse the sequences in the FASTA file.
   std::vector<std::string> msa_seqs;
@@ -33,7 +33,7 @@ NewPhyloData::NewPhyloData(const std::string& yaml_path,
   InitializeXmsaStructs();
 
   // Initialize the partition object.
-  pt::pll::Model model_params = pt::pll::ParseRaxmlInfo(raxml_path, 4);
+  pt::pll::Model model_params = pt::pll::ParseRaxmlInfo(ctmc_params_path, 4);
   partition_.reset(new pt::pll::Partition(tree_, model_params, xmsa_labels_,
                                           xmsa_seqs_, false));
 

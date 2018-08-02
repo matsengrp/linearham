@@ -62,7 +62,7 @@ class GermlineGene {
 // GermlineGene Map Function
 
 std::unordered_map<std::string, GermlineGene> CreateGermlineGeneMap(
-    std::string dir_path);
+    std::string hmm_params_dir);
 
 
 }  // namespace linearham

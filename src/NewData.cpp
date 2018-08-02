@@ -13,7 +13,8 @@
 namespace linearham {
 
 
-NewData::NewData(const std::string& yaml_path, const std::string& dir_path) {
+NewData::NewData(const std::string& yaml_path,
+                 const std::string& hmm_params_dir) {
   // Parse the `flexbounds` and `relpos` YAML data.
   yaml_root_ = YAML::LoadFile(yaml_path);
   flexbounds_ = yaml_root_["events"][0]["flexbounds"]
@@ -21,7 +22,7 @@ NewData::NewData(const std::string& yaml_path, const std::string& dir_path) {
   relpos_ = yaml_root_["events"][0]["relpos"].as<std::map<std::string, int>>();
 
   // Create the map holding (germline name, GermlineGene) pairs.
-  ggenes_ = CreateGermlineGeneMap(dir_path);
+  ggenes_ = CreateGermlineGeneMap(hmm_params_dir);
 
   // Initialize the nucleotide alphabet.
   alphabet_ = ggenes_.begin()->second.germ_ptr->alphabet() + "N";

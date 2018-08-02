@@ -43,7 +43,8 @@ class NewSimpleData : public NewData {
       int& scaler_count_);
 
  public:
-  NewSimpleData(const std::string& yaml_path, const std::string& dir_path);
+  NewSimpleData(const std::string& yaml_path,
+                const std::string& hmm_params_dir);
 
   const Eigen::RowVectorXi& seq() const { return seq_; };
   const std::string& seq_str() const { return seq_str_; };

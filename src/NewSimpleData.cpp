@@ -11,8 +11,8 @@ namespace linearham {
 
 
 NewSimpleData::NewSimpleData(const std::string& yaml_path,
-                             const std::string& dir_path)
-    : NewData(yaml_path, dir_path) {
+                             const std::string& hmm_params_dir)
+    : NewData(yaml_path, hmm_params_dir) {
   // Parse the `input_seqs` YAML data.
   seq_str_ = yaml_root_["events"][0]["input_seqs"][0].as<std::string>();
   seq_ = ConvertSeqToInts2(seq_str_, alphabet_);

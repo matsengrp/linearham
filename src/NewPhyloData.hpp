@@ -62,9 +62,9 @@ class NewPhyloData : public NewData {
                                Eigen::MatrixXd& emission_);
 
  public:
-  NewPhyloData(const std::string& yaml_path, const std::string& dir_path,
-               const std::string& newick_path, const std::string& fasta_path,
-               const std::string& raxml_path);
+  NewPhyloData(const std::string& yaml_path, const std::string& hmm_params_dir,
+               const std::string& trees_path, const std::string& fasta_path,
+               const std::string& ctmc_params_path);
   ~NewPhyloData();
 
   const Eigen::MatrixXi& msa() const { return msa_; };
