@@ -119,8 +119,11 @@ void NewSimpleData::FillHMMJunctionEmission(
                 : ggene.JGermlinePtrCast()->nti_emission();
 
         for (int site_ind = site_start; site_ind < site_end; site_ind++) {
+          // Is the current emitted base an unambiguous nucleotide?
           emission_(site_ind - site_start, i) =
-              nti_emission(seq_[site_ind], naive_bases_[i]);
+              (seq_[site_ind] != alphabet_.size() - 1)
+                  ? nti_emission(seq_[site_ind], naive_bases_[i])
+                  : 1;
         }
       } else {
         // Is the current emitted base an unambiguous nucleotide?
