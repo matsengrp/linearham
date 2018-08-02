@@ -1237,7 +1237,7 @@ TEST_CASE("NewPhyloData", "[newphylodata]") {
   std::string fasta_path = "data/PhyloData_ex/newton.fasta";
   std::string ctmc_params_path = "data/PhyloData_ex/RAxML_info.newton";
   NewPhyloDataPtr new_phylo_data_ptr = std::make_shared<NewPhyloData>(
-      yaml_path, hmm_params_dir, trees_path, fasta_path, ctmc_params_path);
+      yaml_path, 0, hmm_params_dir, trees_path, fasta_path, ctmc_params_path);
 
   // For a diagram of the S-W alignment, see
   // https://github.com/matsengrp/linearham/issues/44#issue-336348821.
@@ -1462,7 +1462,7 @@ TEST_CASE("NewPhyloData", "[newphylodata]") {
   PhyloDataPtr phylo_data_ptr =
       ReadPhyloData(yaml_path, hmm_params_dir, trees_path, fasta_path, ctmc_params_path, 4);
   new_phylo_data_ptr = std::make_shared<NewPhyloData>(
-      yaml_path, hmm_params_dir, trees_path, fasta_path, ctmc_params_path);
+      yaml_path, 0, hmm_params_dir, trees_path, fasta_path, ctmc_params_path);
 
   // For a diagram of the S-W alignment, see
   // https://github.com/matsengrp/linearham/issues/44#issuecomment-406625914.
