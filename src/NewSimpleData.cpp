@@ -1,5 +1,7 @@
 #include "NewSimpleData.hpp"
 
+#include <cmath>
+#include <cstddef>
 #include <tuple>
 
 #include "VDJGermline.hpp"
@@ -11,8 +13,8 @@ namespace linearham {
 
 
 NewSimpleData::NewSimpleData(const std::string& yaml_path, int cluster_ind,
-                             int seq_ind, const std::string& hmm_params_dir)
-    : NewData(yaml_path, cluster_ind, hmm_params_dir) {
+                             int seq_ind, const std::string& hmm_param_dir)
+    : NewData(yaml_path, cluster_ind, hmm_param_dir) {
   // Parse the `indel_reversed_seqs` or `input_seqs` YAML data.
   std::string seq_type =
       (yaml_root_["events"][cluster_ind]["has_shm_indels"][seq_ind].as<bool>())
@@ -63,6 +65,8 @@ void NewSimpleData::FillHMMGermlineEmission(
     const std::vector<int>& germ_inds_, const std::vector<int>& site_inds_,
     Eigen::RowVectorXd& emission_, int& scaler_count_) {
   emission_.setOnes(ggene_ranges_.size());
+  std::vector<int> scaler_counts(ggene_ranges_.size(), 0);
+  int max_scaler_count = 0;
 
   // Loop through the "germline" states and cache the associated HMM emission
   // probabilities.
@@ -83,9 +87,21 @@ void NewSimpleData::FillHMMGermlineEmission(
             ggene.germ_ptr->emission()(seq_[site_inds_[j]], germ_inds_[j]);
 
         // Scale the emission probabilities.
-        scaler_count_ += ScaleMatrix2(emission_);
+        scaler_counts[i] += ScaleMatrix2(emission_.segment(i, 1));
       }
     }
+
+    // Keep track of the maximum scaler count.
+    if (scaler_counts[i] > max_scaler_count) {
+      max_scaler_count = scaler_counts[i];
+    }
+  }
+
+  // Make sure the emission probabilities are identically scaled.
+  scaler_count_ += max_scaler_count;
+  for (std::size_t i = 0; i < emission_.size(); i++) {
+    emission_[i] *=
+        std::pow(SCALE_FACTOR2, max_scaler_count - scaler_counts[i]);
   }
 };
 
@@ -142,6 +158,8 @@ void NewSimpleData::FillHMMPaddingEmission(
     const std::vector<int>& site_inds_, Eigen::RowVectorXd& emission_,
     int& scaler_count_) {
   emission_.setOnes(ggene_ranges_.size());
+  std::vector<int> scaler_counts(ggene_ranges_.size(), 0);
+  int max_scaler_count = 0;
 
   // Loop through the "padding" states and cache the associated HMM emission
   // probabilities.
@@ -165,9 +183,21 @@ void NewSimpleData::FillHMMPaddingEmission(
         emission_[i] *= n_emission[seq_[site_inds_[j]]];
 
         // Scale the emission probabilities.
-        scaler_count_ += ScaleMatrix2(emission_);
+        scaler_counts[i] += ScaleMatrix2(emission_.segment(i, 1));
       }
     }
+
+    // Keep track of the maximum scaler count.
+    if (scaler_counts[i] > max_scaler_count) {
+      max_scaler_count = scaler_counts[i];
+    }
+  }
+
+  // Make sure the emission probabilities are identically scaled.
+  scaler_count_ += max_scaler_count;
+  for (std::size_t i = 0; i < emission_.size(); i++) {
+    emission_[i] *=
+        std::pow(SCALE_FACTOR2, max_scaler_count - scaler_counts[i]);
   }
 };
 

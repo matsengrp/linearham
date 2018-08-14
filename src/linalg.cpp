@@ -46,6 +46,16 @@ void RowVecMatCwise(const Eigen::Ref<const Eigen::RowVectorXd>& b,
   }
 }
 
+int ScaleMatrix(Eigen::Ref<Eigen::MatrixXd> m) {
+  int n = 0;
+
+  while ((0 < m.array() && m.array() < SCALE_THRESHOLD).any()) {
+    m *= SCALE_FACTOR;
+    n++;
+  }
+
+  return n;
+};
 
 /// @brief This function builds a matrix of sub-products.
 /// @param[in] e Input vector.
@@ -57,12 +67,13 @@ void RowVecMatCwise(const Eigen::Ref<const Eigen::RowVectorXd>& b,
 ///  A_{i,j} := \prod_{k=i}^{j} e_k
 ///  \f]
 /// Empty products are taken to be one.
-void SubProductMatrix(const Eigen::Ref<const Eigen::VectorXd>& e,
+int SubProductMatrix(const Eigen::Ref<const Eigen::VectorXd>& e,
                       Eigen::Ref<Eigen::MatrixXd> A) {
   int ell = e.size();
   assert(ell == A.rows());
   assert(ell == A.cols());
   A.setOnes();
+  std::vector<int> scaler_counts(ell, 0);
   // Upper left gets the correct value.
   A(0, 0) = e(0);
   // Iterate over columns from left to right.
@@ -72,7 +83,15 @@ void SubProductMatrix(const Eigen::Ref<const Eigen::VectorXd>& e,
     // 2 and happens in the index-1 column, just including the diagonal.
     // A.block syntax is which_row, which_col, height, width.
     A.block(0, k, k + 1, 1) = e(k) * A.block(0, k - 1, k + 1, 1);
+    A(k,k) *= std::pow(SCALE_FACTOR, scaler_counts[k-1]);
+    scaler_counts[k] = scaler_counts[k-1] + ScaleMatrix(A.block(0, k, k + 1, 1));
   }
+
+  for (int k = 0; k < ell; k++) {
+    A.block(0, k, k + 1, 1) *= std::pow(SCALE_FACTOR, scaler_counts.back() - scaler_counts[k]);
+  }
+
+  return scaler_counts.back();
 }
 
 

@@ -63,7 +63,7 @@ class NewPhyloData : public NewData {
 
  public:
   NewPhyloData(const std::string& yaml_path, int cluster_ind,
-               const std::string& hmm_params_dir, const std::string& trees_path,
+               const std::string& hmm_param_dir, const std::string& trees_path,
                const std::string& fasta_path,
                const std::string& ctmc_params_path);
   ~NewPhyloData();

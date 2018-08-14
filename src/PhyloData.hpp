@@ -127,7 +127,7 @@ std::vector<SmooshishPtr> FindDirtySmooshables(SmooshishPtr sp);
 
 // PhyloDataPtr Function
 
-PhyloDataPtr ReadPhyloData(std::string csv_path, std::string dir_path,
+PhyloDataPtr ReadPhyloData(std::string csv_path, int cluster_ind, std::string dir_path,
                            std::string newick_path, std::string fasta_path,
                            std::string raxml_path, size_t rate_categories);
 }

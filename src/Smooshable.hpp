@@ -38,7 +38,7 @@ class Smooshable : public Smooshish {
              std::string right_flexbounds_name,
              std::array<int, 4> marginal_indices,
              const Eigen::Ref<const Eigen::MatrixXd>& pre_marginal,
-             const Eigen::Ref<const Eigen::MatrixXd>& marginal);
+             const Eigen::Ref<const Eigen::MatrixXd>& marginal, int scaler_count);
 
   int left_flex() const override { return marginal_.rows() - 1; };
   int right_flex() const override { return marginal_.cols() - 1; };
@@ -85,12 +85,12 @@ SmooshablePtr BuildSmooshablePtr(
     std::string left_flexbounds_name, std::string right_flexbounds_name,
     std::array<int, 4> marginal_indices,
     const Eigen::Ref<const Eigen::MatrixXd>& pre_marginal,
-    const Eigen::Ref<const Eigen::MatrixXd>& marginal);
+    const Eigen::Ref<const Eigen::MatrixXd>& marginal, int scaler_count);
 
 
 // Auxiliary Functions
 
-int ScaleMatrix(Eigen::Ref<Eigen::MatrixXd> m);
+
 }
 
 #endif  // LINEARHAM_SMOOSHABLE_

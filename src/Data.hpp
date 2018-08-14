@@ -26,7 +26,7 @@ class Data {
       GermlinePtr germ_ptr, std::string left_flexbounds_name,
       std::string right_flexbounds_name) const;
 
-  Eigen::MatrixXd NTIProbMatrix(NTInsertionPtr nti_ptr, std::string right_gname,
+  std::pair<Eigen::MatrixXd, int> NTIProbMatrix(NTInsertionPtr nti_ptr, std::string right_gname,
                                 std::string left_flexbounds_name,
                                 std::string right_flexbounds_name) const;
 
@@ -56,7 +56,7 @@ class Data {
       std::string left_flexbounds_name, bool landing_in,
       Eigen::Ref<Eigen::MatrixXd> match_matrix) const;
 
-  Eigen::MatrixXd EmissionMatchMatrix(
+  std::pair<Eigen::MatrixXd, int> EmissionMatchMatrix(
       GermlinePtr germ_ptr, std::string left_flexbounds_name,
       const Eigen::Ref<const Eigen::MatrixXd>& match_matrix) const;
 

@@ -28,15 +28,15 @@ JGermlinePtr GermlineGene::JGermlinePtrCast() const {
 
 
 /// @brief Constructs a GermlineGene map from partis germline YAML files.
-/// @param[in] hmm_params_dir
+/// @param[in] hmm_param_dir
 /// Path to a directory of germline gene HMM YAML files.
 /// @return
 /// A map holding (germline name, GermlineGene) pairs.
 std::unordered_map<std::string, GermlineGene> CreateGermlineGeneMap(
-    std::string hmm_params_dir) {
+    std::string hmm_param_dir) {
   // Check the directory path and open the stream.
-  if (hmm_params_dir.back() != '/') hmm_params_dir += "/";
-  DIR* dir = opendir(hmm_params_dir.c_str());
+  if (hmm_param_dir.back() != '/') hmm_param_dir += "/";
+  DIR* dir = opendir(hmm_param_dir.c_str());
   assert(dir != nullptr);
 
   // Initialize variables for directory parsing.
@@ -57,7 +57,7 @@ std::unordered_map<std::string, GermlineGene> CreateGermlineGeneMap(
         std::regex_replace(match.str(1), std::regex("_star_"), "*");
 
     // Store YAML root.
-    YAML::Node root = YAML::LoadFile(hmm_params_dir + file_name);
+    YAML::Node root = YAML::LoadFile(hmm_param_dir + file_name);
 
     // Create the GermlineGene object.
     GermlineGene ggene;

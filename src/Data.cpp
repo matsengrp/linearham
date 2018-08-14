@@ -1,5 +1,7 @@
 #include "Data.hpp"
 
+#include <tuple>
+
 /// @file Data.cpp
 /// @brief Partial implementation of the pure virtual Data base class.
 
@@ -100,7 +102,7 @@ Eigen::MatrixXd Data::GermlineTransProbMatrix(
 ///
 /// This function computes the probabilities of NTI paths starting in the left
 /// flexbounds and ending in the right flexbounds.
-Eigen::MatrixXd Data::NTIProbMatrix(NTInsertionPtr nti_ptr,
+std::pair<Eigen::MatrixXd, int> Data::NTIProbMatrix(NTInsertionPtr nti_ptr,
                                     std::string right_gname,
                                     std::string left_flexbounds_name,
                                     std::string right_flexbounds_name) const {
@@ -125,6 +127,7 @@ Eigen::MatrixXd Data::NTIProbMatrix(NTInsertionPtr nti_ptr,
   Eigen::MatrixXd nti_prob_matrix = Eigen::MatrixXd::Zero(
       left_flexbounds.second - left_flexbounds.first + 1,
       right_flexbounds.second - right_flexbounds.first + 1);
+  int scaler_count = 0;
 
   // Loop over all read/MSA positions in the NTI region.
   for (int i = left_flexbounds.first; i < right_flexbounds.second; i++) {
@@ -146,6 +149,8 @@ Eigen::MatrixXd Data::NTIProbMatrix(NTInsertionPtr nti_ptr,
       RowVecMatCwise(emission, cache_matrix, cache_matrix);
     }
 
+    scaler_count += ScaleMatrix(cache_matrix);
+
     // Store the NTI path probabilities in the output matrix.
     if (i >= std::max(right_flexbounds.first, right_relpos) - 1) {
       nti_prob_matrix.col(i - (right_flexbounds.first - 1)) =
@@ -153,7 +158,7 @@ Eigen::MatrixXd Data::NTIProbMatrix(NTInsertionPtr nti_ptr,
     }
   }
 
-  return nti_prob_matrix;
+  return {nti_prob_matrix, scaler_count};
 };
 
 
@@ -250,7 +255,9 @@ SmooshablePtr Data::VSmooshable(VGermlinePtr vgerm_ptr) const {
   match_matrix *= PaddingProb(vgerm_ptr,"v",relpos_.at(vgerm_ptr->name()));
 
   // Construct a germline match matrix with per-site emission probabilities.
-  Eigen::MatrixXd emission_match_matrix =
+  Eigen::MatrixXd emission_match_matrix;
+  int scaler_count;
+  std::tie(emission_match_matrix, scaler_count) =
       EmissionMatchMatrix(vgerm_ptr, "v_l", match_matrix);
 
   // Extract the row index that corresponds to the first match starting position
@@ -261,7 +268,7 @@ SmooshablePtr Data::VSmooshable(VGermlinePtr vgerm_ptr) const {
 
   return BuildSmooshablePtr(vgerm_ptr, nullptr, "v_l", "v_r",
                             {marg_row_start, 0, 1, (int)match_matrix.cols()},
-                            match_matrix, emission_match_matrix);
+                            match_matrix, emission_match_matrix, scaler_count);
 };
 
 
@@ -286,7 +293,9 @@ std::pair<SmooshablePtrVect, SmooshablePtrVect> Data::DSmooshables(
 
   // Compute the transition probability portion of the germline match matrix
   // (assuming some left-NTIs).
-  Eigen::MatrixXd nti_prob_matrix =
+  Eigen::MatrixXd nti_prob_matrix;
+  int nti_scaler_count;
+  std::tie(nti_prob_matrix, nti_scaler_count) =
       NTIProbMatrix(dgerm_ptr, dgerm_ptr->name(), "v_r", "d_l");
   Eigen::MatrixXd nmatch_matrix =
       GermlineTransProbMatrix(dgerm_ptr, "d_l", "d_r");
@@ -300,25 +309,29 @@ std::pair<SmooshablePtrVect, SmooshablePtrVect> Data::DSmooshables(
   nmatch_matrix *= dgerm_ptr->gene_prob();
 
   // Construct germline match matrices with per-site emission probabilities.
-  Eigen::MatrixXd emission_xmatch_matrix =
+  Eigen::MatrixXd emission_xmatch_matrix;
+  int xscaler_count;
+  std::tie(emission_xmatch_matrix, xscaler_count) =
       EmissionMatchMatrix(dgerm_ptr, "v_r", xmatch_matrix);
-  Eigen::MatrixXd emission_nmatch_matrix =
+      Eigen::MatrixXd emission_nmatch_matrix;
+      int nscaler_count;
+  std::tie(emission_nmatch_matrix, nscaler_count) =
       EmissionMatchMatrix(dgerm_ptr, "d_l", nmatch_matrix);
 
   // Store Smooshable objects.
   SmooshablePtrVect dx_smooshable = {BuildSmooshablePtr(
       dgerm_ptr, nullptr, "v_r", "d_r",
       {0, 0, (int)xmatch_matrix.rows(), (int)xmatch_matrix.cols()},
-      xmatch_matrix, emission_xmatch_matrix)};
+      xmatch_matrix, emission_xmatch_matrix, xscaler_count)};
   SmooshablePtrVect dn_smooshables = {
       BuildSmooshablePtr(
           dgerm_ptr, dgerm_ptr, "v_r", "d_l",
           {0, 0, (int)nti_prob_matrix.rows(), (int)nti_prob_matrix.cols()},
-          Eigen::MatrixXd::Zero(0, 0), nti_prob_matrix),
+          Eigen::MatrixXd::Zero(0, 0), nti_prob_matrix, nti_scaler_count),
       BuildSmooshablePtr(
           dgerm_ptr, nullptr, "d_l", "d_r",
           {0, 0, (int)nmatch_matrix.rows(), (int)nmatch_matrix.cols()},
-          nmatch_matrix, emission_nmatch_matrix)};
+          nmatch_matrix, emission_nmatch_matrix, nscaler_count)};
 
   return std::make_pair(dx_smooshable, dn_smooshables);
 };
@@ -345,7 +358,9 @@ std::pair<SmooshablePtrVect, SmooshablePtrVect> Data::JSmooshables(
 
   // Compute the transition probability portion of the germline match matrix
   // (assuming some left-NTIs).
-  Eigen::MatrixXd nti_prob_matrix =
+  Eigen::MatrixXd nti_prob_matrix;
+  int nti_scaler_count;
+  std::tie(nti_prob_matrix, nti_scaler_count) =
       NTIProbMatrix(jgerm_ptr, jgerm_ptr->name(), "d_r", "j_l");
   Eigen::MatrixXd nmatch_matrix =
       GermlineTransProbMatrix(jgerm_ptr, "j_l", "j_r");
@@ -357,9 +372,13 @@ std::pair<SmooshablePtrVect, SmooshablePtrVect> Data::JSmooshables(
   nmatch_matrix *= PaddingProb(jgerm_ptr,"j",relpos_.at(jgerm_ptr->name()));
 
   // Construct germline match matrices with per-site emission probabilities.
-  Eigen::MatrixXd emission_xmatch_matrix =
+  Eigen::MatrixXd emission_xmatch_matrix;
+  int xscaler_count;
+  std::tie(emission_xmatch_matrix, xscaler_count) =
       EmissionMatchMatrix(jgerm_ptr, "d_r", xmatch_matrix);
-  Eigen::MatrixXd emission_nmatch_matrix =
+      Eigen::MatrixXd emission_nmatch_matrix;
+      int nscaler_count;
+      std::tie(emission_nmatch_matrix, nscaler_count) =
       EmissionMatchMatrix(jgerm_ptr, "j_l", nmatch_matrix);
 
   // Extract the column index that corresponds to the last match ending position
@@ -373,15 +392,15 @@ std::pair<SmooshablePtrVect, SmooshablePtrVect> Data::JSmooshables(
   SmooshablePtrVect jx_smooshable = {
       BuildSmooshablePtr(jgerm_ptr, nullptr, "d_r", "j_r",
                          {0, marg_col_start, (int)xmatch_matrix.rows(), 1},
-                         xmatch_matrix, emission_xmatch_matrix)};
+                         xmatch_matrix, emission_xmatch_matrix, xscaler_count)};
   SmooshablePtrVect jn_smooshables = {
       BuildSmooshablePtr(
           jgerm_ptr, jgerm_ptr, "d_r", "j_l",
           {0, 0, (int)nti_prob_matrix.rows(), (int)nti_prob_matrix.cols()},
-          Eigen::MatrixXd::Zero(0, 0), nti_prob_matrix),
+          Eigen::MatrixXd::Zero(0, 0), nti_prob_matrix, nti_scaler_count),
       BuildSmooshablePtr(jgerm_ptr, nullptr, "j_l", "j_r",
                          {0, marg_col_start, (int)nmatch_matrix.rows(), 1},
-                         nmatch_matrix, emission_nmatch_matrix)};
+                         nmatch_matrix, emission_nmatch_matrix, nscaler_count)};
 
   return std::make_pair(jx_smooshable, jn_smooshables);
 };
@@ -499,7 +518,7 @@ void Data::MultiplyLandingMatchMatrix(
 /// A germline match matrix (without per-site emission probabilities).
 /// @return
 /// A germline match probability matrix (with per-site emission probabilities).
-Eigen::MatrixXd Data::EmissionMatchMatrix(
+std::pair<Eigen::MatrixXd, int> Data::EmissionMatchMatrix(
     GermlinePtr germ_ptr, std::string left_flexbounds_name,
     const Eigen::Ref<const Eigen::MatrixXd>& match_matrix) const {
   // Extract the match indices.
@@ -517,7 +536,7 @@ Eigen::MatrixXd Data::EmissionMatchMatrix(
       GermlineEmissionVector(germ_ptr, left_flexbounds_name);
   Eigen::MatrixXd emission_matrix(emission.size(), emission.size());
   /// @todo Inefficient. Shouldn't calculate full match then cut it down.
-  SubProductMatrix(emission, emission_matrix);
+  int scaler_count = SubProductMatrix(emission, emission_matrix);
 
   Eigen::MatrixXd emission_match_matrix = match_matrix;
   emission_match_matrix
@@ -527,7 +546,7 @@ Eigen::MatrixXd Data::EmissionMatchMatrix(
                              left_flex + 1, right_flex + 1)
                       .array();
 
-  return emission_match_matrix;
+  return {emission_match_matrix, scaler_count};
 };
 
 
@@ -544,16 +563,25 @@ Eigen::MatrixXd Data::EmissionMatchMatrix(
 double Data::MarginalLogLikelihood() const {
   double likelihood = 0;
 
+  int max_scaler_count = 0;
+  std::vector<double> path_probs(vdj_pile_.size(), 0.0);
   for (std::size_t i = 0; i < vdj_pile_.size(); i++) {
     // Each Smooshish must be fully smooshed and clean.
     assert(vdj_pile_[i]->left_flex() == 0 && vdj_pile_[i]->right_flex() == 0);
     assert(!vdj_pile_[i]->is_dirty());
 
-    likelihood += vdj_pile_[i]->marginal()(0, 0) *
-                  pow(SCALE_FACTOR, -vdj_pile_[i]->scaler_count());
+    path_probs[i] = vdj_pile_[i]->marginal()(0, 0);
+    if (vdj_pile_[i]->scaler_count() > max_scaler_count) {
+      max_scaler_count = vdj_pile_[i]->scaler_count();
+    }
   }
 
-  return log(likelihood);
+  for (std::size_t i = 0; i < vdj_pile_.size(); i++) {
+    path_probs[i] *= pow(SCALE_FACTOR, max_scaler_count - vdj_pile_[i]->scaler_count());
+    likelihood += path_probs[i];
+  }
+
+  return log(likelihood) - max_scaler_count * LOG_SCALE_FACTOR;
 };
 
 

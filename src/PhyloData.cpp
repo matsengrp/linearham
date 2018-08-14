@@ -325,14 +325,15 @@ void PhyloData::UpdateMarginal(SmooshishPtr sp) const {
 
   // Compute the new marginal probability matrix.
   Eigen::MatrixXd new_marginal;
+  int scaler_count;
 
   // Are we updating a germline-encoded Smooshable or a NTI Smooshable?
   if (sp_cast->nti_ptr() == nullptr) {
-    new_marginal = EmissionMatchMatrix(sp_cast->germ_ptr(),
+    std::tie(new_marginal, scaler_count) = EmissionMatchMatrix(sp_cast->germ_ptr(),
                                        sp_cast->left_flexbounds_name(),
                                        sp_cast->pre_marginal());
   } else {
-    new_marginal = NTIProbMatrix(
+    std::tie(new_marginal, scaler_count) = NTIProbMatrix(
         sp_cast->nti_ptr(), sp_cast->germ_ptr()->name(),
         sp_cast->left_flexbounds_name(), sp_cast->right_flexbounds_name());
   }
@@ -472,9 +473,9 @@ void PhyloData::CachePaddingXmsaIndices(GermlinePtr germ_ptr, std::string flexbo
     std::pair<int, int> flexbounds = flexbounds_.at(flexbounds_name);
 
     int site_start = (flexbounds_name == "v_l") ? flexbounds.first
-                              : std::min(relpos + germ_ptr->length(),
-                                         flexbounds.second);
-    int site_end = (flexbounds_name == "v_l") ? std::max(relpos, flexbounds.first)
+                              : std::max(relpos + germ_ptr->length(),
+                                         flexbounds.first);
+    int site_end = (flexbounds_name == "v_l") ? std::min(relpos, flexbounds.second)
                             : flexbounds.second;
 
     Eigen::VectorXi pad_xmsa_inds(site_end-site_start);
@@ -638,7 +639,7 @@ std::vector<SmooshishPtr> FindDirtySmooshables(SmooshishPtr sp) {
 /// The number of discrete-gamma rate categories to use.
 /// @return
 /// A PhyloData pointer.
-PhyloDataPtr ReadPhyloData(std::string yaml_path, std::string dir_path,
+PhyloDataPtr ReadPhyloData(std::string yaml_path, int cluster_ind, std::string dir_path,
                            std::string newick_path, std::string fasta_path,
                            std::string raxml_path, size_t rate_categories) {
   // Create the GermlineGene map needed for the PhyloData constructor.
@@ -649,8 +650,8 @@ PhyloDataPtr ReadPhyloData(std::string yaml_path, std::string dir_path,
   YAML::Node root = YAML::LoadFile(yaml_path);
 
   PhyloDataPtr phylo_data_ptr = std::make_shared<PhyloData>(
-    root["events"][0]["flexbounds"].as<std::map<std::string, std::pair<int, int>>>(),
-    root["events"][0]["relpos"].as<std::map<std::string, int>>(),
+    root["events"][cluster_ind]["flexbounds"].as<std::map<std::string, std::pair<int, int>>>(),
+    root["events"][cluster_ind]["relpos"].as<std::map<std::string, int>>(),
     ggenes, newick_path, fasta_path, raxml_path, rate_categories);
 
   return phylo_data_ptr;

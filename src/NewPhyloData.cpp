@@ -13,11 +13,11 @@ namespace linearham {
 
 
 NewPhyloData::NewPhyloData(const std::string& yaml_path, int cluster_ind,
-                           const std::string& hmm_params_dir,
+                           const std::string& hmm_param_dir,
                            const std::string& trees_path,
                            const std::string& fasta_path,
                            const std::string& ctmc_params_path)
-    : NewData(yaml_path, cluster_ind, hmm_params_dir) {
+    : NewData(yaml_path, cluster_ind, hmm_param_dir) {
   // Initialize the phylogenetic tree object.
   tree_ = pll_utree_parse_newick(trees_path.c_str());
 
@@ -169,6 +169,8 @@ void NewPhyloData::FillHMMGermlinePaddingEmission(
     const Eigen::VectorXi& xmsa_inds_, Eigen::RowVectorXd& emission_,
     int& scaler_count_) {
   emission_.setOnes(ggene_ranges_.size());
+  std::vector<int> scaler_counts(ggene_ranges_.size(), 0);
+  int max_scaler_count = 0;
 
   // Loop through the ["germline"|"padding"] states and cache the associated
   // PhyloHMM emission probabilities.
@@ -183,8 +185,20 @@ void NewPhyloData::FillHMMGermlinePaddingEmission(
       emission_[i] *= xmsa_emission_[xmsa_inds_[j]];
 
       // Scale the emission probabilities.
-      scaler_count_ += ScaleMatrix2(emission_);
+      scaler_counts[i] += ScaleMatrix2(emission_.segment(i, 1));
     }
+
+    // Keep track of the maximum scaler count.
+    if (scaler_counts[i] > max_scaler_count) {
+      max_scaler_count = scaler_counts[i];
+    }
+  }
+
+  // Make sure the emission probabilities are identically scaled.
+  scaler_count_ += max_scaler_count;
+  for (std::size_t i = 0; i < emission_.size(); i++) {
+    emission_[i] *=
+        std::pow(SCALE_FACTOR2, max_scaler_count - scaler_counts[i]);
   }
 };
 

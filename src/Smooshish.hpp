@@ -12,9 +12,9 @@
 namespace linearham {
 
 
-const double SCALE_FACTOR = pow(2, 256);
-const double SCALE_THRESHOLD = (1.0 / SCALE_FACTOR);
-const double LOG_SCALE_FACTOR = log(SCALE_FACTOR);
+// const double SCALE_FACTOR = pow(2, 256);
+// const double SCALE_THRESHOLD = (1.0 / SCALE_FACTOR);
+// const double LOG_SCALE_FACTOR = log(SCALE_FACTOR);
 
 
 class Smooshish : public std::enable_shared_from_this<Smooshish> {
@@ -44,7 +44,7 @@ class Smooshish : public std::enable_shared_from_this<Smooshish> {
   virtual void AuxFindDirtySmooshables(
       std::vector<std::shared_ptr<Smooshish>>& dirty_smooshables) = 0;
 
-  double FinalViterbiLogProb() const;
+  // double FinalViterbiLogProb() const;
 };
 
 typedef std::shared_ptr<Smooshish> SmooshishPtr;

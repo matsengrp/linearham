@@ -1,5 +1,7 @@
 #include "Smooshable.hpp"
 
+#include "linalg.hpp"
+
 /// @file Smooshable.cpp
 /// @brief Implementation of the Smooshable class.
 
@@ -36,7 +38,7 @@ Smooshable::Smooshable(GermlinePtr germ_ptr, NTInsertionPtr nti_ptr,
                        std::string right_flexbounds_name,
                        std::array<int, 4> marginal_indices,
                        const Eigen::Ref<const Eigen::MatrixXd>& pre_marginal,
-                       const Eigen::Ref<const Eigen::MatrixXd>& marginal) {
+                       const Eigen::Ref<const Eigen::MatrixXd>& marginal, int scaler_count) {
   germ_ptr_ = germ_ptr;
   nti_ptr_ = nti_ptr;
   left_flexbounds_name_ = left_flexbounds_name;
@@ -46,7 +48,7 @@ Smooshable::Smooshable(GermlinePtr germ_ptr, NTInsertionPtr nti_ptr,
   marginal_ = marginal.block(
       marginal_indices_[kMargRowStart], marginal_indices_[kMargColStart],
       marginal_indices_[kMargRowLength], marginal_indices_[kMargColLength]);
-  scaler_count_ = ScaleMatrix(marginal_);
+  scaler_count_ = scaler_count;
 };
 
 
@@ -110,10 +112,10 @@ SmooshablePtr BuildSmooshablePtr(
     std::string left_flexbounds_name, std::string right_flexbounds_name,
     std::array<int, 4> marginal_indices,
     const Eigen::Ref<const Eigen::MatrixXd>& pre_marginal,
-    const Eigen::Ref<const Eigen::MatrixXd>& marginal) {
+    const Eigen::Ref<const Eigen::MatrixXd>& marginal, int scaler_count) {
   return std::make_shared<Smooshable>(germ_ptr, nti_ptr, left_flexbounds_name,
                                       right_flexbounds_name, marginal_indices,
-                                      pre_marginal, marginal);
+                                      pre_marginal, marginal, scaler_count);
 };
 
 
@@ -126,13 +128,13 @@ SmooshablePtr BuildSmooshablePtr(
 /// Matrix.
 /// @return
 /// Number of times we multiplied by SCALE_FACTOR.
-int ScaleMatrix(Eigen::Ref<Eigen::MatrixXd> m) {
-  int n = 0;
-  if ((m.array() == 0).all()) return n;
-  while ((m.array() < SCALE_THRESHOLD).all()) {
-    m *= SCALE_FACTOR;
-    n++;
-  }
-  return n;
-};
+// int ScaleMatrix(Eigen::Ref<Eigen::MatrixXd> m) {
+//   int n = 0;
+//   if ((m.array() == 0).all()) return n;
+//   while ((m.array() < SCALE_THRESHOLD).all()) {
+//     m *= SCALE_FACTOR;
+//     n++;
+//   }
+//   return n;
+// };
 }

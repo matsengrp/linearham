@@ -44,7 +44,7 @@ class NewSimpleData : public NewData {
 
  public:
   NewSimpleData(const std::string& yaml_path, int cluster_ind, int seq_ind,
-                const std::string& hmm_params_dir);
+                const std::string& hmm_param_dir);
 
   const Eigen::RowVectorXi& seq() const { return seq_; };
   const std::string& seq_str() const { return seq_str_; };

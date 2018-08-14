@@ -127,7 +127,7 @@ class NewData {
 
  public:
   NewData(const std::string& yaml_path, int cluster_ind,
-          const std::string& hmm_params_dir);
+          const std::string& hmm_param_dir);
   virtual ~NewData(){};
 
   const YAML::Node& yaml_root() const { return yaml_root_; };

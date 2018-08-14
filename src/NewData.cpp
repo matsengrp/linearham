@@ -14,7 +14,7 @@ namespace linearham {
 
 
 NewData::NewData(const std::string& yaml_path, int cluster_ind,
-                 const std::string& hmm_params_dir) {
+                 const std::string& hmm_param_dir) {
   // Parse the `flexbounds` and `relpos` YAML data.
   yaml_root_ = YAML::LoadFile(yaml_path);
   flexbounds_ = yaml_root_["events"][cluster_ind]["flexbounds"]
@@ -23,7 +23,7 @@ NewData::NewData(const std::string& yaml_path, int cluster_ind,
                 .as<std::map<std::string, int>>();
 
   // Create the map holding (germline name, GermlineGene) pairs.
-  ggenes_ = CreateGermlineGeneMap(hmm_params_dir);
+  ggenes_ = CreateGermlineGeneMap(hmm_param_dir);
 
   // Initialize the nucleotide alphabet.
   alphabet_ = ggenes_.begin()->second.germ_ptr->alphabet() + "N";
@@ -228,10 +228,10 @@ void CacheHMMGermlineStates(
     std::vector<int>& site_inds_) {
   // Compute the site positions that correspond to the start/end of the germline
   // gene in the "germline" region.
-  int site_start = left_end ? std::max(relpos, left_flexbounds.first)
+  int site_start = left_end ? std::min(relpos, left_flexbounds.second)
                             : left_flexbounds.second;
   int site_end =
-      right_end ? std::min(relpos + germ_ptr->length(), right_flexbounds.second)
+      right_end ? std::max(relpos + germ_ptr->length(), right_flexbounds.first)
                 : right_flexbounds.first;
 
   // Calculate the start/end indices that map to the current "germline" state.
@@ -301,9 +301,9 @@ void CacheHMMPaddingStates(
   // Compute the site positions that correspond to the start/end of the padding
   // state in the "germline" region.
   int site_start = left_end ? leftright_flexbounds.first
-                            : std::min(relpos + germ_ptr->length(),
-                                       leftright_flexbounds.second);
-  int site_end = left_end ? std::max(relpos, leftright_flexbounds.first)
+                            : std::max(relpos + germ_ptr->length(),
+                                       leftright_flexbounds.first);
+  int site_end = left_end ? std::min(relpos, leftright_flexbounds.second)
                           : leftright_flexbounds.second;
 
   // Calculate the start/end indices that map to the "padding" state associated
@@ -679,7 +679,7 @@ void ComputeHMMJunctionForwardProbabilities(
     std::vector<int>& junction_scaler_counts_) {
   junction_forward_.setZero(junction_emission_.rows(),
                             junction_emission_.cols());
-  junction_scaler_counts_.resize(junction_emission_.rows(), -1);
+  junction_scaler_counts_.resize(junction_emission_.rows(), 0);
 
   for (std::size_t i = 0; i < junction_emission_.rows(); i++) {
     Eigen::Ref<Eigen::MatrixXd> junction_forward_row =
@@ -727,9 +727,8 @@ void ComputeHMMGermlineForwardProbabilities(
 
 int ScaleMatrix2(Eigen::Ref<Eigen::MatrixXd> m) {
   int n = 0;
-  if ((m.array() == 0).all()) return n;
 
-  while ((m.array() < SCALE_THRESHOLD2).all()) {
+  while ((0 < m.array() && m.array() < SCALE_THRESHOLD2).any()) {
     m *= SCALE_FACTOR2;
     n += 1;
   }
