@@ -108,10 +108,13 @@ class NewData {
   Eigen::RowVectorXd jgerm_forward_;
 
   // HMM scaler counts
+  int vgerm_init_scaler_count_;
   int vgerm_scaler_count_;
   std::vector<int> vd_junction_scaler_counts_;
+  int dgerm_init_scaler_count_;
   int dgerm_scaler_count_;
   std::vector<int> dj_junction_scaler_counts_;
+  int jgerm_init_scaler_count_;
   int jgerm_scaler_count_;
 
   // Initialization functions
@@ -272,14 +275,17 @@ class NewData {
     return dj_junction_forward_;
   };
   const Eigen::RowVectorXd& jgerm_forward() const { return jgerm_forward_; };
+  int vgerm_init_scaler_count() const { return vgerm_init_scaler_count_; };
   int vgerm_scaler_count() const { return vgerm_scaler_count_; };
   const std::vector<int>& vd_junction_scaler_counts() const {
     return vd_junction_scaler_counts_;
   };
+  int dgerm_init_scaler_count() const { return dgerm_init_scaler_count_; };
   int dgerm_scaler_count() const { return dgerm_scaler_count_; };
   const std::vector<int>& dj_junction_scaler_counts() const {
     return dj_junction_scaler_counts_;
   };
+  int jgerm_init_scaler_count() const { return jgerm_init_scaler_count_; };
   int jgerm_scaler_count() const { return jgerm_scaler_count_; };
 
   // HMM forward/backward traversal functions
@@ -382,7 +388,8 @@ void ComputeHMMGermlineForwardProbabilities(
     const Eigen::RowVectorXd& germ_emission_,
     const Eigen::RowVectorXd& padding_transition_,
     const Eigen::RowVectorXd& padding_emission_,
-    Eigen::RowVectorXd& germ_forward_, int& germ_scaler_count_);
+    Eigen::RowVectorXd& germ_forward_, int& germ_init_scaler_count_,
+    int& germ_scaler_count_);
 
 int ScaleMatrix2(Eigen::Ref<Eigen::MatrixXd> m);
 

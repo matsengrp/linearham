@@ -475,9 +475,9 @@ TEST_CASE("SmooshableChainPile", "[smooshablechainpile]") {
   1,2;
 
   SmooshablePtr ps_A = BuildSmooshablePtr(nullptr, nullptr, "a_l", "a_r/b_l",
-                                          A_marginal_indices, A, A);
+                                          A_marginal_indices, A, A, 0);
   SmooshablePtr ps_B = BuildSmooshablePtr(nullptr, nullptr, "a_r/b_l", "b_r/c_l",
-                                          B_marginal_indices, B, B);
+                                          B_marginal_indices, B, B, 0);
   ChainPtr ps_AB = std::make_shared<Chain>(Chain(ps_A, ps_B));
 
   // Test `ps_A` and `ps_B`.
@@ -546,7 +546,7 @@ TEST_CASE("SmooshableChainPile", "[smooshablechainpile]") {
   IntVectorVector correct_viterbi_paths = {{1,0}, {2,1}};
 
   SmooshablePtr ps_C = BuildSmooshablePtr(nullptr, nullptr, "b_r/c_l", "c_r",
-                                          C_marginal_indices, C, C);
+                                          C_marginal_indices, C, C, 0);
   ChainPtr ps_ABC = std::make_shared<Chain>(Chain(ps_AB, ps_C));
 
   // Test `ps_ABC`.
@@ -601,17 +601,17 @@ TEST_CASE("SimpleData", "[simpledata]") {
 
   std::map<std::string, std::pair<int, int>> VDJ_flexbounds = {
       {"v_l", {0, 2}},  {"v_r", {4, 6}},   {"d_l", {7, 8}},
-      {"d_r", {9, 10}}, {"j_l", {11, 12}}, {"j_r", {13, 13}}};
+      {"d_r", {9, 10}}, {"j_l", {11, 12}}, {"j_r", {15, 15}}};
   std::map<std::string, int> VDJ_relpos = {
       {"IGHV_ex*01", 1}, {"IGHD_ex*01", 5}, {"IGHJ_ex*01", 10}};
   std::map<std::array<std::string, 2>, std::array<int, 6>> VDJ_match_indices = {
       {{"IGHV_ex*01", "v_l"}, {1, 6, 1, 2, 1, 0}},
       {{"IGHD_ex*01", "v_r"}, {5, 10, 1, 1, 1, 0}},
       {{"IGHD_ex*01", "d_l"}, {7, 10, 1, 1, 0, 0}},
-      {{"IGHJ_ex*01", "d_r"}, {10, 13, 0, 0, 1, 0}},
-      {{"IGHJ_ex*01", "j_l"}, {11, 13, 1, 0, 0, 0}}};
-  Eigen::VectorXi VDJ_seq(13);
-  VDJ_seq << 0, 1, 0, 2, 3, 0, 1, 1, 1, 3, 2, 3, 3;
+      {{"IGHJ_ex*01", "d_r"}, {10, 15, 0, 0, 1, 0}},
+      {{"IGHJ_ex*01", "j_l"}, {11, 15, 1, 0, 0, 0}}};
+  Eigen::VectorXi VDJ_seq(15);
+  VDJ_seq << 0, 1, 0, 2, 3, 0, 1, 1, 1, 3, 2, 3, 3, 4, 4;
   // std::pair<int, int> VDJ_n_read_counts = {3,2};
 
   REQUIRE(simple_data_ptr->flexbounds() == VDJ_flexbounds);
@@ -686,16 +686,16 @@ TEST_CASE("SimpleData", "[simpledata]") {
 TEST_CASE("NewSimpleData", "[newsimpledata]") {
   // Test the SimpleData class using the example HMM files.
   std::string yaml_path = "data/SimpleData_ex/hmm_input.yaml";
-  std::string hmm_params_dir = "data/SimpleData_ex/hmm_params";
+  std::string hmm_param_dir = "data/SimpleData_ex/hmm_params";
   NewSimpleDataPtr new_simple_data_ptr =
-      std::make_shared<NewSimpleData>(yaml_path, 0, 0, hmm_params_dir);
+      std::make_shared<NewSimpleData>(yaml_path, 0, 0, hmm_param_dir);
 
   // For a diagram of the S-W alignment, see
   // https://github.com/matsengrp/linearham/issues/44#issue-336348821.
 
   std::map<std::string, std::pair<int, int>> VDJ_flexbounds = {
       {"v_l", {0, 2}},  {"v_r", {4, 6}},   {"d_l", {7, 8}},
-      {"d_r", {9, 10}}, {"j_l", {11, 12}}, {"j_r", {13, 13}}};
+      {"d_r", {9, 10}}, {"j_l", {11, 12}}, {"j_r", {15, 15}}};
   std::map<std::string, int> VDJ_relpos = {
       {"IGHV_ex*01", 1}, {"IGHD_ex*01", 5}, {"IGHJ_ex*01", 10}};
   std::string VDJ_alphabet = "ACGTN";
@@ -733,10 +733,10 @@ TEST_CASE("NewSimpleData", "[newsimpledata]") {
   std::vector<int> VDJ_dj_junction_site_inds = {9, -1, -1, -1, -1, 10, 11};
   std::vector<std::string> VDJ_jgerm_state_strs = {"IGHJ_ex*01"};
   std::map<std::string, std::pair<int, int>> VDJ_jgerm_ggene_ranges =
-      {{"IGHJ_ex*01", {0, 1}}};
-  std::vector<int> VDJ_jgerm_naive_bases = {2};
-  std::vector<int> VDJ_jgerm_germ_inds = {2};
-  std::vector<int> VDJ_jgerm_site_inds = {12};
+      {{"IGHJ_ex*01", {0, 3}}};
+  std::vector<int> VDJ_jgerm_naive_bases = {2, 1, 2};
+  std::vector<int> VDJ_jgerm_germ_inds = {2, 3, 4};
+  std::vector<int> VDJ_jgerm_site_inds = {12, 13, 14};
   std::map<std::string, std::pair<int, int>> VDJ_jpadding_ggene_ranges =
       {{"IGHJ_ex*01", {0, 0}}};
   std::vector<int> VDJ_jpadding_naive_bases = {};
@@ -791,10 +791,13 @@ TEST_CASE("NewSimpleData", "[newsimpledata]") {
   1;
   Eigen::RowVectorXd VDJ_jpadding_transition(1);
   VDJ_jpadding_transition << 0.04;
+  int VDJ_vgerm_init_scaler_count = 0;
   int VDJ_vgerm_scaler_count = 0;
   std::vector<int> VDJ_vd_junction_scaler_counts = {0, 0, 0, 0};
+  int VDJ_dgerm_init_scaler_count = 0;
   int VDJ_dgerm_scaler_count = 0;
   std::vector<int> VDJ_dj_junction_scaler_counts = {0, 0, 0};
+  int VDJ_jgerm_init_scaler_count = 0;
   int VDJ_jgerm_scaler_count = 0;
 
   REQUIRE(new_simple_data_ptr->flexbounds() == VDJ_flexbounds);
@@ -840,30 +843,33 @@ TEST_CASE("NewSimpleData", "[newsimpledata]") {
   REQUIRE(new_simple_data_ptr->dj_junction_jgerm_transition() == VDJ_dj_junction_jgerm_transition);
   REQUIRE(new_simple_data_ptr->jpadding_transition().isApprox(VDJ_jpadding_transition));
 
-  Eigen::RowVectorXi VDJ_seq(13);
-  VDJ_seq << 0, 1, 0, 2, 3, 0, 1, 1, 1, 3, 2, 3, 3;
-  std::string VDJ_seq_str = "ACAGTACCCTGTT";
+  Eigen::RowVectorXi VDJ_seq(15);
+  VDJ_seq << 0, 1, 0, 2, 3, 0, 1, 1, 1, 3, 2, 3, 3, 4, 4;
+  std::string VDJ_seq_str = "ACAGTACCCTGTTNN";
 
   REQUIRE(new_simple_data_ptr->seq() == VDJ_seq);
   REQUIRE(new_simple_data_ptr->seq_str() == VDJ_seq_str);
 
   REQUIRE(new_simple_data_ptr->LogLikelihood() == Approx(-42.8027747544));
+  REQUIRE(new_simple_data_ptr->vgerm_init_scaler_count() == VDJ_vgerm_init_scaler_count);
   REQUIRE(new_simple_data_ptr->vgerm_scaler_count() == VDJ_vgerm_scaler_count);
   REQUIRE(new_simple_data_ptr->vd_junction_scaler_counts() == VDJ_vd_junction_scaler_counts);
+  REQUIRE(new_simple_data_ptr->dgerm_init_scaler_count() == VDJ_dgerm_init_scaler_count);
   REQUIRE(new_simple_data_ptr->dgerm_scaler_count() == VDJ_dgerm_scaler_count);
   REQUIRE(new_simple_data_ptr->dj_junction_scaler_counts() == VDJ_dj_junction_scaler_counts);
+  REQUIRE(new_simple_data_ptr->jgerm_init_scaler_count() == VDJ_jgerm_init_scaler_count);
   REQUIRE(new_simple_data_ptr->jgerm_scaler_count() == VDJ_jgerm_scaler_count);
 
   // For clarity, we run an additional NewSimpleData test.
   yaml_path = "data/SimpleData_ex/hmm_input_extra.yaml";
-  SimpleDataPtr simple_data_ptr = ReadSimpleData(yaml_path, 0, 0, hmm_params_dir);
-  new_simple_data_ptr = std::make_shared<NewSimpleData>(yaml_path, 0, 0, hmm_params_dir);
+  SimpleDataPtr simple_data_ptr = ReadSimpleData(yaml_path, 0, 0, hmm_param_dir);
+  new_simple_data_ptr = std::make_shared<NewSimpleData>(yaml_path, 0, 0, hmm_param_dir);
 
   // For a diagram of the S-W alignment, see
   // https://github.com/matsengrp/linearham/issues/44#issuecomment-406625914.
 
   VDJ_flexbounds = {{"v_l", {0, 2}},  {"v_r", {4, 6}},   {"d_l", {4, 6}},
-                    {"d_r", {8, 10}}, {"j_l", {8, 10}}, {"j_r", {13, 13}}};
+                    {"d_r", {8, 10}}, {"j_l", {8, 10}}, {"j_r", {15, 15}}};
   VDJ_relpos = {{"IGHV_ex*01", 1}, {"IGHD_ex*01", 5}, {"IGHJ_ex*01", 10},
                 {"IGHV_ex*99", 1}, {"IGHD_ex*99", 3}, {"IGHJ_ex*99", 7}};
   VDJ_alphabet = "ACGTN";
@@ -901,10 +907,10 @@ TEST_CASE("NewSimpleData", "[newsimpledata]") {
   VDJ_dj_junction_germ_inds = {3, 4, 5, 6, -1, -1, -1, -1, -1, -1, -1, -1, 1, 2};
   VDJ_dj_junction_site_inds = {8, 9, 8, 9, -1, -1, -1, -1, -1, -1, -1, -1, 8, 9};
   VDJ_jgerm_state_strs = {"IGHJ_ex*01", "IGHJ_ex*99"};
-  VDJ_jgerm_ggene_ranges = {{"IGHJ_ex*01", {0, 3}}, {"IGHJ_ex*99", {3, 6}}};
-  VDJ_jgerm_naive_bases = {0, 3, 2, 1, 0, 3};
-  VDJ_jgerm_germ_inds = {0, 1, 2, 3, 4, 5};
-  VDJ_jgerm_site_inds = {10, 11, 12, 10, 11, 12};
+  VDJ_jgerm_ggene_ranges = {{"IGHJ_ex*01", {0, 5}}, {"IGHJ_ex*99", {5, 10}}};
+  VDJ_jgerm_naive_bases = {0, 3, 2, 1, 2, 1, 0, 3, 1, 2};
+  VDJ_jgerm_germ_inds = {0, 1, 2, 3, 4, 3, 4, 5, 6, 7};
+  VDJ_jgerm_site_inds = {10, 11, 12, 13, 14, 10, 11, 12, 13, 14};
   VDJ_jpadding_ggene_ranges = {{"IGHJ_ex*01", {0, 0}}, {"IGHJ_ex*99", {0, 0}}};
   VDJ_jpadding_naive_bases = {};
   VDJ_jpadding_site_inds = {};
@@ -986,10 +992,13 @@ TEST_CASE("NewSimpleData", "[newsimpledata]") {
                  0, 1;
   VDJ_jpadding_transition.resize(2);
   VDJ_jpadding_transition << 0.04, 0.04;
+  VDJ_vgerm_init_scaler_count = 0;
   VDJ_vgerm_scaler_count = 0;
   VDJ_vd_junction_scaler_counts = {0, 0};
+  VDJ_dgerm_init_scaler_count = 0;
   VDJ_dgerm_scaler_count = 0;
   VDJ_dj_junction_scaler_counts = {0, 0};
+  VDJ_jgerm_init_scaler_count = 0;
   VDJ_jgerm_scaler_count = 0;
 
   REQUIRE(new_simple_data_ptr->flexbounds() == VDJ_flexbounds);
@@ -1040,10 +1049,13 @@ TEST_CASE("NewSimpleData", "[newsimpledata]") {
 
   REQUIRE(new_simple_data_ptr->LogLikelihood() == Approx(-37.1354672701));
   REQUIRE(new_simple_data_ptr->LogLikelihood() == simple_data_ptr->MarginalLogLikelihood());
+  REQUIRE(new_simple_data_ptr->vgerm_init_scaler_count() == VDJ_vgerm_init_scaler_count);
   REQUIRE(new_simple_data_ptr->vgerm_scaler_count() == VDJ_vgerm_scaler_count);
   REQUIRE(new_simple_data_ptr->vd_junction_scaler_counts() == VDJ_vd_junction_scaler_counts);
+  REQUIRE(new_simple_data_ptr->dgerm_init_scaler_count() == VDJ_dgerm_init_scaler_count);
   REQUIRE(new_simple_data_ptr->dgerm_scaler_count() == VDJ_dgerm_scaler_count);
   REQUIRE(new_simple_data_ptr->dj_junction_scaler_counts() == VDJ_dj_junction_scaler_counts);
+  REQUIRE(new_simple_data_ptr->jgerm_init_scaler_count() == VDJ_jgerm_init_scaler_count);
   REQUIRE(new_simple_data_ptr->jgerm_scaler_count() == VDJ_jgerm_scaler_count);
 }
 
@@ -1053,51 +1065,51 @@ TEST_CASE("NewSimpleData", "[newsimpledata]") {
 TEST_CASE("PhyloData", "[phylodata]") {
   // Test the PhyloData class using the example files.
   std::string yaml_path = "data/SimpleData_ex/hmm_input.yaml";
-  std::string hmm_params_dir = "data/SimpleData_ex/hmm_params";
+  std::string hmm_param_dir = "data/SimpleData_ex/hmm_params";
   std::string trees_path = "data/PhyloData_ex/newton.tre";
   std::string fasta_path = "data/PhyloData_ex/newton.fasta";
   std::string ctmc_params_path = "data/PhyloData_ex/RAxML_info.newton";
   PhyloDataPtr phylo_data_ptr =
-      ReadPhyloData(yaml_path, hmm_params_dir, trees_path, fasta_path, ctmc_params_path, 4);
+      ReadPhyloData(yaml_path, 0, hmm_param_dir, trees_path, fasta_path, ctmc_params_path, 4);
 
   // For a diagram of the S-W alignment, see
   // https://github.com/matsengrp/linearham/issues/44#issue-336348821.
 
   std::map<std::string, std::pair<int, int>> VDJ_flexbounds = {
       {"v_l", {0, 2}},  {"v_r", {4, 6}},   {"d_l", {7, 8}},
-      {"d_r", {9, 10}}, {"j_l", {11, 12}}, {"j_r", {13, 13}}};
+      {"d_r", {9, 10}}, {"j_l", {11, 12}}, {"j_r", {15, 15}}};
   std::map<std::string, int> VDJ_relpos = {
       {"IGHV_ex*01", 1}, {"IGHD_ex*01", 5}, {"IGHJ_ex*01", 10}};
   std::map<std::array<std::string, 2>, std::array<int, 6>> VDJ_match_indices = {
       {{"IGHV_ex*01", "v_l"}, {1, 6, 1, 2, 1, 0}},
       {{"IGHD_ex*01", "v_r"}, {5, 10, 1, 1, 1, 0}},
       {{"IGHD_ex*01", "d_l"}, {7, 10, 1, 1, 0, 0}},
-      {{"IGHJ_ex*01", "d_r"}, {10, 13, 0, 0, 1, 0}},
-      {{"IGHJ_ex*01", "j_l"}, {11, 13, 1, 0, 0, 0}}};
-  Eigen::MatrixXi VDJ_msa(3,13);
+      {{"IGHJ_ex*01", "d_r"}, {10, 15, 0, 0, 1, 0}},
+      {{"IGHJ_ex*01", "j_l"}, {11, 15, 1, 0, 0, 0}}};
+  Eigen::MatrixXi VDJ_msa(3,15);
   VDJ_msa <<
-  3, 0, 0, 0, 0, 2, 0, 3, 1, 0, 0, 3, 3,
-  1, 0, 1, 0, 1, 2, 3, 3, 1, 2, 0, 2, 3,
-  1, 2, 3, 0, 2, 3, 0, 2, 2, 0, 1, 3, 1;
-  Eigen::MatrixXi VDJ_xmsa(4,34);
+  3, 0, 0, 0, 0, 2, 0, 3, 1, 0, 0, 3, 3, 4, 4,
+  1, 0, 1, 0, 1, 2, 3, 3, 1, 2, 0, 2, 3, 4, 4,
+  1, 2, 3, 0, 2, 3, 0, 2, 2, 0, 1, 3, 1, 4, 4;
+  Eigen::MatrixXi VDJ_xmsa(4,36);
   VDJ_xmsa <<
-  2, 0, 3, 1, 0, 0, 3, 3, 0, 0, 0, 0, 2, 3, 0, 0, 0, 2, 2, 0, 0, 0, 3, 3, 3, 0, 0, 0, 0, 0, 0, 3, 3, 3,
-  2, 3, 3, 1, 2, 0, 2, 3, 0, 1, 0, 1, 2, 1, 1, 1, 1, 2, 2, 3, 3, 3, 3, 3, 3, 2, 2, 2, 0, 0, 0, 2, 2, 2,
-  2, 2, 3, 0, 1, 0, 3, 2, 0, 3, 2, 0, 1, 4, 1, 2, 3, 0, 3, 0, 1, 3, 0, 1, 2, 0, 2, 3, 1, 2, 3, 0, 1, 2,
-  3, 0, 2, 2, 0, 1, 3, 1, 2, 3, 0, 2, 3, 1, 2, 2, 2, 3, 3, 0, 0, 0, 2, 2, 2, 0, 0, 0, 1, 1, 1, 3, 3, 3;
+  2, 0, 3, 1, 0, 0, 3, 3, 4, 4, 0, 0, 0, 0, 2, 3, 0, 0, 0, 2, 2, 0, 0, 0, 3, 3, 3, 0, 0, 0, 0, 0, 0, 3, 3, 3,
+  2, 3, 3, 1, 2, 0, 2, 3, 4, 4, 0, 1, 0, 1, 2, 1, 1, 1, 1, 2, 2, 3, 3, 3, 3, 3, 3, 2, 2, 2, 0, 0, 0, 2, 2, 2,
+  2, 2, 3, 0, 1, 0, 3, 2, 1, 2, 0, 3, 2, 0, 1, 4, 1, 2, 3, 0, 3, 0, 1, 3, 0, 1, 2, 0, 2, 3, 1, 2, 3, 0, 1, 2,
+  3, 0, 2, 2, 0, 1, 3, 1, 4, 4, 2, 3, 0, 2, 3, 1, 2, 2, 2, 3, 3, 0, 0, 0, 2, 2, 2, 0, 0, 0, 1, 1, 1, 3, 3, 3;
   std::vector<std::string> VDJ_xmsa_labels = {"0", "1", "naive", "3"};
   std::vector<std::string> VDJ_xmsa_seqs = {
-      "GATCAATTAAAAGTAAAGGAAATTTAAAAAATTT", "GTTCGAGTACACGCCCCGGTTTTTTGGGAAAGGG",
-      "GGTACATGATGACNCGTATACTACGAGTCGTACG", "TAGGACTCGTAGTCGGGTTAAAGGGAAACCCTTT"};
+      "GATCAATTNNAAAAGTAAAGGAAATTTAAAAAATTT", "GTTCGAGTNNACACGCCCCGGTTTTTTGGGAAAGGG",
+      "GGTACATGCGATGACNCGTATACTACGAGTCGTACG", "TAGGACTCNNGTAGTCGGGTTAAAGGGAAACCCTTT"};
   int VDJ_xmsa_naive_index = std::find(VDJ_xmsa_labels.begin(),
                                        VDJ_xmsa_labels.end(), "naive")
                              - VDJ_xmsa_labels.begin();
-  Eigen::VectorXd VDJ_xmsa_rates(34);
+  Eigen::VectorXd VDJ_xmsa_rates(36);
   VDJ_xmsa_rates << 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-                    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1;
-  Eigen::VectorXd VDJ_xmsa_emission(34);
+                    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1;
+  Eigen::VectorXd VDJ_xmsa_emission(36);
   VDJ_xmsa_emission << 0.0446185, 0.00399037, 0.0400067, 0.00783313, 0.00255793,
-                       0.0177172, 0.0322063, 0.016355, 0.0233122, 0.00563729,
+                       0.0177172, 0.0322063, 0.016355, 1, 1, 0.0233122, 0.00563729,
                        0.0107866, 0.00342739, 0.0177109, 0.00734474, 0.00270654,
                        0.00437549, 0.00225322, 0.0177109, 0.0406717, 0.0279823,
                        0.00399037, 0.00429863, 0.0215197, 0.0215197, 0.0609261,
@@ -1105,7 +1117,7 @@ TEST_CASE("PhyloData", "[phylodata]") {
                        0.00514627, 0.0118535, 0.0118535, 0.0134759;
   std::map<std::array<std::string, 2>, Eigen::VectorXi> VDJ_germ_xmsa_indices;
   Eigen::VectorXi xmsa_indices(5);
-  xmsa_indices << 8, 9, 10, 11, 12;
+  xmsa_indices << 10, 11, 12, 13, 14;
   VDJ_germ_xmsa_indices.emplace(
       std::array<std::string, 2>({"IGHV_ex*01", "v_l"}), xmsa_indices);
   xmsa_indices.resize(5);
@@ -1116,29 +1128,29 @@ TEST_CASE("PhyloData", "[phylodata]") {
   xmsa_indices << 2, 3, 4;
   VDJ_germ_xmsa_indices.emplace(
       std::array<std::string, 2>({"IGHD_ex*01", "d_l"}), xmsa_indices);
-  xmsa_indices.resize(3);
-  xmsa_indices << 5, 6, 7;
+  xmsa_indices.resize(5);
+  xmsa_indices << 5, 6, 7, 8, 9;
   VDJ_germ_xmsa_indices.emplace(
       std::array<std::string, 2>({"IGHJ_ex*01", "d_r"}), xmsa_indices);
-  xmsa_indices.resize(2);
-  xmsa_indices << 6, 7;
+  xmsa_indices.resize(4);
+  xmsa_indices << 6, 7, 8, 9;
   VDJ_germ_xmsa_indices.emplace(
       std::array<std::string, 2>({"IGHJ_ex*01", "j_l"}), xmsa_indices);
   std::map<int, Eigen::VectorXi> VDJ_nti_xmsa_indices;
   xmsa_indices.resize(4);
-  xmsa_indices << 11, 14, 15, 16;
+  xmsa_indices << 13, 16, 17, 18;
   VDJ_nti_xmsa_indices.emplace(4, xmsa_indices);
-  xmsa_indices << 17, 12, 0, 18;
+  xmsa_indices << 19, 14, 0, 20;
   VDJ_nti_xmsa_indices.emplace(5, xmsa_indices);
-  xmsa_indices << 19, 20, 1, 21;
+  xmsa_indices << 21, 22, 1, 23;
   VDJ_nti_xmsa_indices.emplace(6, xmsa_indices);
-  xmsa_indices << 22, 23, 24, 2;
+  xmsa_indices << 24, 25, 26, 2;
   VDJ_nti_xmsa_indices.emplace(7, xmsa_indices);
-  xmsa_indices << 25, 4, 26, 27;
+  xmsa_indices << 27, 4, 28, 29;
   VDJ_nti_xmsa_indices.emplace(9, xmsa_indices);
-  xmsa_indices << 5, 28, 29, 30;
+  xmsa_indices << 5, 30, 31, 32;
   VDJ_nti_xmsa_indices.emplace(10, xmsa_indices);
-  xmsa_indices << 31, 32, 33, 6;
+  xmsa_indices << 33, 34, 35, 6;
   VDJ_nti_xmsa_indices.emplace(11, xmsa_indices);
 
   REQUIRE(phylo_data_ptr->flexbounds() == VDJ_flexbounds);
@@ -1199,9 +1211,9 @@ TEST_CASE("PhyloData", "[phylodata]") {
   // Test the phylogenetic likelihood calculation using the R package "phylomd".
   // For more details, see https://github.com/dunleavy005/phylomd.
   yaml_path = "data/PhyloData_ex/phylolikelihood_hmm_input.yaml";
-  hmm_params_dir = "data/PhyloData_ex/phylolikelihood_hmm_params";
+  hmm_param_dir = "data/PhyloData_ex/phylolikelihood_hmm_params";
   PhyloDataPtr phylo_likelihood_ptr =
-      ReadPhyloData(yaml_path, hmm_params_dir, trees_path, fasta_path, ctmc_params_path, 1);
+      ReadPhyloData(yaml_path, 0, hmm_param_dir, trees_path, fasta_path, ctmc_params_path, 1);
 
   // library(ape)
   // library(phylomd)
@@ -1232,19 +1244,19 @@ TEST_CASE("PhyloData", "[phylodata]") {
 TEST_CASE("NewPhyloData", "[newphylodata]") {
   // Test the NewPhyloData class using the example files.
   std::string yaml_path = "data/SimpleData_ex/hmm_input.yaml";
-  std::string hmm_params_dir = "data/SimpleData_ex/hmm_params";
+  std::string hmm_param_dir = "data/SimpleData_ex/hmm_params";
   std::string trees_path = "data/PhyloData_ex/newton.tre";
   std::string fasta_path = "data/PhyloData_ex/newton.fasta";
   std::string ctmc_params_path = "data/PhyloData_ex/RAxML_info.newton";
   NewPhyloDataPtr new_phylo_data_ptr = std::make_shared<NewPhyloData>(
-      yaml_path, 0, hmm_params_dir, trees_path, fasta_path, ctmc_params_path);
+      yaml_path, 0, hmm_param_dir, trees_path, fasta_path, ctmc_params_path);
 
   // For a diagram of the S-W alignment, see
   // https://github.com/matsengrp/linearham/issues/44#issue-336348821.
 
   std::map<std::string, std::pair<int, int>> VDJ_flexbounds = {
       {"v_l", {0, 2}},  {"v_r", {4, 6}},   {"d_l", {7, 8}},
-      {"d_r", {9, 10}}, {"j_l", {11, 12}}, {"j_r", {13, 13}}};
+      {"d_r", {9, 10}}, {"j_l", {11, 12}}, {"j_r", {15, 15}}};
   std::map<std::string, int> VDJ_relpos = {
       {"IGHV_ex*01", 1}, {"IGHD_ex*01", 5}, {"IGHJ_ex*01", 10}};
   std::string VDJ_alphabet = "ACGTN";
@@ -1282,10 +1294,10 @@ TEST_CASE("NewPhyloData", "[newphylodata]") {
   std::vector<int> VDJ_dj_junction_site_inds = {9, -1, -1, -1, -1, 10, 11};
   std::vector<std::string> VDJ_jgerm_state_strs = {"IGHJ_ex*01"};
   std::map<std::string, std::pair<int, int>> VDJ_jgerm_ggene_ranges =
-      {{"IGHJ_ex*01", {0, 1}}};
-  std::vector<int> VDJ_jgerm_naive_bases = {2};
-  std::vector<int> VDJ_jgerm_germ_inds = {2};
-  std::vector<int> VDJ_jgerm_site_inds = {12};
+      {{"IGHJ_ex*01", {0, 3}}};
+  std::vector<int> VDJ_jgerm_naive_bases = {2, 1, 2};
+  std::vector<int> VDJ_jgerm_germ_inds = {2, 3, 4};
+  std::vector<int> VDJ_jgerm_site_inds = {12, 13, 14};
   std::map<std::string, std::pair<int, int>> VDJ_jpadding_ggene_ranges =
       {{"IGHJ_ex*01", {0, 0}}};
   std::vector<int> VDJ_jpadding_naive_bases = {};
@@ -1340,10 +1352,13 @@ TEST_CASE("NewPhyloData", "[newphylodata]") {
   1;
   Eigen::RowVectorXd VDJ_jpadding_transition(1);
   VDJ_jpadding_transition << 0.04;
+  int VDJ_vgerm_init_scaler_count = 0;
   int VDJ_vgerm_scaler_count = 0;
   std::vector<int> VDJ_vd_junction_scaler_counts = {0, 0, 0, 0};
+  int VDJ_dgerm_init_scaler_count = 0;
   int VDJ_dgerm_scaler_count = 0;
   std::vector<int> VDJ_dj_junction_scaler_counts = {0, 0, 0};
+  int VDJ_jgerm_init_scaler_count = 0;
   int VDJ_jgerm_scaler_count = 0;
 
   REQUIRE(new_phylo_data_ptr->flexbounds() == VDJ_flexbounds);
@@ -1389,32 +1404,32 @@ TEST_CASE("NewPhyloData", "[newphylodata]") {
   REQUIRE(new_phylo_data_ptr->dj_junction_jgerm_transition() == VDJ_dj_junction_jgerm_transition);
   REQUIRE(new_phylo_data_ptr->jpadding_transition().isApprox(VDJ_jpadding_transition));
 
-  Eigen::MatrixXi VDJ_msa(3,13);
+  Eigen::MatrixXi VDJ_msa(3,15);
   VDJ_msa <<
-  3, 0, 0, 0, 0, 2, 0, 3, 1, 0, 0, 3, 3,
-  1, 0, 1, 0, 1, 2, 3, 3, 1, 2, 0, 2, 3,
-  1, 2, 3, 0, 2, 3, 0, 2, 2, 0, 1, 3, 1;
-  Eigen::MatrixXi VDJ_xmsa(4, 34);
+  3, 0, 0, 0, 0, 2, 0, 3, 1, 0, 0, 3, 3, 4, 4,
+  1, 0, 1, 0, 1, 2, 3, 3, 1, 2, 0, 2, 3, 4, 4,
+  1, 2, 3, 0, 2, 3, 0, 2, 2, 0, 1, 3, 1, 4, 4;
+  Eigen::MatrixXi VDJ_xmsa(4, 36);
   VDJ_xmsa <<
-  3, 0, 0, 0, 0, 2, 0, 3, 0, 2, 0, 3, 0, 2, 0, 3, 0, 2, 0, 3, 1, 0, 0, 0, 3, 0, 3, 0, 0, 3, 0, 0, 3, 3,
-  1, 0, 1, 0, 1, 2, 3, 3, 1, 2, 3, 3, 1, 2, 3, 3, 1, 2, 3, 3, 1, 2, 2, 0, 2, 0, 2, 2, 0, 2, 2, 0, 2, 3,
-  4, 0, 3, 2, 0, 0, 0, 0, 1, 1, 1, 1, 2, 2, 2, 2, 3, 3, 3, 3, 0, 1, 0, 0, 0, 1, 1, 2, 2, 2, 3, 3, 3, 2,
-  1, 2, 3, 0, 2, 3, 0, 2, 2, 3, 0, 2, 2, 3, 0, 2, 2, 3, 0, 2, 2, 0, 0, 1, 3, 1, 3, 0, 1, 3, 0, 1, 3, 1;
+  3, 0, 0, 0, 0, 2, 0, 3, 0, 2, 0, 3, 0, 2, 0, 3, 0, 2, 0, 3, 1, 0, 0, 0, 3, 0, 3, 0, 0, 3, 0, 0, 3, 3, 4, 4,
+  1, 0, 1, 0, 1, 2, 3, 3, 1, 2, 3, 3, 1, 2, 3, 3, 1, 2, 3, 3, 1, 2, 2, 0, 2, 0, 2, 2, 0, 2, 2, 0, 2, 3, 4, 4,
+  4, 0, 3, 2, 0, 0, 0, 0, 1, 1, 1, 1, 2, 2, 2, 2, 3, 3, 3, 3, 0, 1, 0, 0, 0, 1, 1, 2, 2, 2, 3, 3, 3, 2, 1, 2,
+  1, 2, 3, 0, 2, 3, 0, 2, 2, 3, 0, 2, 2, 3, 0, 2, 2, 3, 0, 2, 2, 0, 0, 1, 3, 1, 3, 0, 1, 3, 0, 1, 3, 1, 4, 4;
   std::vector<std::string> VDJ_xmsa_labels = {"0", "1", "naive", "3"};
   std::vector<std::string> VDJ_xmsa_seqs = {
-      "TAAAAGATAGATAGATAGATCAAATATAATAATT", "CACACGTTCGTTCGTTCGTTCGGAGAGGAGGAGT",
-      "NATGAAAACCCCGGGGTTTTACAAACCGGGTTTG", "CGTAGTAGGTAGGTAGGTAGGAACTCTACTACTC"};
+      "TAAAAGATAGATAGATAGATCAAATATAATAATTNN", "CACACGTTCGTTCGTTCGTTCGGAGAGGAGGAGTNN",
+      "NATGAAAACCCCGGGGTTTTACAAACCGGGTTTGCG", "CGTAGTAGGTAGGTAGGTAGGAACTCTACTACTCNN"};
   int VDJ_xmsa_naive_ind = std::find(VDJ_xmsa_labels.begin(),
                                      VDJ_xmsa_labels.end(), "naive")
                            - VDJ_xmsa_labels.begin();
-  Eigen::VectorXd VDJ_xmsa_emission(34);
+  Eigen::VectorXd VDJ_xmsa_emission(36);
   VDJ_xmsa_emission << 0.00734474, 0.0233122, 0.00563729, 0.0107866, 0.00342739,
                        0.0177109, 0.0279823, 0.0215197, 0.00270654, 0.0177109,
                        0.00399037, 0.0215197, 0.00437549, 0.0446185, 0.00399037,
                        0.0609261, 0.00225322, 0.0406717, 0.00429863, 0.0400067,
                        0.00783313, 0.00255793, 0.0179374, 0.0177172, 0.0118535,
                        0.019866, 0.0118535, 0.00286619, 0.00514627, 0.0134759,
-                       0.00255793, 0.00514627, 0.0322063,  0.016355;
+                       0.00255793, 0.00514627, 0.0322063,  0.016355, 1, 1;
   Eigen::VectorXi VDJ_vpadding_xmsa_inds(1);
   VDJ_vpadding_xmsa_inds << 0;
   Eigen::VectorXi VDJ_vgerm_xmsa_inds(3);
@@ -1432,8 +1447,8 @@ TEST_CASE("NewPhyloData", "[newphylodata]") {
   21, 22, 21, 27, 30, -1, -1,
   -1, 23, 25, 28, 31, 23, -1,
   -1, 24, 26, 29, 32, -1, 32;
-  Eigen::VectorXi VDJ_jgerm_xmsa_inds(1);
-  VDJ_jgerm_xmsa_inds << 33;
+  Eigen::VectorXi VDJ_jgerm_xmsa_inds(3);
+  VDJ_jgerm_xmsa_inds << 33, 34, 35;
   Eigen::VectorXi VDJ_jpadding_xmsa_inds;
 
   REQUIRE(new_phylo_data_ptr->msa() == VDJ_msa);
@@ -1451,24 +1466,27 @@ TEST_CASE("NewPhyloData", "[newphylodata]") {
   REQUIRE(new_phylo_data_ptr->jpadding_xmsa_inds() == VDJ_jpadding_xmsa_inds);
 
   REQUIRE(new_phylo_data_ptr->LogLikelihood() == Approx(-75.8136));
+  REQUIRE(new_phylo_data_ptr->vgerm_init_scaler_count() == VDJ_vgerm_init_scaler_count);
   REQUIRE(new_phylo_data_ptr->vgerm_scaler_count() == VDJ_vgerm_scaler_count);
   REQUIRE(new_phylo_data_ptr->vd_junction_scaler_counts() == VDJ_vd_junction_scaler_counts);
+  REQUIRE(new_phylo_data_ptr->dgerm_init_scaler_count() == VDJ_dgerm_init_scaler_count);
   REQUIRE(new_phylo_data_ptr->dgerm_scaler_count() == VDJ_dgerm_scaler_count);
   REQUIRE(new_phylo_data_ptr->dj_junction_scaler_counts() == VDJ_dj_junction_scaler_counts);
+  REQUIRE(new_phylo_data_ptr->jgerm_init_scaler_count() == VDJ_jgerm_init_scaler_count);
   REQUIRE(new_phylo_data_ptr->jgerm_scaler_count() == VDJ_jgerm_scaler_count);
 
   // For clarity, we run an additional NewPhyloData test.
   yaml_path = "data/SimpleData_ex/hmm_input_extra.yaml";
   PhyloDataPtr phylo_data_ptr =
-      ReadPhyloData(yaml_path, hmm_params_dir, trees_path, fasta_path, ctmc_params_path, 4);
+      ReadPhyloData(yaml_path, 0, hmm_param_dir, trees_path, fasta_path, ctmc_params_path, 4);
   new_phylo_data_ptr = std::make_shared<NewPhyloData>(
-      yaml_path, 0, hmm_params_dir, trees_path, fasta_path, ctmc_params_path);
+      yaml_path, 0, hmm_param_dir, trees_path, fasta_path, ctmc_params_path);
 
   // For a diagram of the S-W alignment, see
   // https://github.com/matsengrp/linearham/issues/44#issuecomment-406625914.
 
   VDJ_flexbounds = {{"v_l", {0, 2}},  {"v_r", {4, 6}},   {"d_l", {4, 6}},
-                    {"d_r", {8, 10}}, {"j_l", {8, 10}}, {"j_r", {13, 13}}};
+                    {"d_r", {8, 10}}, {"j_l", {8, 10}}, {"j_r", {15, 15}}};
   VDJ_relpos = {{"IGHV_ex*01", 1}, {"IGHD_ex*01", 5}, {"IGHJ_ex*01", 10},
                 {"IGHV_ex*99", 1}, {"IGHD_ex*99", 3}, {"IGHJ_ex*99", 7}};
   VDJ_alphabet = "ACGTN";
@@ -1506,10 +1524,10 @@ TEST_CASE("NewPhyloData", "[newphylodata]") {
   VDJ_dj_junction_germ_inds = {3, 4, 5, 6, -1, -1, -1, -1, -1, -1, -1, -1, 1, 2};
   VDJ_dj_junction_site_inds = {8, 9, 8, 9, -1, -1, -1, -1, -1, -1, -1, -1, 8, 9};
   VDJ_jgerm_state_strs = {"IGHJ_ex*01", "IGHJ_ex*99"};
-  VDJ_jgerm_ggene_ranges = {{"IGHJ_ex*01", {0, 3}}, {"IGHJ_ex*99", {3, 6}}};
-  VDJ_jgerm_naive_bases = {0, 3, 2, 1, 0, 3};
-  VDJ_jgerm_germ_inds = {0, 1, 2, 3, 4, 5};
-  VDJ_jgerm_site_inds = {10, 11, 12, 10, 11, 12};
+  VDJ_jgerm_ggene_ranges = {{"IGHJ_ex*01", {0, 5}}, {"IGHJ_ex*99", {5, 10}}};
+  VDJ_jgerm_naive_bases = {0, 3, 2, 1, 2, 1, 0, 3, 1, 2};
+  VDJ_jgerm_germ_inds = {0, 1, 2, 3, 4, 3, 4, 5, 6, 7};
+  VDJ_jgerm_site_inds = {10, 11, 12, 13, 14, 10, 11, 12, 13, 14};
   VDJ_jpadding_ggene_ranges = {{"IGHJ_ex*01", {0, 0}}, {"IGHJ_ex*99", {0, 0}}};
   VDJ_jpadding_naive_bases = {};
   VDJ_jpadding_site_inds = {};
@@ -1591,10 +1609,13 @@ TEST_CASE("NewPhyloData", "[newphylodata]") {
                  0, 1;
   VDJ_jpadding_transition.resize(2);
   VDJ_jpadding_transition << 0.04, 0.04;
+  VDJ_vgerm_init_scaler_count = 0;
   VDJ_vgerm_scaler_count = 0;
   VDJ_vd_junction_scaler_counts = {0, 0};
+  VDJ_dgerm_init_scaler_count = 0;
   VDJ_dgerm_scaler_count = 0;
   VDJ_dj_junction_scaler_counts = {0, 0};
+  VDJ_jgerm_init_scaler_count = 0;
   VDJ_jgerm_scaler_count = 0;
 
   REQUIRE(new_phylo_data_ptr->flexbounds() == VDJ_flexbounds);
@@ -1640,21 +1661,21 @@ TEST_CASE("NewPhyloData", "[newphylodata]") {
   REQUIRE(new_phylo_data_ptr->dj_junction_jgerm_transition() == VDJ_dj_junction_jgerm_transition);
   REQUIRE(new_phylo_data_ptr->jpadding_transition().isApprox(VDJ_jpadding_transition));
 
-  VDJ_xmsa.resize(4, 32);
+  VDJ_xmsa.resize(4, 34);
   VDJ_xmsa <<
-  3, 0, 0, 0, 0, 0, 0, 2, 0, 2, 0, 2, 0, 2, 0, 3, 0, 3, 1, 0, 0, 1, 1, 0, 1, 0, 0, 3, 3, 0, 3, 3,
-  1, 0, 1, 0, 0, 1, 1, 2, 1, 2, 1, 2, 1, 2, 3, 3, 3, 3, 1, 2, 2, 1, 1, 2, 1, 2, 0, 2, 3, 0, 2, 3,
-  4, 0, 3, 2, 1, 0, 0, 0, 1, 1, 2, 2, 3, 3, 2, 3, 1, 0, 0, 1, 0, 1, 2, 2, 3, 3, 0, 3, 2, 1, 0, 3,
-  1, 2, 3, 0, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 0, 2, 0, 2, 2, 0, 0, 2, 2, 0, 2, 0, 1, 3, 1, 1, 3, 1;
-  VDJ_xmsa_seqs = {"TAAAAAAGAGAGAGATATCAACCACAATTATT", "CACAACCGCGCGCGTTTTCGGCCGCGAGTAGT",
-                   "NATGCAAACCGGTTGTCAACACGGTTATGCAT", "CGTAGTGTGTGTGTAGAGGAAGGAGACTCCTC"};
-  VDJ_xmsa_emission.resize(32);
+  3, 0, 0, 0, 0, 0, 0, 2, 0, 2, 0, 2, 0, 2, 0, 3, 0, 3, 1, 0, 0, 1, 1, 0, 1, 0, 0, 3, 3, 4, 4, 0, 3, 3,
+  1, 0, 1, 0, 0, 1, 1, 2, 1, 2, 1, 2, 1, 2, 3, 3, 3, 3, 1, 2, 2, 1, 1, 2, 1, 2, 0, 2, 3, 4, 4, 0, 2, 3,
+  4, 0, 3, 2, 1, 0, 0, 0, 1, 1, 2, 2, 3, 3, 2, 3, 1, 0, 0, 1, 0, 1, 2, 2, 3, 3, 0, 3, 2, 1, 2, 1, 0, 3,
+  1, 2, 3, 0, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 0, 2, 0, 2, 2, 0, 0, 2, 2, 0, 2, 0, 1, 3, 1, 4, 4, 1, 3, 1;
+  VDJ_xmsa_seqs = {"TAAAAAAGAGAGAGATATCAACCACAATTNNATT", "CACAACCGCGCGCGTTTTCGGCCGCGAGTNNAGT",
+                   "NATGCAAACCGGTTGTCAACACGGTTATGCGCAT", "CGTAGTGTGTGTGTAGAGGAAGGAGACTCNNCTC"};
+  VDJ_xmsa_emission.resize(34);
   VDJ_xmsa_emission << 0.00734474, 0.0233122, 0.00563729, 0.0107866, 0.0067714,
                        0.00534673, 0.00342739, 0.0177109, 0.00270654, 0.0177109,
                        0.00437549, 0.0446185, 0.00225322, 0.0406717, 0.00399037,
                        0.0400067, 0.00399037, 0.0215197, 0.00783313, 0.00255793,
                        0.0179374, 0.0245508, 0.0245343, 0.00286619, 0.00783313,
-                       0.00255793, 0.0177172, 0.0322063, 0.016355, 0.019866,
+                       0.00255793, 0.0177172, 0.0322063, 0.016355, 1, 1, 0.019866,
                        0.0118535, 0.0304051;
   VDJ_vpadding_xmsa_inds.resize(2);
   VDJ_vpadding_xmsa_inds << 0, 0;
@@ -1670,8 +1691,8 @@ TEST_CASE("NewPhyloData", "[newphylodata]") {
   VDJ_dj_junction_xmsa_inds <<
   18, -1, 18, -1, 18, 21, 22, 24, 18, 21, 22, 24, 24, -1,
   -1, 19, -1, 19, 20, 19, 23, 25, 20, 19, 23, 25, -1, 23;
-  VDJ_jgerm_xmsa_inds.resize(6);
-  VDJ_jgerm_xmsa_inds << 26, 27, 28, 29, 30, 31;
+  VDJ_jgerm_xmsa_inds.resize(10);
+  VDJ_jgerm_xmsa_inds << 26, 27, 28, 29, 30, 31, 32, 33, 29, 30;
   VDJ_jpadding_xmsa_inds.resize(0);
 
   REQUIRE(new_phylo_data_ptr->xmsa() == VDJ_xmsa);
@@ -1687,10 +1708,13 @@ TEST_CASE("NewPhyloData", "[newphylodata]") {
 
   REQUIRE(new_phylo_data_ptr->LogLikelihood() == Approx(-75.1122515055));
   REQUIRE(new_phylo_data_ptr->LogLikelihood() == phylo_data_ptr->MarginalLogLikelihood());
+  REQUIRE(new_phylo_data_ptr->vgerm_init_scaler_count() == VDJ_vgerm_init_scaler_count);
   REQUIRE(new_phylo_data_ptr->vgerm_scaler_count() == VDJ_vgerm_scaler_count);
   REQUIRE(new_phylo_data_ptr->vd_junction_scaler_counts() == VDJ_vd_junction_scaler_counts);
+  REQUIRE(new_phylo_data_ptr->dgerm_init_scaler_count() == VDJ_dgerm_init_scaler_count);
   REQUIRE(new_phylo_data_ptr->dgerm_scaler_count() == VDJ_dgerm_scaler_count);
   REQUIRE(new_phylo_data_ptr->dj_junction_scaler_counts() == VDJ_dj_junction_scaler_counts);
+  REQUIRE(new_phylo_data_ptr->jgerm_init_scaler_count() == VDJ_jgerm_init_scaler_count);
   REQUIRE(new_phylo_data_ptr->jgerm_scaler_count() == VDJ_jgerm_scaler_count);
 }
 //
@@ -1698,17 +1722,17 @@ TEST_CASE("NewPhyloData", "[newphylodata]") {
 // TEST_CASE("OptimizeAllBranches", "[phylodata]") {
 //   // Test the branch length optimization in the PhyloData class.
 //   std::string csv_path = "data/PhyloData_ex/brlen_optim_ex/hmm_input.csv";
-//   std::string hmm_params_dir = "data/PhyloData_ex/brlen_optim_ex/hmm_params";
+//   std::string hmm_param_dir = "data/PhyloData_ex/brlen_optim_ex/hmm_params";
 //   std::string trees_path = "data/PhyloData_ex/newton_phyml.tre";
 //   std::string fasta_path = "data/PhyloData_ex/newton.fasta";
 //   std::string ctmc_params_path = "data/PhyloData_ex/RAxML_info.newton";
 //   PhyloDataPtr phylo_data_ptr =
-//       ReadPhyloData(csv_path, hmm_params_dir, trees_path, fasta_path, ctmc_params_path);
+//       ReadPhyloData(csv_path, hmm_param_dir, trees_path, fasta_path, ctmc_params_path);
 //   phylo_data_ptr->OptimizeAllBranches();
 //
 //   std::string test_trees_path = "data/PhyloData_ex/brlen_optim_ex/newton_optim_phyml.tre";
 //   PhyloDataPtr test_ptr =
-//       ReadPhyloData(csv_path, hmm_params_dir, test_trees_path, fasta_path, ctmc_params_path);
+//       ReadPhyloData(csv_path, hmm_param_dir, test_trees_path, fasta_path, ctmc_params_path);
 //
 //   REQUIRE(phylo_data_ptr->MarginalLogLikelihood() ==
 //           Approx(test_ptr->MarginalLogLikelihood()).epsilon(1e-3));

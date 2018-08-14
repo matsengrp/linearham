@@ -35,9 +35,9 @@ NewData::NewData(const std::string& yaml_path, int cluster_ind,
   InitializeHMMTransition();
 
   // Initialize the HMM "germline" scaler counts.
-  vgerm_scaler_count_ = 0;
-  dgerm_scaler_count_ = 0;
-  jgerm_scaler_count_ = 0;
+  vgerm_init_scaler_count_ = 0;
+  dgerm_init_scaler_count_ = 0;
+  jgerm_init_scaler_count_ = 0;
 };
 
 
@@ -183,7 +183,7 @@ void NewData::InitializeHMMForwardProbabilities() {
   }
 
   // Scale the forward probabilities.
-  vgerm_scaler_count_ += ScaleMatrix2(vgerm_forward_);
+  vgerm_scaler_count_ = vgerm_init_scaler_count_ + ScaleMatrix2(vgerm_forward_);
 };
 
 
@@ -201,7 +201,7 @@ double NewData::LogLikelihood() {
       vd_junction_dgerm_transition_, dgerm_emission_,
       Eigen::RowVectorXd::Ones(dgerm_state_strs_.size()),
       Eigen::RowVectorXd::Ones(dgerm_state_strs_.size()), dgerm_forward_,
-      dgerm_scaler_count_);
+      dgerm_init_scaler_count_, dgerm_scaler_count_);
   ComputeHMMJunctionForwardProbabilities(
       dgerm_forward_, dgerm_scaler_count_, dgerm_dj_junction_transition_,
       dj_junction_transition_, dj_junction_emission_, dj_junction_forward_,
@@ -209,7 +209,8 @@ double NewData::LogLikelihood() {
   ComputeHMMGermlineForwardProbabilities(
       dj_junction_forward_, dj_junction_scaler_counts_,
       dj_junction_jgerm_transition_, jgerm_emission_, jpadding_transition_,
-      jpadding_emission_, jgerm_forward_, jgerm_scaler_count_);
+      jpadding_emission_, jgerm_forward_, jgerm_init_scaler_count_,
+      jgerm_scaler_count_);
 
   return std::log(jgerm_forward_.sum()) -
          jgerm_scaler_count_ * std::log(SCALE_FACTOR2);
@@ -712,7 +713,8 @@ void ComputeHMMGermlineForwardProbabilities(
     const Eigen::RowVectorXd& germ_emission_,
     const Eigen::RowVectorXd& padding_transition_,
     const Eigen::RowVectorXd& padding_emission_,
-    Eigen::RowVectorXd& germ_forward_, int& germ_scaler_count_) {
+    Eigen::RowVectorXd& germ_forward_, int& germ_init_scaler_count_,
+    int& germ_scaler_count_) {
   // Compute the forward probabilities for the "germline" states.
   germ_forward_ = junction_forward_.bottomRows(1) * junction_germ_transition_;
   germ_forward_.array() *= germ_emission_.array();
@@ -720,8 +722,9 @@ void ComputeHMMGermlineForwardProbabilities(
   germ_forward_.array() *= padding_emission_.array();
 
   // Scale the forward probabilities.
-  germ_scaler_count_ +=
-      junction_scaler_counts_.back() + ScaleMatrix2(germ_forward_);
+  germ_scaler_count_ = germ_init_scaler_count_ +
+                       junction_scaler_counts_.back() +
+                       ScaleMatrix2(germ_forward_);
 };
 
 

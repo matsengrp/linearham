@@ -34,26 +34,26 @@ NewSimpleData::NewSimpleData(const std::string& yaml_path, int cluster_ind,
 
 void NewSimpleData::InitializeHMMEmission() {
   FillHMMPaddingEmission(vpadding_ggene_ranges_, vpadding_site_inds_,
-                         vpadding_emission_, vgerm_scaler_count_);
+                         vpadding_emission_, vgerm_init_scaler_count_);
   FillHMMGermlineEmission(vgerm_ggene_ranges_, vgerm_germ_inds_,
                           vgerm_site_inds_, vgerm_emission_,
-                          vgerm_scaler_count_);
+                          vgerm_init_scaler_count_);
   FillHMMJunctionEmission(vd_junction_ggene_ranges_, vd_junction_naive_bases_,
                           vd_junction_germ_inds_, vd_junction_site_inds_,
                           flexbounds_.at("v_r"), flexbounds_.at("d_l"),
                           vd_junction_emission_);
   FillHMMGermlineEmission(dgerm_ggene_ranges_, dgerm_germ_inds_,
                           dgerm_site_inds_, dgerm_emission_,
-                          dgerm_scaler_count_);
+                          dgerm_init_scaler_count_);
   FillHMMJunctionEmission(dj_junction_ggene_ranges_, dj_junction_naive_bases_,
                           dj_junction_germ_inds_, dj_junction_site_inds_,
                           flexbounds_.at("d_r"), flexbounds_.at("j_l"),
                           dj_junction_emission_);
   FillHMMGermlineEmission(jgerm_ggene_ranges_, jgerm_germ_inds_,
                           jgerm_site_inds_, jgerm_emission_,
-                          jgerm_scaler_count_);
+                          jgerm_init_scaler_count_);
   FillHMMPaddingEmission(jpadding_ggene_ranges_, jpadding_site_inds_,
-                         jpadding_emission_, jgerm_scaler_count_);
+                         jpadding_emission_, jgerm_init_scaler_count_);
 };
 
 
