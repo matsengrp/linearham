@@ -229,10 +229,10 @@ void CacheHMMGermlineStates(
     std::vector<int>& site_inds_) {
   // Compute the site positions that correspond to the start/end of the germline
   // gene in the "germline" region.
-  int site_start = left_end ? std::min(relpos, left_flexbounds.second)
+  int site_start = left_end ? std::max(relpos, left_flexbounds.first)
                             : left_flexbounds.second;
   int site_end =
-      right_end ? std::max(relpos + germ_ptr->length(), right_flexbounds.first)
+      right_end ? std::min(relpos + germ_ptr->length(), right_flexbounds.second)
                 : right_flexbounds.first;
 
   // Calculate the start/end indices that map to the current "germline" state.
@@ -302,9 +302,9 @@ void CacheHMMPaddingStates(
   // Compute the site positions that correspond to the start/end of the padding
   // state in the "germline" region.
   int site_start = left_end ? leftright_flexbounds.first
-                            : std::max(relpos + germ_ptr->length(),
-                                       leftright_flexbounds.first);
-  int site_end = left_end ? std::min(relpos, leftright_flexbounds.second)
+                            : std::min(relpos + germ_ptr->length(),
+                                       leftright_flexbounds.second);
+  int site_end = left_end ? std::max(relpos, leftright_flexbounds.first)
                           : leftright_flexbounds.second;
 
   // Calculate the start/end indices that map to the "padding" state associated

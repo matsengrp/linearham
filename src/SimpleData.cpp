@@ -107,9 +107,9 @@ double SimpleData::PaddingProb(GermlinePtr germ_ptr,std::string type, int relpos
   std::pair<int, int> flexbounds = (type == "v") ? flexbounds_.at("v_l") : flexbounds_.at("j_r");
 
   int site_start = (type == "v") ? flexbounds.first
-                            : std::max(relpos + germ_ptr->length(),
-                                       flexbounds.first);
-  int site_end = (type == "v") ? std::min(relpos, flexbounds.second)
+          : std::min(relpos + germ_ptr->length(),
+                       flexbounds.second);
+int site_end = (type == "v") ? std::max(relpos, flexbounds.first)
                           : flexbounds.second;
 
   double n_transition = (type == "v") ? std::static_pointer_cast<VGermline>(germ_ptr)->n_transition() : std::static_pointer_cast<JGermline>(germ_ptr)->n_transition();

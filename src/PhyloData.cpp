@@ -473,9 +473,9 @@ void PhyloData::CachePaddingXmsaIndices(GermlinePtr germ_ptr, std::string flexbo
     std::pair<int, int> flexbounds = flexbounds_.at(flexbounds_name);
 
     int site_start = (flexbounds_name == "v_l") ? flexbounds.first
-                              : std::max(relpos + germ_ptr->length(),
-                                         flexbounds.first);
-    int site_end = (flexbounds_name == "v_l") ? std::min(relpos, flexbounds.second)
+        : std::min(relpos + germ_ptr->length(),
+                   flexbounds.second);
+    int site_end = (flexbounds_name == "v_l") ? std::max(relpos, flexbounds.first)
                             : flexbounds.second;
 
     Eigen::VectorXi pad_xmsa_inds(site_end-site_start);
