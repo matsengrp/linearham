@@ -447,11 +447,11 @@ void Data::CacheMatchMatrixIndices(int germ_length, std::string gname,
   int match_end = std::min(relpos + germ_length, right_flexbounds.second);
 
   int left_flex =
-      std::min(relpos + germ_length - 1, left_flexbounds.second) - match_start;
-  int right_flex = match_end - std::max(relpos + 1, right_flexbounds.first);
+      std::max(0, std::min(relpos + germ_length - 1, left_flexbounds.second) - match_start);
+  int right_flex = std::max(0, match_end - std::max(relpos + 1, right_flexbounds.first));
 
-  int row_start = match_start - left_flexbounds.first;
-  int col_start = match_end - right_flex - right_flexbounds.first;
+  int row_start = std::max(0, match_start - left_flexbounds.first);
+  int col_start = std::max(0, match_end - right_flex - right_flexbounds.first);
 
   match_indices_.emplace(
       std::array<std::string, 2>({gname, left_flexbounds_name}),
