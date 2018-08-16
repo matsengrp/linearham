@@ -149,7 +149,7 @@ std::pair<Eigen::MatrixXd, int> Data::NTIProbMatrix(NTInsertionPtr nti_ptr,
       RowVecMatCwise(emission, cache_matrix, cache_matrix);
     }
 
-    scaler_count += ScaleMatrix(cache_matrix);
+    //scaler_count += ScaleMatrix(cache_matrix);
 
     // Store the NTI path probabilities in the output matrix.
     if (i >= std::max(right_flexbounds.first, right_relpos) - 1) {
