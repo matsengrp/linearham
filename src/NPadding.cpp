@@ -71,9 +71,9 @@ NPadding::NPadding(const YAML::Node& root) {
   YAML::Node check_state = root["states"][n_check_ind];
   assert(nstate["name"].as<std::string>() == nname);
 
-  assert((  // Double parens apparently needed for such macros.
-      nstate["transitions"].as<std::map<std::string, double>>() ==
-      check_state["transitions"].as<std::map<std::string, double>>()));
+  // assert((  // Double parens apparently needed for such macros.
+  //     nstate["transitions"].as<std::map<std::string, double>>() ==
+  //     check_state["transitions"].as<std::map<std::string, double>>()));
 
   // Parse NPadding transition data.
   std::vector<std::string> state_names;

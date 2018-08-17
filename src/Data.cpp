@@ -60,7 +60,7 @@ Eigen::MatrixXd Data::GermlineTransProbMatrix(
   assert(left_flexbounds.second + 1 <= right_flexbounds.second);
 
   assert(relpos < right_flexbounds.second);
-  assert(right_flexbounds.first <= relpos + germ_ptr->length());
+  // assert(right_flexbounds.first <= relpos + germ_ptr->length());
 
   assert(0 <= left_flexbounds.first);
   assert(right_flexbounds.second <= this->length());
