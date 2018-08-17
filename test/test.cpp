@@ -1717,6 +1717,61 @@ TEST_CASE("NewPhyloData", "[newphylodata]") {
   REQUIRE(new_phylo_data_ptr->jgerm_init_scaler_count() == VDJ_jgerm_init_scaler_count);
   REQUIRE(new_phylo_data_ptr->jgerm_scaler_count() == VDJ_jgerm_scaler_count);
 }
+
+
+TEST_CASE("tmp", "[tmp]") {
+  std::string yaml_path = "/home/dunleavy005/partis/testing_amrit/tmp.yaml";
+  // std::string yaml_path = "data/SimpleData_ex/hmm_input.yaml";
+  std::string hmm_param_dir =
+  "/home/dunleavy005/partis/_output/testing_amrit_input_seqs/hmm/hmms";
+  // "data/SimpleData_ex/hmm_params/";
+  std::string trees_path = //"data/PhyloData_ex/newton.tre";
+  "/home/dunleavy005/partis/testing_amrit/partition0/input_seqs.tree";
+  std::string fasta_path =
+  "/home/dunleavy005/partis/testing_amrit/partition0/input_seqs.fasta";
+  // "data/PhyloData_ex/newton.fasta";
+  std::string ctmc_params_path = "data/PhyloData_ex/RAxML_info.newton";
+
+  YAML::Node root = YAML::LoadFile(yaml_path);
+  int n_events = 101;
+
+  // for (int i = 0; i < n_events; i++) {
+  //   // int n_seqs = root["events"][i]["input_seqs"].size();
+  //   // for (int j = 0; j < n_seqs; j++) {
+  //   //   std::cout<<i<<","<<j<<std::endl;
+  //   //   NewSimpleDataPtr new_simple_data_ptr =
+  //   //       std::make_shared<NewSimpleData>(yaml_path, i, j, hmm_param_dir);
+  //   //   SimpleDataPtr simple_data_ptr = ReadSimpleData(yaml_path, i, j, hmm_param_dir);
+  //   //   std::cout<<new_simple_data_ptr->LogLikelihood()<<std::endl;
+  //   //   REQUIRE(new_simple_data_ptr->LogLikelihood() == Approx(simple_data_ptr->MarginalLogLikelihood()).epsilon(1e-3));
+  //   // }
+  //
+  //   // fasta_path = "/home/dunleavy005/partis/testing_amrit/partition" + std::to_string(i) + "/input_seqs.fasta";
+  //   // trees_path = "/home/dunleavy005/partis/testing_amrit/partition" + std::to_string(i) + "/input_seqs.tree";
+  //   //
+  //   // std::cout<<"tree "<<i<<std::endl;
+  //   // NewPhyloDataPtr new_phylo_data_ptr = std::make_shared<NewPhyloData>(
+  //   //     yaml_path, i, hmm_param_dir, trees_path, fasta_path, ctmc_params_path);
+  //   // PhyloDataPtr phylo_data_ptr = ReadPhyloData(
+  //   //     yaml_path, i, hmm_param_dir, trees_path, fasta_path, ctmc_params_path, 4);
+  //   //     std::cout<<new_phylo_data_ptr->LogLikelihood()<<std::endl;
+  //   // REQUIRE(new_phylo_data_ptr->LogLikelihood() == Approx(phylo_data_ptr->MarginalLogLikelihood()).epsilon(1e-3));
+  // }
+  // NewSimpleDataPtr new_simple_data_ptr =
+      // std::make_shared<NewSimpleData>(yaml_path, 54, 0, hmm_param_dir);
+  // SimpleDataPtr simple_data_ptr = ReadSimpleData(yaml_path, 54, 0, hmm_param_dir);
+
+  // std::cout << new_simple_data_ptr->LogLikelihood() << std::endl;
+  // std::cout << simple_data_ptr->MarginalLogLikelihood() << std::endl;
+
+  // NewPhyloDataPtr new_phylo_data_ptr = std::make_shared<NewPhyloData>(
+  //     yaml_path, 0, hmm_param_dir, trees_path, fasta_path, ctmc_params_path);
+  // PhyloDataPtr phylo_data_ptr = ReadPhyloData(
+  //     yaml_path, 0, hmm_param_dir, trees_path, fasta_path, ctmc_params_path, 4);
+  //
+  // std::cout << new_phylo_data_ptr->LogLikelihood() << std::endl;
+  // std::cout << phylo_data_ptr->MarginalLogLikelihood() << std::endl;
+}
 //
 //
 // TEST_CASE("OptimizeAllBranches", "[phylodata]") {
