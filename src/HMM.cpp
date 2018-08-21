@@ -156,6 +156,30 @@ void HMM::InitializeTransition() {
 // Auxiliary functions
 
 
+void HMM::RunForwardAlgorithm() {
+  InitializeForwardProbabilities();
+  ComputeJunctionForwardProbabilities(
+      vgerm_forward_, vgerm_scaler_count_, vgerm_vd_junction_transition_,
+      vd_junction_transition_, vd_junction_emission_, vd_junction_forward_,
+      vd_junction_scaler_counts_);
+  ComputeGermlineForwardProbabilities(
+      vd_junction_forward_, vd_junction_scaler_counts_,
+      vd_junction_dgerm_transition_, dgerm_emission_,
+      Eigen::RowVectorXd::Ones(dgerm_state_strs_.size()),
+      Eigen::RowVectorXd::Ones(dgerm_state_strs_.size()), dgerm_forward_,
+      dgerm_init_scaler_count_, dgerm_scaler_count_);
+  ComputeJunctionForwardProbabilities(
+      dgerm_forward_, dgerm_scaler_count_, dgerm_dj_junction_transition_,
+      dj_junction_transition_, dj_junction_emission_, dj_junction_forward_,
+      dj_junction_scaler_counts_);
+  ComputeGermlineForwardProbabilities(
+      dj_junction_forward_, dj_junction_scaler_counts_,
+      dj_junction_jgerm_transition_, jgerm_emission_, jpadding_transition_,
+      jpadding_emission_, jgerm_forward_, jgerm_init_scaler_count_,
+      jgerm_scaler_count_);
+};
+
+
 void HMM::InitializeForwardProbabilities() {
   vgerm_forward_.setZero(vgerm_state_strs_.size());
 
@@ -187,30 +211,11 @@ void HMM::InitializeForwardProbabilities() {
 };
 
 
-// Forward/backward traversal functions
-
-
 double HMM::LogLikelihood() {
-  InitializeForwardProbabilities();
-  ComputeJunctionForwardProbabilities(
-      vgerm_forward_, vgerm_scaler_count_, vgerm_vd_junction_transition_,
-      vd_junction_transition_, vd_junction_emission_, vd_junction_forward_,
-      vd_junction_scaler_counts_);
-  ComputeGermlineForwardProbabilities(
-      vd_junction_forward_, vd_junction_scaler_counts_,
-      vd_junction_dgerm_transition_, dgerm_emission_,
-      Eigen::RowVectorXd::Ones(dgerm_state_strs_.size()),
-      Eigen::RowVectorXd::Ones(dgerm_state_strs_.size()), dgerm_forward_,
-      dgerm_init_scaler_count_, dgerm_scaler_count_);
-  ComputeJunctionForwardProbabilities(
-      dgerm_forward_, dgerm_scaler_count_, dgerm_dj_junction_transition_,
-      dj_junction_transition_, dj_junction_emission_, dj_junction_forward_,
-      dj_junction_scaler_counts_);
-  ComputeGermlineForwardProbabilities(
-      dj_junction_forward_, dj_junction_scaler_counts_,
-      dj_junction_jgerm_transition_, jgerm_emission_, jpadding_transition_,
-      jpadding_emission_, jgerm_forward_, jgerm_init_scaler_count_,
-      jgerm_scaler_count_);
+  // If necessary, run the forward algorithm.
+  if (jgerm_forward_.size() == 0) {
+    RunForwardAlgorithm();
+  }
 
   return std::log(jgerm_forward_.sum()) -
          jgerm_scaler_count_ * std::log(SCALE_FACTOR);

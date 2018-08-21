@@ -123,6 +123,8 @@ class HMM {
   void InitializeTransition();
 
   // Auxiliary functions
+  void RunForwardAlgorithm();
+
   void InitializeForwardProbabilities();
 
  private:
@@ -288,7 +290,6 @@ class HMM {
   int jgerm_init_scaler_count() const { return jgerm_init_scaler_count_; };
   int jgerm_scaler_count() const { return jgerm_scaler_count_; };
 
-  // Forward/backward traversal functions
   double LogLikelihood();
 };
 
