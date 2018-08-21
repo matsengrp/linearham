@@ -1,5 +1,5 @@
-#ifndef LINEARHAM_NEWSIMPLEDATA_
-#define LINEARHAM_NEWSIMPLEDATA_
+#ifndef LINEARHAM_SIMPLEHMM_
+#define LINEARHAM_SIMPLEHMM_
 
 #include <map>
 #include <memory>
@@ -8,52 +8,52 @@
 #include <vector>
 
 #include <Eigen/Dense>
-#include "NewData.hpp"
+#include "HMM.hpp"
 
-/// @file NewSimpleData.hpp
-/// @brief Header for the NewSimpleData class.
+/// @file SimpleHMM.hpp
+/// @brief Header for the SimpleHMM class.
 
 namespace linearham {
 
 
-class NewSimpleData : public NewData {
+class SimpleHMM : public HMM {
  private:
-  // HMM input sequence
+  // Input sequence
   Eigen::RowVectorXi seq_;
   std::string seq_str_;
 
   // Initialization functions
-  void InitializeHMMEmission() override;
+  void InitializeEmission() override;
 
   // Auxiliary functions
-  void FillHMMGermlineEmission(
+  void FillGermlineEmission(
       const std::map<std::string, std::pair<int, int>>& ggene_ranges_,
       const std::vector<int>& germ_inds_, const std::vector<int>& site_inds_,
       Eigen::RowVectorXd& emission_, int& scaler_count_);
 
-  void FillHMMJunctionEmission(
+  void FillJunctionEmission(
       const std::map<std::string, std::pair<int, int>>& ggene_ranges_,
       const std::vector<int>& naive_bases_, const std::vector<int>& germ_inds_,
       const std::vector<int>& site_inds_, std::pair<int, int> left_flexbounds,
       std::pair<int, int> right_flexbounds, Eigen::MatrixXd& emission_);
 
-  void FillHMMPaddingEmission(
+  void FillPaddingEmission(
       const std::map<std::string, std::pair<int, int>>& ggene_ranges_,
       const std::vector<int>& site_inds_, Eigen::RowVectorXd& emission_,
       int& scaler_count_);
 
  public:
-  NewSimpleData(const std::string& yaml_path, int cluster_ind, int seq_ind,
-                const std::string& hmm_param_dir);
+  SimpleHMM(const std::string& yaml_path, int cluster_ind, int seq_ind,
+            const std::string& hmm_param_dir);
 
   const Eigen::RowVectorXi& seq() const { return seq_; };
   const std::string& seq_str() const { return seq_str_; };
 };
 
 
-typedef std::shared_ptr<NewSimpleData> NewSimpleDataPtr;
+typedef std::shared_ptr<SimpleHMM> SimpleHMMPtr;
 
 
 }  // namespace linearham
 
-#endif  // LINEARHAM_NEWSIMPLEDATA_
+#endif  // LINEARHAM_SIMPLEHMM_

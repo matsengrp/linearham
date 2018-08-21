@@ -1,8 +1,6 @@
 #ifndef LINEARHAM_NPADDING_
 #define LINEARHAM_NPADDING_
 
-#include <utility>
-
 #include <yaml-cpp/yaml.h>
 #include <Eigen/Dense>
 
@@ -17,19 +15,13 @@ namespace linearham {
 class NPadding {
  protected:
   double n_transition_;
-  double ambiguous_emission_;
   Eigen::VectorXd n_emission_;
 
  public:
   NPadding(const YAML::Node& root);
 
   double n_transition() const { return n_transition_; };
-  double ambiguous_emission() const { return ambiguous_emission_; };
   const Eigen::VectorXd& n_emission() const { return n_emission_; };
-
-  double NPaddingProb(std::pair<int, int> flexbounds,
-                      const Eigen::Ref<const Eigen::VectorXi>& emission_indices,
-                      int read_pos, int n_read_count, bool pad_left) const;
 };
 
 

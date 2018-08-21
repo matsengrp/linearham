@@ -29,7 +29,7 @@ NTInsertion::NTInsertion(const YAML::Node& root) {
   // insert_left_[base].
   // The regex's obtained below extract the corresponding position and base.
   std::regex grgx = GetGermlineStateRegex(gname);
-  std::regex nrgx = GetNTIStateRegex(alphabet);
+  std::regex nti_rgx = GetNTIStateRegex(alphabet);
   std::smatch match;
 
   // The HMM YAML has insert_left states (perhaps), germline-encoded states,
@@ -45,8 +45,8 @@ NTInsertion::NTInsertion(const YAML::Node& root) {
   // Initialize the NTInsertion data structures.
   nti_landing_in_.setZero(alphabet.size());
   nti_landing_out_.setZero(alphabet.size(), gcount);
-  nti_emission_.setZero(alphabet.size(), alphabet.size());
   nti_transition_.setZero(alphabet.size(), alphabet.size());
+  nti_emission_.setZero(alphabet.size(), alphabet.size());
 
   // Parse the init state.
   YAML::Node init_state = root["states"][0];
@@ -58,9 +58,9 @@ NTInsertion::NTInsertion(const YAML::Node& root) {
 
   // The init state has landing-in probabilities in each of the NTI states.
   for (std::size_t i = 0; i < state_names.size(); i++) {
-    if (std::regex_match(state_names[i], match, nrgx)) {
-      int nbase = GetAlphabetIndex(alphabet, match.str(1)[0]);
-      nti_landing_in_[nbase] = probs[i];
+    if (std::regex_match(state_names[i], match, nti_rgx)) {
+      int nti_base = GetAlphabetIndex(alphabet, match.str(1)[0]);
+      nti_landing_in_[nti_base] = probs[i];
     } else {
       // If the init state does not land in a NTI state, it must land in the
       // germline gene.
@@ -70,34 +70,34 @@ NTInsertion::NTInsertion(const YAML::Node& root) {
 
   // Parse insert_left_[base] states.
   for (std::size_t i = 1; i <= alphabet.size(); i++) {
-    YAML::Node nstate = root["states"][i];
-    std::string nname = nstate["name"].as<std::string>();
-    assert(std::regex_match(nname, match, nrgx));
-    int nbase = GetAlphabetIndex(alphabet, match.str(1)[0]);
+    YAML::Node nti_state = root["states"][i];
+    std::string nti_name = nti_state["name"].as<std::string>();
+    assert(std::regex_match(nti_name, match, nti_rgx));
+    int nti_base = GetAlphabetIndex(alphabet, match.str(1)[0]);
 
     // Parse NTI transition data.
-    std::tie(state_names, probs) = ParseStringProbMap(nstate["transitions"]);
+    std::tie(state_names, probs) = ParseStringProbMap(nti_state["transitions"]);
 
     for (std::size_t j = 0; j < state_names.size(); j++) {
       if (std::regex_match(state_names[j], match, grgx)) {
         // We can transition to a germline base...
-        nti_landing_out_(nbase, std::stoi(match.str(1))) = probs[j];
+        nti_landing_out_(nti_base, std::stoi(match.str(1))) = probs[j];
       } else {
         // ... or we can transition to a NTI state.
-        assert(std::regex_match(state_names[j], match, nrgx));
-        int trans_base = GetAlphabetIndex(alphabet, match.str(1)[0]);
-        nti_transition_(nbase, trans_base) = probs[j];
+        assert(std::regex_match(state_names[j], match, nti_rgx));
+        int next_base = GetAlphabetIndex(alphabet, match.str(1)[0]);
+        nti_transition_(nti_base, next_base) = probs[j];
       }
     }
 
     // Parse NTI emission data.
     std::tie(state_names, probs) =
-        ParseStringProbMap(nstate["emissions"]["probs"]);
-    assert(nstate["emissions"]["track"].as<std::string>() == "nukes");
+        ParseStringProbMap(nti_state["emissions"]["probs"]);
+    assert(nti_state["emissions"]["track"].as<std::string>() == "nukes");
 
     for (std::size_t j = 0; j < state_names.size(); j++) {
       int emit_base = GetAlphabetIndex(alphabet, state_names[j][0]);
-      nti_emission_(emit_base, nbase) = probs[j];
+      nti_emission_(emit_base, nti_base) = probs[j];
     }
   }
 };

@@ -9,10 +9,6 @@
 namespace linearham {
 
 
-// "Zero" for parsing YAML files.
-const double EPS_PARSE = 1e-5;
-
-
 /// @brief Parse a YAML map from strings to probabilities.
 /// @param[in] node
 /// A YAML map node.

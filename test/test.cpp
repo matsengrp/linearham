@@ -13,32 +13,14 @@
 #include "NTInsertion.hpp"
 #include "NPadding.hpp"
 #include "VDJGermline.hpp"
-
-#include "Pile.hpp"
-#include "SimpleData.hpp"
-#include "PhyloData.hpp"
-#include "NewData.hpp"
-#include "NewSimpleData.hpp"
-#include "NewPhyloData.hpp"
+#include "HMM.hpp"
+#include "SimpleHMM.hpp"
+#include "PhyloHMM.hpp"
 
 
 namespace test {
 
 using namespace linearham;
-
-// Global test variables
-
-YAML::Node V_root, D_root, J_root;
-Eigen::VectorXi emission_indices(13);
-std::pair<int, int> n_read_counts;
-
-void initialize_global_test_vars() {
-  V_root = YAML::LoadFile("data/SimpleData_ex/hmm_params/IGHV_ex_star_01.yaml");
-  D_root = YAML::LoadFile("data/SimpleData_ex/hmm_params/IGHD_ex_star_01.yaml");
-  J_root = YAML::LoadFile("data/SimpleData_ex/hmm_params/IGHJ_ex_star_01.yaml");
-  emission_indices << 0, 1, 0, 2, 3, 0, 1, 1, 1, 3, 2, 3, 3;
-  n_read_counts = {3,2};
-}
 
 
 // Linear algebra tests
@@ -79,95 +61,20 @@ TEST_CASE("RowVecMatCwise", "[linalg]") {
 }
 
 
-TEST_CASE("SubProductMatrix", "[linalg]") {
-  Eigen::MatrixXd A(3,3), correct_A(3,3);
-  Eigen::VectorXd e(3);
-  correct_A << 2.5, -2.5, -5,
-                 1,   -1, -2,
-                 1,    1,  2;
-  e << 2.5, -1, 2;
-  A.setConstant(999);
-
-  SubProductMatrix(e, A);
-  REQUIRE(A == correct_A);
-}
-
-
-TEST_CASE("VectorByIndices", "[linalg]") {
-  Eigen::VectorXd b(4), correct_b(4);
-  Eigen::MatrixXd A(3,4);
-  Eigen::VectorXi a(4);
-  correct_b << 9, 2.9, 7, 4;
-  A << 1, 2.9,  3,  4,
-       5,   6,  7,  8,
-       9,  10, 11, 12;
-  a << 2, 0, 1, 0;
-
-  VectorByIndices(A, a, b);
-  REQUIRE(b == correct_b);
-}
-
-
-TEST_CASE("BinaryMax", "[linalg]") {
-  Eigen::MatrixXd left(2,3);
-  left <<
-  0.50, 0.71, 0.13,
-  0.29, 0.31, 0.37;
-  Eigen::MatrixXd right(3,2);
-  right <<
-  0.30, 0.37,
-  0.29, 0.41,
-  0.11, 0.97;
-  Eigen::MatrixXd C(2,2);
-  Eigen::MatrixXd correct_C(2,2);
-  // 0.50*0.30 0.71*0.29 0.13*0.11, 0.50*0.37 0.71*0.41 0.13*0.97
-  // 0.29*0.30 0.31*0.29 0.37*0.11, 0.29*0.37 0.31*0.41 0.37*0.97
-  correct_C <<
-  0.71*0.29, 0.71*0.41,
-  0.31*0.29, 0.37*0.97;
-  Eigen::MatrixXi C_idx(2,2);
-  Eigen::MatrixXi correct_C_idx(2,2);
-  correct_C_idx <<
-  1,1,
-  1,2;
-  BinaryMax(left, right, C, C_idx);
-  REQUIRE(C == correct_C);
-  REQUIRE(C_idx == correct_C_idx);
-}
-
-
 // Germline tests
 
-TEST_CASE("BuildTransition", "[germline]") {
-  Eigen::VectorXd next_transition(2);
-  next_transition << 0.2, 0.3;
-  Eigen::MatrixXd correct_transition(3,3);
-  correct_transition <<
-  1, 0.2, 0.2*0.3,
-  0,   1,     0.3,
-  0,   0,       1;
-
-  Eigen::MatrixXd transition;
-  transition = BuildTransition(next_transition);
-  REQUIRE(transition.isApprox(correct_transition));
-}
-
-
 TEST_CASE("Germline", "[germline]") {
-  initialize_global_test_vars();
+  YAML::Node V_root = YAML::LoadFile("data/hmm_params/IGHV_ex_star_01.yaml");
+  YAML::Node D_root = YAML::LoadFile("data/hmm_params/IGHD_ex_star_01.yaml");
+  YAML::Node J_root = YAML::LoadFile("data/hmm_params/IGHJ_ex_star_01.yaml");
 
   // V tests
   Eigen::VectorXd V_landing_in(5);
   V_landing_in << 0.66, 0, 0, 0, 0;
   Eigen::VectorXd V_landing_out(5);
   V_landing_out << 0, 0, 0.2, 0.5, 1;
-  Eigen::MatrixXd V_transition(5,5);
-  V_transition <<
-  1, 1, 1*1, 1*1*0.8, 1*1*0.8*0.5,
-  0, 1,   1,   1*0.8,   1*0.8*0.5,
-  0, 0,   1,     0.8,     0.8*0.5,
-  0, 0,   0,       1,         0.5,
-  0, 0,   0,       0,           1;
+  Eigen::VectorXd V_transition(4);
+  V_transition << 1, 1, 0.8, 0.5;
   double V_gene_prob = 0.07;
   std::string V_alphabet = "ACGT";
   std::string V_name = "IGHV_ex*01";
@@ -179,8 +86,6 @@ TEST_CASE("Germline", "[germline]") {
   0.07, 0.7, 0.01, 0.15, 0.125;
   Eigen::VectorXi V_bases(5);
   V_bases << 0, 3, 2, 0, 1;
-  Eigen::VectorXd V_rates(5);
-  V_rates << 1, 1, 1, 1, 1;
   int V_length = 5;
 
   Germline V_Germline(V_root);
@@ -193,7 +98,6 @@ TEST_CASE("Germline", "[germline]") {
   REQUIRE(V_Germline.name() == V_name);
   REQUIRE(V_Germline.emission() == V_emission);
   REQUIRE(V_Germline.bases() == V_bases);
-  REQUIRE(V_Germline.rates() == V_rates);
   REQUIRE(V_Germline.length() == V_length);
 
   // D tests
@@ -201,13 +105,8 @@ TEST_CASE("Germline", "[germline]") {
   D_landing_in << 0.4, 0.1, 0.05, 0, 0;
   Eigen::VectorXd D_landing_out(5);
   D_landing_out << 0.02, 0.05, 0.4, 0.65, 1;
-  Eigen::MatrixXd D_transition(5,5);
-  D_transition <<
-  1, 0.98, 0.98*0.95, 0.98*0.95*0.6, 0.98*0.95*0.6*0.35,
-  0,    1,      0.95,      0.95*0.6,      0.95*0.6*0.35,
-  0,    0,         1,           0.6,           0.6*0.35,
-  0,    0,         0,             1,               0.35,
-  0,    0,         0,             0,                  1;
+  Eigen::VectorXd D_transition(4);
+  D_transition << 0.98, 0.95, 0.6, 0.35;
   double D_gene_prob = 0.035;
   std::string D_alphabet = "ACGT";
   std::string D_name = "IGHD_ex*01";
@@ -219,8 +118,6 @@ TEST_CASE("Germline", "[germline]") {
   0.12, 0.07, 0.85, 0.15, 0.01;
   Eigen::VectorXi D_bases(5);
   D_bases << 2, 2, 3, 0, 1;
-  Eigen::VectorXd D_rates(5);
-  D_rates << 1, 1, 1, 1, 1;
   int D_length = 5;
 
   Germline D_Germline(D_root);
@@ -233,7 +130,6 @@ TEST_CASE("Germline", "[germline]") {
   REQUIRE(D_Germline.name() == D_name);
   REQUIRE(D_Germline.emission() == D_emission);
   REQUIRE(D_Germline.bases() == D_bases);
-  REQUIRE(D_Germline.rates() == D_rates);
   REQUIRE(D_Germline.length() == D_length);
 
   // J tests
@@ -241,13 +137,8 @@ TEST_CASE("Germline", "[germline]") {
   J_landing_in << 0.25, 0.05, 0, 0, 0;
   Eigen::VectorXd J_landing_out(5);
   J_landing_out << 0, 0, 0, 0, 0.04;
-  Eigen::MatrixXd J_transition(5,5);
-  J_transition <<
-  1, 1, 1*1, 1*1*1, 1*1*1*1,
-  0, 1,   1,   1*1,   1*1*1,
-  0, 0,   1,     1,     1*1,
-  0, 0,   0,     1,       1,
-  0, 0,   0,     0,       1;
+  Eigen::VectorXd J_transition(4);
+  J_transition << 1, 1, 1, 1;
   double J_gene_prob = 0.015;
   std::string J_alphabet = "ACGT";
   std::string J_name = "IGHJ_ex*01";
@@ -259,8 +150,6 @@ TEST_CASE("Germline", "[germline]") {
   0.03, 0.7, 0.06, 0.01, 0.08;
   Eigen::VectorXi J_bases(5);
   J_bases << 0, 3, 2, 1, 2;
-  Eigen::VectorXd J_rates(5);
-  J_rates << 1, 1, 1, 1, 1;
   int J_length = 5;
 
   Germline J_Germline(J_root);
@@ -273,7 +162,6 @@ TEST_CASE("Germline", "[germline]") {
   REQUIRE(J_Germline.name() == J_name);
   REQUIRE(J_Germline.emission() == J_emission);
   REQUIRE(J_Germline.bases() == J_bases);
-  REQUIRE(J_Germline.rates() == J_rates);
   REQUIRE(J_Germline.length() == J_length);
 }
 
@@ -281,7 +169,9 @@ TEST_CASE("Germline", "[germline]") {
 // NTInsertion tests
 
 TEST_CASE("NTInsertion", "[ntinsertion]") {
-  initialize_global_test_vars();
+  YAML::Node V_root = YAML::LoadFile("data/hmm_params/IGHV_ex_star_01.yaml");
+  YAML::Node D_root = YAML::LoadFile("data/hmm_params/IGHD_ex_star_01.yaml");
+  YAML::Node J_root = YAML::LoadFile("data/hmm_params/IGHJ_ex_star_01.yaml");
 
   // V genes can't initialize NTInsertion objects.
   // NTInsertion V_NTInsertion = NTInsertion(V_root);
@@ -305,7 +195,7 @@ TEST_CASE("NTInsertion", "[ntinsertion]") {
   D_nti_emission <<
   0.7, 0.05, 0.1, 0.1,
   0.1, 0.75, 0.1, 0.1,
-  0.1, 0.1,  0.7, 0.,
+  0.1, 0.1,  0.7, 0.0,
   0.1, 0.1,  0.1, 0.8;
 
   NTInsertion D_NTInsertion(D_root);
@@ -349,87 +239,32 @@ TEST_CASE("NTInsertion", "[ntinsertion]") {
 // NPadding tests
 
 TEST_CASE("NPadding", "[npadding]") {
-  initialize_global_test_vars();
-
-  // For each gene, we will test Case 1, Case 2a, and Case 2b as shown
-  // at https://github.com/matsengrp/linearham/issues/35#issuecomment-270037356.
+  YAML::Node V_root = YAML::LoadFile("data/hmm_params/IGHV_ex_star_01.yaml");
+  YAML::Node D_root = YAML::LoadFile("data/hmm_params/IGHD_ex_star_01.yaml");
+  YAML::Node J_root = YAML::LoadFile("data/hmm_params/IGHJ_ex_star_01.yaml");
 
   // V tests
   double V_n_transition = 0.34;
-  double V_ambiguous_emission = 0.25;
   Eigen::VectorXd V_n_emission(4);
   V_n_emission << 0.25, 0.25, 0.25, 0.25;
 
   NPadding V_NPadding(V_root);
 
   REQUIRE(V_NPadding.n_transition() == V_n_transition);
-  REQUIRE(V_NPadding.ambiguous_emission() == V_ambiguous_emission);
   REQUIRE(V_NPadding.n_emission() == V_n_emission);
-
-  // Case 1
-  int V_read_pos = 2;
-  std::pair<int, int> V_flexbounds = {0, 3};
-  double V_NPaddingProb = 0.34*0.25*0.34*0.25*0.34*0.25*0.34*0.25*0.34*0.25*(1 - 0.34);
-
-  REQUIRE(V_NPadding.NPaddingProb(V_flexbounds, emission_indices,
-                                  V_read_pos, n_read_counts.first, true)
-                                  == Approx(V_NPaddingProb).epsilon(1e-3));
-
-  // Case 2a
-  V_read_pos = -4;
-  V_NPaddingProb = 0.25*0.25*0.25*(1 - 0.34);
-
-  REQUIRE(V_NPadding.NPaddingProb(V_flexbounds, emission_indices,
-                                  V_read_pos, n_read_counts.first, true)
-                                  == Approx(V_NPaddingProb).epsilon(1e-3));
-
-  // Case 2b
-  V_read_pos = -2;
-  V_NPaddingProb = 0.34*0.25*0.25*0.25*(1 - 0.34);
-
-  REQUIRE(V_NPadding.NPaddingProb(V_flexbounds, emission_indices,
-                                  V_read_pos, n_read_counts.first, true)
-                                  == Approx(V_NPaddingProb).epsilon(1e-3));
 
   // D genes can't initialize NPadding objects.
   // NPadding D_NPadding = NPadding(D_root);
 
   // J tests
   double J_n_transition = 0.96;
-  double J_ambiguous_emission = 0.25;
   Eigen::VectorXd J_n_emission(4);
   J_n_emission << 0.25, 0.25, 0.25, 0.25;
 
   NPadding J_NPadding(J_root);
 
   REQUIRE(J_NPadding.n_transition() == J_n_transition);
-  REQUIRE(J_NPadding.ambiguous_emission() == J_ambiguous_emission);
   REQUIRE(J_NPadding.n_emission() == J_n_emission);
-
-  // Case 1
-  int J_read_pos = 10;
-  std::pair<int, int> J_flexbounds = {9, 13};
-  double J_NPaddingProb = 0.96*0.25*0.96*0.25*0.96*0.25*0.95*0.25*0.96*0.25*(1 - 0.96);
-
-  REQUIRE(J_NPadding.NPaddingProb(J_flexbounds, emission_indices,
-                                  J_read_pos, n_read_counts.second, false)
-                                  == Approx(J_NPaddingProb).epsilon(1e-3));
-
-  // Case 2a
-  J_read_pos = 16;
-  J_NPaddingProb = 0.25*0.25*(1 - 0.96);
-
-  REQUIRE(J_NPadding.NPaddingProb(J_flexbounds, emission_indices,
-                                  J_read_pos, n_read_counts.second, false)
-                                  == Approx(J_NPaddingProb).epsilon(1e-3));
-
-  // Case 2b
-  J_read_pos = 14;
-  J_NPaddingProb = 0.25*0.96*0.25*(1 - 0.96);
-
-  REQUIRE(J_NPadding.NPaddingProb(J_flexbounds, emission_indices,
-                                  J_read_pos, n_read_counts.second, false)
-                                  == Approx(J_NPaddingProb).epsilon(1e-3));
 }
 
 
@@ -437,317 +272,79 @@ TEST_CASE("NPadding", "[npadding]") {
 
 TEST_CASE("CreateGermlineGeneMap", "[vdjgermline]") {
   std::unordered_map<std::string, GermlineGene> ggenes =
-      CreateGermlineGeneMap("data/SimpleData_ex/hmm_params");
+      CreateGermlineGeneMap("data/hmm_params");
   VGermlinePtr vgene_ptr = ggenes["IGHV_ex*01"].VGermlinePtrCast();
   DGermlinePtr dgene_ptr = ggenes["IGHD_ex*01"].DGermlinePtrCast();
   JGermlinePtr jgene_ptr = ggenes["IGHJ_ex*01"].JGermlinePtrCast();
 }
-//////////// past here, revisions need to be made!!!!
 
 
-// Smooshable/Chain/Pile tests
+// SimpleHMM tests
 
-TEST_CASE("SmooshableChainPile", "[smooshablechainpile]") {
-  // Make a Chain out of `A` and `B`.
-  Eigen::MatrixXd A(2,4);
-  A <<
-  0.5, 0.71, 0.13, 0.25,
-  0.29, 0.31, 0.37, 0.33;
-  std::array<int, 4> A_marginal_indices = {0, 0, (int)A.rows(), (int)A.cols() - 1};
-  Eigen::MatrixXd B(3,3);
-  B <<
-  0.11, 0.3,  0.37,
-  0.09, 0.29, 0.41,
-  0.55, 0.11, 0.97;
-  std::array<int, 4> B_marginal_indices = {0, 1, (int)B.rows(), (int)B.cols() - 1};
-
-  Eigen::MatrixXd correct_AB_marginal(2,2);
-  correct_AB_marginal <<
-  (0.50*0.3+0.71*0.29+0.13*0.11), (0.50*0.37+0.71*0.41+0.13*0.97),
-  (0.29*0.3+0.31*0.29+0.37*0.11), (0.29*0.37+0.31*0.41+0.37*0.97);
-  Eigen::MatrixXd correct_AB_viterbi(2,2);
-  correct_AB_viterbi <<
-  0.71*0.29, 0.71*0.41,
-  0.31*0.29, 0.37*0.97;
-  Eigen::MatrixXi correct_AB_viterbi_idx(2,2);
-  correct_AB_viterbi_idx <<
-  1,1,
-  1,2;
-
-  SmooshablePtr ps_A = BuildSmooshablePtr(nullptr, nullptr, "a_l", "a_r/b_l",
-                                          A_marginal_indices, A, A, 0);
-  SmooshablePtr ps_B = BuildSmooshablePtr(nullptr, nullptr, "a_r/b_l", "b_r/c_l",
-                                          B_marginal_indices, B, B, 0);
-  ChainPtr ps_AB = std::make_shared<Chain>(Chain(ps_A, ps_B));
-
-  // Test `ps_A` and `ps_B`.
-  REQUIRE(ps_A->left_flex() == 1);
-  REQUIRE(ps_B->left_flex() == 2);
-  REQUIRE(ps_A->right_flex() == 2);
-  REQUIRE(ps_B->right_flex() == 1);
-
-  REQUIRE(ps_A->germ_ptr() == nullptr);
-  REQUIRE(ps_B->germ_ptr() == nullptr);
-  REQUIRE(ps_A->nti_ptr() == nullptr);
-  REQUIRE(ps_B->nti_ptr() == nullptr);
-  REQUIRE(ps_A->left_flexbounds_name() == "a_l");
-  REQUIRE(ps_B->left_flexbounds_name() == "a_r/b_l");
-  REQUIRE(ps_A->right_flexbounds_name() == "a_r/b_l");
-  REQUIRE(ps_B->right_flexbounds_name() == "b_r/c_l");
-  REQUIRE(ps_A->marginal_indices() == A_marginal_indices);
-  REQUIRE(ps_B->marginal_indices() == B_marginal_indices);
-  REQUIRE(ps_A->pre_marginal() == A);
-  REQUIRE(ps_B->pre_marginal() == B);
-  REQUIRE(ps_A->marginal() == A.block(0, 0, A.rows(), A.cols() - 1));
-  REQUIRE(ps_B->marginal() == B.block(0, 1, B.rows(), B.cols() - 1));
-  REQUIRE(ps_A->viterbi() == A.block(0, 0, A.rows(), A.cols() - 1));
-  REQUIRE(ps_B->viterbi() == B.block(0, 1, B.rows(), B.cols() - 1));
-
-  REQUIRE(ps_A->scaler_count() == 0);
-  REQUIRE(ps_B->scaler_count() == 0);
-  REQUIRE(ps_A->is_dirty() == false);
-  REQUIRE(ps_B->is_dirty() == false);
-
-  // Test `ps_AB`.
-  REQUIRE(ps_AB->left_flex() == 1);
-  REQUIRE(ps_AB->right_flex() == 1);
-
-  REQUIRE(ps_AB->marginal() == correct_AB_marginal);
-  REQUIRE(ps_AB->viterbi() == correct_AB_viterbi);
-  REQUIRE(ps_AB->viterbi_idx() == correct_AB_viterbi_idx);
-
-  REQUIRE(ps_AB->scaler_count() == 0);
-  REQUIRE(ps_AB->is_dirty() == false);
-
-
-  // Let's add `C` to the `AB` Chain.
-  Eigen::MatrixXd C(2,1);
-  C <<
-  0.89,
-  0.43;
-  std::array<int, 4> C_marginal_indices = {0, 0, (int)C.rows(), (int)C.cols()};
-
-  Eigen::MatrixXd correct_ABC_marginal(2,1);
-  correct_ABC_marginal <<
-  (0.50*0.3+0.71*0.29+0.13*0.11)*0.89 + (0.50*0.37+0.71*0.41+0.13*0.97)*0.43,
-  (0.29*0.3+0.31*0.29+0.37*0.11)*0.89 + (0.29*0.37+0.31*0.41+0.37*0.97)*0.43;
-  Eigen::MatrixXd correct_ABC_viterbi(2,1);
-  correct_ABC_viterbi <<
-  // 0.71*0.29*0.89 > 0.71*0.41*0.43
-  // 0.31*0.29*0.89 < 0.37*0.97*0.43
-  0.71*0.29*0.89,
-  0.37*0.97*0.43;
-  Eigen::MatrixXi correct_ABC_viterbi_idx(2,1);
-  correct_ABC_viterbi_idx <<
-  0,
-  1;
-  // This 1 in the second row then gives us the corresponding column index,
-  // which contains a 2. So the second path is {2,1}.
-  IntVectorVector correct_viterbi_paths = {{1,0}, {2,1}};
-
-  SmooshablePtr ps_C = BuildSmooshablePtr(nullptr, nullptr, "b_r/c_l", "c_r",
-                                          C_marginal_indices, C, C, 0);
-  ChainPtr ps_ABC = std::make_shared<Chain>(Chain(ps_AB, ps_C));
-
-  // Test `ps_ABC`.
-  REQUIRE(ps_ABC->left_flex() == 1);
-  REQUIRE(ps_ABC->right_flex() == 0);
-
-  REQUIRE(ps_ABC->marginal() == correct_ABC_marginal);
-  REQUIRE(ps_ABC->viterbi() == correct_ABC_viterbi);
-  REQUIRE(ps_ABC->viterbi_idx() == correct_ABC_viterbi_idx);
-  REQUIRE(ps_ABC->ViterbiPaths() == correct_viterbi_paths);
-
-  REQUIRE(ps_ABC->scaler_count() == 0);
-  REQUIRE(ps_ABC->is_dirty() == false);
-
-
-  // Test the underflow mechanism.
-  ps_B->AuxUpdateMarginal(B * SCALE_THRESHOLD);
-  REQUIRE(ps_B->scaler_count() == 1);
-  REQUIRE(ps_B->marginal() == B.block(0, 1, B.rows(), B.cols() - 1));
-  ps_B->AuxUpdateMarginal(B);
-
-
-  // Make a Pile that holds the `ABC` Chain.
-  Pile p_A = Pile();
-  p_A.push_back(ps_A);
-  Pile p_ABC = p_A.SmooshRight({{ps_B, ps_C}});
-
-  // Test `p_ABC`.
-  for (auto it = p_ABC.begin(); it != p_ABC.end(); ++it) {
-    REQUIRE((*it)->left_flex() == ps_ABC->left_flex());
-    REQUIRE((*it)->right_flex() == ps_ABC->right_flex());
-
-    REQUIRE((*it)->marginal() == ps_ABC->marginal());
-    REQUIRE((*it)->viterbi() == ps_ABC->viterbi());
-    REQUIRE((*it)->viterbi_idx() == ps_ABC->viterbi_idx());
-
-    REQUIRE((*it)->scaler_count() == ps_ABC->scaler_count());
-    REQUIRE((*it)->is_dirty() == ps_ABC->is_dirty());
-  }
-}
-
-
-// SimpleData tests
-
-TEST_CASE("SimpleData", "[simpledata]") {
-  // Test the SimpleData class using the example HMM files.
-  SimpleDataPtr simple_data_ptr = ReadSimpleData(
-      "data/SimpleData_ex/hmm_input.yaml", 0, 0, "data/SimpleData_ex/hmm_params");
+TEST_CASE("SimpleHMM", "[simplehmm]") {
+  // Test the SimpleHMM class using the example files.
+  std::string yaml_path = "data/hmm_input.yaml";
+  std::string hmm_param_dir = "data/hmm_params";
+  SimpleHMMPtr simple_hmm_ptr = std::make_shared<SimpleHMM>(yaml_path, 0, 0, hmm_param_dir);
 
   // For a diagram of the S-W alignment, see
   // https://github.com/matsengrp/linearham/issues/44#issue-336348821.
 
-  std::map<std::string, std::pair<int, int>> VDJ_flexbounds = {
+  std::map<std::string, std::pair<int, int>> flexbounds = {
       {"v_l", {0, 2}},  {"v_r", {4, 6}},   {"d_l", {7, 8}},
       {"d_r", {9, 10}}, {"j_l", {11, 12}}, {"j_r", {15, 15}}};
-  std::map<std::string, int> VDJ_relpos = {
+  std::map<std::string, int> relpos = {
       {"IGHV_ex*01", 1}, {"IGHD_ex*01", 5}, {"IGHJ_ex*01", 10}};
-  std::map<std::array<std::string, 2>, std::array<int, 6>> VDJ_match_indices = {
-      {{"IGHV_ex*01", "v_l"}, {1, 6, 1, 2, 1, 0}},
-      {{"IGHD_ex*01", "v_r"}, {5, 10, 1, 1, 1, 0}},
-      {{"IGHD_ex*01", "d_l"}, {7, 10, 1, 1, 0, 0}},
-      {{"IGHJ_ex*01", "d_r"}, {10, 15, 0, 0, 1, 0}},
-      {{"IGHJ_ex*01", "j_l"}, {11, 15, 1, 0, 0, 0}}};
-  Eigen::VectorXi VDJ_seq(15);
-  VDJ_seq << 0, 1, 0, 2, 3, 0, 1, 1, 1, 3, 2, 3, 3, 4, 4;
-  // std::pair<int, int> VDJ_n_read_counts = {3,2};
-
-  REQUIRE(simple_data_ptr->flexbounds() == VDJ_flexbounds);
-  REQUIRE(simple_data_ptr->relpos() == VDJ_relpos);
-  REQUIRE(simple_data_ptr->match_indices() == VDJ_match_indices);
-  REQUIRE(simple_data_ptr->seq() == VDJ_seq);
-  // REQUIRE(simple_data_ptr->n_read_counts() == VDJ_n_read_counts);
-  REQUIRE(simple_data_ptr->length() == VDJ_seq.size());
-
-  Eigen::MatrixXd V_marginal(1,3);
-  V_marginal <<
-  // Format is gene_prob * npadding_prob * emission * transition * ... * emission * landing_out
-  0.07*0.34*0.25*0.66*0.07*1*0.1*1*0.97*0.2, 0.07*0.34*0.25*0.66*0.07*1*0.1*1*0.97*0.8*0.15*0.5, 0.07*0.34*0.25*0.66*0.07*1*0.1*1*0.97*0.8*0.15*0.5*0.125*1;
-  Eigen::MatrixXd DX_marginal(3,2);
-  DX_marginal <<
-  // Format is gene_prob * landing_in * emission * transition * ... * emission * landing_out
-                                                 0,                                                       0,
-  0.035*0.4*0.12*0.98*0.07*0.95*0.05*0.6*0.15*0.65, 0.035*0.4*0.12*0.98*0.07*0.95*0.05*0.6*0.15*0.35*0.01*1,
-            0.035*0.1*0.07*0.95*0.05*0.6*0.15*0.65,           0.035*0.1*0.07*0.95*0.05*0.6*0.15*0.35*0.01*1;
-  Eigen::MatrixXd DN_nti_marginal(3,2);
-  DN_nti_marginal <<
-  8.04375e-05, 0,
-   0.00138937, 0,
-       0.0175, 0;
-  Eigen::MatrixXd DN_germ_marginal(2,2);
-  DN_germ_marginal <<
-  // Format is gene_prob * emission * transition * ... * emission * landing_out
-  0.035*0.05*0.6*0.15*0.65, 0.035*0.05*0.6*0.15*0.35*0.01*1,
-           0.035*0.15*0.65,          0.035*0.15*0.35*0.01*1;
-  Eigen::MatrixXd JX_marginal(2,1);
-  JX_marginal <<
-  // Format is gene_prob * landing_in * emission * transition * ... * emission * npadding_prob
-                             0,
-  0.015*0.25*0.03*1*0.7*1*0.06*0.04;
-  Eigen::MatrixXd JN_nti_marginal(2,2);
-  JN_nti_marginal <<
-  0.003762, 0,
-    0.0495, 0;
-  Eigen::MatrixXd JN_germ_marginal(2,1);
-  JN_germ_marginal <<
-  // Format is gene_prob * emission * transition * ... * emission * npadding_prob
-  0.015*0.7*1*0.06*0.04,
-        0.015*0.06*0.04;
-
-  REQUIRE(simple_data_ptr->vdj_pile()[0]->marginal().isApprox(V_marginal * DX_marginal * JX_marginal, 1e-5));
-  REQUIRE(simple_data_ptr->vdj_pile()[1]->marginal().isApprox(V_marginal * DX_marginal * JN_nti_marginal * JN_germ_marginal, 1e-5));
-  REQUIRE(simple_data_ptr->vdj_pile()[2]->marginal().isApprox(V_marginal * DN_nti_marginal * DN_germ_marginal * JX_marginal, 1e-5));
-  REQUIRE(simple_data_ptr->vdj_pile()[3]->marginal().isApprox(V_marginal * DN_nti_marginal * DN_germ_marginal * JN_nti_marginal * JN_germ_marginal, 1e-5));
-  REQUIRE(simple_data_ptr->MarginalLogLikelihood() == Approx(-43.478572372));
-
-  // Test the SimpleData class using the BCRHam HMM files.
-  // io::CSVReader<1, io::trim_chars<>, io::double_quote_escape<',', '\"'>> in(
-  //     "data/bcrham_compare/hmm_output.csv");
-  // in.read_header(io::ignore_extra_column, "logprob");
-  // double logprob;
-  // std::vector<double> viterbi_logprobs;
-  // while (in.read_row(logprob)) {
-  //   viterbi_logprobs.push_back(logprob);
-  // }
-  //
-  // std::vector<SimpleDataPtr> bcrham_simple_data_ptrs =
-  //     ReadCSVData("data/bcrham_compare/hmm_input.csv", "data/hmm_params_bcrham");
-  //
-  // for (int i = 0; i < viterbi_logprobs.size(); i++) {
-  //   REQUIRE(std::fabs(bcrham_simple_data_ptrs[i]->vdj_pile()[0]->FinalViterbiLogProb() - viterbi_logprobs[i]) <= 1e-3);
-  // }
-}
-
-
-// NewSimpleData tests
-
-TEST_CASE("NewSimpleData", "[newsimpledata]") {
-  // Test the SimpleData class using the example HMM files.
-  std::string yaml_path = "data/SimpleData_ex/hmm_input.yaml";
-  std::string hmm_param_dir = "data/SimpleData_ex/hmm_params";
-  NewSimpleDataPtr new_simple_data_ptr =
-      std::make_shared<NewSimpleData>(yaml_path, 0, 0, hmm_param_dir);
-
-  // For a diagram of the S-W alignment, see
-  // https://github.com/matsengrp/linearham/issues/44#issue-336348821.
-
-  std::map<std::string, std::pair<int, int>> VDJ_flexbounds = {
-      {"v_l", {0, 2}},  {"v_r", {4, 6}},   {"d_l", {7, 8}},
-      {"d_r", {9, 10}}, {"j_l", {11, 12}}, {"j_r", {15, 15}}};
-  std::map<std::string, int> VDJ_relpos = {
-      {"IGHV_ex*01", 1}, {"IGHD_ex*01", 5}, {"IGHJ_ex*01", 10}};
-  std::string VDJ_alphabet = "ACGTN";
-  std::map<std::string, std::pair<int, int>> VDJ_vpadding_ggene_ranges =
+  std::string alphabet = "ACGTN";
+  std::map<std::string, std::pair<int, int>> vpadding_ggene_ranges =
       {{"IGHV_ex*01", {0, 1}}};
-  std::vector<int> VDJ_vpadding_naive_bases = {4};
-  std::vector<int> VDJ_vpadding_site_inds = {0};
-  std::vector<std::string> VDJ_vgerm_state_strs = {"IGHV_ex*01"};
-  std::map<std::string, std::pair<int, int>> VDJ_vgerm_ggene_ranges =
+  std::vector<int> vpadding_naive_bases = {4};
+  std::vector<int> vpadding_site_inds = {0};
+  std::vector<std::string> vgerm_state_strs = {"IGHV_ex*01"};
+  std::map<std::string, std::pair<int, int>> vgerm_ggene_ranges =
       {{"IGHV_ex*01", {0, 3}}};
-  std::vector<int> VDJ_vgerm_naive_bases = {0, 3, 2};
-  std::vector<int> VDJ_vgerm_germ_inds = {0, 1, 2};
-  std::vector<int> VDJ_vgerm_site_inds = {1, 2, 3};
-  std::vector<std::string> VDJ_vd_junction_state_strs =
+  std::vector<int> vgerm_naive_bases = {0, 3, 2};
+  std::vector<int> vgerm_germ_inds = {0, 1, 2};
+  std::vector<int> vgerm_site_inds = {1, 2, 3};
+  std::vector<std::string> vd_junction_state_strs =
       {"IGHD_ex*01:N_A", "IGHD_ex*01:N_C", "IGHD_ex*01:N_G", "IGHD_ex*01:N_T",
        "IGHD_ex*01:0", "IGHD_ex*01:1", "IGHD_ex*01:2", "IGHV_ex*01:3", "IGHV_ex*01:4"};
-  std::map<std::string, std::pair<int, int>> VDJ_vd_junction_ggene_ranges =
+  std::map<std::string, std::pair<int, int>> vd_junction_ggene_ranges =
       {{"IGHD_ex*01", {0, 7}}, {"IGHV_ex*01", {7, 9}}};
-  std::vector<int> VDJ_vd_junction_naive_bases = {0, 1, 2, 3, 2, 2, 3, 0, 1};
-  std::vector<int> VDJ_vd_junction_germ_inds = {-1, -1, -1, -1, 0, 1, 2, 3, 4};
-  std::vector<int> VDJ_vd_junction_site_inds = {-1, -1, -1, -1, 5, 6, 7, 4, 5};
-  std::vector<std::string> VDJ_dgerm_state_strs = {"IGHD_ex*01"};
-  std::map<std::string, std::pair<int, int>> VDJ_dgerm_ggene_ranges =
+  std::vector<int> vd_junction_naive_bases = {0, 1, 2, 3, 2, 2, 3, 0, 1};
+  std::vector<int> vd_junction_germ_inds = {-1, -1, -1, -1, 0, 1, 2, 3, 4};
+  std::vector<int> vd_junction_site_inds = {-1, -1, -1, -1, 5, 6, 7, 4, 5};
+  std::vector<std::string> dgerm_state_strs = {"IGHD_ex*01"};
+  std::map<std::string, std::pair<int, int>> dgerm_ggene_ranges =
       {{"IGHD_ex*01", {0, 1}}};
-  std::vector<int> VDJ_dgerm_naive_bases = {0};
-  std::vector<int> VDJ_dgerm_germ_inds = {3};
-  std::vector<int> VDJ_dgerm_site_inds = {8};
-  std::vector<std::string> VDJ_dj_junction_state_strs =
+  std::vector<int> dgerm_naive_bases = {0};
+  std::vector<int> dgerm_germ_inds = {3};
+  std::vector<int> dgerm_site_inds = {8};
+  std::vector<std::string> dj_junction_state_strs =
       {"IGHD_ex*01:4", "IGHJ_ex*01:N_A", "IGHJ_ex*01:N_C", "IGHJ_ex*01:N_G",
        "IGHJ_ex*01:N_T", "IGHJ_ex*01:0", "IGHJ_ex*01:1"};
-  std::map<std::string, std::pair<int, int>> VDJ_dj_junction_ggene_ranges =
+  std::map<std::string, std::pair<int, int>> dj_junction_ggene_ranges =
       {{"IGHD_ex*01", {0, 1}}, {"IGHJ_ex*01", {1, 7}}};
-  std::vector<int> VDJ_dj_junction_naive_bases = {1, 0, 1, 2, 3, 0, 3};
-  std::vector<int> VDJ_dj_junction_germ_inds = {4, -1, -1, -1, -1, 0, 1};
-  std::vector<int> VDJ_dj_junction_site_inds = {9, -1, -1, -1, -1, 10, 11};
-  std::vector<std::string> VDJ_jgerm_state_strs = {"IGHJ_ex*01"};
-  std::map<std::string, std::pair<int, int>> VDJ_jgerm_ggene_ranges =
+  std::vector<int> dj_junction_naive_bases = {1, 0, 1, 2, 3, 0, 3};
+  std::vector<int> dj_junction_germ_inds = {4, -1, -1, -1, -1, 0, 1};
+  std::vector<int> dj_junction_site_inds = {9, -1, -1, -1, -1, 10, 11};
+  std::vector<std::string> jgerm_state_strs = {"IGHJ_ex*01"};
+  std::map<std::string, std::pair<int, int>> jgerm_ggene_ranges =
       {{"IGHJ_ex*01", {0, 3}}};
-  std::vector<int> VDJ_jgerm_naive_bases = {2, 1, 2};
-  std::vector<int> VDJ_jgerm_germ_inds = {2, 3, 4};
-  std::vector<int> VDJ_jgerm_site_inds = {12, 13, 14};
-  std::map<std::string, std::pair<int, int>> VDJ_jpadding_ggene_ranges =
+  std::vector<int> jgerm_naive_bases = {2, 1, 2};
+  std::vector<int> jgerm_germ_inds = {2, 3, 4};
+  std::vector<int> jgerm_site_inds = {12, 13, 14};
+  std::map<std::string, std::pair<int, int>> jpadding_ggene_ranges =
       {{"IGHJ_ex*01", {0, 0}}};
-  std::vector<int> VDJ_jpadding_naive_bases = {};
-  std::vector<int> VDJ_jpadding_site_inds = {};
-  Eigen::RowVectorXd VDJ_vpadding_transition(1);
-  VDJ_vpadding_transition << 0.34*0.66;
-  Eigen::MatrixXd VDJ_vgerm_vd_junction_transition(1, 9);
-  VDJ_vgerm_vd_junction_transition <<
+  std::vector<int> jpadding_naive_bases = {};
+  std::vector<int> jpadding_site_inds = {};
+  Eigen::RowVectorXd vpadding_transition(1);
+  vpadding_transition << 0.34*0.66;
+  Eigen::MatrixXd vgerm_vd_junction_transition(1, 9);
+  vgerm_vd_junction_transition <<
   0.035*0.2*0.1, 0.035*0.2*0.2, 0.035*0.2*0.1, 0.035*0.2*0.05, 0, 0, 0, 0.8, 0;
-  Eigen::MatrixXd VDJ_vd_junction_transition(9, 9);
-  VDJ_vd_junction_transition <<
+  Eigen::MatrixXd vd_junction_transition(9, 9);
+  vd_junction_transition <<
           0.075,         0.175,          0.05,          0.025,          0.45,       0.125,  0.1, 0,   0,
           0.075,         0.175,          0.05,          0.025,          0.45,       0.125,  0.1, 0,   0,
           0.075,         0.175,          0.05,          0.025,          0.45,       0.125,  0.1, 0,   0,
@@ -757,8 +354,8 @@ TEST_CASE("NewSimpleData", "[newsimpledata]") {
               0,             0,             0,              0,             0,           0,    0, 0,   0,
   0.035*0.5*0.1, 0.035*0.5*0.2, 0.035*0.5*0.1, 0.035*0.5*0.05, 0.035*0.5*0.4,           0,    0, 0, 0.5,
     0.035*1*0.1,   0.035*1*0.2,   0.035*1*0.1,   0.035*1*0.05,             0, 0.035*1*0.1,    0, 0,   0;
-  Eigen::MatrixXd VDJ_vd_junction_dgerm_transition(9, 1);
-  VDJ_vd_junction_dgerm_transition <<
+  Eigen::MatrixXd vd_junction_dgerm_transition(9, 1);
+  vd_junction_dgerm_transition <<
     0,
     0,
     0,
@@ -768,11 +365,11 @@ TEST_CASE("NewSimpleData", "[newsimpledata]") {
   0.6,
     0,
     0;
-  Eigen::MatrixXd VDJ_dgerm_dj_junction_transition(1, 7);
-  VDJ_dgerm_dj_junction_transition <<
+  Eigen::MatrixXd dgerm_dj_junction_transition(1, 7);
+  dgerm_dj_junction_transition <<
   0.35, 0.015*0.65*0.1, 0.015*0.65*0.2, 0.015*0.65*0.2, 0.015*0.65*0.2, 0, 0;
-  Eigen::MatrixXd VDJ_dj_junction_transition(7, 7);
-  VDJ_dj_junction_transition <<
+  Eigen::MatrixXd dj_junction_transition(7, 7);
+  dj_junction_transition <<
   0, 0.015*1*0.1, 0.015*1*0.2, 0.015*1*0.2, 0.015*1*0.2, 0.015*1*0.25,    0,
   0,        0.05,        0.15,       0.075,       0.075,          0.4, 0.25,
   0,        0.05,        0.15,       0.075,       0.075,          0.4, 0.25,
@@ -780,8 +377,8 @@ TEST_CASE("NewSimpleData", "[newsimpledata]") {
   0,        0.05,        0.15,       0.075,       0.075,          0.4, 0.25,
   0,           0,           0,           0,           0,            0,    1,
   0,           0,           0,           0,           0,            0,    0;
-  Eigen::MatrixXd VDJ_dj_junction_jgerm_transition(7, 1);
-  VDJ_dj_junction_jgerm_transition <<
+  Eigen::MatrixXd dj_junction_jgerm_transition(7, 1);
+  dj_junction_jgerm_transition <<
   0,
   0,
   0,
@@ -789,139 +386,138 @@ TEST_CASE("NewSimpleData", "[newsimpledata]") {
   0,
   0,
   1;
-  Eigen::RowVectorXd VDJ_jpadding_transition(1);
-  VDJ_jpadding_transition << 0.04;
-  int VDJ_vgerm_init_scaler_count = 0;
-  int VDJ_vgerm_scaler_count = 0;
-  std::vector<int> VDJ_vd_junction_scaler_counts = {0, 0, 0, 0};
-  int VDJ_dgerm_init_scaler_count = 0;
-  int VDJ_dgerm_scaler_count = 0;
-  std::vector<int> VDJ_dj_junction_scaler_counts = {0, 0, 0};
-  int VDJ_jgerm_init_scaler_count = 0;
-  int VDJ_jgerm_scaler_count = 0;
+  Eigen::RowVectorXd jpadding_transition(1);
+  jpadding_transition << 0.04;
+  int vgerm_init_scaler_count = 0;
+  int vgerm_scaler_count = 0;
+  std::vector<int> vd_junction_scaler_counts = {0, 0, 0, 0};
+  int dgerm_init_scaler_count = 0;
+  int dgerm_scaler_count = 0;
+  std::vector<int> dj_junction_scaler_counts = {0, 0, 0};
+  int jgerm_init_scaler_count = 0;
+  int jgerm_scaler_count = 0;
 
-  REQUIRE(new_simple_data_ptr->flexbounds() == VDJ_flexbounds);
-  REQUIRE(new_simple_data_ptr->relpos() == VDJ_relpos);
-  REQUIRE(new_simple_data_ptr->alphabet() == VDJ_alphabet);
-  REQUIRE(new_simple_data_ptr->vpadding_ggene_ranges() == VDJ_vpadding_ggene_ranges);
-  REQUIRE(new_simple_data_ptr->vpadding_naive_bases() == VDJ_vpadding_naive_bases);
-  REQUIRE(new_simple_data_ptr->vpadding_site_inds() == VDJ_vpadding_site_inds);
-  REQUIRE(new_simple_data_ptr->vgerm_state_strs() == VDJ_vgerm_state_strs);
-  REQUIRE(new_simple_data_ptr->vgerm_ggene_ranges() == VDJ_vgerm_ggene_ranges);
-  REQUIRE(new_simple_data_ptr->vgerm_naive_bases() == VDJ_vgerm_naive_bases);
-  REQUIRE(new_simple_data_ptr->vgerm_germ_inds() == VDJ_vgerm_germ_inds);
-  REQUIRE(new_simple_data_ptr->vgerm_site_inds() == VDJ_vgerm_site_inds);
-  REQUIRE(new_simple_data_ptr->vd_junction_state_strs() == VDJ_vd_junction_state_strs);
-  REQUIRE(new_simple_data_ptr->vd_junction_ggene_ranges() == VDJ_vd_junction_ggene_ranges);
-  REQUIRE(new_simple_data_ptr->vd_junction_naive_bases() == VDJ_vd_junction_naive_bases);
-  REQUIRE(new_simple_data_ptr->vd_junction_germ_inds() == VDJ_vd_junction_germ_inds);
-  REQUIRE(new_simple_data_ptr->vd_junction_site_inds() == VDJ_vd_junction_site_inds);
-  REQUIRE(new_simple_data_ptr->dgerm_state_strs() == VDJ_dgerm_state_strs);
-  REQUIRE(new_simple_data_ptr->dgerm_ggene_ranges() == VDJ_dgerm_ggene_ranges);
-  REQUIRE(new_simple_data_ptr->dgerm_naive_bases() == VDJ_dgerm_naive_bases);
-  REQUIRE(new_simple_data_ptr->dgerm_germ_inds() == VDJ_dgerm_germ_inds);
-  REQUIRE(new_simple_data_ptr->dgerm_site_inds() == VDJ_dgerm_site_inds);
-  REQUIRE(new_simple_data_ptr->dj_junction_state_strs() == VDJ_dj_junction_state_strs);
-  REQUIRE(new_simple_data_ptr->dj_junction_ggene_ranges() == VDJ_dj_junction_ggene_ranges);
-  REQUIRE(new_simple_data_ptr->dj_junction_naive_bases() == VDJ_dj_junction_naive_bases);
-  REQUIRE(new_simple_data_ptr->dj_junction_germ_inds() == VDJ_dj_junction_germ_inds);
-  REQUIRE(new_simple_data_ptr->dj_junction_site_inds() == VDJ_dj_junction_site_inds);
-  REQUIRE(new_simple_data_ptr->jgerm_state_strs() == VDJ_jgerm_state_strs);
-  REQUIRE(new_simple_data_ptr->jgerm_ggene_ranges() == VDJ_jgerm_ggene_ranges);
-  REQUIRE(new_simple_data_ptr->jgerm_naive_bases() == VDJ_jgerm_naive_bases);
-  REQUIRE(new_simple_data_ptr->jgerm_germ_inds() == VDJ_jgerm_germ_inds);
-  REQUIRE(new_simple_data_ptr->jgerm_site_inds() == VDJ_jgerm_site_inds);
-  REQUIRE(new_simple_data_ptr->jpadding_ggene_ranges() == VDJ_jpadding_ggene_ranges);
-  REQUIRE(new_simple_data_ptr->jpadding_naive_bases() == VDJ_jpadding_naive_bases);
-  REQUIRE(new_simple_data_ptr->jpadding_site_inds() == VDJ_jpadding_site_inds);
-  REQUIRE(new_simple_data_ptr->vpadding_transition().isApprox(VDJ_vpadding_transition));
-  REQUIRE(new_simple_data_ptr->vgerm_vd_junction_transition() == VDJ_vgerm_vd_junction_transition);
-  REQUIRE(new_simple_data_ptr->vd_junction_transition() == VDJ_vd_junction_transition);
-  REQUIRE(new_simple_data_ptr->vd_junction_dgerm_transition() == VDJ_vd_junction_dgerm_transition);
-  REQUIRE(new_simple_data_ptr->dgerm_dj_junction_transition() == VDJ_dgerm_dj_junction_transition);
-  REQUIRE(new_simple_data_ptr->dj_junction_transition() == VDJ_dj_junction_transition);
-  REQUIRE(new_simple_data_ptr->dj_junction_jgerm_transition() == VDJ_dj_junction_jgerm_transition);
-  REQUIRE(new_simple_data_ptr->jpadding_transition().isApprox(VDJ_jpadding_transition));
+  REQUIRE(simple_hmm_ptr->flexbounds() == flexbounds);
+  REQUIRE(simple_hmm_ptr->relpos() == relpos);
+  REQUIRE(simple_hmm_ptr->alphabet() == alphabet);
+  REQUIRE(simple_hmm_ptr->vpadding_ggene_ranges() == vpadding_ggene_ranges);
+  REQUIRE(simple_hmm_ptr->vpadding_naive_bases() == vpadding_naive_bases);
+  REQUIRE(simple_hmm_ptr->vpadding_site_inds() == vpadding_site_inds);
+  REQUIRE(simple_hmm_ptr->vgerm_state_strs() == vgerm_state_strs);
+  REQUIRE(simple_hmm_ptr->vgerm_ggene_ranges() == vgerm_ggene_ranges);
+  REQUIRE(simple_hmm_ptr->vgerm_naive_bases() == vgerm_naive_bases);
+  REQUIRE(simple_hmm_ptr->vgerm_germ_inds() == vgerm_germ_inds);
+  REQUIRE(simple_hmm_ptr->vgerm_site_inds() == vgerm_site_inds);
+  REQUIRE(simple_hmm_ptr->vd_junction_state_strs() == vd_junction_state_strs);
+  REQUIRE(simple_hmm_ptr->vd_junction_ggene_ranges() == vd_junction_ggene_ranges);
+  REQUIRE(simple_hmm_ptr->vd_junction_naive_bases() == vd_junction_naive_bases);
+  REQUIRE(simple_hmm_ptr->vd_junction_germ_inds() == vd_junction_germ_inds);
+  REQUIRE(simple_hmm_ptr->vd_junction_site_inds() == vd_junction_site_inds);
+  REQUIRE(simple_hmm_ptr->dgerm_state_strs() == dgerm_state_strs);
+  REQUIRE(simple_hmm_ptr->dgerm_ggene_ranges() == dgerm_ggene_ranges);
+  REQUIRE(simple_hmm_ptr->dgerm_naive_bases() == dgerm_naive_bases);
+  REQUIRE(simple_hmm_ptr->dgerm_germ_inds() == dgerm_germ_inds);
+  REQUIRE(simple_hmm_ptr->dgerm_site_inds() == dgerm_site_inds);
+  REQUIRE(simple_hmm_ptr->dj_junction_state_strs() == dj_junction_state_strs);
+  REQUIRE(simple_hmm_ptr->dj_junction_ggene_ranges() == dj_junction_ggene_ranges);
+  REQUIRE(simple_hmm_ptr->dj_junction_naive_bases() == dj_junction_naive_bases);
+  REQUIRE(simple_hmm_ptr->dj_junction_germ_inds() == dj_junction_germ_inds);
+  REQUIRE(simple_hmm_ptr->dj_junction_site_inds() == dj_junction_site_inds);
+  REQUIRE(simple_hmm_ptr->jgerm_state_strs() == jgerm_state_strs);
+  REQUIRE(simple_hmm_ptr->jgerm_ggene_ranges() == jgerm_ggene_ranges);
+  REQUIRE(simple_hmm_ptr->jgerm_naive_bases() == jgerm_naive_bases);
+  REQUIRE(simple_hmm_ptr->jgerm_germ_inds() == jgerm_germ_inds);
+  REQUIRE(simple_hmm_ptr->jgerm_site_inds() == jgerm_site_inds);
+  REQUIRE(simple_hmm_ptr->jpadding_ggene_ranges() == jpadding_ggene_ranges);
+  REQUIRE(simple_hmm_ptr->jpadding_naive_bases() == jpadding_naive_bases);
+  REQUIRE(simple_hmm_ptr->jpadding_site_inds() == jpadding_site_inds);
+  REQUIRE(simple_hmm_ptr->vpadding_transition().isApprox(vpadding_transition));
+  REQUIRE(simple_hmm_ptr->vgerm_vd_junction_transition() == vgerm_vd_junction_transition);
+  REQUIRE(simple_hmm_ptr->vd_junction_transition() == vd_junction_transition);
+  REQUIRE(simple_hmm_ptr->vd_junction_dgerm_transition() == vd_junction_dgerm_transition);
+  REQUIRE(simple_hmm_ptr->dgerm_dj_junction_transition() == dgerm_dj_junction_transition);
+  REQUIRE(simple_hmm_ptr->dj_junction_transition() == dj_junction_transition);
+  REQUIRE(simple_hmm_ptr->dj_junction_jgerm_transition() == dj_junction_jgerm_transition);
+  REQUIRE(simple_hmm_ptr->jpadding_transition().isApprox(jpadding_transition));
 
-  Eigen::RowVectorXi VDJ_seq(15);
-  VDJ_seq << 0, 1, 0, 2, 3, 0, 1, 1, 1, 3, 2, 3, 3, 4, 4;
-  std::string VDJ_seq_str = "ACAGTACCCTGTTNN";
+  Eigen::RowVectorXi seq(15);
+  seq << 0, 1, 0, 2, 3, 0, 1, 1, 1, 3, 2, 3, 3, 4, 4;
+  std::string seq_str = "ACAGTACCCTGTTNN";
 
-  REQUIRE(new_simple_data_ptr->seq() == VDJ_seq);
-  REQUIRE(new_simple_data_ptr->seq_str() == VDJ_seq_str);
+  REQUIRE(simple_hmm_ptr->seq() == seq);
+  REQUIRE(simple_hmm_ptr->seq_str() == seq_str);
 
-  REQUIRE(new_simple_data_ptr->LogLikelihood() == Approx(-42.8027747544));
-  REQUIRE(new_simple_data_ptr->vgerm_init_scaler_count() == VDJ_vgerm_init_scaler_count);
-  REQUIRE(new_simple_data_ptr->vgerm_scaler_count() == VDJ_vgerm_scaler_count);
-  REQUIRE(new_simple_data_ptr->vd_junction_scaler_counts() == VDJ_vd_junction_scaler_counts);
-  REQUIRE(new_simple_data_ptr->dgerm_init_scaler_count() == VDJ_dgerm_init_scaler_count);
-  REQUIRE(new_simple_data_ptr->dgerm_scaler_count() == VDJ_dgerm_scaler_count);
-  REQUIRE(new_simple_data_ptr->dj_junction_scaler_counts() == VDJ_dj_junction_scaler_counts);
-  REQUIRE(new_simple_data_ptr->jgerm_init_scaler_count() == VDJ_jgerm_init_scaler_count);
-  REQUIRE(new_simple_data_ptr->jgerm_scaler_count() == VDJ_jgerm_scaler_count);
+  REQUIRE(simple_hmm_ptr->LogLikelihood() == Approx(-42.8027747544));
+  REQUIRE(simple_hmm_ptr->vgerm_init_scaler_count() == vgerm_init_scaler_count);
+  REQUIRE(simple_hmm_ptr->vgerm_scaler_count() == vgerm_scaler_count);
+  REQUIRE(simple_hmm_ptr->vd_junction_scaler_counts() == vd_junction_scaler_counts);
+  REQUIRE(simple_hmm_ptr->dgerm_init_scaler_count() == dgerm_init_scaler_count);
+  REQUIRE(simple_hmm_ptr->dgerm_scaler_count() == dgerm_scaler_count);
+  REQUIRE(simple_hmm_ptr->dj_junction_scaler_counts() == dj_junction_scaler_counts);
+  REQUIRE(simple_hmm_ptr->jgerm_init_scaler_count() == jgerm_init_scaler_count);
+  REQUIRE(simple_hmm_ptr->jgerm_scaler_count() == jgerm_scaler_count);
 
-  // For clarity, we run an additional NewSimpleData test.
-  yaml_path = "data/SimpleData_ex/hmm_input_extra.yaml";
-  SimpleDataPtr simple_data_ptr = ReadSimpleData(yaml_path, 0, 0, hmm_param_dir);
-  new_simple_data_ptr = std::make_shared<NewSimpleData>(yaml_path, 0, 0, hmm_param_dir);
+  // For clarity, we run an additional SimpleHMM test.
+  yaml_path = "data/hmm_input_extra.yaml";
+  simple_hmm_ptr = std::make_shared<SimpleHMM>(yaml_path, 0, 0, hmm_param_dir);
 
   // For a diagram of the S-W alignment, see
   // https://github.com/matsengrp/linearham/issues/44#issuecomment-406625914.
 
-  VDJ_flexbounds = {{"v_l", {0, 2}},  {"v_r", {4, 6}},   {"d_l", {4, 6}},
-                    {"d_r", {8, 10}}, {"j_l", {8, 10}}, {"j_r", {15, 15}}};
-  VDJ_relpos = {{"IGHV_ex*01", 1}, {"IGHD_ex*01", 5}, {"IGHJ_ex*01", 10},
-                {"IGHV_ex*99", 1}, {"IGHD_ex*99", 3}, {"IGHJ_ex*99", 7}};
-  VDJ_alphabet = "ACGTN";
-  VDJ_vpadding_ggene_ranges = {{"IGHV_ex*01", {0, 1}}, {"IGHV_ex*99", {1, 2}}};
-  VDJ_vpadding_naive_bases = {4, 4};
-  VDJ_vpadding_site_inds = {0, 0};
-  VDJ_vgerm_state_strs = {"IGHV_ex*01", "IGHV_ex*99"};
-  VDJ_vgerm_ggene_ranges = {{"IGHV_ex*01", {0, 3}}, {"IGHV_ex*99", {3, 6}}};
-  VDJ_vgerm_naive_bases = {0, 3, 2, 1, 0, 2};
-  VDJ_vgerm_germ_inds = {0, 1, 2, 0, 1, 2};
-  VDJ_vgerm_site_inds = {1, 2, 3, 1, 2, 3};
-  VDJ_vd_junction_state_strs =
+  flexbounds = {{"v_l", {0, 2}},  {"v_r", {4, 6}},  {"d_l", {4, 6}},
+                {"d_r", {8, 10}}, {"j_l", {8, 10}}, {"j_r", {15, 15}}};
+  relpos = {{"IGHV_ex*01", 1}, {"IGHD_ex*01", 5}, {"IGHJ_ex*01", 10},
+            {"IGHV_ex*99", 1}, {"IGHD_ex*99", 3}, {"IGHJ_ex*99", 7}};
+  alphabet = "ACGTN";
+  vpadding_ggene_ranges = {{"IGHV_ex*01", {0, 1}}, {"IGHV_ex*99", {1, 2}}};
+  vpadding_naive_bases = {4, 4};
+  vpadding_site_inds = {0, 0};
+  vgerm_state_strs = {"IGHV_ex*01", "IGHV_ex*99"};
+  vgerm_ggene_ranges = {{"IGHV_ex*01", {0, 3}}, {"IGHV_ex*99", {3, 6}}};
+  vgerm_naive_bases = {0, 3, 2, 1, 0, 2};
+  vgerm_germ_inds = {0, 1, 2, 0, 1, 2};
+  vgerm_site_inds = {1, 2, 3, 1, 2, 3};
+  vd_junction_state_strs =
       {"IGHD_ex*01:N_A", "IGHD_ex*01:N_C", "IGHD_ex*01:N_G", "IGHD_ex*01:N_T",
        "IGHD_ex*01:0", "IGHD_ex*99:N_A", "IGHD_ex*99:N_C", "IGHD_ex*99:N_G",
        "IGHD_ex*99:N_T", "IGHD_ex*99:1", "IGHD_ex*99:2", "IGHV_ex*01:3",
        "IGHV_ex*01:4", "IGHV_ex*99:3", "IGHV_ex*99:4"};
-  VDJ_vd_junction_ggene_ranges = {{"IGHD_ex*01", {0, 5}}, {"IGHD_ex*99", {5, 11}},
-                                  {"IGHV_ex*01", {11, 13}}, {"IGHV_ex*99", {13, 15}}};
-  VDJ_vd_junction_naive_bases = {0, 1, 2, 3, 2, 0, 1, 2, 3, 2, 3, 0, 1, 2, 0};
-  VDJ_vd_junction_germ_inds = {-1, -1, -1, -1, 0, -1, -1, -1, -1, 1, 2, 3, 4, 3, 4};
-  VDJ_vd_junction_site_inds = {-1, -1, -1, -1, 5, -1, -1, -1, -1, 4, 5, 4, 5, 4, 5};
-  VDJ_dgerm_state_strs = {"IGHD_ex*01", "IGHD_ex*99"};
-  VDJ_dgerm_ggene_ranges = {{"IGHD_ex*01", {0, 2}}, {"IGHD_ex*99", {2, 4}}};
-  VDJ_dgerm_naive_bases = {2, 3, 1, 0};
-  VDJ_dgerm_germ_inds = {1, 2, 3, 4};
-  VDJ_dgerm_site_inds = {6, 7, 6, 7};
-  VDJ_dj_junction_state_strs =
+  vd_junction_ggene_ranges = {{"IGHD_ex*01", {0, 5}}, {"IGHD_ex*99", {5, 11}},
+                              {"IGHV_ex*01", {11, 13}}, {"IGHV_ex*99", {13, 15}}};
+  vd_junction_naive_bases = {0, 1, 2, 3, 2, 0, 1, 2, 3, 2, 3, 0, 1, 2, 0};
+  vd_junction_germ_inds = {-1, -1, -1, -1, 0, -1, -1, -1, -1, 1, 2, 3, 4, 3, 4};
+  vd_junction_site_inds = {-1, -1, -1, -1, 5, -1, -1, -1, -1, 4, 5, 4, 5, 4, 5};
+  dgerm_state_strs = {"IGHD_ex*01", "IGHD_ex*99"};
+  dgerm_ggene_ranges = {{"IGHD_ex*01", {0, 2}}, {"IGHD_ex*99", {2, 4}}};
+  dgerm_naive_bases = {2, 3, 1, 0};
+  dgerm_germ_inds = {1, 2, 3, 4};
+  dgerm_site_inds = {6, 7, 6, 7};
+  dj_junction_state_strs =
       {"IGHD_ex*01:3", "IGHD_ex*01:4", "IGHD_ex*99:5", "IGHD_ex*99:6",
        "IGHJ_ex*01:N_A", "IGHJ_ex*01:N_C", "IGHJ_ex*01:N_G", "IGHJ_ex*01:N_T",
        "IGHJ_ex*99:N_A", "IGHJ_ex*99:N_C", "IGHJ_ex*99:N_G", "IGHJ_ex*99:N_T",
        "IGHJ_ex*99:1", "IGHJ_ex*99:2"};
-  VDJ_dj_junction_ggene_ranges = {{"IGHD_ex*01", {0, 2}}, {"IGHD_ex*99", {2, 4}},
-                                  {"IGHJ_ex*01", {4, 8}}, {"IGHJ_ex*99", {8, 14}}};
-  VDJ_dj_junction_naive_bases = {0, 1, 0, 1, 0, 1, 2, 3, 0, 1, 2, 3, 3, 2};
-  VDJ_dj_junction_germ_inds = {3, 4, 5, 6, -1, -1, -1, -1, -1, -1, -1, -1, 1, 2};
-  VDJ_dj_junction_site_inds = {8, 9, 8, 9, -1, -1, -1, -1, -1, -1, -1, -1, 8, 9};
-  VDJ_jgerm_state_strs = {"IGHJ_ex*01", "IGHJ_ex*99"};
-  VDJ_jgerm_ggene_ranges = {{"IGHJ_ex*01", {0, 5}}, {"IGHJ_ex*99", {5, 10}}};
-  VDJ_jgerm_naive_bases = {0, 3, 2, 1, 2, 1, 0, 3, 1, 2};
-  VDJ_jgerm_germ_inds = {0, 1, 2, 3, 4, 3, 4, 5, 6, 7};
-  VDJ_jgerm_site_inds = {10, 11, 12, 13, 14, 10, 11, 12, 13, 14};
-  VDJ_jpadding_ggene_ranges = {{"IGHJ_ex*01", {0, 0}}, {"IGHJ_ex*99", {0, 0}}};
-  VDJ_jpadding_naive_bases = {};
-  VDJ_jpadding_site_inds = {};
-  VDJ_vpadding_transition.resize(2);
-  VDJ_vpadding_transition << 0.34*0.66, 0.34*0.66;
-  VDJ_vgerm_vd_junction_transition.resize(2, 15);
-  VDJ_vgerm_vd_junction_transition <<
+  dj_junction_ggene_ranges = {{"IGHD_ex*01", {0, 2}}, {"IGHD_ex*99", {2, 4}},
+                              {"IGHJ_ex*01", {4, 8}}, {"IGHJ_ex*99", {8, 14}}};
+  dj_junction_naive_bases = {0, 1, 0, 1, 0, 1, 2, 3, 0, 1, 2, 3, 3, 2};
+  dj_junction_germ_inds = {3, 4, 5, 6, -1, -1, -1, -1, -1, -1, -1, -1, 1, 2};
+  dj_junction_site_inds = {8, 9, 8, 9, -1, -1, -1, -1, -1, -1, -1, -1, 8, 9};
+  jgerm_state_strs = {"IGHJ_ex*01", "IGHJ_ex*99"};
+  jgerm_ggene_ranges = {{"IGHJ_ex*01", {0, 5}}, {"IGHJ_ex*99", {5, 10}}};
+  jgerm_naive_bases = {0, 3, 2, 1, 2, 1, 0, 3, 1, 2};
+  jgerm_germ_inds = {0, 1, 2, 3, 4, 3, 4, 5, 6, 7};
+  jgerm_site_inds = {10, 11, 12, 13, 14, 10, 11, 12, 13, 14};
+  jpadding_ggene_ranges = {{"IGHJ_ex*01", {0, 0}}, {"IGHJ_ex*99", {0, 0}}};
+  jpadding_naive_bases = {};
+  jpadding_site_inds = {};
+  vpadding_transition.resize(2);
+  vpadding_transition << 0.34*0.66, 0.34*0.66;
+  vgerm_vd_junction_transition.resize(2, 15);
+  vgerm_vd_junction_transition <<
   0.2*0.035*0.1, 0.2*0.035*0.2, 0.2*0.035*0.1, 0.2*0.035*0.05, 0, 0.2*0.086*0.1, 0.2*0.086*0.2, 0.2*0.086*0.1, 0.2*0.086*0.1, 0.2*0.086*0.15, 0, 0.8, 0, 0, 0,
               0,             0,             0,              0, 0,             0,             0,             0,             0,              0, 0,   0, 0, 1, 0;
-  VDJ_vd_junction_transition.resize(15, 15);
-  VDJ_vd_junction_transition <<
+  vd_junction_transition.resize(15, 15);
+  vd_junction_transition <<
            0.075,          0.175,           0.05,           0.025,          0.45,              0,              0,              0,              0,    0,               0, 0,   0, 0, 0,
            0.075,          0.175,           0.05,           0.025,          0.45,              0,              0,              0,              0,    0,               0, 0,   0, 0, 0,
            0.075,          0.175,           0.05,           0.025,          0.45,              0,              0,              0,              0,    0,               0, 0,   0, 0, 0,
@@ -937,8 +533,8 @@ TEST_CASE("NewSimpleData", "[newsimpledata]") {
      1*0.035*0.1,    1*0.035*0.2,    1*0.035*0.1,    1*0.035*0.05,             0,    1*0.086*0.1,    1*0.086*0.2,    1*0.086*0.1,    1*0.086*0.1,    0,               0, 0,   0, 0, 0,
                0,              0,              0,               0,             0,              0,              0,              0,              0,    0,               0, 0,   0, 0, 1,
   0.25*0.035*0.1, 0.25*0.035*0.2, 0.25*0.035*0.1, 0.25*0.035*0.05,             0, 0.25*0.086*0.1, 0.25*0.086*0.2, 0.25*0.086*0.1, 0.25*0.086*0.1,    0,               0, 0,   0, 0, 0;
-  VDJ_vd_junction_dgerm_transition.resize(15, 2);
-  VDJ_vd_junction_dgerm_transition <<
+  vd_junction_dgerm_transition.resize(15, 2);
+  vd_junction_dgerm_transition <<
            0.125*0.95,                    0,
            0.125*0.95,                    0,
            0.125*0.95,                    0,
@@ -954,12 +550,12 @@ TEST_CASE("NewSimpleData", "[newsimpledata]") {
      1*0.035*0.1*0.95,    1*0.086*0.025*0.5,
                     0,                    0,
   0.25*0.035*0.1*0.95, 0.25*0.086*0.025*0.5;
-  VDJ_dgerm_dj_junction_transition.resize(2, 14);
-  VDJ_dgerm_dj_junction_transition <<
+  dgerm_dj_junction_transition.resize(2, 14);
+  dgerm_dj_junction_transition <<
   0.6, 0,    0, 0,  0.4*0.015*0.1,  0.4*0.015*0.2,  0.4*0.015*0.2,  0.4*0.015*0.2,  0.4*0.155*0.1,  0.4*0.155*0.2,  0.4*0.155*0.2,  0.4*0.155*0.2,  0.4*0.155*0.05, 0,
     0, 0, 0.35, 0, 0.65*0.015*0.1, 0.65*0.015*0.2, 0.65*0.015*0.2, 0.65*0.015*0.2, 0.65*0.155*0.1, 0.65*0.155*0.2, 0.65*0.155*0.2, 0.65*0.155*0.2, 0.65*0.155*0.05, 0;
-  VDJ_dj_junction_transition.resize(14, 14);
-  VDJ_dj_junction_transition <<
+  dj_junction_transition.resize(14, 14);
+  dj_junction_transition <<
   0, 0.35, 0,   0, 0.65*0.015*0.1, 0.65*0.015*0.2, 0.65*0.015*0.2, 0.65*0.015*0.2, 0.65*0.155*0.1, 0.65*0.155*0.2, 0.65*0.155*0.2, 0.65*0.155*0.2,    0, 0,
   0,    0, 0,   0,    1*0.015*0.1,    1*0.015*0.2,    1*0.015*0.2,    1*0.015*0.2,    1*0.155*0.1,    1*0.155*0.2,    1*0.155*0.2,    1*0.155*0.2,    0, 0,
   0,    0, 0, 0.2,  0.8*0.015*0.1,  0.8*0.015*0.2,  0.8*0.015*0.2,  0.8*0.015*0.2,  0.8*0.155*0.1,  0.8*0.155*0.2,  0.8*0.155*0.2,  0.8*0.155*0.2,    0, 0,
@@ -974,8 +570,8 @@ TEST_CASE("NewSimpleData", "[newsimpledata]") {
   0,    0, 0,   0,              0,              0,              0,              0,           0.05,           0.15,          0.075,          0.075, 0.25, 0,
   0,    0, 0,   0,              0,              0,              0,              0,              0,              0,              0,              0,    0, 1,
   0,    0, 0,   0,              0,              0,              0,              0,              0,              0,              0,              0,    0, 0;
-  VDJ_dj_junction_jgerm_transition.resize(14, 2);
-  VDJ_dj_junction_jgerm_transition <<
+  dj_junction_jgerm_transition.resize(14, 2);
+  dj_junction_jgerm_transition <<
                  0, 0,
   1*0.015*0.25*1*1, 0,
                  0, 0,
@@ -990,230 +586,556 @@ TEST_CASE("NewSimpleData", "[newsimpledata]") {
                  0, 0,
                  0, 0,
                  0, 1;
-  VDJ_jpadding_transition.resize(2);
-  VDJ_jpadding_transition << 0.04, 0.04;
-  VDJ_vgerm_init_scaler_count = 0;
-  VDJ_vgerm_scaler_count = 0;
-  VDJ_vd_junction_scaler_counts = {0, 0};
-  VDJ_dgerm_init_scaler_count = 0;
-  VDJ_dgerm_scaler_count = 0;
-  VDJ_dj_junction_scaler_counts = {0, 0};
-  VDJ_jgerm_init_scaler_count = 0;
-  VDJ_jgerm_scaler_count = 0;
+  jpadding_transition.resize(2);
+  jpadding_transition << 0.04, 0.04;
+  vgerm_init_scaler_count = 0;
+  vgerm_scaler_count = 0;
+  vd_junction_scaler_counts = {0, 0};
+  dgerm_init_scaler_count = 0;
+  dgerm_scaler_count = 0;
+  dj_junction_scaler_counts = {0, 0};
+  jgerm_init_scaler_count = 0;
+  jgerm_scaler_count = 0;
 
-  REQUIRE(new_simple_data_ptr->flexbounds() == VDJ_flexbounds);
-  REQUIRE(new_simple_data_ptr->relpos() == VDJ_relpos);
-  REQUIRE(new_simple_data_ptr->alphabet() == VDJ_alphabet);
-  REQUIRE(new_simple_data_ptr->vpadding_ggene_ranges() == VDJ_vpadding_ggene_ranges);
-  REQUIRE(new_simple_data_ptr->vpadding_naive_bases() == VDJ_vpadding_naive_bases);
-  REQUIRE(new_simple_data_ptr->vpadding_site_inds() == VDJ_vpadding_site_inds);
-  REQUIRE(new_simple_data_ptr->vgerm_state_strs() == VDJ_vgerm_state_strs);
-  REQUIRE(new_simple_data_ptr->vgerm_ggene_ranges() == VDJ_vgerm_ggene_ranges);
-  REQUIRE(new_simple_data_ptr->vgerm_naive_bases() == VDJ_vgerm_naive_bases);
-  REQUIRE(new_simple_data_ptr->vgerm_germ_inds() == VDJ_vgerm_germ_inds);
-  REQUIRE(new_simple_data_ptr->vgerm_site_inds() == VDJ_vgerm_site_inds);
-  REQUIRE(new_simple_data_ptr->vd_junction_state_strs() == VDJ_vd_junction_state_strs);
-  REQUIRE(new_simple_data_ptr->vd_junction_ggene_ranges() == VDJ_vd_junction_ggene_ranges);
-  REQUIRE(new_simple_data_ptr->vd_junction_naive_bases() == VDJ_vd_junction_naive_bases);
-  REQUIRE(new_simple_data_ptr->vd_junction_germ_inds() == VDJ_vd_junction_germ_inds);
-  REQUIRE(new_simple_data_ptr->vd_junction_site_inds() == VDJ_vd_junction_site_inds);
-  REQUIRE(new_simple_data_ptr->dgerm_state_strs() == VDJ_dgerm_state_strs);
-  REQUIRE(new_simple_data_ptr->dgerm_ggene_ranges() == VDJ_dgerm_ggene_ranges);
-  REQUIRE(new_simple_data_ptr->dgerm_naive_bases() == VDJ_dgerm_naive_bases);
-  REQUIRE(new_simple_data_ptr->dgerm_germ_inds() == VDJ_dgerm_germ_inds);
-  REQUIRE(new_simple_data_ptr->dgerm_site_inds() == VDJ_dgerm_site_inds);
-  REQUIRE(new_simple_data_ptr->dj_junction_state_strs() == VDJ_dj_junction_state_strs);
-  REQUIRE(new_simple_data_ptr->dj_junction_ggene_ranges() == VDJ_dj_junction_ggene_ranges);
-  REQUIRE(new_simple_data_ptr->dj_junction_naive_bases() == VDJ_dj_junction_naive_bases);
-  REQUIRE(new_simple_data_ptr->dj_junction_germ_inds() == VDJ_dj_junction_germ_inds);
-  REQUIRE(new_simple_data_ptr->dj_junction_site_inds() == VDJ_dj_junction_site_inds);
-  REQUIRE(new_simple_data_ptr->jgerm_state_strs() == VDJ_jgerm_state_strs);
-  REQUIRE(new_simple_data_ptr->jgerm_ggene_ranges() == VDJ_jgerm_ggene_ranges);
-  REQUIRE(new_simple_data_ptr->jgerm_naive_bases() == VDJ_jgerm_naive_bases);
-  REQUIRE(new_simple_data_ptr->jgerm_germ_inds() == VDJ_jgerm_germ_inds);
-  REQUIRE(new_simple_data_ptr->jgerm_site_inds() == VDJ_jgerm_site_inds);
-  REQUIRE(new_simple_data_ptr->jpadding_ggene_ranges() == VDJ_jpadding_ggene_ranges);
-  REQUIRE(new_simple_data_ptr->jpadding_naive_bases() == VDJ_jpadding_naive_bases);
-  REQUIRE(new_simple_data_ptr->jpadding_site_inds() == VDJ_jpadding_site_inds);
-  REQUIRE(new_simple_data_ptr->vpadding_transition().isApprox(VDJ_vpadding_transition));
-  REQUIRE(new_simple_data_ptr->vgerm_vd_junction_transition() == VDJ_vgerm_vd_junction_transition);
-  REQUIRE(new_simple_data_ptr->vd_junction_transition() == VDJ_vd_junction_transition);
-  REQUIRE(new_simple_data_ptr->vd_junction_dgerm_transition() == VDJ_vd_junction_dgerm_transition);
-  REQUIRE(new_simple_data_ptr->dgerm_dj_junction_transition() == VDJ_dgerm_dj_junction_transition);
-  REQUIRE(new_simple_data_ptr->dj_junction_transition() == VDJ_dj_junction_transition);
-  REQUIRE(new_simple_data_ptr->dj_junction_jgerm_transition() == VDJ_dj_junction_jgerm_transition);
-  REQUIRE(new_simple_data_ptr->jpadding_transition().isApprox(VDJ_jpadding_transition));
+  REQUIRE(simple_hmm_ptr->flexbounds() == flexbounds);
+  REQUIRE(simple_hmm_ptr->relpos() == relpos);
+  REQUIRE(simple_hmm_ptr->alphabet() == alphabet);
+  REQUIRE(simple_hmm_ptr->vpadding_ggene_ranges() == vpadding_ggene_ranges);
+  REQUIRE(simple_hmm_ptr->vpadding_naive_bases() == vpadding_naive_bases);
+  REQUIRE(simple_hmm_ptr->vpadding_site_inds() == vpadding_site_inds);
+  REQUIRE(simple_hmm_ptr->vgerm_state_strs() == vgerm_state_strs);
+  REQUIRE(simple_hmm_ptr->vgerm_ggene_ranges() == vgerm_ggene_ranges);
+  REQUIRE(simple_hmm_ptr->vgerm_naive_bases() == vgerm_naive_bases);
+  REQUIRE(simple_hmm_ptr->vgerm_germ_inds() == vgerm_germ_inds);
+  REQUIRE(simple_hmm_ptr->vgerm_site_inds() == vgerm_site_inds);
+  REQUIRE(simple_hmm_ptr->vd_junction_state_strs() == vd_junction_state_strs);
+  REQUIRE(simple_hmm_ptr->vd_junction_ggene_ranges() == vd_junction_ggene_ranges);
+  REQUIRE(simple_hmm_ptr->vd_junction_naive_bases() == vd_junction_naive_bases);
+  REQUIRE(simple_hmm_ptr->vd_junction_germ_inds() == vd_junction_germ_inds);
+  REQUIRE(simple_hmm_ptr->vd_junction_site_inds() == vd_junction_site_inds);
+  REQUIRE(simple_hmm_ptr->dgerm_state_strs() == dgerm_state_strs);
+  REQUIRE(simple_hmm_ptr->dgerm_ggene_ranges() == dgerm_ggene_ranges);
+  REQUIRE(simple_hmm_ptr->dgerm_naive_bases() == dgerm_naive_bases);
+  REQUIRE(simple_hmm_ptr->dgerm_germ_inds() == dgerm_germ_inds);
+  REQUIRE(simple_hmm_ptr->dgerm_site_inds() == dgerm_site_inds);
+  REQUIRE(simple_hmm_ptr->dj_junction_state_strs() == dj_junction_state_strs);
+  REQUIRE(simple_hmm_ptr->dj_junction_ggene_ranges() == dj_junction_ggene_ranges);
+  REQUIRE(simple_hmm_ptr->dj_junction_naive_bases() == dj_junction_naive_bases);
+  REQUIRE(simple_hmm_ptr->dj_junction_germ_inds() == dj_junction_germ_inds);
+  REQUIRE(simple_hmm_ptr->dj_junction_site_inds() == dj_junction_site_inds);
+  REQUIRE(simple_hmm_ptr->jgerm_state_strs() == jgerm_state_strs);
+  REQUIRE(simple_hmm_ptr->jgerm_ggene_ranges() == jgerm_ggene_ranges);
+  REQUIRE(simple_hmm_ptr->jgerm_naive_bases() == jgerm_naive_bases);
+  REQUIRE(simple_hmm_ptr->jgerm_germ_inds() == jgerm_germ_inds);
+  REQUIRE(simple_hmm_ptr->jgerm_site_inds() == jgerm_site_inds);
+  REQUIRE(simple_hmm_ptr->jpadding_ggene_ranges() == jpadding_ggene_ranges);
+  REQUIRE(simple_hmm_ptr->jpadding_naive_bases() == jpadding_naive_bases);
+  REQUIRE(simple_hmm_ptr->jpadding_site_inds() == jpadding_site_inds);
+  REQUIRE(simple_hmm_ptr->vpadding_transition().isApprox(vpadding_transition));
+  REQUIRE(simple_hmm_ptr->vgerm_vd_junction_transition() == vgerm_vd_junction_transition);
+  REQUIRE(simple_hmm_ptr->vd_junction_transition() == vd_junction_transition);
+  REQUIRE(simple_hmm_ptr->vd_junction_dgerm_transition() == vd_junction_dgerm_transition);
+  REQUIRE(simple_hmm_ptr->dgerm_dj_junction_transition() == dgerm_dj_junction_transition);
+  REQUIRE(simple_hmm_ptr->dj_junction_transition() == dj_junction_transition);
+  REQUIRE(simple_hmm_ptr->dj_junction_jgerm_transition() == dj_junction_jgerm_transition);
+  REQUIRE(simple_hmm_ptr->jpadding_transition().isApprox(jpadding_transition));
 
-  REQUIRE(new_simple_data_ptr->seq() == VDJ_seq);
-  REQUIRE(new_simple_data_ptr->seq_str() == VDJ_seq_str);
+  REQUIRE(simple_hmm_ptr->seq() == seq);
+  REQUIRE(simple_hmm_ptr->seq_str() == seq_str);
 
-  REQUIRE(new_simple_data_ptr->LogLikelihood() == Approx(-37.1354672701));
-  REQUIRE(new_simple_data_ptr->LogLikelihood() == simple_data_ptr->MarginalLogLikelihood());
-  REQUIRE(new_simple_data_ptr->vgerm_init_scaler_count() == VDJ_vgerm_init_scaler_count);
-  REQUIRE(new_simple_data_ptr->vgerm_scaler_count() == VDJ_vgerm_scaler_count);
-  REQUIRE(new_simple_data_ptr->vd_junction_scaler_counts() == VDJ_vd_junction_scaler_counts);
-  REQUIRE(new_simple_data_ptr->dgerm_init_scaler_count() == VDJ_dgerm_init_scaler_count);
-  REQUIRE(new_simple_data_ptr->dgerm_scaler_count() == VDJ_dgerm_scaler_count);
-  REQUIRE(new_simple_data_ptr->dj_junction_scaler_counts() == VDJ_dj_junction_scaler_counts);
-  REQUIRE(new_simple_data_ptr->jgerm_init_scaler_count() == VDJ_jgerm_init_scaler_count);
-  REQUIRE(new_simple_data_ptr->jgerm_scaler_count() == VDJ_jgerm_scaler_count);
+  REQUIRE(simple_hmm_ptr->LogLikelihood() == Approx(-37.1354672701));
+  REQUIRE(simple_hmm_ptr->vgerm_init_scaler_count() == vgerm_init_scaler_count);
+  REQUIRE(simple_hmm_ptr->vgerm_scaler_count() == vgerm_scaler_count);
+  REQUIRE(simple_hmm_ptr->vd_junction_scaler_counts() == vd_junction_scaler_counts);
+  REQUIRE(simple_hmm_ptr->dgerm_init_scaler_count() == dgerm_init_scaler_count);
+  REQUIRE(simple_hmm_ptr->dgerm_scaler_count() == dgerm_scaler_count);
+  REQUIRE(simple_hmm_ptr->dj_junction_scaler_counts() == dj_junction_scaler_counts);
+  REQUIRE(simple_hmm_ptr->jgerm_init_scaler_count() == jgerm_init_scaler_count);
+  REQUIRE(simple_hmm_ptr->jgerm_scaler_count() == jgerm_scaler_count);
 }
 
 
-// PhyloData tests
+// PhyloHMM tests
 
-TEST_CASE("PhyloData", "[phylodata]") {
-  // Test the PhyloData class using the example files.
-  std::string yaml_path = "data/SimpleData_ex/hmm_input.yaml";
-  std::string hmm_param_dir = "data/SimpleData_ex/hmm_params";
-  std::string trees_path = "data/PhyloData_ex/newton.tre";
-  std::string fasta_path = "data/PhyloData_ex/newton.fasta";
-  std::string ctmc_params_path = "data/PhyloData_ex/RAxML_info.newton";
-  PhyloDataPtr phylo_data_ptr =
-      ReadPhyloData(yaml_path, 0, hmm_param_dir, trees_path, fasta_path, ctmc_params_path, 4);
+TEST_CASE("PhyloHMM", "[phylohmm]") {
+  // Test the PhyloHMM class using the example files.
+  std::string yaml_path = "data/hmm_input.yaml";
+  std::string hmm_param_dir = "data/hmm_params";
+  std::string trees_path = "data/newton.tre";
+  std::string fasta_path = "data/newton.fasta";
+  std::string ctmc_params_path = "data/RAxML_info.newton";
+  PhyloHMMPtr phylo_hmm_ptr = std::make_shared<PhyloHMM>(
+      yaml_path, 0, hmm_param_dir, trees_path, fasta_path, ctmc_params_path);
 
   // For a diagram of the S-W alignment, see
   // https://github.com/matsengrp/linearham/issues/44#issue-336348821.
 
-  std::map<std::string, std::pair<int, int>> VDJ_flexbounds = {
+  std::map<std::string, std::pair<int, int>> flexbounds = {
       {"v_l", {0, 2}},  {"v_r", {4, 6}},   {"d_l", {7, 8}},
       {"d_r", {9, 10}}, {"j_l", {11, 12}}, {"j_r", {15, 15}}};
-  std::map<std::string, int> VDJ_relpos = {
+  std::map<std::string, int> relpos = {
       {"IGHV_ex*01", 1}, {"IGHD_ex*01", 5}, {"IGHJ_ex*01", 10}};
-  std::map<std::array<std::string, 2>, std::array<int, 6>> VDJ_match_indices = {
-      {{"IGHV_ex*01", "v_l"}, {1, 6, 1, 2, 1, 0}},
-      {{"IGHD_ex*01", "v_r"}, {5, 10, 1, 1, 1, 0}},
-      {{"IGHD_ex*01", "d_l"}, {7, 10, 1, 1, 0, 0}},
-      {{"IGHJ_ex*01", "d_r"}, {10, 15, 0, 0, 1, 0}},
-      {{"IGHJ_ex*01", "j_l"}, {11, 15, 1, 0, 0, 0}}};
-  Eigen::MatrixXi VDJ_msa(3,15);
-  VDJ_msa <<
+  std::string alphabet = "ACGTN";
+  std::map<std::string, std::pair<int, int>> vpadding_ggene_ranges =
+      {{"IGHV_ex*01", {0, 1}}};
+  std::vector<int> vpadding_naive_bases = {4};
+  std::vector<int> vpadding_site_inds = {0};
+  std::vector<std::string> vgerm_state_strs = {"IGHV_ex*01"};
+  std::map<std::string, std::pair<int, int>> vgerm_ggene_ranges =
+      {{"IGHV_ex*01", {0, 3}}};
+  std::vector<int> vgerm_naive_bases = {0, 3, 2};
+  std::vector<int> vgerm_germ_inds = {0, 1, 2};
+  std::vector<int> vgerm_site_inds = {1, 2, 3};
+  std::vector<std::string> vd_junction_state_strs =
+      {"IGHD_ex*01:N_A", "IGHD_ex*01:N_C", "IGHD_ex*01:N_G", "IGHD_ex*01:N_T",
+       "IGHD_ex*01:0", "IGHD_ex*01:1", "IGHD_ex*01:2", "IGHV_ex*01:3", "IGHV_ex*01:4"};
+  std::map<std::string, std::pair<int, int>> vd_junction_ggene_ranges =
+      {{"IGHD_ex*01", {0, 7}}, {"IGHV_ex*01", {7, 9}}};
+  std::vector<int> vd_junction_naive_bases = {0, 1, 2, 3, 2, 2, 3, 0, 1};
+  std::vector<int> vd_junction_germ_inds = {-1, -1, -1, -1, 0, 1, 2, 3, 4};
+  std::vector<int> vd_junction_site_inds = {-1, -1, -1, -1, 5, 6, 7, 4, 5};
+  std::vector<std::string> dgerm_state_strs = {"IGHD_ex*01"};
+  std::map<std::string, std::pair<int, int>> dgerm_ggene_ranges =
+      {{"IGHD_ex*01", {0, 1}}};
+  std::vector<int> dgerm_naive_bases = {0};
+  std::vector<int> dgerm_germ_inds = {3};
+  std::vector<int> dgerm_site_inds = {8};
+  std::vector<std::string> dj_junction_state_strs =
+      {"IGHD_ex*01:4", "IGHJ_ex*01:N_A", "IGHJ_ex*01:N_C", "IGHJ_ex*01:N_G",
+       "IGHJ_ex*01:N_T", "IGHJ_ex*01:0", "IGHJ_ex*01:1"};
+  std::map<std::string, std::pair<int, int>> dj_junction_ggene_ranges =
+      {{"IGHD_ex*01", {0, 1}}, {"IGHJ_ex*01", {1, 7}}};
+  std::vector<int> dj_junction_naive_bases = {1, 0, 1, 2, 3, 0, 3};
+  std::vector<int> dj_junction_germ_inds = {4, -1, -1, -1, -1, 0, 1};
+  std::vector<int> dj_junction_site_inds = {9, -1, -1, -1, -1, 10, 11};
+  std::vector<std::string> jgerm_state_strs = {"IGHJ_ex*01"};
+  std::map<std::string, std::pair<int, int>> jgerm_ggene_ranges =
+      {{"IGHJ_ex*01", {0, 3}}};
+  std::vector<int> jgerm_naive_bases = {2, 1, 2};
+  std::vector<int> jgerm_germ_inds = {2, 3, 4};
+  std::vector<int> jgerm_site_inds = {12, 13, 14};
+  std::map<std::string, std::pair<int, int>> jpadding_ggene_ranges =
+      {{"IGHJ_ex*01", {0, 0}}};
+  std::vector<int> jpadding_naive_bases = {};
+  std::vector<int> jpadding_site_inds = {};
+  Eigen::RowVectorXd vpadding_transition(1);
+  vpadding_transition << 0.34*0.66;
+  Eigen::MatrixXd vgerm_vd_junction_transition(1, 9);
+  vgerm_vd_junction_transition <<
+  0.035*0.2*0.1, 0.035*0.2*0.2, 0.035*0.2*0.1, 0.035*0.2*0.05, 0, 0, 0, 0.8, 0;
+  Eigen::MatrixXd vd_junction_transition(9, 9);
+  vd_junction_transition <<
+          0.075,         0.175,          0.05,          0.025,          0.45,       0.125,  0.1, 0,   0,
+          0.075,         0.175,          0.05,          0.025,          0.45,       0.125,  0.1, 0,   0,
+          0.075,         0.175,          0.05,          0.025,          0.45,       0.125,  0.1, 0,   0,
+          0.075,         0.175,          0.05,          0.025,          0.45,       0.125,  0.1, 0,   0,
+              0,             0,             0,              0,             0,        0.98,    0, 0,   0,
+              0,             0,             0,              0,             0,           0, 0.95, 0,   0,
+              0,             0,             0,              0,             0,           0,    0, 0,   0,
+  0.035*0.5*0.1, 0.035*0.5*0.2, 0.035*0.5*0.1, 0.035*0.5*0.05, 0.035*0.5*0.4,           0,    0, 0, 0.5,
+    0.035*1*0.1,   0.035*1*0.2,   0.035*1*0.1,   0.035*1*0.05,             0, 0.035*1*0.1,    0, 0,   0;
+  Eigen::MatrixXd vd_junction_dgerm_transition(9, 1);
+  vd_junction_dgerm_transition <<
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+  0.6,
+    0,
+    0;
+  Eigen::MatrixXd dgerm_dj_junction_transition(1, 7);
+  dgerm_dj_junction_transition <<
+  0.35, 0.015*0.65*0.1, 0.015*0.65*0.2, 0.015*0.65*0.2, 0.015*0.65*0.2, 0, 0;
+  Eigen::MatrixXd dj_junction_transition(7, 7);
+  dj_junction_transition <<
+  0, 0.015*1*0.1, 0.015*1*0.2, 0.015*1*0.2, 0.015*1*0.2, 0.015*1*0.25,    0,
+  0,        0.05,        0.15,       0.075,       0.075,          0.4, 0.25,
+  0,        0.05,        0.15,       0.075,       0.075,          0.4, 0.25,
+  0,        0.05,        0.15,       0.075,       0.075,          0.4, 0.25,
+  0,        0.05,        0.15,       0.075,       0.075,          0.4, 0.25,
+  0,           0,           0,           0,           0,            0,    1,
+  0,           0,           0,           0,           0,            0,    0;
+  Eigen::MatrixXd dj_junction_jgerm_transition(7, 1);
+  dj_junction_jgerm_transition <<
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  1;
+  Eigen::RowVectorXd jpadding_transition(1);
+  jpadding_transition << 0.04;
+  int vgerm_init_scaler_count = 0;
+  int vgerm_scaler_count = 0;
+  std::vector<int> vd_junction_scaler_counts = {0, 0, 0, 0};
+  int dgerm_init_scaler_count = 0;
+  int dgerm_scaler_count = 0;
+  std::vector<int> dj_junction_scaler_counts = {0, 0, 0};
+  int jgerm_init_scaler_count = 0;
+  int jgerm_scaler_count = 0;
+
+  REQUIRE(phylo_hmm_ptr->flexbounds() == flexbounds);
+  REQUIRE(phylo_hmm_ptr->relpos() == relpos);
+  REQUIRE(phylo_hmm_ptr->alphabet() == alphabet);
+  REQUIRE(phylo_hmm_ptr->vpadding_ggene_ranges() == vpadding_ggene_ranges);
+  REQUIRE(phylo_hmm_ptr->vpadding_naive_bases() == vpadding_naive_bases);
+  REQUIRE(phylo_hmm_ptr->vpadding_site_inds() == vpadding_site_inds);
+  REQUIRE(phylo_hmm_ptr->vgerm_state_strs() == vgerm_state_strs);
+  REQUIRE(phylo_hmm_ptr->vgerm_ggene_ranges() == vgerm_ggene_ranges);
+  REQUIRE(phylo_hmm_ptr->vgerm_naive_bases() == vgerm_naive_bases);
+  REQUIRE(phylo_hmm_ptr->vgerm_germ_inds() == vgerm_germ_inds);
+  REQUIRE(phylo_hmm_ptr->vgerm_site_inds() == vgerm_site_inds);
+  REQUIRE(phylo_hmm_ptr->vd_junction_state_strs() == vd_junction_state_strs);
+  REQUIRE(phylo_hmm_ptr->vd_junction_ggene_ranges() == vd_junction_ggene_ranges);
+  REQUIRE(phylo_hmm_ptr->vd_junction_naive_bases() == vd_junction_naive_bases);
+  REQUIRE(phylo_hmm_ptr->vd_junction_germ_inds() == vd_junction_germ_inds);
+  REQUIRE(phylo_hmm_ptr->vd_junction_site_inds() == vd_junction_site_inds);
+  REQUIRE(phylo_hmm_ptr->dgerm_state_strs() == dgerm_state_strs);
+  REQUIRE(phylo_hmm_ptr->dgerm_ggene_ranges() == dgerm_ggene_ranges);
+  REQUIRE(phylo_hmm_ptr->dgerm_naive_bases() == dgerm_naive_bases);
+  REQUIRE(phylo_hmm_ptr->dgerm_germ_inds() == dgerm_germ_inds);
+  REQUIRE(phylo_hmm_ptr->dgerm_site_inds() == dgerm_site_inds);
+  REQUIRE(phylo_hmm_ptr->dj_junction_state_strs() == dj_junction_state_strs);
+  REQUIRE(phylo_hmm_ptr->dj_junction_ggene_ranges() == dj_junction_ggene_ranges);
+  REQUIRE(phylo_hmm_ptr->dj_junction_naive_bases() == dj_junction_naive_bases);
+  REQUIRE(phylo_hmm_ptr->dj_junction_germ_inds() == dj_junction_germ_inds);
+  REQUIRE(phylo_hmm_ptr->dj_junction_site_inds() == dj_junction_site_inds);
+  REQUIRE(phylo_hmm_ptr->jgerm_state_strs() == jgerm_state_strs);
+  REQUIRE(phylo_hmm_ptr->jgerm_ggene_ranges() == jgerm_ggene_ranges);
+  REQUIRE(phylo_hmm_ptr->jgerm_naive_bases() == jgerm_naive_bases);
+  REQUIRE(phylo_hmm_ptr->jgerm_germ_inds() == jgerm_germ_inds);
+  REQUIRE(phylo_hmm_ptr->jgerm_site_inds() == jgerm_site_inds);
+  REQUIRE(phylo_hmm_ptr->jpadding_ggene_ranges() == jpadding_ggene_ranges);
+  REQUIRE(phylo_hmm_ptr->jpadding_naive_bases() == jpadding_naive_bases);
+  REQUIRE(phylo_hmm_ptr->jpadding_site_inds() == jpadding_site_inds);
+  REQUIRE(phylo_hmm_ptr->vpadding_transition().isApprox(vpadding_transition));
+  REQUIRE(phylo_hmm_ptr->vgerm_vd_junction_transition() == vgerm_vd_junction_transition);
+  REQUIRE(phylo_hmm_ptr->vd_junction_transition() == vd_junction_transition);
+  REQUIRE(phylo_hmm_ptr->vd_junction_dgerm_transition() == vd_junction_dgerm_transition);
+  REQUIRE(phylo_hmm_ptr->dgerm_dj_junction_transition() == dgerm_dj_junction_transition);
+  REQUIRE(phylo_hmm_ptr->dj_junction_transition() == dj_junction_transition);
+  REQUIRE(phylo_hmm_ptr->dj_junction_jgerm_transition() == dj_junction_jgerm_transition);
+  REQUIRE(phylo_hmm_ptr->jpadding_transition().isApprox(jpadding_transition));
+
+  Eigen::MatrixXi msa(3,15);
+  msa <<
   3, 0, 0, 0, 0, 2, 0, 3, 1, 0, 0, 3, 3, 4, 4,
   1, 0, 1, 0, 1, 2, 3, 3, 1, 2, 0, 2, 3, 4, 4,
   1, 2, 3, 0, 2, 3, 0, 2, 2, 0, 1, 3, 1, 4, 4;
-  Eigen::MatrixXi VDJ_xmsa(4,36);
-  VDJ_xmsa <<
-  2, 0, 3, 1, 0, 0, 3, 3, 4, 4, 0, 0, 0, 0, 2, 3, 0, 0, 0, 2, 2, 0, 0, 0, 3, 3, 3, 0, 0, 0, 0, 0, 0, 3, 3, 3,
-  2, 3, 3, 1, 2, 0, 2, 3, 4, 4, 0, 1, 0, 1, 2, 1, 1, 1, 1, 2, 2, 3, 3, 3, 3, 3, 3, 2, 2, 2, 0, 0, 0, 2, 2, 2,
-  2, 2, 3, 0, 1, 0, 3, 2, 1, 2, 0, 3, 2, 0, 1, 4, 1, 2, 3, 0, 3, 0, 1, 3, 0, 1, 2, 0, 2, 3, 1, 2, 3, 0, 1, 2,
-  3, 0, 2, 2, 0, 1, 3, 1, 4, 4, 2, 3, 0, 2, 3, 1, 2, 2, 2, 3, 3, 0, 0, 0, 2, 2, 2, 0, 0, 0, 1, 1, 1, 3, 3, 3;
-  std::vector<std::string> VDJ_xmsa_labels = {"0", "1", "naive", "3"};
-  std::vector<std::string> VDJ_xmsa_seqs = {
-      "GATCAATTNNAAAAGTAAAGGAAATTTAAAAAATTT", "GTTCGAGTNNACACGCCCCGGTTTTTTGGGAAAGGG",
-      "GGTACATGCGATGACNCGTATACTACGAGTCGTACG", "TAGGACTCNNGTAGTCGGGTTAAAGGGAAACCCTTT"};
-  int VDJ_xmsa_naive_index = std::find(VDJ_xmsa_labels.begin(),
-                                       VDJ_xmsa_labels.end(), "naive")
-                             - VDJ_xmsa_labels.begin();
-  Eigen::VectorXd VDJ_xmsa_rates(36);
-  VDJ_xmsa_rates << 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-                    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1;
-  Eigen::VectorXd VDJ_xmsa_emission(36);
-  VDJ_xmsa_emission << 0.0446185, 0.00399037, 0.0400067, 0.00783313, 0.00255793,
-                       0.0177172, 0.0322063, 0.016355, 1, 1, 0.0233122, 0.00563729,
-                       0.0107866, 0.00342739, 0.0177109, 0.00734474, 0.00270654,
-                       0.00437549, 0.00225322, 0.0177109, 0.0406717, 0.0279823,
-                       0.00399037, 0.00429863, 0.0215197, 0.0215197, 0.0609261,
-                       0.0179374, 0.00286619, 0.00255793, 0.019866, 0.00514627,
-                       0.00514627, 0.0118535, 0.0118535, 0.0134759;
-  std::map<std::array<std::string, 2>, Eigen::VectorXi> VDJ_germ_xmsa_indices;
-  Eigen::VectorXi xmsa_indices(5);
-  xmsa_indices << 10, 11, 12, 13, 14;
-  VDJ_germ_xmsa_indices.emplace(
-      std::array<std::string, 2>({"IGHV_ex*01", "v_l"}), xmsa_indices);
-  xmsa_indices.resize(5);
-  xmsa_indices << 0, 1, 2, 3, 4;
-  VDJ_germ_xmsa_indices.emplace(
-      std::array<std::string, 2>({"IGHD_ex*01", "v_r"}), xmsa_indices);
-  xmsa_indices.resize(3);
-  xmsa_indices << 2, 3, 4;
-  VDJ_germ_xmsa_indices.emplace(
-      std::array<std::string, 2>({"IGHD_ex*01", "d_l"}), xmsa_indices);
-  xmsa_indices.resize(5);
-  xmsa_indices << 5, 6, 7, 8, 9;
-  VDJ_germ_xmsa_indices.emplace(
-      std::array<std::string, 2>({"IGHJ_ex*01", "d_r"}), xmsa_indices);
-  xmsa_indices.resize(4);
-  xmsa_indices << 6, 7, 8, 9;
-  VDJ_germ_xmsa_indices.emplace(
-      std::array<std::string, 2>({"IGHJ_ex*01", "j_l"}), xmsa_indices);
-  std::map<int, Eigen::VectorXi> VDJ_nti_xmsa_indices;
-  xmsa_indices.resize(4);
-  xmsa_indices << 13, 16, 17, 18;
-  VDJ_nti_xmsa_indices.emplace(4, xmsa_indices);
-  xmsa_indices << 19, 14, 0, 20;
-  VDJ_nti_xmsa_indices.emplace(5, xmsa_indices);
-  xmsa_indices << 21, 22, 1, 23;
-  VDJ_nti_xmsa_indices.emplace(6, xmsa_indices);
-  xmsa_indices << 24, 25, 26, 2;
-  VDJ_nti_xmsa_indices.emplace(7, xmsa_indices);
-  xmsa_indices << 27, 4, 28, 29;
-  VDJ_nti_xmsa_indices.emplace(9, xmsa_indices);
-  xmsa_indices << 5, 30, 31, 32;
-  VDJ_nti_xmsa_indices.emplace(10, xmsa_indices);
-  xmsa_indices << 33, 34, 35, 6;
-  VDJ_nti_xmsa_indices.emplace(11, xmsa_indices);
+  Eigen::MatrixXi xmsa(4, 36);
+  xmsa <<
+  3, 0, 0, 0, 0, 2, 0, 3, 0, 2, 0, 3, 0, 2, 0, 3, 0, 2, 0, 3, 1, 0, 0, 0, 3, 0, 3, 0, 0, 3, 0, 0, 3, 3, 4, 4,
+  1, 0, 1, 0, 1, 2, 3, 3, 1, 2, 3, 3, 1, 2, 3, 3, 1, 2, 3, 3, 1, 2, 2, 0, 2, 0, 2, 2, 0, 2, 2, 0, 2, 3, 4, 4,
+  4, 0, 3, 2, 0, 0, 0, 0, 1, 1, 1, 1, 2, 2, 2, 2, 3, 3, 3, 3, 0, 1, 0, 0, 0, 1, 1, 2, 2, 2, 3, 3, 3, 2, 1, 2,
+  1, 2, 3, 0, 2, 3, 0, 2, 2, 3, 0, 2, 2, 3, 0, 2, 2, 3, 0, 2, 2, 0, 0, 1, 3, 1, 3, 0, 1, 3, 0, 1, 3, 1, 4, 4;
+  std::vector<std::string> xmsa_labels = {"0", "1", "naive", "3"};
+  std::vector<std::string> xmsa_seqs = {
+      "TAAAAGATAGATAGATAGATCAAATATAATAATTNN", "CACACGTTCGTTCGTTCGTTCGGAGAGGAGGAGTNN",
+      "NATGAAAACCCCGGGGTTTTACAAACCGGGTTTGCG", "CGTAGTAGGTAGGTAGGTAGGAACTCTACTACTCNN"};
+  int xmsa_naive_ind = std::find(xmsa_labels.begin(),
+                                 xmsa_labels.end(), "naive")
+                       - xmsa_labels.begin();
+  Eigen::VectorXd xmsa_emission(36);
+  xmsa_emission << 0.00734474, 0.0233122, 0.00563729, 0.0107866, 0.00342739,
+                   0.0177109, 0.0279823, 0.0215197, 0.00270654, 0.0177109,
+                   0.00399037, 0.0215197, 0.00437549, 0.0446185, 0.00399037,
+                   0.0609261, 0.00225322, 0.0406717, 0.00429863, 0.0400067,
+                   0.00783313, 0.00255793, 0.0179374, 0.0177172, 0.0118535,
+                   0.019866, 0.0118535, 0.00286619, 0.00514627, 0.0134759,
+                   0.00255793, 0.00514627, 0.0322063,  0.016355, 1, 1;
+  Eigen::VectorXi vpadding_xmsa_inds(1);
+  vpadding_xmsa_inds << 0;
+  Eigen::VectorXi vgerm_xmsa_inds(3);
+  vgerm_xmsa_inds << 1, 2, 3;
+  Eigen::MatrixXi vd_junction_xmsa_inds(4, 9);
+  vd_junction_xmsa_inds <<
+  4,  8,  12, 16, -1, -1, -1,  4, -1,
+  5,  9,  13, 17, 13, -1, -1, -1,  9,
+  6, 10,  14, 18, -1, 14, -1, -1, -1,
+  7, 11,  15, 19, -1, -1, 19, -1, -1;
+  Eigen::VectorXi dgerm_xmsa_inds(1);
+  dgerm_xmsa_inds << 20;
+  Eigen::MatrixXi dj_junction_xmsa_inds(3, 7);
+  dj_junction_xmsa_inds <<
+  21, 22, 21, 27, 30, -1, -1,
+  -1, 23, 25, 28, 31, 23, -1,
+  -1, 24, 26, 29, 32, -1, 32;
+  Eigen::VectorXi jgerm_xmsa_inds(3);
+  jgerm_xmsa_inds << 33, 34, 35;
+  Eigen::VectorXi jpadding_xmsa_inds;
 
-  REQUIRE(phylo_data_ptr->flexbounds() == VDJ_flexbounds);
-  REQUIRE(phylo_data_ptr->relpos() == VDJ_relpos);
-  REQUIRE(phylo_data_ptr->match_indices() == VDJ_match_indices);
-  REQUIRE(phylo_data_ptr->msa() == VDJ_msa);
-  REQUIRE(phylo_data_ptr->xmsa() == VDJ_xmsa);
-  REQUIRE(phylo_data_ptr->xmsa_labels() == VDJ_xmsa_labels);
-  REQUIRE(phylo_data_ptr->xmsa_seqs() == VDJ_xmsa_seqs);
-  REQUIRE(phylo_data_ptr->xmsa_naive_index() == VDJ_xmsa_naive_index);
-  REQUIRE(phylo_data_ptr->xmsa_rates() == VDJ_xmsa_rates);
-  REQUIRE(phylo_data_ptr->xmsa_emission().isApprox(VDJ_xmsa_emission, 1e-5));
-  REQUIRE(phylo_data_ptr->germ_xmsa_indices() == VDJ_germ_xmsa_indices);
-  REQUIRE(phylo_data_ptr->nti_xmsa_indices() == VDJ_nti_xmsa_indices);
-  REQUIRE(phylo_data_ptr->length() == VDJ_msa.cols());
+  REQUIRE(phylo_hmm_ptr->msa() == msa);
+  REQUIRE(phylo_hmm_ptr->xmsa() == xmsa);
+  REQUIRE(phylo_hmm_ptr->xmsa_labels() == xmsa_labels);
+  REQUIRE(phylo_hmm_ptr->xmsa_seqs() == xmsa_seqs);
+  REQUIRE(phylo_hmm_ptr->xmsa_naive_ind() == xmsa_naive_ind);
+  REQUIRE(phylo_hmm_ptr->xmsa_emission().isApprox(xmsa_emission, 1e-5));
+  REQUIRE(phylo_hmm_ptr->vpadding_xmsa_inds() == vpadding_xmsa_inds);
+  REQUIRE(phylo_hmm_ptr->vgerm_xmsa_inds() == vgerm_xmsa_inds);
+  REQUIRE(phylo_hmm_ptr->vd_junction_xmsa_inds() == vd_junction_xmsa_inds);
+  REQUIRE(phylo_hmm_ptr->dgerm_xmsa_inds() == dgerm_xmsa_inds);
+  REQUIRE(phylo_hmm_ptr->dj_junction_xmsa_inds() == dj_junction_xmsa_inds);
+  REQUIRE(phylo_hmm_ptr->jgerm_xmsa_inds() == jgerm_xmsa_inds);
+  REQUIRE(phylo_hmm_ptr->jpadding_xmsa_inds() == jpadding_xmsa_inds);
 
-  Eigen::MatrixXd V_marginal(1,3);
-  V_marginal <<
-  // Format is gene_prob * npadding_prob * emission * transition * ... * emission * landing_out
-  0.07*0.34*0.00734474*0.66*0.0233122*1*0.00563729*1*0.0107866*0.2, 0.07*0.34*0.00734474*0.66*0.0233122*1*0.00563729*1*0.0107866*0.8*0.00342739*0.5, 0.07*0.34*0.00734474*0.66*0.0233122*1*0.00563729*1*0.0107866*0.8*0.00342739*0.5*0.0177109*1;
-  Eigen::MatrixXd DX_marginal(3,2);
-  DX_marginal <<
-  // Format is gene_prob * landing_in * emission * transition * ... * emission * landing_out
-                                                                       0,                                                                                   0,
-  0.035*0.4*0.0446185*0.98*0.00399037*0.95*0.0400067*0.6*0.00783313*0.65, 0.035*0.4*0.0446185*0.98*0.00399037*0.95*0.0400067*0.6*0.00783313*0.35*0.00255793*1,
-                 0.035*0.1*0.00399037*0.95*0.0400067*0.6*0.00783313*0.65,                0.035*0.1*0.00399037*0.95*0.0400067*0.6*0.00783313*0.35*0.00255793*1;
-  Eigen::MatrixXd DN_nti_marginal(3,2);
-  DN_nti_marginal <<
-  3.41703e-09, 0,
-  3.66539e-06, 0,
-  0.000421028, 0;
-  Eigen::MatrixXd DN_germ_marginal(2,2);
-  DN_germ_marginal <<
-  // Format is gene_prob * emission * transition * ... * emission * landing_out
-  0.035*0.0400067*0.6*0.00783313*0.65, 0.035*0.0400067*0.6*0.00783313*0.35*0.00255793*1,
-                0.035*0.00783313*0.65,               0.035*0.00783313*0.35*0.00255793*1;
-  Eigen::MatrixXd JX_marginal(2,1);
-  JX_marginal <<
-  // Format is gene_prob * landing_in * emission * transition * ... * emission * npadding_prob
-                                            0,
-  0.015*0.25*0.0177172*1*0.0322063*1*0.016355*0.04;
-  Eigen::MatrixXd JN_nti_marginal(2,2);
-  JN_nti_marginal <<
-  3.93063e-06, 0,
-   0.00195086, 0;
-  Eigen::MatrixXd JN_germ_marginal(2,1);
-  JN_germ_marginal <<
-  // Format is gene_prob * emission * transition * ... * emission * npadding_prob
-  0.015*0.0322063*1*0.016355*0.04,
-              0.015*0.016355*0.04;
+  REQUIRE(phylo_hmm_ptr->LogLikelihood() == Approx(-75.8136));
+  REQUIRE(phylo_hmm_ptr->vgerm_init_scaler_count() == vgerm_init_scaler_count);
+  REQUIRE(phylo_hmm_ptr->vgerm_scaler_count() == vgerm_scaler_count);
+  REQUIRE(phylo_hmm_ptr->vd_junction_scaler_counts() == vd_junction_scaler_counts);
+  REQUIRE(phylo_hmm_ptr->dgerm_init_scaler_count() == dgerm_init_scaler_count);
+  REQUIRE(phylo_hmm_ptr->dgerm_scaler_count() == dgerm_scaler_count);
+  REQUIRE(phylo_hmm_ptr->dj_junction_scaler_counts() == dj_junction_scaler_counts);
+  REQUIRE(phylo_hmm_ptr->jgerm_init_scaler_count() == jgerm_init_scaler_count);
+  REQUIRE(phylo_hmm_ptr->jgerm_scaler_count() == jgerm_scaler_count);
 
-  REQUIRE(phylo_data_ptr->vdj_pile()[0]->marginal().isApprox(V_marginal * DX_marginal * JX_marginal, 1e-5));
-  REQUIRE(phylo_data_ptr->vdj_pile()[1]->marginal().isApprox(V_marginal * DX_marginal * JN_nti_marginal * JN_germ_marginal, 1e-5));
-  REQUIRE(phylo_data_ptr->vdj_pile()[2]->marginal().isApprox(V_marginal * DN_nti_marginal * DN_germ_marginal * JX_marginal, 1e-5));
-  REQUIRE(phylo_data_ptr->vdj_pile()[3]->marginal().isApprox(V_marginal * DN_nti_marginal * DN_germ_marginal * JN_nti_marginal * JN_germ_marginal, 1e-5));
-  REQUIRE(phylo_data_ptr->MarginalLogLikelihood() == Approx(-77.105280633));
+  // For clarity, we run an additional PhyloHMM test.
+  yaml_path = "data/hmm_input_extra.yaml";
+  phylo_hmm_ptr = std::make_shared<PhyloHMM>(
+      yaml_path, 0, hmm_param_dir, trees_path, fasta_path, ctmc_params_path);
+
+  // For a diagram of the S-W alignment, see
+  // https://github.com/matsengrp/linearham/issues/44#issuecomment-406625914.
+
+  flexbounds = {{"v_l", {0, 2}},  {"v_r", {4, 6}},  {"d_l", {4, 6}},
+                {"d_r", {8, 10}}, {"j_l", {8, 10}}, {"j_r", {15, 15}}};
+  relpos = {{"IGHV_ex*01", 1}, {"IGHD_ex*01", 5}, {"IGHJ_ex*01", 10},
+            {"IGHV_ex*99", 1}, {"IGHD_ex*99", 3}, {"IGHJ_ex*99", 7}};
+  alphabet = "ACGTN";
+  vpadding_ggene_ranges = {{"IGHV_ex*01", {0, 1}}, {"IGHV_ex*99", {1, 2}}};
+  vpadding_naive_bases = {4, 4};
+  vpadding_site_inds = {0, 0};
+  vgerm_state_strs = {"IGHV_ex*01", "IGHV_ex*99"};
+  vgerm_ggene_ranges = {{"IGHV_ex*01", {0, 3}}, {"IGHV_ex*99", {3, 6}}};
+  vgerm_naive_bases = {0, 3, 2, 1, 0, 2};
+  vgerm_germ_inds = {0, 1, 2, 0, 1, 2};
+  vgerm_site_inds = {1, 2, 3, 1, 2, 3};
+  vd_junction_state_strs =
+      {"IGHD_ex*01:N_A", "IGHD_ex*01:N_C", "IGHD_ex*01:N_G", "IGHD_ex*01:N_T",
+       "IGHD_ex*01:0", "IGHD_ex*99:N_A", "IGHD_ex*99:N_C", "IGHD_ex*99:N_G",
+       "IGHD_ex*99:N_T", "IGHD_ex*99:1", "IGHD_ex*99:2", "IGHV_ex*01:3",
+       "IGHV_ex*01:4", "IGHV_ex*99:3", "IGHV_ex*99:4"};
+  vd_junction_ggene_ranges = {{"IGHD_ex*01", {0, 5}}, {"IGHD_ex*99", {5, 11}},
+                              {"IGHV_ex*01", {11, 13}}, {"IGHV_ex*99", {13, 15}}};
+  vd_junction_naive_bases = {0, 1, 2, 3, 2, 0, 1, 2, 3, 2, 3, 0, 1, 2, 0};
+  vd_junction_germ_inds = {-1, -1, -1, -1, 0, -1, -1, -1, -1, 1, 2, 3, 4, 3, 4};
+  vd_junction_site_inds = {-1, -1, -1, -1, 5, -1, -1, -1, -1, 4, 5, 4, 5, 4, 5};
+  dgerm_state_strs = {"IGHD_ex*01", "IGHD_ex*99"};
+  dgerm_ggene_ranges = {{"IGHD_ex*01", {0, 2}}, {"IGHD_ex*99", {2, 4}}};
+  dgerm_naive_bases = {2, 3, 1, 0};
+  dgerm_germ_inds = {1, 2, 3, 4};
+  dgerm_site_inds = {6, 7, 6, 7};
+  dj_junction_state_strs =
+      {"IGHD_ex*01:3", "IGHD_ex*01:4", "IGHD_ex*99:5", "IGHD_ex*99:6",
+       "IGHJ_ex*01:N_A", "IGHJ_ex*01:N_C", "IGHJ_ex*01:N_G", "IGHJ_ex*01:N_T",
+       "IGHJ_ex*99:N_A", "IGHJ_ex*99:N_C", "IGHJ_ex*99:N_G", "IGHJ_ex*99:N_T",
+       "IGHJ_ex*99:1", "IGHJ_ex*99:2"};
+  dj_junction_ggene_ranges = {{"IGHD_ex*01", {0, 2}}, {"IGHD_ex*99", {2, 4}},
+                              {"IGHJ_ex*01", {4, 8}}, {"IGHJ_ex*99", {8, 14}}};
+  dj_junction_naive_bases = {0, 1, 0, 1, 0, 1, 2, 3, 0, 1, 2, 3, 3, 2};
+  dj_junction_germ_inds = {3, 4, 5, 6, -1, -1, -1, -1, -1, -1, -1, -1, 1, 2};
+  dj_junction_site_inds = {8, 9, 8, 9, -1, -1, -1, -1, -1, -1, -1, -1, 8, 9};
+  jgerm_state_strs = {"IGHJ_ex*01", "IGHJ_ex*99"};
+  jgerm_ggene_ranges = {{"IGHJ_ex*01", {0, 5}}, {"IGHJ_ex*99", {5, 10}}};
+  jgerm_naive_bases = {0, 3, 2, 1, 2, 1, 0, 3, 1, 2};
+  jgerm_germ_inds = {0, 1, 2, 3, 4, 3, 4, 5, 6, 7};
+  jgerm_site_inds = {10, 11, 12, 13, 14, 10, 11, 12, 13, 14};
+  jpadding_ggene_ranges = {{"IGHJ_ex*01", {0, 0}}, {"IGHJ_ex*99", {0, 0}}};
+  jpadding_naive_bases = {};
+  jpadding_site_inds = {};
+  vpadding_transition.resize(2);
+  vpadding_transition << 0.34*0.66, 0.34*0.66;
+  vgerm_vd_junction_transition.resize(2, 15);
+  vgerm_vd_junction_transition <<
+  0.2*0.035*0.1, 0.2*0.035*0.2, 0.2*0.035*0.1, 0.2*0.035*0.05, 0, 0.2*0.086*0.1, 0.2*0.086*0.2, 0.2*0.086*0.1, 0.2*0.086*0.1, 0.2*0.086*0.15, 0, 0.8, 0, 0, 0,
+              0,             0,             0,              0, 0,             0,             0,             0,             0,              0, 0,   0, 0, 1, 0;
+  vd_junction_transition.resize(15, 15);
+  vd_junction_transition <<
+           0.075,          0.175,           0.05,           0.025,          0.45,              0,              0,              0,              0,    0,               0, 0,   0, 0, 0,
+           0.075,          0.175,           0.05,           0.025,          0.45,              0,              0,              0,              0,    0,               0, 0,   0, 0, 0,
+           0.075,          0.175,           0.05,           0.025,          0.45,              0,              0,              0,              0,    0,               0, 0,   0, 0, 0,
+           0.075,          0.175,           0.05,           0.025,          0.45,              0,              0,              0,              0,    0,               0, 0,   0, 0, 0,
+               0,              0,              0,               0,             0,              0,              0,              0,              0,    0,               0, 0,   0, 0, 0,
+               0,              0,              0,               0,             0,           0.16,           0.08,           0.08,           0.08, 0.15,            0.05, 0,   0, 0, 0,
+               0,              0,              0,               0,             0,           0.16,           0.08,           0.08,           0.08, 0.15,            0.05, 0,   0, 0, 0,
+               0,              0,              0,               0,             0,           0.16,           0.08,           0.08,           0.08, 0.15,            0.05, 0,   0, 0, 0,
+               0,              0,              0,               0,             0,           0.16,           0.08,           0.08,           0.08, 0.15,            0.05, 0,   0, 0, 0,
+               0,              0,              0,               0,             0,              0,              0,              0,              0,    0,            0.95, 0,   0, 0, 0,
+               0,              0,              0,               0,             0,              0,              0,              0,              0,    0,               0, 0,   0, 0, 0,
+   0.5*0.035*0.1,  0.5*0.035*0.2,  0.5*0.035*0.1,  0.5*0.035*0.05, 0.5*0.035*0.4,  0.5*0.086*0.1,  0.5*0.086*0.2,  0.5*0.086*0.1,  0.5*0.086*0.1,    0, 0.5*0.086*0.025, 0, 0.5, 0, 0,
+     1*0.035*0.1,    1*0.035*0.2,    1*0.035*0.1,    1*0.035*0.05,             0,    1*0.086*0.1,    1*0.086*0.2,    1*0.086*0.1,    1*0.086*0.1,    0,               0, 0,   0, 0, 0,
+               0,              0,              0,               0,             0,              0,              0,              0,              0,    0,               0, 0,   0, 0, 1,
+  0.25*0.035*0.1, 0.25*0.035*0.2, 0.25*0.035*0.1, 0.25*0.035*0.05,             0, 0.25*0.086*0.1, 0.25*0.086*0.2, 0.25*0.086*0.1, 0.25*0.086*0.1,    0,               0, 0,   0, 0, 0;
+  vd_junction_dgerm_transition.resize(15, 2);
+  vd_junction_dgerm_transition <<
+           0.125*0.95,                    0,
+           0.125*0.95,                    0,
+           0.125*0.95,                    0,
+           0.125*0.95,                    0,
+            0.98*0.95,                    0,
+                    0,             0.05*0.5,
+                    0,             0.05*0.5,
+                    0,             0.05*0.5,
+                    0,             0.05*0.5,
+                    0,                    0,
+                    0,              0.6*0.5,
+                    0,                    0,
+     1*0.035*0.1*0.95,    1*0.086*0.025*0.5,
+                    0,                    0,
+  0.25*0.035*0.1*0.95, 0.25*0.086*0.025*0.5;
+  dgerm_dj_junction_transition.resize(2, 14);
+  dgerm_dj_junction_transition <<
+  0.6, 0,    0, 0,  0.4*0.015*0.1,  0.4*0.015*0.2,  0.4*0.015*0.2,  0.4*0.015*0.2,  0.4*0.155*0.1,  0.4*0.155*0.2,  0.4*0.155*0.2,  0.4*0.155*0.2,  0.4*0.155*0.05, 0,
+    0, 0, 0.35, 0, 0.65*0.015*0.1, 0.65*0.015*0.2, 0.65*0.015*0.2, 0.65*0.015*0.2, 0.65*0.155*0.1, 0.65*0.155*0.2, 0.65*0.155*0.2, 0.65*0.155*0.2, 0.65*0.155*0.05, 0;
+  dj_junction_transition.resize(14, 14);
+  dj_junction_transition <<
+  0, 0.35, 0,   0, 0.65*0.015*0.1, 0.65*0.015*0.2, 0.65*0.015*0.2, 0.65*0.015*0.2, 0.65*0.155*0.1, 0.65*0.155*0.2, 0.65*0.155*0.2, 0.65*0.155*0.2,    0, 0,
+  0,    0, 0,   0,    1*0.015*0.1,    1*0.015*0.2,    1*0.015*0.2,    1*0.015*0.2,    1*0.155*0.1,    1*0.155*0.2,    1*0.155*0.2,    1*0.155*0.2,    0, 0,
+  0,    0, 0, 0.2,  0.8*0.015*0.1,  0.8*0.015*0.2,  0.8*0.015*0.2,  0.8*0.015*0.2,  0.8*0.155*0.1,  0.8*0.155*0.2,  0.8*0.155*0.2,  0.8*0.155*0.2,    0, 0,
+  0,    0, 0,   0,    1*0.015*0.1,    1*0.015*0.2,    1*0.015*0.2,    1*0.015*0.2,    1*0.155*0.1,    1*0.155*0.2,    1*0.155*0.2,    1*0.155*0.2,    0, 0,
+  0,    0, 0,   0,           0.05,           0.15,          0.075,          0.075,              0,              0,              0,              0,    0, 0,
+  0,    0, 0,   0,           0.05,           0.15,          0.075,          0.075,              0,              0,              0,              0,    0, 0,
+  0,    0, 0,   0,           0.05,           0.15,          0.075,          0.075,              0,              0,              0,              0,    0, 0,
+  0,    0, 0,   0,           0.05,           0.15,          0.075,          0.075,              0,              0,              0,              0,    0, 0,
+  0,    0, 0,   0,              0,              0,              0,              0,           0.05,           0.15,          0.075,          0.075, 0.25, 0,
+  0,    0, 0,   0,              0,              0,              0,              0,           0.05,           0.15,          0.075,          0.075, 0.25, 0,
+  0,    0, 0,   0,              0,              0,              0,              0,           0.05,           0.15,          0.075,          0.075, 0.25, 0,
+  0,    0, 0,   0,              0,              0,              0,              0,           0.05,           0.15,          0.075,          0.075, 0.25, 0,
+  0,    0, 0,   0,              0,              0,              0,              0,              0,              0,              0,              0,    0, 1,
+  0,    0, 0,   0,              0,              0,              0,              0,              0,              0,              0,              0,    0, 0;
+  dj_junction_jgerm_transition.resize(14, 2);
+  dj_junction_jgerm_transition <<
+                 0, 0,
+  1*0.015*0.25*1*1, 0,
+                 0, 0,
+  1*0.015*0.25*1*1, 0,
+               0.4, 0,
+               0.4, 0,
+               0.4, 0,
+               0.4, 0,
+                 0, 0,
+                 0, 0,
+                 0, 0,
+                 0, 0,
+                 0, 0,
+                 0, 1;
+  jpadding_transition.resize(2);
+  jpadding_transition << 0.04, 0.04;
+  vgerm_init_scaler_count = 0;
+  vgerm_scaler_count = 0;
+  vd_junction_scaler_counts = {0, 0};
+  dgerm_init_scaler_count = 0;
+  dgerm_scaler_count = 0;
+  dj_junction_scaler_counts = {0, 0};
+  jgerm_init_scaler_count = 0;
+  jgerm_scaler_count = 0;
+
+  REQUIRE(phylo_hmm_ptr->flexbounds() == flexbounds);
+  REQUIRE(phylo_hmm_ptr->relpos() == relpos);
+  REQUIRE(phylo_hmm_ptr->alphabet() == alphabet);
+  REQUIRE(phylo_hmm_ptr->vpadding_ggene_ranges() == vpadding_ggene_ranges);
+  REQUIRE(phylo_hmm_ptr->vpadding_naive_bases() == vpadding_naive_bases);
+  REQUIRE(phylo_hmm_ptr->vpadding_site_inds() == vpadding_site_inds);
+  REQUIRE(phylo_hmm_ptr->vgerm_state_strs() == vgerm_state_strs);
+  REQUIRE(phylo_hmm_ptr->vgerm_ggene_ranges() == vgerm_ggene_ranges);
+  REQUIRE(phylo_hmm_ptr->vgerm_naive_bases() == vgerm_naive_bases);
+  REQUIRE(phylo_hmm_ptr->vgerm_germ_inds() == vgerm_germ_inds);
+  REQUIRE(phylo_hmm_ptr->vgerm_site_inds() == vgerm_site_inds);
+  REQUIRE(phylo_hmm_ptr->vd_junction_state_strs() == vd_junction_state_strs);
+  REQUIRE(phylo_hmm_ptr->vd_junction_ggene_ranges() == vd_junction_ggene_ranges);
+  REQUIRE(phylo_hmm_ptr->vd_junction_naive_bases() == vd_junction_naive_bases);
+  REQUIRE(phylo_hmm_ptr->vd_junction_germ_inds() == vd_junction_germ_inds);
+  REQUIRE(phylo_hmm_ptr->vd_junction_site_inds() == vd_junction_site_inds);
+  REQUIRE(phylo_hmm_ptr->dgerm_state_strs() == dgerm_state_strs);
+  REQUIRE(phylo_hmm_ptr->dgerm_ggene_ranges() == dgerm_ggene_ranges);
+  REQUIRE(phylo_hmm_ptr->dgerm_naive_bases() == dgerm_naive_bases);
+  REQUIRE(phylo_hmm_ptr->dgerm_germ_inds() == dgerm_germ_inds);
+  REQUIRE(phylo_hmm_ptr->dgerm_site_inds() == dgerm_site_inds);
+  REQUIRE(phylo_hmm_ptr->dj_junction_state_strs() == dj_junction_state_strs);
+  REQUIRE(phylo_hmm_ptr->dj_junction_ggene_ranges() == dj_junction_ggene_ranges);
+  REQUIRE(phylo_hmm_ptr->dj_junction_naive_bases() == dj_junction_naive_bases);
+  REQUIRE(phylo_hmm_ptr->dj_junction_germ_inds() == dj_junction_germ_inds);
+  REQUIRE(phylo_hmm_ptr->dj_junction_site_inds() == dj_junction_site_inds);
+  REQUIRE(phylo_hmm_ptr->jgerm_state_strs() == jgerm_state_strs);
+  REQUIRE(phylo_hmm_ptr->jgerm_ggene_ranges() == jgerm_ggene_ranges);
+  REQUIRE(phylo_hmm_ptr->jgerm_naive_bases() == jgerm_naive_bases);
+  REQUIRE(phylo_hmm_ptr->jgerm_germ_inds() == jgerm_germ_inds);
+  REQUIRE(phylo_hmm_ptr->jgerm_site_inds() == jgerm_site_inds);
+  REQUIRE(phylo_hmm_ptr->jpadding_ggene_ranges() == jpadding_ggene_ranges);
+  REQUIRE(phylo_hmm_ptr->jpadding_naive_bases() == jpadding_naive_bases);
+  REQUIRE(phylo_hmm_ptr->jpadding_site_inds() == jpadding_site_inds);
+  REQUIRE(phylo_hmm_ptr->vpadding_transition().isApprox(vpadding_transition));
+  REQUIRE(phylo_hmm_ptr->vgerm_vd_junction_transition() == vgerm_vd_junction_transition);
+  REQUIRE(phylo_hmm_ptr->vd_junction_transition() == vd_junction_transition);
+  REQUIRE(phylo_hmm_ptr->vd_junction_dgerm_transition() == vd_junction_dgerm_transition);
+  REQUIRE(phylo_hmm_ptr->dgerm_dj_junction_transition() == dgerm_dj_junction_transition);
+  REQUIRE(phylo_hmm_ptr->dj_junction_transition() == dj_junction_transition);
+  REQUIRE(phylo_hmm_ptr->dj_junction_jgerm_transition() == dj_junction_jgerm_transition);
+  REQUIRE(phylo_hmm_ptr->jpadding_transition().isApprox(jpadding_transition));
+
+  xmsa.resize(4, 34);
+  xmsa <<
+  3, 0, 0, 0, 0, 0, 0, 2, 0, 2, 0, 2, 0, 2, 0, 3, 0, 3, 1, 0, 0, 1, 1, 0, 1, 0, 0, 3, 3, 4, 4, 0, 3, 3,
+  1, 0, 1, 0, 0, 1, 1, 2, 1, 2, 1, 2, 1, 2, 3, 3, 3, 3, 1, 2, 2, 1, 1, 2, 1, 2, 0, 2, 3, 4, 4, 0, 2, 3,
+  4, 0, 3, 2, 1, 0, 0, 0, 1, 1, 2, 2, 3, 3, 2, 3, 1, 0, 0, 1, 0, 1, 2, 2, 3, 3, 0, 3, 2, 1, 2, 1, 0, 3,
+  1, 2, 3, 0, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 0, 2, 0, 2, 2, 0, 0, 2, 2, 0, 2, 0, 1, 3, 1, 4, 4, 1, 3, 1;
+  xmsa_seqs = {"TAAAAAAGAGAGAGATATCAACCACAATTNNATT", "CACAACCGCGCGCGTTTTCGGCCGCGAGTNNAGT",
+               "NATGCAAACCGGTTGTCAACACGGTTATGCGCAT", "CGTAGTGTGTGTGTAGAGGAAGGAGACTCNNCTC"};
+  xmsa_emission.resize(34);
+  xmsa_emission << 0.00734474, 0.0233122, 0.00563729, 0.0107866, 0.0067714,
+                   0.00534673, 0.00342739, 0.0177109, 0.00270654, 0.0177109,
+                   0.00437549, 0.0446185, 0.00225322, 0.0406717, 0.00399037,
+                   0.0400067, 0.00399037, 0.0215197, 0.00783313, 0.00255793,
+                   0.0179374, 0.0245508, 0.0245343, 0.00286619, 0.00783313,
+                   0.00255793, 0.0177172, 0.0322063, 0.016355, 1, 1, 0.019866,
+                   0.0118535, 0.0304051;
+  vpadding_xmsa_inds.resize(2);
+  vpadding_xmsa_inds << 0, 0;
+  vgerm_xmsa_inds.resize(6);
+  vgerm_xmsa_inds << 1, 2, 3, 4, 5, 3;
+  vd_junction_xmsa_inds.resize(2, 15);
+  vd_junction_xmsa_inds <<
+  6, 8, 10, 12, -1, 6, 8, 10, 12, 10, -1,  6, -1, 10, -1,
+  7, 9, 11, 13, 11, 7, 9, 11, 13, -1, 13, -1,  9, -1,  7;
+  dgerm_xmsa_inds.resize(4);
+  dgerm_xmsa_inds << 14, 15, 16, 17;
+  dj_junction_xmsa_inds.resize(2, 14);
+  dj_junction_xmsa_inds <<
+  18, -1, 18, -1, 18, 21, 22, 24, 18, 21, 22, 24, 24, -1,
+  -1, 19, -1, 19, 20, 19, 23, 25, 20, 19, 23, 25, -1, 23;
+  jgerm_xmsa_inds.resize(10);
+  jgerm_xmsa_inds << 26, 27, 28, 29, 30, 31, 32, 33, 29, 30;
+  jpadding_xmsa_inds.resize(0);
+
+  REQUIRE(phylo_hmm_ptr->xmsa() == xmsa);
+  REQUIRE(phylo_hmm_ptr->xmsa_seqs() == xmsa_seqs);
+  REQUIRE(phylo_hmm_ptr->xmsa_emission().isApprox(xmsa_emission, 1e-5));
+  REQUIRE(phylo_hmm_ptr->vpadding_xmsa_inds() == vpadding_xmsa_inds);
+  REQUIRE(phylo_hmm_ptr->vgerm_xmsa_inds() == vgerm_xmsa_inds);
+  REQUIRE(phylo_hmm_ptr->vd_junction_xmsa_inds() == vd_junction_xmsa_inds);
+  REQUIRE(phylo_hmm_ptr->dgerm_xmsa_inds() == dgerm_xmsa_inds);
+  REQUIRE(phylo_hmm_ptr->dj_junction_xmsa_inds() == dj_junction_xmsa_inds);
+  REQUIRE(phylo_hmm_ptr->jgerm_xmsa_inds() == jgerm_xmsa_inds);
+  REQUIRE(phylo_hmm_ptr->jpadding_xmsa_inds() == jpadding_xmsa_inds);
+
+  REQUIRE(phylo_hmm_ptr->LogLikelihood() == Approx(-75.1122515055));
+  REQUIRE(phylo_hmm_ptr->vgerm_init_scaler_count() == vgerm_init_scaler_count);
+  REQUIRE(phylo_hmm_ptr->vgerm_scaler_count() == vgerm_scaler_count);
+  REQUIRE(phylo_hmm_ptr->vd_junction_scaler_counts() == vd_junction_scaler_counts);
+  REQUIRE(phylo_hmm_ptr->dgerm_init_scaler_count() == dgerm_init_scaler_count);
+  REQUIRE(phylo_hmm_ptr->dgerm_scaler_count() == dgerm_scaler_count);
+  REQUIRE(phylo_hmm_ptr->dj_junction_scaler_counts() == dj_junction_scaler_counts);
+  REQUIRE(phylo_hmm_ptr->jgerm_init_scaler_count() == jgerm_init_scaler_count);
+  REQUIRE(phylo_hmm_ptr->jgerm_scaler_count() == jgerm_scaler_count);
 
   // Test the phylogenetic likelihood calculation using the R package "phylomd".
   // For more details, see https://github.com/dunleavy005/phylomd.
-  yaml_path = "data/PhyloData_ex/phylolikelihood_hmm_input.yaml";
-  hmm_param_dir = "data/PhyloData_ex/phylolikelihood_hmm_params";
-  PhyloDataPtr phylo_likelihood_ptr =
-      ReadPhyloData(yaml_path, 0, hmm_param_dir, trees_path, fasta_path, ctmc_params_path, 1);
+  yaml_path = "data/phylolikelihood_hmm_input.yaml";
+  hmm_param_dir = "data/phylolikelihood_hmm_params";
+  phylo_hmm_ptr = std::make_shared<PhyloHMM>(
+      yaml_path, 0, hmm_param_dir, trees_path, fasta_path, ctmc_params_path, 1);
 
   // library(ape)
   // library(phylomd)
@@ -1221,7 +1143,7 @@ TEST_CASE("PhyloData", "[phylodata]") {
   // tree = read.tree("newton.tre")
   // tree = root(tree, outgroup=1, resolve.root=T)
   // msa = toupper(read.dna("newton.fasta", format="fasta", as.character=T))
-  // xmsa.naive.seq = c("A", "T", "G", "A", "C", "G", "G", "T", "A", "C", "A", "T", "G")
+  // xmsa.naive.seq = c("A", "T", "G", "A", "C", "G", "G", "T", "A", "C", "A", "T", "G", "C", "G")
   // msa["naive",] = xmsa.naive.seq
   // subst.mod = GTR(1, 1, 1, 1, 1, 1, c(0.17, 0.19, 0.25, 0.39), scale=T)
   //
@@ -1235,561 +1157,8 @@ TEST_CASE("PhyloData", "[phylodata]") {
   // log(prod(likelihoods / naive.probs))
   // # -55.73483
 
-  REQUIRE(phylo_likelihood_ptr->MarginalLogLikelihood() == Approx(-55.73483));
+  REQUIRE(phylo_hmm_ptr->LogLikelihood() == Approx(-55.73483));
 }
 
 
-// NewPhyloData tests
-
-TEST_CASE("NewPhyloData", "[newphylodata]") {
-  // Test the NewPhyloData class using the example files.
-  std::string yaml_path = "data/SimpleData_ex/hmm_input.yaml";
-  std::string hmm_param_dir = "data/SimpleData_ex/hmm_params";
-  std::string trees_path = "data/PhyloData_ex/newton.tre";
-  std::string fasta_path = "data/PhyloData_ex/newton.fasta";
-  std::string ctmc_params_path = "data/PhyloData_ex/RAxML_info.newton";
-  NewPhyloDataPtr new_phylo_data_ptr = std::make_shared<NewPhyloData>(
-      yaml_path, 0, hmm_param_dir, trees_path, fasta_path, ctmc_params_path);
-
-  // For a diagram of the S-W alignment, see
-  // https://github.com/matsengrp/linearham/issues/44#issue-336348821.
-
-  std::map<std::string, std::pair<int, int>> VDJ_flexbounds = {
-      {"v_l", {0, 2}},  {"v_r", {4, 6}},   {"d_l", {7, 8}},
-      {"d_r", {9, 10}}, {"j_l", {11, 12}}, {"j_r", {15, 15}}};
-  std::map<std::string, int> VDJ_relpos = {
-      {"IGHV_ex*01", 1}, {"IGHD_ex*01", 5}, {"IGHJ_ex*01", 10}};
-  std::string VDJ_alphabet = "ACGTN";
-  std::map<std::string, std::pair<int, int>> VDJ_vpadding_ggene_ranges =
-      {{"IGHV_ex*01", {0, 1}}};
-  std::vector<int> VDJ_vpadding_naive_bases = {4};
-  std::vector<int> VDJ_vpadding_site_inds = {0};
-  std::vector<std::string> VDJ_vgerm_state_strs = {"IGHV_ex*01"};
-  std::map<std::string, std::pair<int, int>> VDJ_vgerm_ggene_ranges =
-      {{"IGHV_ex*01", {0, 3}}};
-  std::vector<int> VDJ_vgerm_naive_bases = {0, 3, 2};
-  std::vector<int> VDJ_vgerm_germ_inds = {0, 1, 2};
-  std::vector<int> VDJ_vgerm_site_inds = {1, 2, 3};
-  std::vector<std::string> VDJ_vd_junction_state_strs =
-      {"IGHD_ex*01:N_A", "IGHD_ex*01:N_C", "IGHD_ex*01:N_G", "IGHD_ex*01:N_T",
-       "IGHD_ex*01:0", "IGHD_ex*01:1", "IGHD_ex*01:2", "IGHV_ex*01:3", "IGHV_ex*01:4"};
-  std::map<std::string, std::pair<int, int>> VDJ_vd_junction_ggene_ranges =
-      {{"IGHD_ex*01", {0, 7}}, {"IGHV_ex*01", {7, 9}}};
-  std::vector<int> VDJ_vd_junction_naive_bases = {0, 1, 2, 3, 2, 2, 3, 0, 1};
-  std::vector<int> VDJ_vd_junction_germ_inds = {-1, -1, -1, -1, 0, 1, 2, 3, 4};
-  std::vector<int> VDJ_vd_junction_site_inds = {-1, -1, -1, -1, 5, 6, 7, 4, 5};
-  std::vector<std::string> VDJ_dgerm_state_strs = {"IGHD_ex*01"};
-  std::map<std::string, std::pair<int, int>> VDJ_dgerm_ggene_ranges =
-      {{"IGHD_ex*01", {0, 1}}};
-  std::vector<int> VDJ_dgerm_naive_bases = {0};
-  std::vector<int> VDJ_dgerm_germ_inds = {3};
-  std::vector<int> VDJ_dgerm_site_inds = {8};
-  std::vector<std::string> VDJ_dj_junction_state_strs =
-      {"IGHD_ex*01:4", "IGHJ_ex*01:N_A", "IGHJ_ex*01:N_C", "IGHJ_ex*01:N_G",
-       "IGHJ_ex*01:N_T", "IGHJ_ex*01:0", "IGHJ_ex*01:1"};
-  std::map<std::string, std::pair<int, int>> VDJ_dj_junction_ggene_ranges =
-      {{"IGHD_ex*01", {0, 1}}, {"IGHJ_ex*01", {1, 7}}};
-  std::vector<int> VDJ_dj_junction_naive_bases = {1, 0, 1, 2, 3, 0, 3};
-  std::vector<int> VDJ_dj_junction_germ_inds = {4, -1, -1, -1, -1, 0, 1};
-  std::vector<int> VDJ_dj_junction_site_inds = {9, -1, -1, -1, -1, 10, 11};
-  std::vector<std::string> VDJ_jgerm_state_strs = {"IGHJ_ex*01"};
-  std::map<std::string, std::pair<int, int>> VDJ_jgerm_ggene_ranges =
-      {{"IGHJ_ex*01", {0, 3}}};
-  std::vector<int> VDJ_jgerm_naive_bases = {2, 1, 2};
-  std::vector<int> VDJ_jgerm_germ_inds = {2, 3, 4};
-  std::vector<int> VDJ_jgerm_site_inds = {12, 13, 14};
-  std::map<std::string, std::pair<int, int>> VDJ_jpadding_ggene_ranges =
-      {{"IGHJ_ex*01", {0, 0}}};
-  std::vector<int> VDJ_jpadding_naive_bases = {};
-  std::vector<int> VDJ_jpadding_site_inds = {};
-  Eigen::RowVectorXd VDJ_vpadding_transition(1);
-  VDJ_vpadding_transition << 0.34*0.66;
-  Eigen::MatrixXd VDJ_vgerm_vd_junction_transition(1, 9);
-  VDJ_vgerm_vd_junction_transition <<
-  0.035*0.2*0.1, 0.035*0.2*0.2, 0.035*0.2*0.1, 0.035*0.2*0.05, 0, 0, 0, 0.8, 0;
-  Eigen::MatrixXd VDJ_vd_junction_transition(9, 9);
-  VDJ_vd_junction_transition <<
-          0.075,         0.175,          0.05,          0.025,          0.45,       0.125,  0.1, 0,   0,
-          0.075,         0.175,          0.05,          0.025,          0.45,       0.125,  0.1, 0,   0,
-          0.075,         0.175,          0.05,          0.025,          0.45,       0.125,  0.1, 0,   0,
-          0.075,         0.175,          0.05,          0.025,          0.45,       0.125,  0.1, 0,   0,
-              0,             0,             0,              0,             0,        0.98,    0, 0,   0,
-              0,             0,             0,              0,             0,           0, 0.95, 0,   0,
-              0,             0,             0,              0,             0,           0,    0, 0,   0,
-  0.035*0.5*0.1, 0.035*0.5*0.2, 0.035*0.5*0.1, 0.035*0.5*0.05, 0.035*0.5*0.4,           0,    0, 0, 0.5,
-    0.035*1*0.1,   0.035*1*0.2,   0.035*1*0.1,   0.035*1*0.05,             0, 0.035*1*0.1,    0, 0,   0;
-  Eigen::MatrixXd VDJ_vd_junction_dgerm_transition(9, 1);
-  VDJ_vd_junction_dgerm_transition <<
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-  0.6,
-    0,
-    0;
-  Eigen::MatrixXd VDJ_dgerm_dj_junction_transition(1, 7);
-  VDJ_dgerm_dj_junction_transition <<
-  0.35, 0.015*0.65*0.1, 0.015*0.65*0.2, 0.015*0.65*0.2, 0.015*0.65*0.2, 0, 0;
-  Eigen::MatrixXd VDJ_dj_junction_transition(7, 7);
-  VDJ_dj_junction_transition <<
-  0, 0.015*1*0.1, 0.015*1*0.2, 0.015*1*0.2, 0.015*1*0.2, 0.015*1*0.25,    0,
-  0,        0.05,        0.15,       0.075,       0.075,          0.4, 0.25,
-  0,        0.05,        0.15,       0.075,       0.075,          0.4, 0.25,
-  0,        0.05,        0.15,       0.075,       0.075,          0.4, 0.25,
-  0,        0.05,        0.15,       0.075,       0.075,          0.4, 0.25,
-  0,           0,           0,           0,           0,            0,    1,
-  0,           0,           0,           0,           0,            0,    0;
-  Eigen::MatrixXd VDJ_dj_junction_jgerm_transition(7, 1);
-  VDJ_dj_junction_jgerm_transition <<
-  0,
-  0,
-  0,
-  0,
-  0,
-  0,
-  1;
-  Eigen::RowVectorXd VDJ_jpadding_transition(1);
-  VDJ_jpadding_transition << 0.04;
-  int VDJ_vgerm_init_scaler_count = 0;
-  int VDJ_vgerm_scaler_count = 0;
-  std::vector<int> VDJ_vd_junction_scaler_counts = {0, 0, 0, 0};
-  int VDJ_dgerm_init_scaler_count = 0;
-  int VDJ_dgerm_scaler_count = 0;
-  std::vector<int> VDJ_dj_junction_scaler_counts = {0, 0, 0};
-  int VDJ_jgerm_init_scaler_count = 0;
-  int VDJ_jgerm_scaler_count = 0;
-
-  REQUIRE(new_phylo_data_ptr->flexbounds() == VDJ_flexbounds);
-  REQUIRE(new_phylo_data_ptr->relpos() == VDJ_relpos);
-  REQUIRE(new_phylo_data_ptr->alphabet() == VDJ_alphabet);
-  REQUIRE(new_phylo_data_ptr->vpadding_ggene_ranges() == VDJ_vpadding_ggene_ranges);
-  REQUIRE(new_phylo_data_ptr->vpadding_naive_bases() == VDJ_vpadding_naive_bases);
-  REQUIRE(new_phylo_data_ptr->vpadding_site_inds() == VDJ_vpadding_site_inds);
-  REQUIRE(new_phylo_data_ptr->vgerm_state_strs() == VDJ_vgerm_state_strs);
-  REQUIRE(new_phylo_data_ptr->vgerm_ggene_ranges() == VDJ_vgerm_ggene_ranges);
-  REQUIRE(new_phylo_data_ptr->vgerm_naive_bases() == VDJ_vgerm_naive_bases);
-  REQUIRE(new_phylo_data_ptr->vgerm_germ_inds() == VDJ_vgerm_germ_inds);
-  REQUIRE(new_phylo_data_ptr->vgerm_site_inds() == VDJ_vgerm_site_inds);
-  REQUIRE(new_phylo_data_ptr->vd_junction_state_strs() == VDJ_vd_junction_state_strs);
-  REQUIRE(new_phylo_data_ptr->vd_junction_ggene_ranges() == VDJ_vd_junction_ggene_ranges);
-  REQUIRE(new_phylo_data_ptr->vd_junction_naive_bases() == VDJ_vd_junction_naive_bases);
-  REQUIRE(new_phylo_data_ptr->vd_junction_germ_inds() == VDJ_vd_junction_germ_inds);
-  REQUIRE(new_phylo_data_ptr->vd_junction_site_inds() == VDJ_vd_junction_site_inds);
-  REQUIRE(new_phylo_data_ptr->dgerm_state_strs() == VDJ_dgerm_state_strs);
-  REQUIRE(new_phylo_data_ptr->dgerm_ggene_ranges() == VDJ_dgerm_ggene_ranges);
-  REQUIRE(new_phylo_data_ptr->dgerm_naive_bases() == VDJ_dgerm_naive_bases);
-  REQUIRE(new_phylo_data_ptr->dgerm_germ_inds() == VDJ_dgerm_germ_inds);
-  REQUIRE(new_phylo_data_ptr->dgerm_site_inds() == VDJ_dgerm_site_inds);
-  REQUIRE(new_phylo_data_ptr->dj_junction_state_strs() == VDJ_dj_junction_state_strs);
-  REQUIRE(new_phylo_data_ptr->dj_junction_ggene_ranges() == VDJ_dj_junction_ggene_ranges);
-  REQUIRE(new_phylo_data_ptr->dj_junction_naive_bases() == VDJ_dj_junction_naive_bases);
-  REQUIRE(new_phylo_data_ptr->dj_junction_germ_inds() == VDJ_dj_junction_germ_inds);
-  REQUIRE(new_phylo_data_ptr->dj_junction_site_inds() == VDJ_dj_junction_site_inds);
-  REQUIRE(new_phylo_data_ptr->jgerm_state_strs() == VDJ_jgerm_state_strs);
-  REQUIRE(new_phylo_data_ptr->jgerm_ggene_ranges() == VDJ_jgerm_ggene_ranges);
-  REQUIRE(new_phylo_data_ptr->jgerm_naive_bases() == VDJ_jgerm_naive_bases);
-  REQUIRE(new_phylo_data_ptr->jgerm_germ_inds() == VDJ_jgerm_germ_inds);
-  REQUIRE(new_phylo_data_ptr->jgerm_site_inds() == VDJ_jgerm_site_inds);
-  REQUIRE(new_phylo_data_ptr->jpadding_ggene_ranges() == VDJ_jpadding_ggene_ranges);
-  REQUIRE(new_phylo_data_ptr->jpadding_naive_bases() == VDJ_jpadding_naive_bases);
-  REQUIRE(new_phylo_data_ptr->jpadding_site_inds() == VDJ_jpadding_site_inds);
-  REQUIRE(new_phylo_data_ptr->vpadding_transition().isApprox(VDJ_vpadding_transition));
-  REQUIRE(new_phylo_data_ptr->vgerm_vd_junction_transition() == VDJ_vgerm_vd_junction_transition);
-  REQUIRE(new_phylo_data_ptr->vd_junction_transition() == VDJ_vd_junction_transition);
-  REQUIRE(new_phylo_data_ptr->vd_junction_dgerm_transition() == VDJ_vd_junction_dgerm_transition);
-  REQUIRE(new_phylo_data_ptr->dgerm_dj_junction_transition() == VDJ_dgerm_dj_junction_transition);
-  REQUIRE(new_phylo_data_ptr->dj_junction_transition() == VDJ_dj_junction_transition);
-  REQUIRE(new_phylo_data_ptr->dj_junction_jgerm_transition() == VDJ_dj_junction_jgerm_transition);
-  REQUIRE(new_phylo_data_ptr->jpadding_transition().isApprox(VDJ_jpadding_transition));
-
-  Eigen::MatrixXi VDJ_msa(3,15);
-  VDJ_msa <<
-  3, 0, 0, 0, 0, 2, 0, 3, 1, 0, 0, 3, 3, 4, 4,
-  1, 0, 1, 0, 1, 2, 3, 3, 1, 2, 0, 2, 3, 4, 4,
-  1, 2, 3, 0, 2, 3, 0, 2, 2, 0, 1, 3, 1, 4, 4;
-  Eigen::MatrixXi VDJ_xmsa(4, 36);
-  VDJ_xmsa <<
-  3, 0, 0, 0, 0, 2, 0, 3, 0, 2, 0, 3, 0, 2, 0, 3, 0, 2, 0, 3, 1, 0, 0, 0, 3, 0, 3, 0, 0, 3, 0, 0, 3, 3, 4, 4,
-  1, 0, 1, 0, 1, 2, 3, 3, 1, 2, 3, 3, 1, 2, 3, 3, 1, 2, 3, 3, 1, 2, 2, 0, 2, 0, 2, 2, 0, 2, 2, 0, 2, 3, 4, 4,
-  4, 0, 3, 2, 0, 0, 0, 0, 1, 1, 1, 1, 2, 2, 2, 2, 3, 3, 3, 3, 0, 1, 0, 0, 0, 1, 1, 2, 2, 2, 3, 3, 3, 2, 1, 2,
-  1, 2, 3, 0, 2, 3, 0, 2, 2, 3, 0, 2, 2, 3, 0, 2, 2, 3, 0, 2, 2, 0, 0, 1, 3, 1, 3, 0, 1, 3, 0, 1, 3, 1, 4, 4;
-  std::vector<std::string> VDJ_xmsa_labels = {"0", "1", "naive", "3"};
-  std::vector<std::string> VDJ_xmsa_seqs = {
-      "TAAAAGATAGATAGATAGATCAAATATAATAATTNN", "CACACGTTCGTTCGTTCGTTCGGAGAGGAGGAGTNN",
-      "NATGAAAACCCCGGGGTTTTACAAACCGGGTTTGCG", "CGTAGTAGGTAGGTAGGTAGGAACTCTACTACTCNN"};
-  int VDJ_xmsa_naive_ind = std::find(VDJ_xmsa_labels.begin(),
-                                     VDJ_xmsa_labels.end(), "naive")
-                           - VDJ_xmsa_labels.begin();
-  Eigen::VectorXd VDJ_xmsa_emission(36);
-  VDJ_xmsa_emission << 0.00734474, 0.0233122, 0.00563729, 0.0107866, 0.00342739,
-                       0.0177109, 0.0279823, 0.0215197, 0.00270654, 0.0177109,
-                       0.00399037, 0.0215197, 0.00437549, 0.0446185, 0.00399037,
-                       0.0609261, 0.00225322, 0.0406717, 0.00429863, 0.0400067,
-                       0.00783313, 0.00255793, 0.0179374, 0.0177172, 0.0118535,
-                       0.019866, 0.0118535, 0.00286619, 0.00514627, 0.0134759,
-                       0.00255793, 0.00514627, 0.0322063,  0.016355, 1, 1;
-  Eigen::VectorXi VDJ_vpadding_xmsa_inds(1);
-  VDJ_vpadding_xmsa_inds << 0;
-  Eigen::VectorXi VDJ_vgerm_xmsa_inds(3);
-  VDJ_vgerm_xmsa_inds << 1, 2, 3;
-  Eigen::MatrixXi VDJ_vd_junction_xmsa_inds(4, 9);
-  VDJ_vd_junction_xmsa_inds <<
-  4,  8,  12, 16, -1, -1, -1,  4, -1,
-  5,  9,  13, 17, 13, -1, -1, -1,  9,
-  6, 10,  14, 18, -1, 14, -1, -1, -1,
-  7, 11,  15, 19, -1, -1, 19, -1, -1;
-  Eigen::VectorXi VDJ_dgerm_xmsa_inds(1);
-  VDJ_dgerm_xmsa_inds << 20;
-  Eigen::MatrixXi VDJ_dj_junction_xmsa_inds(3, 7);
-  VDJ_dj_junction_xmsa_inds <<
-  21, 22, 21, 27, 30, -1, -1,
-  -1, 23, 25, 28, 31, 23, -1,
-  -1, 24, 26, 29, 32, -1, 32;
-  Eigen::VectorXi VDJ_jgerm_xmsa_inds(3);
-  VDJ_jgerm_xmsa_inds << 33, 34, 35;
-  Eigen::VectorXi VDJ_jpadding_xmsa_inds;
-
-  REQUIRE(new_phylo_data_ptr->msa() == VDJ_msa);
-  REQUIRE(new_phylo_data_ptr->xmsa() == VDJ_xmsa);
-  REQUIRE(new_phylo_data_ptr->xmsa_labels() == VDJ_xmsa_labels);
-  REQUIRE(new_phylo_data_ptr->xmsa_seqs() == VDJ_xmsa_seqs);
-  REQUIRE(new_phylo_data_ptr->xmsa_naive_ind() == VDJ_xmsa_naive_ind);
-  REQUIRE(new_phylo_data_ptr->xmsa_emission().isApprox(VDJ_xmsa_emission, 1e-5));
-  REQUIRE(new_phylo_data_ptr->vpadding_xmsa_inds() == VDJ_vpadding_xmsa_inds);
-  REQUIRE(new_phylo_data_ptr->vgerm_xmsa_inds() == VDJ_vgerm_xmsa_inds);
-  REQUIRE(new_phylo_data_ptr->vd_junction_xmsa_inds() == VDJ_vd_junction_xmsa_inds);
-  REQUIRE(new_phylo_data_ptr->dgerm_xmsa_inds() == VDJ_dgerm_xmsa_inds);
-  REQUIRE(new_phylo_data_ptr->dj_junction_xmsa_inds() == VDJ_dj_junction_xmsa_inds);
-  REQUIRE(new_phylo_data_ptr->jgerm_xmsa_inds() == VDJ_jgerm_xmsa_inds);
-  REQUIRE(new_phylo_data_ptr->jpadding_xmsa_inds() == VDJ_jpadding_xmsa_inds);
-
-  REQUIRE(new_phylo_data_ptr->LogLikelihood() == Approx(-75.8136));
-  REQUIRE(new_phylo_data_ptr->vgerm_init_scaler_count() == VDJ_vgerm_init_scaler_count);
-  REQUIRE(new_phylo_data_ptr->vgerm_scaler_count() == VDJ_vgerm_scaler_count);
-  REQUIRE(new_phylo_data_ptr->vd_junction_scaler_counts() == VDJ_vd_junction_scaler_counts);
-  REQUIRE(new_phylo_data_ptr->dgerm_init_scaler_count() == VDJ_dgerm_init_scaler_count);
-  REQUIRE(new_phylo_data_ptr->dgerm_scaler_count() == VDJ_dgerm_scaler_count);
-  REQUIRE(new_phylo_data_ptr->dj_junction_scaler_counts() == VDJ_dj_junction_scaler_counts);
-  REQUIRE(new_phylo_data_ptr->jgerm_init_scaler_count() == VDJ_jgerm_init_scaler_count);
-  REQUIRE(new_phylo_data_ptr->jgerm_scaler_count() == VDJ_jgerm_scaler_count);
-
-  // For clarity, we run an additional NewPhyloData test.
-  yaml_path = "data/SimpleData_ex/hmm_input_extra.yaml";
-  PhyloDataPtr phylo_data_ptr =
-      ReadPhyloData(yaml_path, 0, hmm_param_dir, trees_path, fasta_path, ctmc_params_path, 4);
-  new_phylo_data_ptr = std::make_shared<NewPhyloData>(
-      yaml_path, 0, hmm_param_dir, trees_path, fasta_path, ctmc_params_path);
-
-  // For a diagram of the S-W alignment, see
-  // https://github.com/matsengrp/linearham/issues/44#issuecomment-406625914.
-
-  VDJ_flexbounds = {{"v_l", {0, 2}},  {"v_r", {4, 6}},   {"d_l", {4, 6}},
-                    {"d_r", {8, 10}}, {"j_l", {8, 10}}, {"j_r", {15, 15}}};
-  VDJ_relpos = {{"IGHV_ex*01", 1}, {"IGHD_ex*01", 5}, {"IGHJ_ex*01", 10},
-                {"IGHV_ex*99", 1}, {"IGHD_ex*99", 3}, {"IGHJ_ex*99", 7}};
-  VDJ_alphabet = "ACGTN";
-  VDJ_vpadding_ggene_ranges = {{"IGHV_ex*01", {0, 1}}, {"IGHV_ex*99", {1, 2}}};
-  VDJ_vpadding_naive_bases = {4, 4};
-  VDJ_vpadding_site_inds = {0, 0};
-  VDJ_vgerm_state_strs = {"IGHV_ex*01", "IGHV_ex*99"};
-  VDJ_vgerm_ggene_ranges = {{"IGHV_ex*01", {0, 3}}, {"IGHV_ex*99", {3, 6}}};
-  VDJ_vgerm_naive_bases = {0, 3, 2, 1, 0, 2};
-  VDJ_vgerm_germ_inds = {0, 1, 2, 0, 1, 2};
-  VDJ_vgerm_site_inds = {1, 2, 3, 1, 2, 3};
-  VDJ_vd_junction_state_strs =
-      {"IGHD_ex*01:N_A", "IGHD_ex*01:N_C", "IGHD_ex*01:N_G", "IGHD_ex*01:N_T",
-       "IGHD_ex*01:0", "IGHD_ex*99:N_A", "IGHD_ex*99:N_C", "IGHD_ex*99:N_G",
-       "IGHD_ex*99:N_T", "IGHD_ex*99:1", "IGHD_ex*99:2", "IGHV_ex*01:3",
-       "IGHV_ex*01:4", "IGHV_ex*99:3", "IGHV_ex*99:4"};
-  VDJ_vd_junction_ggene_ranges = {{"IGHD_ex*01", {0, 5}}, {"IGHD_ex*99", {5, 11}},
-                                  {"IGHV_ex*01", {11, 13}}, {"IGHV_ex*99", {13, 15}}};
-  VDJ_vd_junction_naive_bases = {0, 1, 2, 3, 2, 0, 1, 2, 3, 2, 3, 0, 1, 2, 0};
-  VDJ_vd_junction_germ_inds = {-1, -1, -1, -1, 0, -1, -1, -1, -1, 1, 2, 3, 4, 3, 4};
-  VDJ_vd_junction_site_inds = {-1, -1, -1, -1, 5, -1, -1, -1, -1, 4, 5, 4, 5, 4, 5};
-  VDJ_dgerm_state_strs = {"IGHD_ex*01", "IGHD_ex*99"};
-  VDJ_dgerm_ggene_ranges = {{"IGHD_ex*01", {0, 2}}, {"IGHD_ex*99", {2, 4}}};
-  VDJ_dgerm_naive_bases = {2, 3, 1, 0};
-  VDJ_dgerm_germ_inds = {1, 2, 3, 4};
-  VDJ_dgerm_site_inds = {6, 7, 6, 7};
-  VDJ_dj_junction_state_strs =
-      {"IGHD_ex*01:3", "IGHD_ex*01:4", "IGHD_ex*99:5", "IGHD_ex*99:6",
-       "IGHJ_ex*01:N_A", "IGHJ_ex*01:N_C", "IGHJ_ex*01:N_G", "IGHJ_ex*01:N_T",
-       "IGHJ_ex*99:N_A", "IGHJ_ex*99:N_C", "IGHJ_ex*99:N_G", "IGHJ_ex*99:N_T",
-       "IGHJ_ex*99:1", "IGHJ_ex*99:2"};
-  VDJ_dj_junction_ggene_ranges = {{"IGHD_ex*01", {0, 2}}, {"IGHD_ex*99", {2, 4}},
-                                  {"IGHJ_ex*01", {4, 8}}, {"IGHJ_ex*99", {8, 14}}};
-  VDJ_dj_junction_naive_bases = {0, 1, 0, 1, 0, 1, 2, 3, 0, 1, 2, 3, 3, 2};
-  VDJ_dj_junction_germ_inds = {3, 4, 5, 6, -1, -1, -1, -1, -1, -1, -1, -1, 1, 2};
-  VDJ_dj_junction_site_inds = {8, 9, 8, 9, -1, -1, -1, -1, -1, -1, -1, -1, 8, 9};
-  VDJ_jgerm_state_strs = {"IGHJ_ex*01", "IGHJ_ex*99"};
-  VDJ_jgerm_ggene_ranges = {{"IGHJ_ex*01", {0, 5}}, {"IGHJ_ex*99", {5, 10}}};
-  VDJ_jgerm_naive_bases = {0, 3, 2, 1, 2, 1, 0, 3, 1, 2};
-  VDJ_jgerm_germ_inds = {0, 1, 2, 3, 4, 3, 4, 5, 6, 7};
-  VDJ_jgerm_site_inds = {10, 11, 12, 13, 14, 10, 11, 12, 13, 14};
-  VDJ_jpadding_ggene_ranges = {{"IGHJ_ex*01", {0, 0}}, {"IGHJ_ex*99", {0, 0}}};
-  VDJ_jpadding_naive_bases = {};
-  VDJ_jpadding_site_inds = {};
-  VDJ_vpadding_transition.resize(2);
-  VDJ_vpadding_transition << 0.34*0.66, 0.34*0.66;
-  VDJ_vgerm_vd_junction_transition.resize(2, 15);
-  VDJ_vgerm_vd_junction_transition <<
-  0.2*0.035*0.1, 0.2*0.035*0.2, 0.2*0.035*0.1, 0.2*0.035*0.05, 0, 0.2*0.086*0.1, 0.2*0.086*0.2, 0.2*0.086*0.1, 0.2*0.086*0.1, 0.2*0.086*0.15, 0, 0.8, 0, 0, 0,
-              0,             0,             0,              0, 0,             0,             0,             0,             0,              0, 0,   0, 0, 1, 0;
-  VDJ_vd_junction_transition.resize(15, 15);
-  VDJ_vd_junction_transition <<
-           0.075,          0.175,           0.05,           0.025,          0.45,              0,              0,              0,              0,    0,               0, 0,   0, 0, 0,
-           0.075,          0.175,           0.05,           0.025,          0.45,              0,              0,              0,              0,    0,               0, 0,   0, 0, 0,
-           0.075,          0.175,           0.05,           0.025,          0.45,              0,              0,              0,              0,    0,               0, 0,   0, 0, 0,
-           0.075,          0.175,           0.05,           0.025,          0.45,              0,              0,              0,              0,    0,               0, 0,   0, 0, 0,
-               0,              0,              0,               0,             0,              0,              0,              0,              0,    0,               0, 0,   0, 0, 0,
-               0,              0,              0,               0,             0,           0.16,           0.08,           0.08,           0.08, 0.15,            0.05, 0,   0, 0, 0,
-               0,              0,              0,               0,             0,           0.16,           0.08,           0.08,           0.08, 0.15,            0.05, 0,   0, 0, 0,
-               0,              0,              0,               0,             0,           0.16,           0.08,           0.08,           0.08, 0.15,            0.05, 0,   0, 0, 0,
-               0,              0,              0,               0,             0,           0.16,           0.08,           0.08,           0.08, 0.15,            0.05, 0,   0, 0, 0,
-               0,              0,              0,               0,             0,              0,              0,              0,              0,    0,            0.95, 0,   0, 0, 0,
-               0,              0,              0,               0,             0,              0,              0,              0,              0,    0,               0, 0,   0, 0, 0,
-   0.5*0.035*0.1,  0.5*0.035*0.2,  0.5*0.035*0.1,  0.5*0.035*0.05, 0.5*0.035*0.4,  0.5*0.086*0.1,  0.5*0.086*0.2,  0.5*0.086*0.1,  0.5*0.086*0.1,    0, 0.5*0.086*0.025, 0, 0.5, 0, 0,
-     1*0.035*0.1,    1*0.035*0.2,    1*0.035*0.1,    1*0.035*0.05,             0,    1*0.086*0.1,    1*0.086*0.2,    1*0.086*0.1,    1*0.086*0.1,    0,               0, 0,   0, 0, 0,
-               0,              0,              0,               0,             0,              0,              0,              0,              0,    0,               0, 0,   0, 0, 1,
-  0.25*0.035*0.1, 0.25*0.035*0.2, 0.25*0.035*0.1, 0.25*0.035*0.05,             0, 0.25*0.086*0.1, 0.25*0.086*0.2, 0.25*0.086*0.1, 0.25*0.086*0.1,    0,               0, 0,   0, 0, 0;
-  VDJ_vd_junction_dgerm_transition.resize(15, 2);
-  VDJ_vd_junction_dgerm_transition <<
-           0.125*0.95,                    0,
-           0.125*0.95,                    0,
-           0.125*0.95,                    0,
-           0.125*0.95,                    0,
-            0.98*0.95,                    0,
-                    0,             0.05*0.5,
-                    0,             0.05*0.5,
-                    0,             0.05*0.5,
-                    0,             0.05*0.5,
-                    0,                    0,
-                    0,              0.6*0.5,
-                    0,                    0,
-     1*0.035*0.1*0.95,    1*0.086*0.025*0.5,
-                    0,                    0,
-  0.25*0.035*0.1*0.95, 0.25*0.086*0.025*0.5;
-  VDJ_dgerm_dj_junction_transition.resize(2, 14);
-  VDJ_dgerm_dj_junction_transition <<
-  0.6, 0,    0, 0,  0.4*0.015*0.1,  0.4*0.015*0.2,  0.4*0.015*0.2,  0.4*0.015*0.2,  0.4*0.155*0.1,  0.4*0.155*0.2,  0.4*0.155*0.2,  0.4*0.155*0.2,  0.4*0.155*0.05, 0,
-    0, 0, 0.35, 0, 0.65*0.015*0.1, 0.65*0.015*0.2, 0.65*0.015*0.2, 0.65*0.015*0.2, 0.65*0.155*0.1, 0.65*0.155*0.2, 0.65*0.155*0.2, 0.65*0.155*0.2, 0.65*0.155*0.05, 0;
-  VDJ_dj_junction_transition.resize(14, 14);
-  VDJ_dj_junction_transition <<
-  0, 0.35, 0,   0, 0.65*0.015*0.1, 0.65*0.015*0.2, 0.65*0.015*0.2, 0.65*0.015*0.2, 0.65*0.155*0.1, 0.65*0.155*0.2, 0.65*0.155*0.2, 0.65*0.155*0.2,    0, 0,
-  0,    0, 0,   0,    1*0.015*0.1,    1*0.015*0.2,    1*0.015*0.2,    1*0.015*0.2,    1*0.155*0.1,    1*0.155*0.2,    1*0.155*0.2,    1*0.155*0.2,    0, 0,
-  0,    0, 0, 0.2,  0.8*0.015*0.1,  0.8*0.015*0.2,  0.8*0.015*0.2,  0.8*0.015*0.2,  0.8*0.155*0.1,  0.8*0.155*0.2,  0.8*0.155*0.2,  0.8*0.155*0.2,    0, 0,
-  0,    0, 0,   0,    1*0.015*0.1,    1*0.015*0.2,    1*0.015*0.2,    1*0.015*0.2,    1*0.155*0.1,    1*0.155*0.2,    1*0.155*0.2,    1*0.155*0.2,    0, 0,
-  0,    0, 0,   0,           0.05,           0.15,          0.075,          0.075,              0,              0,              0,              0,    0, 0,
-  0,    0, 0,   0,           0.05,           0.15,          0.075,          0.075,              0,              0,              0,              0,    0, 0,
-  0,    0, 0,   0,           0.05,           0.15,          0.075,          0.075,              0,              0,              0,              0,    0, 0,
-  0,    0, 0,   0,           0.05,           0.15,          0.075,          0.075,              0,              0,              0,              0,    0, 0,
-  0,    0, 0,   0,              0,              0,              0,              0,           0.05,           0.15,          0.075,          0.075, 0.25, 0,
-  0,    0, 0,   0,              0,              0,              0,              0,           0.05,           0.15,          0.075,          0.075, 0.25, 0,
-  0,    0, 0,   0,              0,              0,              0,              0,           0.05,           0.15,          0.075,          0.075, 0.25, 0,
-  0,    0, 0,   0,              0,              0,              0,              0,           0.05,           0.15,          0.075,          0.075, 0.25, 0,
-  0,    0, 0,   0,              0,              0,              0,              0,              0,              0,              0,              0,    0, 1,
-  0,    0, 0,   0,              0,              0,              0,              0,              0,              0,              0,              0,    0, 0;
-  VDJ_dj_junction_jgerm_transition.resize(14, 2);
-  VDJ_dj_junction_jgerm_transition <<
-                 0, 0,
-  1*0.015*0.25*1*1, 0,
-                 0, 0,
-  1*0.015*0.25*1*1, 0,
-               0.4, 0,
-               0.4, 0,
-               0.4, 0,
-               0.4, 0,
-                 0, 0,
-                 0, 0,
-                 0, 0,
-                 0, 0,
-                 0, 0,
-                 0, 1;
-  VDJ_jpadding_transition.resize(2);
-  VDJ_jpadding_transition << 0.04, 0.04;
-  VDJ_vgerm_init_scaler_count = 0;
-  VDJ_vgerm_scaler_count = 0;
-  VDJ_vd_junction_scaler_counts = {0, 0};
-  VDJ_dgerm_init_scaler_count = 0;
-  VDJ_dgerm_scaler_count = 0;
-  VDJ_dj_junction_scaler_counts = {0, 0};
-  VDJ_jgerm_init_scaler_count = 0;
-  VDJ_jgerm_scaler_count = 0;
-
-  REQUIRE(new_phylo_data_ptr->flexbounds() == VDJ_flexbounds);
-  REQUIRE(new_phylo_data_ptr->relpos() == VDJ_relpos);
-  REQUIRE(new_phylo_data_ptr->alphabet() == VDJ_alphabet);
-  REQUIRE(new_phylo_data_ptr->vpadding_ggene_ranges() == VDJ_vpadding_ggene_ranges);
-  REQUIRE(new_phylo_data_ptr->vpadding_naive_bases() == VDJ_vpadding_naive_bases);
-  REQUIRE(new_phylo_data_ptr->vpadding_site_inds() == VDJ_vpadding_site_inds);
-  REQUIRE(new_phylo_data_ptr->vgerm_state_strs() == VDJ_vgerm_state_strs);
-  REQUIRE(new_phylo_data_ptr->vgerm_ggene_ranges() == VDJ_vgerm_ggene_ranges);
-  REQUIRE(new_phylo_data_ptr->vgerm_naive_bases() == VDJ_vgerm_naive_bases);
-  REQUIRE(new_phylo_data_ptr->vgerm_germ_inds() == VDJ_vgerm_germ_inds);
-  REQUIRE(new_phylo_data_ptr->vgerm_site_inds() == VDJ_vgerm_site_inds);
-  REQUIRE(new_phylo_data_ptr->vd_junction_state_strs() == VDJ_vd_junction_state_strs);
-  REQUIRE(new_phylo_data_ptr->vd_junction_ggene_ranges() == VDJ_vd_junction_ggene_ranges);
-  REQUIRE(new_phylo_data_ptr->vd_junction_naive_bases() == VDJ_vd_junction_naive_bases);
-  REQUIRE(new_phylo_data_ptr->vd_junction_germ_inds() == VDJ_vd_junction_germ_inds);
-  REQUIRE(new_phylo_data_ptr->vd_junction_site_inds() == VDJ_vd_junction_site_inds);
-  REQUIRE(new_phylo_data_ptr->dgerm_state_strs() == VDJ_dgerm_state_strs);
-  REQUIRE(new_phylo_data_ptr->dgerm_ggene_ranges() == VDJ_dgerm_ggene_ranges);
-  REQUIRE(new_phylo_data_ptr->dgerm_naive_bases() == VDJ_dgerm_naive_bases);
-  REQUIRE(new_phylo_data_ptr->dgerm_germ_inds() == VDJ_dgerm_germ_inds);
-  REQUIRE(new_phylo_data_ptr->dgerm_site_inds() == VDJ_dgerm_site_inds);
-  REQUIRE(new_phylo_data_ptr->dj_junction_state_strs() == VDJ_dj_junction_state_strs);
-  REQUIRE(new_phylo_data_ptr->dj_junction_ggene_ranges() == VDJ_dj_junction_ggene_ranges);
-  REQUIRE(new_phylo_data_ptr->dj_junction_naive_bases() == VDJ_dj_junction_naive_bases);
-  REQUIRE(new_phylo_data_ptr->dj_junction_germ_inds() == VDJ_dj_junction_germ_inds);
-  REQUIRE(new_phylo_data_ptr->dj_junction_site_inds() == VDJ_dj_junction_site_inds);
-  REQUIRE(new_phylo_data_ptr->jgerm_state_strs() == VDJ_jgerm_state_strs);
-  REQUIRE(new_phylo_data_ptr->jgerm_ggene_ranges() == VDJ_jgerm_ggene_ranges);
-  REQUIRE(new_phylo_data_ptr->jgerm_naive_bases() == VDJ_jgerm_naive_bases);
-  REQUIRE(new_phylo_data_ptr->jgerm_germ_inds() == VDJ_jgerm_germ_inds);
-  REQUIRE(new_phylo_data_ptr->jgerm_site_inds() == VDJ_jgerm_site_inds);
-  REQUIRE(new_phylo_data_ptr->jpadding_ggene_ranges() == VDJ_jpadding_ggene_ranges);
-  REQUIRE(new_phylo_data_ptr->jpadding_naive_bases() == VDJ_jpadding_naive_bases);
-  REQUIRE(new_phylo_data_ptr->jpadding_site_inds() == VDJ_jpadding_site_inds);
-  REQUIRE(new_phylo_data_ptr->vpadding_transition().isApprox(VDJ_vpadding_transition));
-  REQUIRE(new_phylo_data_ptr->vgerm_vd_junction_transition() == VDJ_vgerm_vd_junction_transition);
-  REQUIRE(new_phylo_data_ptr->vd_junction_transition() == VDJ_vd_junction_transition);
-  REQUIRE(new_phylo_data_ptr->vd_junction_dgerm_transition() == VDJ_vd_junction_dgerm_transition);
-  REQUIRE(new_phylo_data_ptr->dgerm_dj_junction_transition() == VDJ_dgerm_dj_junction_transition);
-  REQUIRE(new_phylo_data_ptr->dj_junction_transition() == VDJ_dj_junction_transition);
-  REQUIRE(new_phylo_data_ptr->dj_junction_jgerm_transition() == VDJ_dj_junction_jgerm_transition);
-  REQUIRE(new_phylo_data_ptr->jpadding_transition().isApprox(VDJ_jpadding_transition));
-
-  VDJ_xmsa.resize(4, 34);
-  VDJ_xmsa <<
-  3, 0, 0, 0, 0, 0, 0, 2, 0, 2, 0, 2, 0, 2, 0, 3, 0, 3, 1, 0, 0, 1, 1, 0, 1, 0, 0, 3, 3, 4, 4, 0, 3, 3,
-  1, 0, 1, 0, 0, 1, 1, 2, 1, 2, 1, 2, 1, 2, 3, 3, 3, 3, 1, 2, 2, 1, 1, 2, 1, 2, 0, 2, 3, 4, 4, 0, 2, 3,
-  4, 0, 3, 2, 1, 0, 0, 0, 1, 1, 2, 2, 3, 3, 2, 3, 1, 0, 0, 1, 0, 1, 2, 2, 3, 3, 0, 3, 2, 1, 2, 1, 0, 3,
-  1, 2, 3, 0, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 0, 2, 0, 2, 2, 0, 0, 2, 2, 0, 2, 0, 1, 3, 1, 4, 4, 1, 3, 1;
-  VDJ_xmsa_seqs = {"TAAAAAAGAGAGAGATATCAACCACAATTNNATT", "CACAACCGCGCGCGTTTTCGGCCGCGAGTNNAGT",
-                   "NATGCAAACCGGTTGTCAACACGGTTATGCGCAT", "CGTAGTGTGTGTGTAGAGGAAGGAGACTCNNCTC"};
-  VDJ_xmsa_emission.resize(34);
-  VDJ_xmsa_emission << 0.00734474, 0.0233122, 0.00563729, 0.0107866, 0.0067714,
-                       0.00534673, 0.00342739, 0.0177109, 0.00270654, 0.0177109,
-                       0.00437549, 0.0446185, 0.00225322, 0.0406717, 0.00399037,
-                       0.0400067, 0.00399037, 0.0215197, 0.00783313, 0.00255793,
-                       0.0179374, 0.0245508, 0.0245343, 0.00286619, 0.00783313,
-                       0.00255793, 0.0177172, 0.0322063, 0.016355, 1, 1, 0.019866,
-                       0.0118535, 0.0304051;
-  VDJ_vpadding_xmsa_inds.resize(2);
-  VDJ_vpadding_xmsa_inds << 0, 0;
-  VDJ_vgerm_xmsa_inds.resize(6);
-  VDJ_vgerm_xmsa_inds << 1, 2, 3, 4, 5, 3;
-  VDJ_vd_junction_xmsa_inds.resize(2, 15);
-  VDJ_vd_junction_xmsa_inds <<
-  6, 8, 10, 12, -1, 6, 8, 10, 12, 10, -1,  6, -1, 10, -1,
-  7, 9, 11, 13, 11, 7, 9, 11, 13, -1, 13, -1,  9, -1,  7;
-  VDJ_dgerm_xmsa_inds.resize(4);
-  VDJ_dgerm_xmsa_inds << 14, 15, 16, 17;
-  VDJ_dj_junction_xmsa_inds.resize(2, 14);
-  VDJ_dj_junction_xmsa_inds <<
-  18, -1, 18, -1, 18, 21, 22, 24, 18, 21, 22, 24, 24, -1,
-  -1, 19, -1, 19, 20, 19, 23, 25, 20, 19, 23, 25, -1, 23;
-  VDJ_jgerm_xmsa_inds.resize(10);
-  VDJ_jgerm_xmsa_inds << 26, 27, 28, 29, 30, 31, 32, 33, 29, 30;
-  VDJ_jpadding_xmsa_inds.resize(0);
-
-  REQUIRE(new_phylo_data_ptr->xmsa() == VDJ_xmsa);
-  REQUIRE(new_phylo_data_ptr->xmsa_seqs() == VDJ_xmsa_seqs);
-  REQUIRE(new_phylo_data_ptr->xmsa_emission().isApprox(VDJ_xmsa_emission, 1e-5));
-  REQUIRE(new_phylo_data_ptr->vpadding_xmsa_inds() == VDJ_vpadding_xmsa_inds);
-  REQUIRE(new_phylo_data_ptr->vgerm_xmsa_inds() == VDJ_vgerm_xmsa_inds);
-  REQUIRE(new_phylo_data_ptr->vd_junction_xmsa_inds() == VDJ_vd_junction_xmsa_inds);
-  REQUIRE(new_phylo_data_ptr->dgerm_xmsa_inds() == VDJ_dgerm_xmsa_inds);
-  REQUIRE(new_phylo_data_ptr->dj_junction_xmsa_inds() == VDJ_dj_junction_xmsa_inds);
-  REQUIRE(new_phylo_data_ptr->jgerm_xmsa_inds() == VDJ_jgerm_xmsa_inds);
-  REQUIRE(new_phylo_data_ptr->jpadding_xmsa_inds() == VDJ_jpadding_xmsa_inds);
-
-  REQUIRE(new_phylo_data_ptr->LogLikelihood() == Approx(-75.1122515055));
-  REQUIRE(new_phylo_data_ptr->LogLikelihood() == phylo_data_ptr->MarginalLogLikelihood());
-  REQUIRE(new_phylo_data_ptr->vgerm_init_scaler_count() == VDJ_vgerm_init_scaler_count);
-  REQUIRE(new_phylo_data_ptr->vgerm_scaler_count() == VDJ_vgerm_scaler_count);
-  REQUIRE(new_phylo_data_ptr->vd_junction_scaler_counts() == VDJ_vd_junction_scaler_counts);
-  REQUIRE(new_phylo_data_ptr->dgerm_init_scaler_count() == VDJ_dgerm_init_scaler_count);
-  REQUIRE(new_phylo_data_ptr->dgerm_scaler_count() == VDJ_dgerm_scaler_count);
-  REQUIRE(new_phylo_data_ptr->dj_junction_scaler_counts() == VDJ_dj_junction_scaler_counts);
-  REQUIRE(new_phylo_data_ptr->jgerm_init_scaler_count() == VDJ_jgerm_init_scaler_count);
-  REQUIRE(new_phylo_data_ptr->jgerm_scaler_count() == VDJ_jgerm_scaler_count);
-}
-
-
-TEST_CASE("tmp", "[tmp]") {
-  std::string yaml_path = "/home/dunleavy005/partis/testing_amrit/tmp.yaml";
-  // std::string yaml_path = "data/SimpleData_ex/hmm_input.yaml";
-  std::string hmm_param_dir =
-  "/home/dunleavy005/partis/_output/testing_amrit_input_seqs/hmm/hmms";
-  // "data/SimpleData_ex/hmm_params/";
-  std::string trees_path = //"data/PhyloData_ex/newton.tre";
-  "/home/dunleavy005/partis/testing_amrit/partition0/input_seqs.tree";
-  std::string fasta_path =
-  "/home/dunleavy005/partis/testing_amrit/partition0/input_seqs.fasta";
-  // "data/PhyloData_ex/newton.fasta";
-  std::string ctmc_params_path = "data/PhyloData_ex/RAxML_info.newton";
-
-  YAML::Node root = YAML::LoadFile(yaml_path);
-  int n_events = 101;
-
-  // for (int i = 0; i < n_events; i++) {
-  //   // int n_seqs = root["events"][i]["input_seqs"].size();
-  //   // for (int j = 0; j < n_seqs; j++) {
-  //   //   std::cout<<i<<","<<j<<std::endl;
-  //   //   NewSimpleDataPtr new_simple_data_ptr =
-  //   //       std::make_shared<NewSimpleData>(yaml_path, i, j, hmm_param_dir);
-  //   //   SimpleDataPtr simple_data_ptr = ReadSimpleData(yaml_path, i, j, hmm_param_dir);
-  //   //   std::cout<<new_simple_data_ptr->LogLikelihood()<<std::endl;
-  //   //   REQUIRE(new_simple_data_ptr->LogLikelihood() == Approx(simple_data_ptr->MarginalLogLikelihood()).epsilon(1e-3));
-  //   // }
-  //
-  //   // fasta_path = "/home/dunleavy005/partis/testing_amrit/partition" + std::to_string(i) + "/input_seqs.fasta";
-  //   // trees_path = "/home/dunleavy005/partis/testing_amrit/partition" + std::to_string(i) + "/input_seqs.tree";
-  //   //
-  //   // std::cout<<"tree "<<i<<std::endl;
-  //   // NewPhyloDataPtr new_phylo_data_ptr = std::make_shared<NewPhyloData>(
-  //   //     yaml_path, i, hmm_param_dir, trees_path, fasta_path, ctmc_params_path);
-  //   // PhyloDataPtr phylo_data_ptr = ReadPhyloData(
-  //   //     yaml_path, i, hmm_param_dir, trees_path, fasta_path, ctmc_params_path, 4);
-  //   //     std::cout<<new_phylo_data_ptr->LogLikelihood()<<std::endl;
-  //   // REQUIRE(new_phylo_data_ptr->LogLikelihood() == Approx(phylo_data_ptr->MarginalLogLikelihood()).epsilon(1e-3));
-  // }
-  // NewSimpleDataPtr new_simple_data_ptr =
-      // std::make_shared<NewSimpleData>(yaml_path, 54, 0, hmm_param_dir);
-  // SimpleDataPtr simple_data_ptr = ReadSimpleData(yaml_path, 54, 0, hmm_param_dir);
-
-  // std::cout << new_simple_data_ptr->LogLikelihood() << std::endl;
-  // std::cout << simple_data_ptr->MarginalLogLikelihood() << std::endl;
-
-  // NewPhyloDataPtr new_phylo_data_ptr = std::make_shared<NewPhyloData>(
-  //     yaml_path, 0, hmm_param_dir, trees_path, fasta_path, ctmc_params_path);
-  // PhyloDataPtr phylo_data_ptr = ReadPhyloData(
-  //     yaml_path, 0, hmm_param_dir, trees_path, fasta_path, ctmc_params_path, 4);
-  //
-  // std::cout << new_phylo_data_ptr->LogLikelihood() << std::endl;
-  // std::cout << phylo_data_ptr->MarginalLogLikelihood() << std::endl;
-}
-//
-//
-// TEST_CASE("OptimizeAllBranches", "[phylodata]") {
-//   // Test the branch length optimization in the PhyloData class.
-//   std::string csv_path = "data/PhyloData_ex/brlen_optim_ex/hmm_input.csv";
-//   std::string hmm_param_dir = "data/PhyloData_ex/brlen_optim_ex/hmm_params";
-//   std::string trees_path = "data/PhyloData_ex/newton_phyml.tre";
-//   std::string fasta_path = "data/PhyloData_ex/newton.fasta";
-//   std::string ctmc_params_path = "data/PhyloData_ex/RAxML_info.newton";
-//   PhyloDataPtr phylo_data_ptr =
-//       ReadPhyloData(csv_path, hmm_param_dir, trees_path, fasta_path, ctmc_params_path);
-//   phylo_data_ptr->OptimizeAllBranches();
-//
-//   std::string test_trees_path = "data/PhyloData_ex/brlen_optim_ex/newton_optim_phyml.tre";
-//   PhyloDataPtr test_ptr =
-//       ReadPhyloData(csv_path, hmm_param_dir, test_trees_path, fasta_path, ctmc_params_path);
-//
-//   REQUIRE(phylo_data_ptr->MarginalLogLikelihood() ==
-//           Approx(test_ptr->MarginalLogLikelihood()).epsilon(1e-3));
-// }
 }

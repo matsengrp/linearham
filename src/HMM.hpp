@@ -1,5 +1,5 @@
-#ifndef LINEARHAM_NEWDATA_
-#define LINEARHAM_NEWDATA_
+#ifndef LINEARHAM_HMM_
+#define LINEARHAM_HMM_
 
 #include <cmath>
 #include <map>
@@ -14,13 +14,13 @@
 #include "Germline.hpp"
 #include "VDJGermline.hpp"
 
-/// @file NewData.hpp
-/// @brief Header for the NewData class.
+/// @file HMM.hpp
+/// @brief Header for the HMM class.
 
 namespace linearham {
 
 
-class NewData {
+class HMM {
  protected:
   // Partis YAML file root
   YAML::Node yaml_root_;
@@ -29,13 +29,13 @@ class NewData {
   std::map<std::string, std::pair<int, int>> flexbounds_;
   std::map<std::string, int> relpos_;
 
-  // HMM (germline name, GermlineGene) map
+  // (germline name, GermlineGene) map
   std::unordered_map<std::string, GermlineGene> ggenes_;
 
   // Nucleotide alphabet
   std::string alphabet_;
 
-  // HMM state space information
+  // State space information
   // V "padding" states
   std::map<std::string, std::pair<int, int>> vpadding_ggene_ranges_;
   std::vector<int> vpadding_naive_bases_;
@@ -81,7 +81,7 @@ class NewData {
   std::vector<int> jpadding_naive_bases_;
   std::vector<int> jpadding_site_inds_;
 
-  // HMM transition probability matrices
+  // Transition probability matrices
   Eigen::RowVectorXd vpadding_transition_;
   Eigen::MatrixXd vgerm_vd_junction_transition_;
   Eigen::MatrixXd vd_junction_transition_;
@@ -91,7 +91,7 @@ class NewData {
   Eigen::MatrixXd dj_junction_jgerm_transition_;
   Eigen::RowVectorXd jpadding_transition_;
 
-  // HMM emission probability matrices
+  // Emission probability matrices
   Eigen::RowVectorXd vpadding_emission_;
   Eigen::RowVectorXd vgerm_emission_;
   Eigen::MatrixXd vd_junction_emission_;
@@ -100,14 +100,14 @@ class NewData {
   Eigen::RowVectorXd jgerm_emission_;
   Eigen::RowVectorXd jpadding_emission_;
 
-  // HMM forward probability matrices
+  // Forward probability matrices
   Eigen::RowVectorXd vgerm_forward_;
   Eigen::MatrixXd vd_junction_forward_;
   Eigen::RowVectorXd dgerm_forward_;
   Eigen::MatrixXd dj_junction_forward_;
   Eigen::RowVectorXd jgerm_forward_;
 
-  // HMM scaler counts
+  // Scaler counts
   int vgerm_init_scaler_count_;
   int vgerm_scaler_count_;
   std::vector<int> vd_junction_scaler_counts_;
@@ -118,20 +118,20 @@ class NewData {
   int jgerm_scaler_count_;
 
   // Initialization functions
-  void InitializeHMMStateSpace();
+  void InitializeStateSpace();
 
-  void InitializeHMMTransition();
+  void InitializeTransition();
 
   // Auxiliary functions
-  void InitializeHMMForwardProbabilities();
+  void InitializeForwardProbabilities();
 
  private:
-  virtual void InitializeHMMEmission() = 0;
+  virtual void InitializeEmission() = 0;
 
  public:
-  NewData(const std::string& yaml_path, int cluster_ind,
-          const std::string& hmm_param_dir);
-  virtual ~NewData(){};
+  HMM(const std::string& yaml_path, int cluster_ind,
+      const std::string& hmm_param_dir);
+  virtual ~HMM(){};
 
   const YAML::Node& yaml_root() const { return yaml_root_; };
   const std::map<std::string, std::pair<int, int>>& flexbounds() const {
@@ -288,20 +288,20 @@ class NewData {
   int jgerm_init_scaler_count() const { return jgerm_init_scaler_count_; };
   int jgerm_scaler_count() const { return jgerm_scaler_count_; };
 
-  // HMM forward/backward traversal functions
+  // Forward/backward traversal functions
   double LogLikelihood();
 };
 
 
-typedef std::shared_ptr<NewData> NewDataPtr;
+typedef std::shared_ptr<HMM> HMMPtr;
 
-const double SCALE_FACTOR2 = std::pow(2, 256);
-const double SCALE_THRESHOLD2 = 1.0 / SCALE_FACTOR2;
+const double SCALE_FACTOR = std::pow(2, 256);
+const double SCALE_THRESHOLD = 1.0 / SCALE_FACTOR;
 
 
 // Auxiliary functions
 
-void CacheHMMGermlineStates(
+void CacheGermlineStates(
     GermlinePtr germ_ptr, std::pair<int, int> left_flexbounds,
     std::pair<int, int> right_flexbounds, int relpos, bool left_end,
     bool right_end, std::vector<std::string>& state_strs_,
@@ -309,7 +309,7 @@ void CacheHMMGermlineStates(
     std::vector<int>& naive_bases_, std::vector<int>& germ_inds_,
     std::vector<int>& site_inds_);
 
-void CacheHMMJunctionStates(
+void CacheJunctionStates(
     GermlinePtr germ_ptr, std::pair<int, int> left_flexbounds,
     std::pair<int, int> right_flexbounds, int relpos, bool left_end,
     std::vector<std::string>& state_strs_,
@@ -317,12 +317,12 @@ void CacheHMMJunctionStates(
     std::vector<int>& naive_bases_, std::vector<int>& germ_inds_,
     std::vector<int>& site_inds_);
 
-void CacheHMMPaddingStates(
+void CachePaddingStates(
     GermlinePtr germ_ptr, std::pair<int, int> leftright_flexbounds, int relpos,
     bool left_end, std::map<std::string, std::pair<int, int>>& ggene_ranges_,
     std::vector<int>& naive_bases_, std::vector<int>& site_inds_);
 
-void ComputeHMMGermlineJunctionTransition(
+void ComputeGermlineJunctionTransition(
     const std::vector<std::string>& germ_state_strs_,
     const std::map<std::string, std::pair<int, int>>& germ_ggene_ranges_,
     const std::vector<int>& germ_germ_inds_,
@@ -335,7 +335,7 @@ void ComputeHMMGermlineJunctionTransition(
     const std::unordered_map<std::string, GermlineGene>& ggenes_,
     Eigen::MatrixXd& germ_junction_transition_);
 
-void ComputeHMMJunctionTransition(
+void ComputeJunctionTransition(
     const std::vector<std::string>& junction_state_strs_,
     const std::map<std::string, std::pair<int, int>>& junction_ggene_ranges_,
     const std::vector<int>& junction_germ_inds_,
@@ -344,7 +344,7 @@ void ComputeHMMJunctionTransition(
     const std::unordered_map<std::string, GermlineGene>& ggenes_,
     Eigen::MatrixXd& junction_transition_);
 
-void ComputeHMMJunctionGermlineTransition(
+void ComputeJunctionGermlineTransition(
     const std::vector<std::string>& junction_state_strs_,
     const std::map<std::string, std::pair<int, int>>& junction_ggene_ranges_,
     const std::vector<int>& junction_germ_inds_,
@@ -357,23 +357,22 @@ void ComputeHMMJunctionGermlineTransition(
     const std::unordered_map<std::string, GermlineGene>& ggenes_,
     Eigen::MatrixXd& junction_germ_transition_);
 
-void ComputeHMMPaddingTransition(
+void ComputePaddingTransition(
     const std::map<std::string, std::pair<int, int>>& ggene_ranges_,
     const std::unordered_map<std::string, GermlineGene>& ggenes_,
     Eigen::RowVectorXd& transition_);
 
-void FillHMMTransition(const GermlineGene& from_ggene,
-                       const GermlineGene& to_ggene, GermlineType left_gtype,
-                       GermlineType right_gtype, int germ_ind_row_start,
-                       int germ_ind_col_start, int site_ind_row_start,
-                       int site_ind_col_start, int nti_row_start,
-                       int nti_col_start, int nti_row_length,
-                       int nti_col_length, int germ_row_start,
-                       int germ_col_start, int germ_row_length,
-                       int germ_col_length,
-                       Eigen::Ref<Eigen::MatrixXd> transition_);
+void FillTransition(const GermlineGene& from_ggene,
+                    const GermlineGene& to_ggene, GermlineType left_gtype,
+                    GermlineType right_gtype, int germ_ind_row_start,
+                    int germ_ind_col_start, int site_ind_row_start,
+                    int site_ind_col_start, int nti_row_start,
+                    int nti_col_start, int nti_row_length, int nti_col_length,
+                    int germ_row_start, int germ_col_start, int germ_row_length,
+                    int germ_col_length,
+                    Eigen::Ref<Eigen::MatrixXd> transition_);
 
-void ComputeHMMJunctionForwardProbabilities(
+void ComputeJunctionForwardProbabilities(
     const Eigen::RowVectorXd& germ_forward_, int germ_scaler_count_,
     const Eigen::MatrixXd& germ_junction_transition_,
     const Eigen::MatrixXd& junction_transition_,
@@ -381,7 +380,7 @@ void ComputeHMMJunctionForwardProbabilities(
     Eigen::MatrixXd& junction_forward_,
     std::vector<int>& junction_scaler_counts_);
 
-void ComputeHMMGermlineForwardProbabilities(
+void ComputeGermlineForwardProbabilities(
     const Eigen::MatrixXd& junction_forward_,
     const std::vector<int>& junction_scaler_counts_,
     const Eigen::MatrixXd& junction_germ_transition_,
@@ -391,15 +390,15 @@ void ComputeHMMGermlineForwardProbabilities(
     Eigen::RowVectorXd& germ_forward_, int& germ_init_scaler_count_,
     int& germ_scaler_count_);
 
-int ScaleMatrix2(Eigen::Ref<Eigen::MatrixXd> m);
+int ScaleMatrix(Eigen::Ref<Eigen::MatrixXd> m);
 
-Eigen::RowVectorXi ConvertSeqToInts2(const std::string& seq_str,
-                                     const std::string& alphabet);
+Eigen::RowVectorXi ConvertSeqToInts(const std::string& seq_str,
+                                    const std::string& alphabet);
 
-std::string ConvertIntsToSeq2(const Eigen::RowVectorXi& seq,
-                              const std::string& alphabet);
+std::string ConvertIntsToSeq(const Eigen::RowVectorXi& seq,
+                             const std::string& alphabet);
 
 
 }  // namespace linearham
 
-#endif  // LINEARHAM_NEWDATA_
+#endif  // LINEARHAM_HMM_

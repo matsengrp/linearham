@@ -1,5 +1,5 @@
-#ifndef LINEARHAM_NEWPHYLODATA_
-#define LINEARHAM_NEWPHYLODATA_
+#ifndef LINEARHAM_PHYLOHMM_
+#define LINEARHAM_PHYLOHMM_
 
 #include <map>
 #include <memory>
@@ -11,17 +11,17 @@
 #include <Eigen/Dense>
 #include <model.hpp>
 #include <pll_partition.hpp>
-#include "NewData.hpp"
+#include "HMM.hpp"
 
-/// @file NewPhyloData.hpp
-/// @brief Header for the NewPhyloData class.
+/// @file PhyloHMM.hpp
+/// @brief Header for the PhyloHMM class.
 
 namespace linearham {
 
 
-class NewPhyloData : public NewData {
+class PhyloHMM : public HMM {
  private:
-  // PhyloHMM emission probability data structures
+  // Emission probability data structures
   Eigen::MatrixXi msa_;
   Eigen::MatrixXi xmsa_;
   std::vector<std::string> xmsa_labels_;
@@ -31,7 +31,7 @@ class NewPhyloData : public NewData {
   pll_utree_t* tree_;
   std::unique_ptr<pt::pll::Partition> partition_;
 
-  // PhyloHMM xMSA site indices
+  // xMSA site indices
   Eigen::VectorXi vpadding_xmsa_inds_;
   Eigen::VectorXi vgerm_xmsa_inds_;
   Eigen::MatrixXi vd_junction_xmsa_inds_;
@@ -48,25 +48,25 @@ class NewPhyloData : public NewData {
 
   void InitializeXmsaEmission(const pt::pll::Model& model_params);
 
-  void InitializeHMMEmission() override;
+  void InitializeEmission() override;
 
   // Auxiliary functions
   void BuildXmsa(const std::map<std::pair<int, int>, int>& xmsa_ids);
 
-  void FillHMMGermlinePaddingEmission(
+  void FillGermlinePaddingEmission(
       const std::map<std::string, std::pair<int, int>>& ggene_ranges_,
       const Eigen::VectorXi& xmsa_inds_, Eigen::RowVectorXd& emission_,
       int& scaler_count_);
 
-  void FillHMMJunctionEmission(const Eigen::MatrixXi& xmsa_inds_,
-                               Eigen::MatrixXd& emission_);
+  void FillJunctionEmission(const Eigen::MatrixXi& xmsa_inds_,
+                            Eigen::MatrixXd& emission_);
 
  public:
-  NewPhyloData(const std::string& yaml_path, int cluster_ind,
-               const std::string& hmm_param_dir, const std::string& trees_path,
-               const std::string& fasta_path,
-               const std::string& ctmc_params_path);
-  ~NewPhyloData();
+  PhyloHMM(const std::string& yaml_path, int cluster_ind,
+           const std::string& hmm_param_dir, const std::string& trees_path,
+           const std::string& fasta_path, const std::string& ctmc_params_path,
+           int rate_categories = 4);
+  ~PhyloHMM();
 
   const Eigen::MatrixXi& msa() const { return msa_; };
   const Eigen::MatrixXi& xmsa() const { return xmsa_; };
@@ -94,7 +94,7 @@ class NewPhyloData : public NewData {
 };
 
 
-typedef std::shared_ptr<NewPhyloData> NewPhyloDataPtr;
+typedef std::shared_ptr<PhyloHMM> PhyloHMMPtr;
 
 
 // Auxiliary functions
@@ -117,4 +117,4 @@ void StoreXmsaIndex(std::pair<int, int> id,
 
 }  // namespace linearham
 
-#endif  // LINEARHAM_NEWPHYLODATA_
+#endif  // LINEARHAM_PHYLOHMM_

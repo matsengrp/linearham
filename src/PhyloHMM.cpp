@@ -1,4 +1,4 @@
-#include "NewPhyloData.hpp"
+#include "PhyloHMM.hpp"
 
 #include <cmath>
 #include <cstddef>
@@ -6,18 +6,17 @@
 
 #include <pll_util.hpp>
 
-/// @file NewPhyloData.cpp
-/// @brief Implementation of the NewPhyloData class.
+/// @file PhyloHMM.cpp
+/// @brief Implementation of the PhyloHMM class.
 
 namespace linearham {
 
 
-NewPhyloData::NewPhyloData(const std::string& yaml_path, int cluster_ind,
-                           const std::string& hmm_param_dir,
-                           const std::string& trees_path,
-                           const std::string& fasta_path,
-                           const std::string& ctmc_params_path)
-    : NewData(yaml_path, cluster_ind, hmm_param_dir) {
+PhyloHMM::PhyloHMM(const std::string& yaml_path, int cluster_ind,
+                   const std::string& hmm_param_dir,
+                   const std::string& trees_path, const std::string& fasta_path,
+                   const std::string& ctmc_params_path, int rate_categories)
+    : HMM(yaml_path, cluster_ind, hmm_param_dir) {
   // Initialize the phylogenetic tree object.
   tree_ = pll_utree_parse_newick(trees_path.c_str());
 
@@ -33,36 +32,34 @@ NewPhyloData::NewPhyloData(const std::string& yaml_path, int cluster_ind,
   InitializeXmsaStructs();
 
   // Initialize the partition object.
-  pt::pll::Model model_params = pt::pll::ParseRaxmlInfo(ctmc_params_path, 4);
+  pt::pll::Model model_params =
+      pt::pll::ParseRaxmlInfo(ctmc_params_path, rate_categories);
   partition_.reset(new pt::pll::Partition(tree_, model_params, xmsa_labels_,
                                           xmsa_seqs_, false));
 
   // Initialize the xMSA per-site emission probability vector.
   InitializeXmsaEmission(model_params);
 
-  // Initialize the HMM emission probability matrices.
-  InitializeHMMEmission();
+  // Initialize the emission probability matrices.
+  InitializeEmission();
 };
 
 
-NewPhyloData::~NewPhyloData() {
-  pll_utree_destroy(tree_, pt::pll::cb_erase_data);
-};
+PhyloHMM::~PhyloHMM() { pll_utree_destroy(tree_, pt::pll::cb_erase_data); };
 
 
 // Initialization functions
 
 
-void NewPhyloData::InitializeMsa(const std::vector<std::string>& msa_seqs,
-                                 unsigned int tip_node_count,
-                                 unsigned int sites) {
+void PhyloHMM::InitializeMsa(const std::vector<std::string>& msa_seqs,
+                             unsigned int tip_node_count, unsigned int sites) {
   assert(msa_seqs.size() == tip_node_count);
   assert(msa_seqs[0].size() == sites);
   msa_.setConstant(tip_node_count - 1, sites, -1);
 
   for (std::size_t i = 0, row_ind = 0; i < msa_seqs.size(); i++) {
     if (xmsa_labels_[i] != "naive") {
-      msa_.row(row_ind++) = ConvertSeqToInts2(msa_seqs[i], alphabet_);
+      msa_.row(row_ind++) = ConvertSeqToInts(msa_seqs[i], alphabet_);
     } else {
       xmsa_naive_ind_ = i;
     }
@@ -70,7 +67,7 @@ void NewPhyloData::InitializeMsa(const std::vector<std::string>& msa_seqs,
 };
 
 
-void NewPhyloData::InitializeXmsaStructs() {
+void PhyloHMM::InitializeXmsaStructs() {
   // This map holds ({naive base, MSA position}, xMSA position) pairs.
   // We use this map to keep track of the unique xMSA site indices.
   std::map<std::pair<int, int>, int> xmsa_ids;
@@ -99,7 +96,7 @@ void NewPhyloData::InitializeXmsaStructs() {
 };
 
 
-void NewPhyloData::InitializeXmsaEmission(const pt::pll::Model& model_params) {
+void PhyloHMM::InitializeXmsaEmission(const pt::pll::Model& model_params) {
   xmsa_emission_.setZero(xmsa_.cols());
 
   // Compute the per-site phylogenetic log-likelihoods.
@@ -120,27 +117,26 @@ void NewPhyloData::InitializeXmsaEmission(const pt::pll::Model& model_params) {
 };
 
 
-void NewPhyloData::InitializeHMMEmission() {
-  FillHMMGermlinePaddingEmission(vpadding_ggene_ranges_, vpadding_xmsa_inds_,
-                                 vpadding_emission_, vgerm_init_scaler_count_);
-  FillHMMGermlinePaddingEmission(vgerm_ggene_ranges_, vgerm_xmsa_inds_,
-                                 vgerm_emission_, vgerm_init_scaler_count_);
-  FillHMMJunctionEmission(vd_junction_xmsa_inds_, vd_junction_emission_);
-  FillHMMGermlinePaddingEmission(dgerm_ggene_ranges_, dgerm_xmsa_inds_,
-                                 dgerm_emission_, dgerm_init_scaler_count_);
-  FillHMMJunctionEmission(dj_junction_xmsa_inds_, dj_junction_emission_);
-  FillHMMGermlinePaddingEmission(jgerm_ggene_ranges_, jgerm_xmsa_inds_,
-                                 jgerm_emission_, jgerm_init_scaler_count_);
-  FillHMMGermlinePaddingEmission(jpadding_ggene_ranges_, jpadding_xmsa_inds_,
-                                 jpadding_emission_, jgerm_init_scaler_count_);
+void PhyloHMM::InitializeEmission() {
+  FillGermlinePaddingEmission(vpadding_ggene_ranges_, vpadding_xmsa_inds_,
+                              vpadding_emission_, vgerm_init_scaler_count_);
+  FillGermlinePaddingEmission(vgerm_ggene_ranges_, vgerm_xmsa_inds_,
+                              vgerm_emission_, vgerm_init_scaler_count_);
+  FillJunctionEmission(vd_junction_xmsa_inds_, vd_junction_emission_);
+  FillGermlinePaddingEmission(dgerm_ggene_ranges_, dgerm_xmsa_inds_,
+                              dgerm_emission_, dgerm_init_scaler_count_);
+  FillJunctionEmission(dj_junction_xmsa_inds_, dj_junction_emission_);
+  FillGermlinePaddingEmission(jgerm_ggene_ranges_, jgerm_xmsa_inds_,
+                              jgerm_emission_, jgerm_init_scaler_count_);
+  FillGermlinePaddingEmission(jpadding_ggene_ranges_, jpadding_xmsa_inds_,
+                              jpadding_emission_, jgerm_init_scaler_count_);
 };
 
 
 // Auxiliary functions
 
 
-void NewPhyloData::BuildXmsa(
-    const std::map<std::pair<int, int>, int>& xmsa_ids) {
+void PhyloHMM::BuildXmsa(const std::map<std::pair<int, int>, int>& xmsa_ids) {
   xmsa_.setConstant(msa_.rows() + 1, xmsa_ids.size(), -1);
   xmsa_seqs_.resize(msa_.rows() + 1, "");
 
@@ -159,12 +155,12 @@ void NewPhyloData::BuildXmsa(
 
   // Create the vector of xMSA sequence strings.
   for (std::size_t i = 0; i < xmsa_.rows(); i++) {
-    xmsa_seqs_[i] = ConvertIntsToSeq2(xmsa_.row(i), alphabet_);
+    xmsa_seqs_[i] = ConvertIntsToSeq(xmsa_.row(i), alphabet_);
   }
 };
 
 
-void NewPhyloData::FillHMMGermlinePaddingEmission(
+void PhyloHMM::FillGermlinePaddingEmission(
     const std::map<std::string, std::pair<int, int>>& ggene_ranges_,
     const Eigen::VectorXi& xmsa_inds_, Eigen::RowVectorXd& emission_,
     int& scaler_count_) {
@@ -173,7 +169,7 @@ void NewPhyloData::FillHMMGermlinePaddingEmission(
   int max_scaler_count = 0;
 
   // Loop through the ["germline"|"padding"] states and cache the associated
-  // PhyloHMM emission probabilities.
+  // emission probabilities.
   int i = 0;
   for (auto it = ggene_ranges_.begin(); it != ggene_ranges_.end(); ++it, i++) {
     // Obtain the start/end indices that map to the current
@@ -185,7 +181,7 @@ void NewPhyloData::FillHMMGermlinePaddingEmission(
       emission_[i] *= xmsa_emission_[xmsa_inds_[j]];
 
       // Scale the emission probabilities.
-      scaler_counts[i] += ScaleMatrix2(emission_.segment(i, 1));
+      scaler_counts[i] += ScaleMatrix(emission_.segment(i, 1));
     }
 
     // Keep track of the maximum scaler count.
@@ -197,18 +193,17 @@ void NewPhyloData::FillHMMGermlinePaddingEmission(
   // Make sure the emission probabilities are identically scaled.
   scaler_count_ += max_scaler_count;
   for (std::size_t i = 0; i < emission_.size(); i++) {
-    emission_[i] *=
-        std::pow(SCALE_FACTOR2, max_scaler_count - scaler_counts[i]);
+    emission_[i] *= std::pow(SCALE_FACTOR, max_scaler_count - scaler_counts[i]);
   }
 };
 
 
-void NewPhyloData::FillHMMJunctionEmission(const Eigen::MatrixXi& xmsa_inds_,
-                                           Eigen::MatrixXd& emission_) {
+void PhyloHMM::FillJunctionEmission(const Eigen::MatrixXi& xmsa_inds_,
+                                    Eigen::MatrixXd& emission_) {
   emission_.setZero(xmsa_inds_.rows(), xmsa_inds_.cols());
 
-  // Loop through the "junction" states and cache the associated PhyloHMM
-  // emission probabilities.
+  // Loop through the "junction" states and cache the associated emission
+  // probabilities.
   for (std::size_t i = 0; i < xmsa_inds_.rows(); i++) {
     for (std::size_t j = 0; j < xmsa_inds_.cols(); j++) {
       if (xmsa_inds_(i, j) != -1) {
