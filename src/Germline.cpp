@@ -5,7 +5,6 @@
 #include <tuple>
 #include <vector>
 
-#include "linalg.hpp"
 #include "utils.hpp"
 
 /// @file Germline.cpp
@@ -45,10 +44,9 @@ Germline::Germline(const YAML::Node& root) {
   // Initialize the Germline data structures.
   landing_in_.setZero(gcount);
   landing_out_.setZero(gcount);
-  emission_matrix_.setZero(alphabet_.size(), gcount);
+  transition_.setZero(gcount - 1);
+  emission_.setZero(alphabet_.size(), gcount);
   bases_.setZero(gcount);
-  rates_.setZero(gcount);
-  Eigen::VectorXd next_transition = Eigen::VectorXd::Zero(gcount - 1);
 
   // Store the gene probability.
   gene_prob_ = root["extras"]["gene_prob"].as<double>();
@@ -88,7 +86,7 @@ Germline::Germline(const YAML::Node& root) {
       if (std::regex_match(state_names[j], match, grgx)) {
         // We can transition to the next germline base...
         assert(std::stoi(match.str(1)) == (gindex + 1));
-        next_transition[gindex] = probs[j];
+        transition_[gindex] = probs[j];
       } else if (state_names[j] == "end") {
         // ... or we can transition to the end...
         landing_out_[gindex] = probs[j];
@@ -105,49 +103,13 @@ Germline::Germline(const YAML::Node& root) {
 
     for (std::size_t j = 0; j < state_names.size(); j++) {
       int emit_base = GetAlphabetIndex(alphabet_, state_names[j][0]);
-      emission_matrix_(emit_base, gindex) = probs[j];
+      emission_(emit_base, gindex) = probs[j];
     }
 
-    // Parse the germline base and rate.
+    // Parse the germline base.
     bases_[gindex] =
         GetAlphabetIndex(alphabet_, gstate["extras"]["germline"].as<char>());
-    // `rates_` should be a vector of 1's because we utilize a 4-rate discrete
-    // gamma model through libpll.
-    rates_[gindex] = 1;
   }
-
-  // Build the germline transition probability matrix.
-  transition_ = BuildTransition(next_transition);
-  assert(transition_.rows() == transition_.cols());
-  assert(transition_.cols() == emission_matrix_.cols());
-};
-
-
-/// @brief Makes the Germline match transition probability matrix.
-/// @param[in] next_transition
-/// Vector of probabilities of transitioning to the next match state.
-/// @return
-/// Matrix of match probabilities just in terms of the transitions in
-/// and along a germline segment.
-///
-/// Here a "match" is a specific path through the hidden states of the HMM.
-///
-/// If next_transition is of length \f$\ell-1\f$, then make an \f$\ell \times
-/// \ell\f$ matrix M with the part of the match probability coming from the
-/// transitions. If \f$a\f$ is next_transition,
-/// \f[
-/// M_{i,j} := \prod_{k=i}^{j-1} a_k
-/// \f]
-/// is the cumulative transition probability of having a match start at i and
-/// end at j, ignoring the transitions into and out of the match.
-Eigen::MatrixXd BuildTransition(
-    const Eigen::Ref<const Eigen::VectorXd>& next_transition) {
-  int ell = next_transition.size() + 1;
-  Eigen::MatrixXd transition = Eigen::MatrixXd::Ones(ell, ell);
-  SubProductMatrix(next_transition, transition.block(0, 1, ell - 1, ell - 1));
-  transition.triangularView<Eigen::StrictlyLower>().setZero();
-
-  return transition;
 };
 
 
