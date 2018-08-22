@@ -119,17 +119,17 @@ void PhyloHMM::InitializeXmsaEmission(const pt::pll::Model& model_params) {
 
 void PhyloHMM::InitializeEmission() {
   FillGermlinePaddingEmission(vpadding_ggene_ranges_, vpadding_xmsa_inds_,
-                              vpadding_emission_, vgerm_init_scaler_count_);
+                              vpadding_emission_, vgerm_scaler_count_);
   FillGermlinePaddingEmission(vgerm_ggene_ranges_, vgerm_xmsa_inds_,
-                              vgerm_emission_, vgerm_init_scaler_count_);
+                              vgerm_emission_, vgerm_scaler_count_);
   FillJunctionEmission(vd_junction_xmsa_inds_, vd_junction_emission_);
   FillGermlinePaddingEmission(dgerm_ggene_ranges_, dgerm_xmsa_inds_,
-                              dgerm_emission_, dgerm_init_scaler_count_);
+                              dgerm_emission_, dgerm_scaler_count_);
   FillJunctionEmission(dj_junction_xmsa_inds_, dj_junction_emission_);
   FillGermlinePaddingEmission(jgerm_ggene_ranges_, jgerm_xmsa_inds_,
-                              jgerm_emission_, jgerm_init_scaler_count_);
+                              jgerm_emission_, jgerm_scaler_count_);
   FillGermlinePaddingEmission(jpadding_ggene_ranges_, jpadding_xmsa_inds_,
-                              jpadding_emission_, jgerm_init_scaler_count_);
+                              jpadding_emission_, jgerm_scaler_count_);
 };
 
 
