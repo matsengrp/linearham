@@ -388,13 +388,10 @@ TEST_CASE("SimpleHMM", "[simplehmm]") {
   1;
   Eigen::RowVectorXd jpadding_transition(1);
   jpadding_transition << 0.04;
-  int vgerm_init_scaler_count = 0;
   int vgerm_scaler_count = 0;
   std::vector<int> vd_junction_scaler_counts = {0, 0, 0, 0};
-  int dgerm_init_scaler_count = 0;
   int dgerm_scaler_count = 0;
   std::vector<int> dj_junction_scaler_counts = {0, 0, 0};
-  int jgerm_init_scaler_count = 0;
   int jgerm_scaler_count = 0;
 
   REQUIRE(simple_hmm_ptr->flexbounds() == flexbounds);
@@ -448,13 +445,10 @@ TEST_CASE("SimpleHMM", "[simplehmm]") {
   REQUIRE(simple_hmm_ptr->seq_str() == seq_str);
 
   REQUIRE(simple_hmm_ptr->LogLikelihood() == Approx(-42.8027747544));
-  REQUIRE(simple_hmm_ptr->vgerm_init_scaler_count() == vgerm_init_scaler_count);
   REQUIRE(simple_hmm_ptr->vgerm_scaler_count() == vgerm_scaler_count);
   REQUIRE(simple_hmm_ptr->vd_junction_scaler_counts() == vd_junction_scaler_counts);
-  REQUIRE(simple_hmm_ptr->dgerm_init_scaler_count() == dgerm_init_scaler_count);
   REQUIRE(simple_hmm_ptr->dgerm_scaler_count() == dgerm_scaler_count);
   REQUIRE(simple_hmm_ptr->dj_junction_scaler_counts() == dj_junction_scaler_counts);
-  REQUIRE(simple_hmm_ptr->jgerm_init_scaler_count() == jgerm_init_scaler_count);
   REQUIRE(simple_hmm_ptr->jgerm_scaler_count() == jgerm_scaler_count);
 
   // For clarity, we run an additional SimpleHMM test.
@@ -588,13 +582,10 @@ TEST_CASE("SimpleHMM", "[simplehmm]") {
                  0, 1;
   jpadding_transition.resize(2);
   jpadding_transition << 0.04, 0.04;
-  vgerm_init_scaler_count = 0;
   vgerm_scaler_count = 0;
   vd_junction_scaler_counts = {0, 0};
-  dgerm_init_scaler_count = 0;
   dgerm_scaler_count = 0;
   dj_junction_scaler_counts = {0, 0};
-  jgerm_init_scaler_count = 0;
   jgerm_scaler_count = 0;
 
   REQUIRE(simple_hmm_ptr->flexbounds() == flexbounds);
@@ -644,13 +635,10 @@ TEST_CASE("SimpleHMM", "[simplehmm]") {
   REQUIRE(simple_hmm_ptr->seq_str() == seq_str);
 
   REQUIRE(simple_hmm_ptr->LogLikelihood() == Approx(-37.1354672701));
-  REQUIRE(simple_hmm_ptr->vgerm_init_scaler_count() == vgerm_init_scaler_count);
   REQUIRE(simple_hmm_ptr->vgerm_scaler_count() == vgerm_scaler_count);
   REQUIRE(simple_hmm_ptr->vd_junction_scaler_counts() == vd_junction_scaler_counts);
-  REQUIRE(simple_hmm_ptr->dgerm_init_scaler_count() == dgerm_init_scaler_count);
   REQUIRE(simple_hmm_ptr->dgerm_scaler_count() == dgerm_scaler_count);
   REQUIRE(simple_hmm_ptr->dj_junction_scaler_counts() == dj_junction_scaler_counts);
-  REQUIRE(simple_hmm_ptr->jgerm_init_scaler_count() == jgerm_init_scaler_count);
   REQUIRE(simple_hmm_ptr->jgerm_scaler_count() == jgerm_scaler_count);
 }
 
@@ -768,13 +756,10 @@ TEST_CASE("PhyloHMM", "[phylohmm]") {
   1;
   Eigen::RowVectorXd jpadding_transition(1);
   jpadding_transition << 0.04;
-  int vgerm_init_scaler_count = 0;
   int vgerm_scaler_count = 0;
   std::vector<int> vd_junction_scaler_counts = {0, 0, 0, 0};
-  int dgerm_init_scaler_count = 0;
   int dgerm_scaler_count = 0;
   std::vector<int> dj_junction_scaler_counts = {0, 0, 0};
-  int jgerm_init_scaler_count = 0;
   int jgerm_scaler_count = 0;
 
   REQUIRE(phylo_hmm_ptr->flexbounds() == flexbounds);
@@ -882,13 +867,10 @@ TEST_CASE("PhyloHMM", "[phylohmm]") {
   REQUIRE(phylo_hmm_ptr->jpadding_xmsa_inds() == jpadding_xmsa_inds);
 
   REQUIRE(phylo_hmm_ptr->LogLikelihood() == Approx(-75.8136));
-  REQUIRE(phylo_hmm_ptr->vgerm_init_scaler_count() == vgerm_init_scaler_count);
   REQUIRE(phylo_hmm_ptr->vgerm_scaler_count() == vgerm_scaler_count);
   REQUIRE(phylo_hmm_ptr->vd_junction_scaler_counts() == vd_junction_scaler_counts);
-  REQUIRE(phylo_hmm_ptr->dgerm_init_scaler_count() == dgerm_init_scaler_count);
   REQUIRE(phylo_hmm_ptr->dgerm_scaler_count() == dgerm_scaler_count);
   REQUIRE(phylo_hmm_ptr->dj_junction_scaler_counts() == dj_junction_scaler_counts);
-  REQUIRE(phylo_hmm_ptr->jgerm_init_scaler_count() == jgerm_init_scaler_count);
   REQUIRE(phylo_hmm_ptr->jgerm_scaler_count() == jgerm_scaler_count);
 
   // For clarity, we run an additional PhyloHMM test.
@@ -1023,13 +1005,10 @@ TEST_CASE("PhyloHMM", "[phylohmm]") {
                  0, 1;
   jpadding_transition.resize(2);
   jpadding_transition << 0.04, 0.04;
-  vgerm_init_scaler_count = 0;
   vgerm_scaler_count = 0;
   vd_junction_scaler_counts = {0, 0};
-  dgerm_init_scaler_count = 0;
   dgerm_scaler_count = 0;
   dj_junction_scaler_counts = {0, 0};
-  jgerm_init_scaler_count = 0;
   jgerm_scaler_count = 0;
 
   REQUIRE(phylo_hmm_ptr->flexbounds() == flexbounds);
@@ -1121,13 +1100,10 @@ TEST_CASE("PhyloHMM", "[phylohmm]") {
   REQUIRE(phylo_hmm_ptr->jpadding_xmsa_inds() == jpadding_xmsa_inds);
 
   REQUIRE(phylo_hmm_ptr->LogLikelihood() == Approx(-75.1122515055));
-  REQUIRE(phylo_hmm_ptr->vgerm_init_scaler_count() == vgerm_init_scaler_count);
   REQUIRE(phylo_hmm_ptr->vgerm_scaler_count() == vgerm_scaler_count);
   REQUIRE(phylo_hmm_ptr->vd_junction_scaler_counts() == vd_junction_scaler_counts);
-  REQUIRE(phylo_hmm_ptr->dgerm_init_scaler_count() == dgerm_init_scaler_count);
   REQUIRE(phylo_hmm_ptr->dgerm_scaler_count() == dgerm_scaler_count);
   REQUIRE(phylo_hmm_ptr->dj_junction_scaler_counts() == dj_junction_scaler_counts);
-  REQUIRE(phylo_hmm_ptr->jgerm_init_scaler_count() == jgerm_init_scaler_count);
   REQUIRE(phylo_hmm_ptr->jgerm_scaler_count() == jgerm_scaler_count);
 
   // Test the phylogenetic likelihood calculation using the R package "phylomd".
