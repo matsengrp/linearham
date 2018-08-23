@@ -812,17 +812,15 @@ TEST_CASE("PhyloHMM", "[phylohmm]") {
   1, 2, 3, 0, 2, 3, 0, 2, 2, 0, 1, 3, 1, 4, 4;
   Eigen::MatrixXi xmsa(4, 36);
   xmsa <<
+  4, 0, 3, 2, 0, 0, 0, 0, 1, 1, 1, 1, 2, 2, 2, 2, 3, 3, 3, 3, 0, 1, 0, 0, 0, 1, 1, 2, 2, 2, 3, 3, 3, 2, 1, 2,
   3, 0, 0, 0, 0, 2, 0, 3, 0, 2, 0, 3, 0, 2, 0, 3, 0, 2, 0, 3, 1, 0, 0, 0, 3, 0, 3, 0, 0, 3, 0, 0, 3, 3, 4, 4,
   1, 0, 1, 0, 1, 2, 3, 3, 1, 2, 3, 3, 1, 2, 3, 3, 1, 2, 3, 3, 1, 2, 2, 0, 2, 0, 2, 2, 0, 2, 2, 0, 2, 3, 4, 4,
-  4, 0, 3, 2, 0, 0, 0, 0, 1, 1, 1, 1, 2, 2, 2, 2, 3, 3, 3, 3, 0, 1, 0, 0, 0, 1, 1, 2, 2, 2, 3, 3, 3, 2, 1, 2,
   1, 2, 3, 0, 2, 3, 0, 2, 2, 3, 0, 2, 2, 3, 0, 2, 2, 3, 0, 2, 2, 0, 0, 1, 3, 1, 3, 0, 1, 3, 0, 1, 3, 1, 4, 4;
-  std::vector<std::string> xmsa_labels = {"0", "1", "naive", "3"};
+  std::vector<std::string> xmsa_labels = {"naive", "0", "1", "2"};
   std::vector<std::string> xmsa_seqs = {
-      "TAAAAGATAGATAGATAGATCAAATATAATAATTNN", "CACACGTTCGTTCGTTCGTTCGGAGAGGAGGAGTNN",
-      "NATGAAAACCCCGGGGTTTTACAAACCGGGTTTGCG", "CGTAGTAGGTAGGTAGGTAGGAACTCTACTACTCNN"};
-  int xmsa_naive_ind = std::find(xmsa_labels.begin(),
-                                 xmsa_labels.end(), "naive")
-                       - xmsa_labels.begin();
+      "NATGAAAACCCCGGGGTTTTACAAACCGGGTTTGCG", "TAAAAGATAGATAGATAGATCAAATATAATAATTNN",
+      "CACACGTTCGTTCGTTCGTTCGGAGAGGAGGAGTNN", "CGTAGTAGGTAGGTAGGTAGGAACTCTACTACTCNN"};
+  int xmsa_naive_ind = 0;
   Eigen::VectorXd xmsa_emission(36);
   xmsa_emission << 0.00734474, 0.0233122, 0.00563729, 0.0107866, 0.00342739,
                    0.0177109, 0.0279823, 0.0215197, 0.00270654, 0.0177109,
@@ -1056,12 +1054,12 @@ TEST_CASE("PhyloHMM", "[phylohmm]") {
 
   xmsa.resize(4, 34);
   xmsa <<
+  4, 0, 3, 2, 1, 0, 0, 0, 1, 1, 2, 2, 3, 3, 2, 3, 1, 0, 0, 1, 0, 1, 2, 2, 3, 3, 0, 3, 2, 1, 2, 1, 0, 3,
   3, 0, 0, 0, 0, 0, 0, 2, 0, 2, 0, 2, 0, 2, 0, 3, 0, 3, 1, 0, 0, 1, 1, 0, 1, 0, 0, 3, 3, 4, 4, 0, 3, 3,
   1, 0, 1, 0, 0, 1, 1, 2, 1, 2, 1, 2, 1, 2, 3, 3, 3, 3, 1, 2, 2, 1, 1, 2, 1, 2, 0, 2, 3, 4, 4, 0, 2, 3,
-  4, 0, 3, 2, 1, 0, 0, 0, 1, 1, 2, 2, 3, 3, 2, 3, 1, 0, 0, 1, 0, 1, 2, 2, 3, 3, 0, 3, 2, 1, 2, 1, 0, 3,
   1, 2, 3, 0, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 0, 2, 0, 2, 2, 0, 0, 2, 2, 0, 2, 0, 1, 3, 1, 4, 4, 1, 3, 1;
-  xmsa_seqs = {"TAAAAAAGAGAGAGATATCAACCACAATTNNATT", "CACAACCGCGCGCGTTTTCGGCCGCGAGTNNAGT",
-               "NATGCAAACCGGTTGTCAACACGGTTATGCGCAT", "CGTAGTGTGTGTGTAGAGGAAGGAGACTCNNCTC"};
+  xmsa_seqs = {"NATGCAAACCGGTTGTCAACACGGTTATGCGCAT", "TAAAAAAGAGAGAGATATCAACCACAATTNNATT",
+               "CACAACCGCGCGCGTTTTCGGCCGCGAGTNNAGT", "CGTAGTGTGTGTGTAGAGGAAGGAGACTCNNCTC"};
   xmsa_emission.resize(34);
   xmsa_emission << 0.00734474, 0.0233122, 0.00563729, 0.0107866, 0.0067714,
                    0.00534673, 0.00342739, 0.0177109, 0.00270654, 0.0177109,
