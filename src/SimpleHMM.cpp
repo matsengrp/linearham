@@ -16,12 +16,10 @@ SimpleHMM::SimpleHMM(const std::string& yaml_path, int cluster_ind, int seq_ind,
                      const std::string& hmm_param_dir, int seed)
     : HMM(yaml_path, cluster_ind, hmm_param_dir, seed) {
   // Parse the `indel_reversed_seqs` or `input_seqs` YAML data.
-  std::string seq_type =
-      (yaml_root_["events"][cluster_ind]["has_shm_indels"][seq_ind].as<bool>())
-          ? "indel_reversed_seqs"
-          : "input_seqs";
-  seq_str_ =
-      yaml_root_["events"][cluster_ind][seq_type][seq_ind].as<std::string>();
+  std::string seq_type = (cluster_data_["has_shm_indels"][seq_ind].as<bool>())
+                             ? "indel_reversed_seqs"
+                             : "input_seqs";
+  seq_str_ = cluster_data_[seq_type][seq_ind].as<std::string>();
   seq_ = ConvertSeqToInts(seq_str_, alphabet_);
 
   // Initialize the emission probability matrices.
