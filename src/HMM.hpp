@@ -23,8 +23,8 @@ namespace linearham {
 
 class HMM {
  protected:
-  // Partis YAML file root
-  YAML::Node yaml_root_;
+  // Partis cluster data
+  YAML::Node cluster_data_;
 
   // Smith-Waterman alignment information
   std::map<std::string, std::pair<int, int>> flexbounds_;
@@ -152,7 +152,7 @@ class HMM {
       const std::string& hmm_param_dir, int seed);
   virtual ~HMM(){};
 
-  const YAML::Node& yaml_root() const { return yaml_root_; };
+  const YAML::Node& cluster_data() const { return cluster_data_; };
   const std::map<std::string, std::pair<int, int>>& flexbounds() const {
     return flexbounds_;
   };

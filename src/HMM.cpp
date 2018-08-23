@@ -16,11 +16,10 @@ namespace linearham {
 HMM::HMM(const std::string& yaml_path, int cluster_ind,
          const std::string& hmm_param_dir, int seed) {
   // Parse the `flexbounds` and `relpos` YAML data.
-  yaml_root_ = YAML::LoadFile(yaml_path);
-  flexbounds_ = yaml_root_["events"][cluster_ind]["flexbounds"]
+  cluster_data_ = YAML::LoadFile(yaml_path)["events"][cluster_ind];
+  flexbounds_ = cluster_data_["flexbounds"]
                     .as<std::map<std::string, std::pair<int, int>>>();
-  relpos_ = yaml_root_["events"][cluster_ind]["relpos"]
-                .as<std::map<std::string, int>>();
+  relpos_ = cluster_data_["relpos"].as<std::map<std::string, int>>();
 
   // Create the map holding (germline name, GermlineGene) pairs.
   ggenes_ = CreateGermlineGeneMap(hmm_param_dir);
