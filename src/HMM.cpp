@@ -683,7 +683,7 @@ void ComputeJunctionForwardProbabilities(
     std::vector<int>& junction_scaler_counts_) {
   junction_forward_.setZero(junction_emission_.rows(),
                             junction_emission_.cols());
-  junction_scaler_counts_.resize(junction_emission_.rows(), 0);
+  junction_scaler_counts_.assign(junction_emission_.rows(), 0);
 
   for (std::size_t i = 0; i < junction_emission_.rows(); i++) {
     Eigen::Ref<Eigen::MatrixXd> junction_forward_row =
