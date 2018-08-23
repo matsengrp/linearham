@@ -157,7 +157,7 @@ void HMM::InitializeTransition() {
 
 
 void HMM::RunForwardAlgorithm() {
-  InitializeForwardProbabilities();
+  ComputeInitialForwardProbabilities();
   ComputeJunctionForwardProbabilities(
       vgerm_forward_, vgerm_scaler_count_, vgerm_vd_junction_transition_,
       vd_junction_transition_, vd_junction_emission_, vd_junction_forward_,
@@ -179,7 +179,7 @@ void HMM::RunForwardAlgorithm() {
 };
 
 
-void HMM::InitializeForwardProbabilities() {
+void HMM::ComputeInitialForwardProbabilities() {
   vgerm_forward_.setZero(vgerm_state_strs_.size());
 
   int i = 0;
