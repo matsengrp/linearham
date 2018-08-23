@@ -14,7 +14,7 @@ namespace linearham {
 
 
 HMM::HMM(const std::string& yaml_path, int cluster_ind,
-         const std::string& hmm_param_dir) {
+         const std::string& hmm_param_dir, int seed) {
   // Parse the `flexbounds` and `relpos` YAML data.
   yaml_root_ = YAML::LoadFile(yaml_path);
   flexbounds_ = yaml_root_["events"][cluster_ind]["flexbounds"]
@@ -27,6 +27,9 @@ HMM::HMM(const std::string& yaml_path, int cluster_ind,
 
   // Initialize the nucleotide alphabet.
   alphabet_ = ggenes_.begin()->second.germ_ptr->alphabet() + "N";
+
+  // Set the RNG seed.
+  rng_.seed(seed);
 
   // Initialize the state space.
   InitializeStateSpace();
@@ -210,6 +213,25 @@ void HMM::ComputeInitialForwardProbabilities() {
 };
 
 
+void HMM::SampleInitialState() {
+  // Create the sampling distribution.
+  distr_.param(std::discrete_distribution<int>::param_type(
+      jgerm_forward_.data(), jgerm_forward_.data() + jgerm_forward_.size()));
+
+  // Sample the "germline" state.
+  jgerm_state_ind_samp_ = distr_(rng_);
+  jgerm_state_str_samp_ = jgerm_state_strs_[jgerm_state_ind_samp_];
+
+  int range_start, range_end;
+  std::tie(range_start, range_end) =
+      jgerm_ggene_ranges_.at(jgerm_state_str_samp_);
+
+  for (int i = range_start; i < range_end; i++) {
+    naive_seq_samp_[jgerm_site_inds_[i]] = alphabet_[jgerm_naive_bases_[i]];
+  }
+};
+
+
 double HMM::LogLikelihood() {
   // If necessary, run the forward algorithm.
   if (jgerm_forward_.size() == 0) {
@@ -218,6 +240,44 @@ double HMM::LogLikelihood() {
 
   return std::log(jgerm_forward_.sum()) -
          jgerm_scaler_count_ * std::log(SCALE_FACTOR);
+};
+
+
+std::string HMM::SampleNaiveSequence() {
+  // If necessary, run the forward algorithm.
+  if (jgerm_forward_.size() == 0) {
+    RunForwardAlgorithm();
+  }
+
+  // Initialize the naive sequence sample.
+  naive_seq_samp_.assign(this->size(), 'N');
+
+  // Sample the "germline" and "junction" states.
+  SampleInitialState();
+  SampleJunctionStates(jgerm_state_ind_samp_, dj_junction_jgerm_transition_,
+                       dj_junction_state_strs_, dj_junction_naive_bases_,
+                       dj_junction_transition_, dj_junction_forward_,
+                       flexbounds_.at("d_r"), alphabet_, rng_, distr_,
+                       naive_seq_samp_, dj_junction_state_str_samps_,
+                       dj_junction_state_ind_samps_);
+  SampleGermlineState(dj_junction_state_ind_samps_,
+                      dgerm_dj_junction_transition_, dgerm_state_strs_,
+                      dgerm_ggene_ranges_, dgerm_naive_bases_, dgerm_site_inds_,
+                      dgerm_forward_, alphabet_, rng_, distr_, naive_seq_samp_,
+                      dgerm_state_str_samp_, dgerm_state_ind_samp_);
+  SampleJunctionStates(dgerm_state_ind_samp_, vd_junction_dgerm_transition_,
+                       vd_junction_state_strs_, vd_junction_naive_bases_,
+                       vd_junction_transition_, vd_junction_forward_,
+                       flexbounds_.at("v_r"), alphabet_, rng_, distr_,
+                       naive_seq_samp_, vd_junction_state_str_samps_,
+                       vd_junction_state_ind_samps_);
+  SampleGermlineState(vd_junction_state_ind_samps_,
+                      vgerm_vd_junction_transition_, vgerm_state_strs_,
+                      vgerm_ggene_ranges_, vgerm_naive_bases_, vgerm_site_inds_,
+                      vgerm_forward_, alphabet_, rng_, distr_, naive_seq_samp_,
+                      vgerm_state_str_samp_, vgerm_state_ind_samp_);
+
+  return naive_seq_samp_;
 };
 
 
@@ -726,6 +786,79 @@ void ComputeGermlineForwardProbabilities(
   // Scale the forward probabilities.
   germ_scaler_count_ +=
       junction_scaler_counts_.back() + ScaleMatrix(germ_forward_);
+};
+
+
+void SampleJunctionStates(int germ_state_ind_samp_,
+                          const Eigen::MatrixXd& junction_germ_transition_,
+                          const std::vector<std::string>& junction_state_strs_,
+                          const std::vector<int>& junction_naive_bases_,
+                          const Eigen::MatrixXd& junction_transition_,
+                          const Eigen::MatrixXd& junction_forward_,
+                          std::pair<int, int> left_flexbounds,
+                          const std::string& alphabet, std::mt19937& rng_,
+                          std::discrete_distribution<int>& distr_,
+                          std::string& naive_seq_samp_,
+                          std::vector<std::string>& junction_state_str_samps_,
+                          std::vector<int>& junction_state_ind_samps_) {
+  int site_start = left_flexbounds.first;
+  junction_state_str_samps_.assign(junction_forward_.rows(), "");
+  junction_state_ind_samps_.assign(junction_forward_.rows(), -1);
+
+  for (int i = junction_forward_.rows() - 1; i >= 0; i--) {
+    // Create the sampling distribution.
+    // Are we at the end of the "junction" region?
+    Eigen::VectorXd junction_state_probs =
+        (i == junction_forward_.rows() - 1)
+            ? junction_germ_transition_.col(germ_state_ind_samp_)
+            : junction_transition_.col(junction_state_ind_samps_[i + 1]);
+    junction_state_probs.array() *= junction_forward_.row(i).array();
+
+    distr_.param(std::discrete_distribution<int>::param_type(
+        junction_state_probs.data(),
+        junction_state_probs.data() + junction_state_probs.size()));
+
+    // Sample the "junction" state.
+    junction_state_ind_samps_[i] = distr_(rng_);
+    junction_state_str_samps_[i] =
+        junction_state_strs_[junction_state_ind_samps_[i]];
+    naive_seq_samp_[site_start + i] =
+        alphabet[junction_naive_bases_[junction_state_ind_samps_[i]]];
+  }
+};
+
+
+void SampleGermlineState(
+    const std::vector<int>& junction_state_ind_samps_,
+    const Eigen::MatrixXd& germ_junction_transition_,
+    const std::vector<std::string>& germ_state_strs_,
+    const std::map<std::string, std::pair<int, int>>& germ_ggene_ranges_,
+    const std::vector<int>& germ_naive_bases_,
+    const std::vector<int>& germ_site_inds_,
+    const Eigen::RowVectorXd& germ_forward_, const std::string& alphabet,
+    std::mt19937& rng_, std::discrete_distribution<int>& distr_,
+    std::string& naive_seq_samp_, std::string& germ_state_str_samp_,
+    int& germ_state_ind_samp_) {
+  // Create the sampling distribution.
+  Eigen::VectorXd germ_state_probs =
+      germ_junction_transition_.col(junction_state_ind_samps_.front());
+  germ_state_probs.array() *= germ_forward_.array();
+
+  distr_.param(std::discrete_distribution<int>::param_type(
+      germ_state_probs.data(),
+      germ_state_probs.data() + germ_state_probs.size()));
+
+  // Sample the "germline" state.
+  germ_state_ind_samp_ = distr_(rng_);
+  germ_state_str_samp_ = germ_state_strs_[germ_state_ind_samp_];
+
+  int range_start, range_end;
+  std::tie(range_start, range_end) =
+      germ_ggene_ranges_.at(germ_state_str_samp_);
+
+  for (int i = range_start; i < range_end; i++) {
+    naive_seq_samp_[germ_site_inds_[i]] = alphabet[germ_naive_bases_[i]];
+  }
 };
 
 

@@ -65,7 +65,7 @@ class PhyloHMM : public HMM {
   PhyloHMM(const std::string& yaml_path, int cluster_ind,
            const std::string& hmm_param_dir, const std::string& trees_path,
            const std::string& fasta_path, const std::string& ctmc_params_path,
-           int rate_categories = 4);
+           int rate_categories = 4, int seed = 0);
   ~PhyloHMM();
 
   const Eigen::MatrixXi& msa() const { return msa_; };
@@ -91,6 +91,7 @@ class PhyloHMM : public HMM {
   const Eigen::VectorXi& jpadding_xmsa_inds() const {
     return jpadding_xmsa_inds_;
   };
+  int size() const override { return msa_.cols(); };
 };
 
 

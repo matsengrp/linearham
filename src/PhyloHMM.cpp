@@ -15,8 +15,9 @@ namespace linearham {
 PhyloHMM::PhyloHMM(const std::string& yaml_path, int cluster_ind,
                    const std::string& hmm_param_dir,
                    const std::string& trees_path, const std::string& fasta_path,
-                   const std::string& ctmc_params_path, int rate_categories)
-    : HMM(yaml_path, cluster_ind, hmm_param_dir) {
+                   const std::string& ctmc_params_path, int rate_categories,
+                   int seed)
+    : HMM(yaml_path, cluster_ind, hmm_param_dir, seed) {
   // Initialize the phylogenetic tree object.
   tree_ = pll_utree_parse_newick(trees_path.c_str());
 

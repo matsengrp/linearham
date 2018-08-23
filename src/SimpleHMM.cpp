@@ -13,8 +13,8 @@ namespace linearham {
 
 
 SimpleHMM::SimpleHMM(const std::string& yaml_path, int cluster_ind, int seq_ind,
-                     const std::string& hmm_param_dir)
-    : HMM(yaml_path, cluster_ind, hmm_param_dir) {
+                     const std::string& hmm_param_dir, int seed)
+    : HMM(yaml_path, cluster_ind, hmm_param_dir, seed) {
   // Parse the `indel_reversed_seqs` or `input_seqs` YAML data.
   std::string seq_type =
       (yaml_root_["events"][cluster_ind]["has_shm_indels"][seq_ind].as<bool>())
