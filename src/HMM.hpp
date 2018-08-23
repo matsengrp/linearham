@@ -4,6 +4,7 @@
 #include <cmath>
 #include <map>
 #include <memory>
+#include <random>
 #include <string>
 #include <unordered_map>
 #include <utility>
@@ -34,6 +35,10 @@ class HMM {
 
   // Nucleotide alphabet
   std::string alphabet_;
+
+  // Random sampling data structures
+  std::mt19937 rng_;
+  std::discrete_distribution<int> distr_;
 
   // State space information
   // V "padding" states
@@ -114,6 +119,19 @@ class HMM {
   std::vector<int> dj_junction_scaler_counts_;
   int jgerm_scaler_count_;
 
+  // Naive sequence sample information
+  std::string naive_seq_samp_;
+  std::string vgerm_state_str_samp_;
+  int vgerm_state_ind_samp_;
+  std::vector<std::string> vd_junction_state_str_samps_;
+  std::vector<int> vd_junction_state_ind_samps_;
+  std::string dgerm_state_str_samp_;
+  int dgerm_state_ind_samp_;
+  std::vector<std::string> dj_junction_state_str_samps_;
+  std::vector<int> dj_junction_state_ind_samps_;
+  std::string jgerm_state_str_samp_;
+  int jgerm_state_ind_samp_;
+
   // Initialization functions
   void InitializeStateSpace();
 
@@ -122,14 +140,16 @@ class HMM {
   // Auxiliary functions
   void RunForwardAlgorithm();
 
-  void InitializeForwardProbabilities();
+  void ComputeInitialForwardProbabilities();
+
+  void SampleInitialState();
 
  private:
   virtual void InitializeEmission() = 0;
 
  public:
   HMM(const std::string& yaml_path, int cluster_ind,
-      const std::string& hmm_param_dir);
+      const std::string& hmm_param_dir, int seed);
   virtual ~HMM(){};
 
   const YAML::Node& yaml_root() const { return yaml_root_; };
@@ -141,6 +161,8 @@ class HMM {
     return ggenes_;
   };
   const std::string& alphabet() const { return alphabet_; };
+  const std::mt19937& rng() const { return rng_; };
+  const std::discrete_distribution<int>& distr() const { return distr_; };
   const std::map<std::string, std::pair<int, int>>& vpadding_ggene_ranges()
       const {
     return vpadding_ggene_ranges_;
@@ -283,8 +305,35 @@ class HMM {
     return dj_junction_scaler_counts_;
   };
   int jgerm_scaler_count() const { return jgerm_scaler_count_; };
+  const std::string& naive_seq_samp() const { return naive_seq_samp_; };
+  const std::string& vgerm_state_str_samp() const {
+    return vgerm_state_str_samp_;
+  };
+  int vgerm_state_ind_samp() const { return vgerm_state_ind_samp_; };
+  const std::vector<std::string>& vd_junction_state_str_samps() const {
+    return vd_junction_state_str_samps_;
+  };
+  const std::vector<int>& vd_junction_state_ind_samps() const {
+    return vd_junction_state_ind_samps_;
+  };
+  const std::string& dgerm_state_str_samp() const {
+    return dgerm_state_str_samp_;
+  };
+  int dgerm_state_ind_samp() const { return dgerm_state_ind_samp_; };
+  const std::vector<std::string>& dj_junction_state_str_samps() const {
+    return dj_junction_state_str_samps_;
+  };
+  const std::vector<int>& dj_junction_state_ind_samps() const {
+    return dj_junction_state_ind_samps_;
+  };
+  const std::string& jgerm_state_str_samp() const {
+    return jgerm_state_str_samp_;
+  };
+  int jgerm_state_ind_samp() const { return jgerm_state_ind_samp_; };
+  virtual int size() const = 0;
 
   double LogLikelihood();
+  std::string SampleNaiveSequence();
 };
 
 
@@ -383,6 +432,31 @@ void ComputeGermlineForwardProbabilities(
     const Eigen::RowVectorXd& padding_transition_,
     const Eigen::RowVectorXd& padding_emission_,
     Eigen::RowVectorXd& germ_forward_, int& germ_scaler_count_);
+
+void SampleJunctionStates(int germ_state_ind_samp_,
+                          const Eigen::MatrixXd& junction_germ_transition_,
+                          const std::vector<std::string>& junction_state_strs_,
+                          const std::vector<int>& junction_naive_bases_,
+                          const Eigen::MatrixXd& junction_transition_,
+                          const Eigen::MatrixXd& junction_forward_,
+                          std::pair<int, int> left_flexbounds,
+                          const std::string& alphabet, std::mt19937& rng_,
+                          std::discrete_distribution<int>& distr_,
+                          std::string& naive_seq_samp_,
+                          std::vector<std::string>& junction_state_str_samps_,
+                          std::vector<int>& junction_state_ind_samps_);
+
+void SampleGermlineState(
+    const std::vector<int>& junction_state_ind_samps_,
+    const Eigen::MatrixXd& germ_junction_transition_,
+    const std::vector<std::string>& germ_state_strs_,
+    const std::map<std::string, std::pair<int, int>>& germ_ggene_ranges_,
+    const std::vector<int>& germ_naive_bases_,
+    const std::vector<int>& germ_site_inds_,
+    const Eigen::RowVectorXd& germ_forward_, const std::string& alphabet,
+    std::mt19937& rng_, std::discrete_distribution<int>& distr_,
+    std::string& naive_seq_samp_, std::string& germ_state_str_samp_,
+    int& germ_state_ind_samp_);
 
 int ScaleMatrix(Eigen::Ref<Eigen::MatrixXd> m);
 
