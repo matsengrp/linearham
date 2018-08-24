@@ -18,10 +18,6 @@ namespace linearham {
 
 class SimpleHMM : public HMM {
  private:
-  // Input sequence
-  Eigen::RowVectorXi seq_;
-  std::string seq_str_;
-
   // Initialization functions
   void InitializeEmission() override;
 
@@ -43,12 +39,8 @@ class SimpleHMM : public HMM {
       int& scaler_count_);
 
  public:
-  SimpleHMM(const std::string& yaml_path, int cluster_ind, int seq_ind,
+  SimpleHMM(const std::string& yaml_path, int cluster_ind,
             const std::string& hmm_param_dir, int seed = 0);
-
-  const Eigen::RowVectorXi& seq() const { return seq_; };
-  const std::string& seq_str() const { return seq_str_; };
-  int size() const override { return seq_.size(); };
 };
 
 

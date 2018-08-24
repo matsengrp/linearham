@@ -27,6 +27,9 @@ HMM::HMM(const std::string& yaml_path, int cluster_ind,
   // Initialize the nucleotide alphabet.
   alphabet_ = ggenes_.begin()->second.germ_ptr->alphabet() + "N";
 
+  // Initialize the multiple sequence alignment.
+  InitializeMsa();
+
   // Set the RNG seed.
   rng_.seed(seed);
 
@@ -44,6 +47,21 @@ HMM::HMM(const std::string& yaml_path, int cluster_ind,
 
 
 // Initialization functions
+
+
+void HMM::InitializeMsa() {
+  msa_.setConstant(cluster_data_["unique_ids"].size(),
+                   cluster_data_["naive_seq"].as<std::string>().size(), -1);
+
+  for (std::size_t i = 0; i < cluster_data_["unique_ids"].size(); i++) {
+    // Parse the `indel_reversed_seqs` or `input_seqs` YAML data.
+    std::string seq_type = (cluster_data_["has_shm_indels"][i].as<bool>())
+                               ? "indel_reversed_seqs"
+                               : "input_seqs";
+    msa_.row(i) = ConvertSeqToInts(cluster_data_[seq_type][i].as<std::string>(),
+                                   alphabet_);
+  }
+};
 
 
 void HMM::InitializeStateSpace() {

@@ -283,9 +283,9 @@ TEST_CASE("CreateGermlineGeneMap", "[vdjgermline]") {
 
 TEST_CASE("SimpleHMM", "[simplehmm]") {
   // Test the SimpleHMM class using the example files.
-  std::string yaml_path = "data/hmm_input.yaml";
+  std::string yaml_path = "data/simple_hmm_input.yaml";
   std::string hmm_param_dir = "data/hmm_params";
-  SimpleHMMPtr simple_hmm_ptr = std::make_shared<SimpleHMM>(yaml_path, 0, 0, hmm_param_dir);
+  SimpleHMMPtr simple_hmm_ptr = std::make_shared<SimpleHMM>(yaml_path, 0, hmm_param_dir);
 
   // For a diagram of the S-W alignment, see
   // https://github.com/matsengrp/linearham/issues/44#issue-336348821.
@@ -296,6 +296,9 @@ TEST_CASE("SimpleHMM", "[simplehmm]") {
   std::map<std::string, int> relpos = {
       {"IGHV_ex*01", 1}, {"IGHD_ex*01", 5}, {"IGHJ_ex*01", 10}};
   std::string alphabet = "ACGTN";
+  Eigen::MatrixXi msa(1,15);
+  msa <<
+  0, 1, 0, 2, 3, 0, 1, 1, 1, 3, 2, 3, 3, 4, 4;
   std::map<std::string, std::pair<int, int>> vpadding_ggene_ranges =
       {{"IGHV_ex*01", {0, 1}}};
   std::vector<int> vpadding_naive_bases = {4};
@@ -397,6 +400,7 @@ TEST_CASE("SimpleHMM", "[simplehmm]") {
   REQUIRE(simple_hmm_ptr->flexbounds() == flexbounds);
   REQUIRE(simple_hmm_ptr->relpos() == relpos);
   REQUIRE(simple_hmm_ptr->alphabet() == alphabet);
+  REQUIRE(simple_hmm_ptr->msa() == msa);
   REQUIRE(simple_hmm_ptr->vpadding_ggene_ranges() == vpadding_ggene_ranges);
   REQUIRE(simple_hmm_ptr->vpadding_naive_bases() == vpadding_naive_bases);
   REQUIRE(simple_hmm_ptr->vpadding_site_inds() == vpadding_site_inds);
@@ -437,13 +441,6 @@ TEST_CASE("SimpleHMM", "[simplehmm]") {
   REQUIRE(simple_hmm_ptr->dj_junction_jgerm_transition() == dj_junction_jgerm_transition);
   REQUIRE(simple_hmm_ptr->jpadding_transition().isApprox(jpadding_transition));
 
-  Eigen::RowVectorXi seq(15);
-  seq << 0, 1, 0, 2, 3, 0, 1, 1, 1, 3, 2, 3, 3, 4, 4;
-  std::string seq_str = "ACAGTACCCTGTTNN";
-
-  REQUIRE(simple_hmm_ptr->seq() == seq);
-  REQUIRE(simple_hmm_ptr->seq_str() == seq_str);
-
   REQUIRE(simple_hmm_ptr->LogLikelihood() == Approx(-42.8027747544));
   REQUIRE(simple_hmm_ptr->vgerm_scaler_count() == vgerm_scaler_count);
   REQUIRE(simple_hmm_ptr->vd_junction_scaler_counts() == vd_junction_scaler_counts);
@@ -452,8 +449,8 @@ TEST_CASE("SimpleHMM", "[simplehmm]") {
   REQUIRE(simple_hmm_ptr->jgerm_scaler_count() == jgerm_scaler_count);
 
   // For clarity, we run an additional SimpleHMM test.
-  yaml_path = "data/hmm_input_extra.yaml";
-  simple_hmm_ptr = std::make_shared<SimpleHMM>(yaml_path, 0, 0, hmm_param_dir);
+  yaml_path = "data/simple_hmm_input_extra.yaml";
+  simple_hmm_ptr = std::make_shared<SimpleHMM>(yaml_path, 0, hmm_param_dir);
 
   // For a diagram of the S-W alignment, see
   // https://github.com/matsengrp/linearham/issues/44#issuecomment-406625914.
@@ -591,6 +588,7 @@ TEST_CASE("SimpleHMM", "[simplehmm]") {
   REQUIRE(simple_hmm_ptr->flexbounds() == flexbounds);
   REQUIRE(simple_hmm_ptr->relpos() == relpos);
   REQUIRE(simple_hmm_ptr->alphabet() == alphabet);
+  REQUIRE(simple_hmm_ptr->msa() == msa);
   REQUIRE(simple_hmm_ptr->vpadding_ggene_ranges() == vpadding_ggene_ranges);
   REQUIRE(simple_hmm_ptr->vpadding_naive_bases() == vpadding_naive_bases);
   REQUIRE(simple_hmm_ptr->vpadding_site_inds() == vpadding_site_inds);
@@ -631,9 +629,6 @@ TEST_CASE("SimpleHMM", "[simplehmm]") {
   REQUIRE(simple_hmm_ptr->dj_junction_jgerm_transition() == dj_junction_jgerm_transition);
   REQUIRE(simple_hmm_ptr->jpadding_transition().isApprox(jpadding_transition));
 
-  REQUIRE(simple_hmm_ptr->seq() == seq);
-  REQUIRE(simple_hmm_ptr->seq_str() == seq_str);
-
   REQUIRE(simple_hmm_ptr->LogLikelihood() == Approx(-37.1354672701));
   REQUIRE(simple_hmm_ptr->vgerm_scaler_count() == vgerm_scaler_count);
   REQUIRE(simple_hmm_ptr->vd_junction_scaler_counts() == vd_junction_scaler_counts);
@@ -647,13 +642,12 @@ TEST_CASE("SimpleHMM", "[simplehmm]") {
 
 TEST_CASE("PhyloHMM", "[phylohmm]") {
   // Test the PhyloHMM class using the example files.
-  std::string yaml_path = "data/hmm_input.yaml";
+  std::string yaml_path = "data/phylo_hmm_input.yaml";
   std::string hmm_param_dir = "data/hmm_params";
   std::string trees_path = "data/newton.tre";
-  std::string fasta_path = "data/newton.fasta";
   std::string ctmc_params_path = "data/RAxML_info.newton";
   PhyloHMMPtr phylo_hmm_ptr = std::make_shared<PhyloHMM>(
-      yaml_path, 0, hmm_param_dir, trees_path, fasta_path, ctmc_params_path);
+      yaml_path, 0, hmm_param_dir, trees_path, ctmc_params_path);
 
   // For a diagram of the S-W alignment, see
   // https://github.com/matsengrp/linearham/issues/44#issue-336348821.
@@ -664,6 +658,11 @@ TEST_CASE("PhyloHMM", "[phylohmm]") {
   std::map<std::string, int> relpos = {
       {"IGHV_ex*01", 1}, {"IGHD_ex*01", 5}, {"IGHJ_ex*01", 10}};
   std::string alphabet = "ACGTN";
+  Eigen::MatrixXi msa(3,15);
+  msa <<
+  3, 0, 0, 0, 0, 2, 0, 3, 1, 0, 0, 3, 3, 4, 4,
+  1, 0, 1, 0, 1, 2, 3, 3, 1, 2, 0, 2, 3, 4, 4,
+  1, 2, 3, 0, 2, 3, 0, 2, 2, 0, 1, 3, 1, 4, 4;
   std::map<std::string, std::pair<int, int>> vpadding_ggene_ranges =
       {{"IGHV_ex*01", {0, 1}}};
   std::vector<int> vpadding_naive_bases = {4};
@@ -765,6 +764,7 @@ TEST_CASE("PhyloHMM", "[phylohmm]") {
   REQUIRE(phylo_hmm_ptr->flexbounds() == flexbounds);
   REQUIRE(phylo_hmm_ptr->relpos() == relpos);
   REQUIRE(phylo_hmm_ptr->alphabet() == alphabet);
+  REQUIRE(phylo_hmm_ptr->msa() == msa);
   REQUIRE(phylo_hmm_ptr->vpadding_ggene_ranges() == vpadding_ggene_ranges);
   REQUIRE(phylo_hmm_ptr->vpadding_naive_bases() == vpadding_naive_bases);
   REQUIRE(phylo_hmm_ptr->vpadding_site_inds() == vpadding_site_inds);
@@ -805,11 +805,6 @@ TEST_CASE("PhyloHMM", "[phylohmm]") {
   REQUIRE(phylo_hmm_ptr->dj_junction_jgerm_transition() == dj_junction_jgerm_transition);
   REQUIRE(phylo_hmm_ptr->jpadding_transition().isApprox(jpadding_transition));
 
-  Eigen::MatrixXi msa(3,15);
-  msa <<
-  3, 0, 0, 0, 0, 2, 0, 3, 1, 0, 0, 3, 3, 4, 4,
-  1, 0, 1, 0, 1, 2, 3, 3, 1, 2, 0, 2, 3, 4, 4,
-  1, 2, 3, 0, 2, 3, 0, 2, 2, 0, 1, 3, 1, 4, 4;
   Eigen::MatrixXi xmsa(4, 36);
   xmsa <<
   4, 0, 3, 2, 0, 0, 0, 0, 1, 1, 1, 1, 2, 2, 2, 2, 3, 3, 3, 3, 0, 1, 0, 0, 0, 1, 1, 2, 2, 2, 3, 3, 3, 2, 1, 2,
@@ -850,7 +845,6 @@ TEST_CASE("PhyloHMM", "[phylohmm]") {
   jgerm_xmsa_inds << 33, 34, 35;
   Eigen::VectorXi jpadding_xmsa_inds;
 
-  REQUIRE(phylo_hmm_ptr->msa() == msa);
   REQUIRE(phylo_hmm_ptr->xmsa() == xmsa);
   REQUIRE(phylo_hmm_ptr->xmsa_labels() == xmsa_labels);
   REQUIRE(phylo_hmm_ptr->xmsa_seqs() == xmsa_seqs);
@@ -872,9 +866,9 @@ TEST_CASE("PhyloHMM", "[phylohmm]") {
   REQUIRE(phylo_hmm_ptr->jgerm_scaler_count() == jgerm_scaler_count);
 
   // For clarity, we run an additional PhyloHMM test.
-  yaml_path = "data/hmm_input_extra.yaml";
+  yaml_path = "data/phylo_hmm_input_extra.yaml";
   phylo_hmm_ptr = std::make_shared<PhyloHMM>(
-      yaml_path, 0, hmm_param_dir, trees_path, fasta_path, ctmc_params_path);
+      yaml_path, 0, hmm_param_dir, trees_path, ctmc_params_path);
 
   // For a diagram of the S-W alignment, see
   // https://github.com/matsengrp/linearham/issues/44#issuecomment-406625914.
@@ -1012,6 +1006,7 @@ TEST_CASE("PhyloHMM", "[phylohmm]") {
   REQUIRE(phylo_hmm_ptr->flexbounds() == flexbounds);
   REQUIRE(phylo_hmm_ptr->relpos() == relpos);
   REQUIRE(phylo_hmm_ptr->alphabet() == alphabet);
+  REQUIRE(phylo_hmm_ptr->msa() == msa);
   REQUIRE(phylo_hmm_ptr->vpadding_ggene_ranges() == vpadding_ggene_ranges);
   REQUIRE(phylo_hmm_ptr->vpadding_naive_bases() == vpadding_naive_bases);
   REQUIRE(phylo_hmm_ptr->vpadding_site_inds() == vpadding_site_inds);
@@ -1106,17 +1101,20 @@ TEST_CASE("PhyloHMM", "[phylohmm]") {
 
   // Test the phylogenetic likelihood calculation using the R package "phylomd".
   // For more details, see https://github.com/dunleavy005/phylomd.
-  yaml_path = "data/phylolikelihood_hmm_input.yaml";
-  hmm_param_dir = "data/phylolikelihood_hmm_params";
+  yaml_path = "data/phylo_likelihood_hmm_input.yaml";
+  hmm_param_dir = "data/phylo_likelihood_hmm_params";
   phylo_hmm_ptr = std::make_shared<PhyloHMM>(
-      yaml_path, 0, hmm_param_dir, trees_path, fasta_path, ctmc_params_path, 1);
+      yaml_path, 0, hmm_param_dir, trees_path, ctmc_params_path, 1);
 
   // library(ape)
   // library(phylomd)
   //
   // tree = read.tree("newton.tre")
   // tree = root(tree, outgroup=1, resolve.root=T)
-  // msa = toupper(read.dna("newton.fasta", format="fasta", as.character=T))
+  // msa = t(simplify2array(strsplit(c("AGGACATACGTCTNN", "TAAAAGATCAATTNN",
+  //                                   "CACACGTTCGAGTNN", "CGTAGTAGGACTCNN"), "")))
+  // rownames(msa) = c("naive", "0", "1", "2")
+  // msa = msa[tree$tip.label,]
   // xmsa.naive.seq = c("A", "T", "G", "A", "C", "G", "G", "T", "A", "C", "A", "T", "G", "C", "G")
   // msa["naive",] = xmsa.naive.seq
   // subst.mod = GTR(1, 1, 1, 1, 1, 1, c(0.17, 0.19, 0.25, 0.39), scale=T)
