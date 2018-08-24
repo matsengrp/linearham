@@ -22,7 +22,6 @@ namespace linearham {
 class PhyloHMM : public HMM {
  private:
   // Emission probability data structures
-  Eigen::MatrixXi msa_;
   Eigen::MatrixXi xmsa_;
   std::vector<std::string> xmsa_labels_;
   std::vector<std::string> xmsa_seqs_;
@@ -41,9 +40,6 @@ class PhyloHMM : public HMM {
   Eigen::VectorXi jpadding_xmsa_inds_;
 
   // Initialization functions
-  void InitializeMsa(const std::vector<std::string>& msa_seqs,
-                     unsigned int tip_node_count, unsigned int sites);
-
   void InitializeXmsaStructs();
 
   void InitializeXmsaEmission(const pt::pll::Model& model_params);
@@ -64,11 +60,10 @@ class PhyloHMM : public HMM {
  public:
   PhyloHMM(const std::string& yaml_path, int cluster_ind,
            const std::string& hmm_param_dir, const std::string& trees_path,
-           const std::string& fasta_path, const std::string& ctmc_params_path,
-           int rate_categories = 4, int seed = 0);
+           const std::string& ctmc_params_path, int rate_categories = 4,
+           int seed = 0);
   ~PhyloHMM();
 
-  const Eigen::MatrixXi& msa() const { return msa_; };
   const Eigen::MatrixXi& xmsa() const { return xmsa_; };
   const std::vector<std::string>& xmsa_labels() const { return xmsa_labels_; };
   const std::vector<std::string>& xmsa_seqs() const { return xmsa_seqs_; };
@@ -91,7 +86,6 @@ class PhyloHMM : public HMM {
   const Eigen::VectorXi& jpadding_xmsa_inds() const {
     return jpadding_xmsa_inds_;
   };
-  int size() const override { return msa_.cols(); };
 };
 
 

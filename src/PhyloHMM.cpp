@@ -4,8 +4,6 @@
 #include <cstddef>
 #include <tuple>
 
-#include <pll_util.hpp>
-
 /// @file PhyloHMM.cpp
 /// @brief Implementation of the PhyloHMM class.
 
@@ -14,23 +12,15 @@ namespace linearham {
 
 PhyloHMM::PhyloHMM(const std::string& yaml_path, int cluster_ind,
                    const std::string& hmm_param_dir,
-                   const std::string& trees_path, const std::string& fasta_path,
+                   const std::string& trees_path,
                    const std::string& ctmc_params_path, int rate_categories,
                    int seed)
     : HMM(yaml_path, cluster_ind, hmm_param_dir, seed) {
-  // Initialize the phylogenetic tree object.
-  tree_ = pll_utree_parse_newick(trees_path.c_str());
-
-  // Parse the sequences in the FASTA file.
-  std::vector<std::string> msa_seqs;
-  unsigned int sites =
-      pt::pll::ParseFasta(fasta_path, tree_->tip_count, xmsa_labels_, msa_seqs);
-
-  // Initialize the MSA.
-  InitializeMsa(msa_seqs, tree_->tip_count, sites);
-
   // Initialize the xMSA data structures.
   InitializeXmsaStructs();
+
+  // Initialize the phylogenetic tree object.
+  tree_ = pll_utree_parse_newick(trees_path.c_str());
 
   // Initialize the partition object.
   pt::pll::Model model_params =
@@ -52,23 +42,16 @@ PhyloHMM::~PhyloHMM() { pll_utree_destroy(tree_, pt::pll::cb_erase_data); };
 // Initialization functions
 
 
-void PhyloHMM::InitializeMsa(const std::vector<std::string>& msa_seqs,
-                             unsigned int tip_node_count, unsigned int sites) {
-  assert(msa_seqs.size() == tip_node_count);
-  assert(msa_seqs[0].size() == sites);
-  msa_.setConstant(tip_node_count - 1, sites, -1);
-
-  for (std::size_t i = 0, row_ind = 0; i < msa_seqs.size(); i++) {
-    if (xmsa_labels_[i] != "naive") {
-      msa_.row(row_ind++) = ConvertSeqToInts(msa_seqs[i], alphabet_);
-    } else {
-      xmsa_naive_ind_ = i;
-    }
-  }
-};
-
-
 void PhyloHMM::InitializeXmsaStructs() {
+  // Initialize the xMSA sequence labels and naive sequence index.
+  // The xMSA naive sequence index is always 0.
+  xmsa_labels_.reserve(msa_.rows() + 1);
+  xmsa_labels_.push_back("naive");
+  std::vector<std::string> msa_labels =
+      cluster_data_["unique_ids"].as<std::vector<std::string>>();
+  xmsa_labels_.insert(xmsa_labels_.end(), msa_labels.begin(), msa_labels.end());
+  xmsa_naive_ind_ = 0;
+
   // This map holds ({naive base, MSA position}, xMSA position) pairs.
   // We use this map to keep track of the unique xMSA site indices.
   std::map<std::pair<int, int>, int> xmsa_ids;

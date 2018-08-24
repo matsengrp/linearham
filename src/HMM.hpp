@@ -36,6 +36,9 @@ class HMM {
   // Nucleotide alphabet
   std::string alphabet_;
 
+  // Multiple sequence alignment
+  Eigen::MatrixXi msa_;
+
   // Random sampling data structures
   std::mt19937 rng_;
   std::discrete_distribution<int> distr_;
@@ -133,6 +136,8 @@ class HMM {
   int jgerm_state_ind_samp_;
 
   // Initialization functions
+  void InitializeMsa();
+
   void InitializeStateSpace();
 
   void InitializeTransition();
@@ -161,6 +166,7 @@ class HMM {
     return ggenes_;
   };
   const std::string& alphabet() const { return alphabet_; };
+  const Eigen::MatrixXi& msa() const { return msa_; };
   const std::mt19937& rng() const { return rng_; };
   const std::discrete_distribution<int>& distr() const { return distr_; };
   const std::map<std::string, std::pair<int, int>>& vpadding_ggene_ranges()
@@ -330,7 +336,7 @@ class HMM {
     return jgerm_state_str_samp_;
   };
   int jgerm_state_ind_samp() const { return jgerm_state_ind_samp_; };
-  virtual int size() const = 0;
+  int size() const { return msa_.cols(); };
 
   double LogLikelihood();
   std::string SampleNaiveSequence();

@@ -12,16 +12,9 @@
 namespace linearham {
 
 
-SimpleHMM::SimpleHMM(const std::string& yaml_path, int cluster_ind, int seq_ind,
+SimpleHMM::SimpleHMM(const std::string& yaml_path, int cluster_ind,
                      const std::string& hmm_param_dir, int seed)
     : HMM(yaml_path, cluster_ind, hmm_param_dir, seed) {
-  // Parse the `indel_reversed_seqs` or `input_seqs` YAML data.
-  std::string seq_type = (cluster_data_["has_shm_indels"][seq_ind].as<bool>())
-                             ? "indel_reversed_seqs"
-                             : "input_seqs";
-  seq_str_ = cluster_data_[seq_type][seq_ind].as<std::string>();
-  seq_ = ConvertSeqToInts(seq_str_, alphabet_);
-
   // Initialize the emission probability matrices.
   InitializeEmission();
 };
@@ -76,13 +69,15 @@ void SimpleHMM::FillGermlineEmission(
     const GermlineGene& ggene = ggenes_.at(gname);
 
     for (int j = range_start; j < range_end; j++) {
-      // Is the current emitted base an unambiguous nucleotide?
-      if (seq_[site_inds_[j]] != alphabet_.size() - 1) {
-        emission_[i] *=
-            ggene.germ_ptr->emission()(seq_[site_inds_[j]], germ_inds_[j]);
+      for (std::size_t k = 0; k < msa_.rows(); k++) {
+        // Is the current emitted base an unambiguous nucleotide?
+        if (msa_(k, site_inds_[j]) != alphabet_.size() - 1) {
+          emission_[i] *=
+              ggene.germ_ptr->emission()(msa_(k, site_inds_[j]), germ_inds_[j]);
 
-        // Scale the emission probabilities.
-        scaler_counts[i] += ScaleMatrix(emission_.segment(i, 1));
+          // Scale the emission probabilities.
+          scaler_counts[i] += ScaleMatrix(emission_.segment(i, 1));
+        }
       }
     }
 
@@ -129,18 +124,25 @@ void SimpleHMM::FillJunctionEmission(
                 : ggene.JGermlinePtrCast()->nti_emission();
 
         for (int site_ind = site_start; site_ind < site_end; site_ind++) {
-          // Is the current emitted base an unambiguous nucleotide?
-          emission_(site_ind - site_start, i) =
-              (seq_[site_ind] != alphabet_.size() - 1)
-                  ? nti_emission(seq_[site_ind], naive_bases_[i])
-                  : 1;
+          emission_(site_ind - site_start, i) = 1;
+          for (std::size_t j = 0; j < msa_.rows(); j++) {
+            // Is the current emitted base an unambiguous nucleotide?
+            if (msa_(j, site_ind) != alphabet_.size() - 1) {
+              emission_(site_ind - site_start, i) *=
+                  nti_emission(msa_(j, site_ind), naive_bases_[i]);
+            }
+          }
         }
       } else {
-        // Is the current emitted base an unambiguous nucleotide?
-        emission_(site_inds_[i] - site_start, i) =
-            (seq_[site_inds_[i]] != alphabet_.size() - 1)
-                ? ggene.germ_ptr->emission()(seq_[site_inds_[i]], germ_inds_[i])
-                : 1;
+        emission_(site_inds_[i] - site_start, i) = 1;
+        for (std::size_t j = 0; j < msa_.rows(); j++) {
+          // Is the current emitted base an unambiguous nucleotide?
+          if (msa_(j, site_inds_[i]) != alphabet_.size() - 1) {
+            emission_(site_inds_[i] - site_start, i) *=
+                ggene.germ_ptr->emission()(msa_(j, site_inds_[i]),
+                                           germ_inds_[i]);
+          }
+        }
       }
     }
   }
@@ -172,12 +174,14 @@ void SimpleHMM::FillPaddingEmission(
             : ggene.JGermlinePtrCast()->n_emission();
 
     for (int j = range_start; j < range_end; j++) {
-      // Is the current emitted base an unambiguous nucleotide?
-      if (seq_[site_inds_[j]] != alphabet_.size() - 1) {
-        emission_[i] *= n_emission[seq_[site_inds_[j]]];
+      for (std::size_t k = 0; k < msa_.rows(); k++) {
+        // Is the current emitted base an unambiguous nucleotide?
+        if (msa_(k, site_inds_[j]) != alphabet_.size() - 1) {
+          emission_[i] *= n_emission[msa_(k, site_inds_[j])];
 
-        // Scale the emission probabilities.
-        scaler_counts[i] += ScaleMatrix(emission_.segment(i, 1));
+          // Scale the emission probabilities.
+          scaler_counts[i] += ScaleMatrix(emission_.segment(i, 1));
+        }
       }
     }
 
