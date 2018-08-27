@@ -447,6 +447,7 @@ TEST_CASE("SimpleHMM", "[simplehmm]") {
   REQUIRE(simple_hmm_ptr->dgerm_scaler_count() == dgerm_scaler_count);
   REQUIRE(simple_hmm_ptr->dj_junction_scaler_counts() == dj_junction_scaler_counts);
   REQUIRE(simple_hmm_ptr->jgerm_scaler_count() == jgerm_scaler_count);
+  REQUIRE(simple_hmm_ptr->SampleNaiveSequence() == "NATGAGGTATATGCG");
 
   // For clarity, we run an additional SimpleHMM test.
   yaml_path = "data/simple_hmm_input_extra.yaml";
@@ -635,6 +636,7 @@ TEST_CASE("SimpleHMM", "[simplehmm]") {
   REQUIRE(simple_hmm_ptr->dgerm_scaler_count() == dgerm_scaler_count);
   REQUIRE(simple_hmm_ptr->dj_junction_scaler_counts() == dj_junction_scaler_counts);
   REQUIRE(simple_hmm_ptr->jgerm_scaler_count() == jgerm_scaler_count);
+  REQUIRE(simple_hmm_ptr->SampleNaiveSequence() == "NCAGGACACTATGCG");
 }
 
 
@@ -864,6 +866,7 @@ TEST_CASE("PhyloHMM", "[phylohmm]") {
   REQUIRE(phylo_hmm_ptr->dgerm_scaler_count() == dgerm_scaler_count);
   REQUIRE(phylo_hmm_ptr->dj_junction_scaler_counts() == dj_junction_scaler_counts);
   REQUIRE(phylo_hmm_ptr->jgerm_scaler_count() == jgerm_scaler_count);
+  REQUIRE(phylo_hmm_ptr->SampleNaiveSequence() == "NATGAGGTAGATGCG");
 
   // For clarity, we run an additional PhyloHMM test.
   yaml_path = "data/phylo_hmm_input_extra.yaml";
@@ -1098,6 +1101,7 @@ TEST_CASE("PhyloHMM", "[phylohmm]") {
   REQUIRE(phylo_hmm_ptr->dgerm_scaler_count() == dgerm_scaler_count);
   REQUIRE(phylo_hmm_ptr->dj_junction_scaler_counts() == dj_junction_scaler_counts);
   REQUIRE(phylo_hmm_ptr->jgerm_scaler_count() == jgerm_scaler_count);
+  REQUIRE(phylo_hmm_ptr->SampleNaiveSequence() == "NATGGTCAGGATGCG");
 
   // Test the phylogenetic likelihood calculation using the R package "phylomd".
   // For more details, see https://github.com/dunleavy005/phylomd.
