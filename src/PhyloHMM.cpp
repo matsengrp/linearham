@@ -6,6 +6,7 @@
 #include <fstream>
 #include <model.hpp>
 #include <pll_util.hpp>
+#include <regex>
 #include <tuple>
 
 /// @file PhyloHMM.cpp
@@ -197,7 +198,7 @@ void PhyloHMM::RunLinearhamInference(const std::string& input_samples_path,
       input_samples_path);
   in.read_header(io::ignore_extra_column, "Iteration", "Likelihood", "Prior",
                  "alpha", "er[1]", "er[2]", "er[3]", "er[4]", "er[5]", "er[6]",
-                 "pi[1]", "pi[2]", "pi[3]", "pi[4]", "psi");
+                 "pi[1]", "pi[2]", "pi[3]", "pi[4]", "tree");
 
   // Initialize the output file stream.
   std::ofstream outfile;
@@ -221,6 +222,10 @@ void PhyloHMM::RunLinearhamInference(const std::string& input_samples_path,
     alpha_.push_back(alpha);
     er_.push_back({er1, er2, er3, er4, er5, er6});
     pi_.push_back({pi1, pi2, pi3, pi4});
+
+    // Remove the node indices from the Newick tree string.
+    tree_str =
+        std::regex_replace(tree_str, std::regex("\\[\\&index=[0-9]+\\]"), "");
     tree_.push_back(pll_utree_parse_newick_string(tree_str.c_str()));
 
     // Calculate the site-wise rates for the current tree sample.
@@ -257,7 +262,7 @@ void PhyloHMM::RunLinearhamInference(const std::string& input_samples_path,
         for (int j = 1; j <= 4; j++) {
           outfile << ("pi[" + std::to_string(j) + "]\t");
         }
-        outfile << "psi\t";
+        outfile << "tree\t";
         for (int j = 1; j <= rate_categories; j++) {
           outfile << ("sr[" + std::to_string(j) + "]\t");
         }
