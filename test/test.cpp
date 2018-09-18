@@ -648,7 +648,8 @@ TEST_CASE("PhyloHMM", "[phylohmm]") {
   std::string hmm_param_dir = "data/hmm_params";
   PhyloHMMPtr phylo_hmm_ptr = std::make_shared<PhyloHMM>(yaml_path, 0, hmm_param_dir);
   std::string input_samples_path = "data/revbayes_trees.tsv";
-  phylo_hmm_ptr->RunLinearham(input_samples_path);
+  std::string output_samples_path = "data/do-not-write.tsv";
+  phylo_hmm_ptr->RunLinearhamInference(input_samples_path, output_samples_path);
 
   // For a diagram of the S-W alignment, see
   // https://github.com/matsengrp/linearham/issues/44#issue-336348821.
@@ -864,13 +865,13 @@ TEST_CASE("PhyloHMM", "[phylohmm]") {
   REQUIRE(phylo_hmm_ptr->jgerm_xmsa_inds() == jgerm_xmsa_inds);
   REQUIRE(phylo_hmm_ptr->jpadding_xmsa_inds() == jpadding_xmsa_inds);
 
-  REQUIRE(phylo_hmm_ptr->new_likelihood()[0] == Approx(-75.8136));
+  REQUIRE(phylo_hmm_ptr->lh_loglikelihood()[0] == Approx(-75.8136));
   REQUIRE(phylo_hmm_ptr->naive_sequence()[0] == "NATGAGGTAGATGCG");
 
   // For clarity, we run an additional PhyloHMM test.
   yaml_path = "data/phylo_hmm_input_extra.yaml";
   phylo_hmm_ptr = std::make_shared<PhyloHMM>(yaml_path, 0, hmm_param_dir);
-  phylo_hmm_ptr->RunLinearham(input_samples_path);
+  phylo_hmm_ptr->RunLinearhamInference(input_samples_path, output_samples_path);
 
   // For a diagram of the S-W alignment, see
   // https://github.com/matsengrp/linearham/issues/44#issuecomment-406625914.
@@ -1099,7 +1100,7 @@ TEST_CASE("PhyloHMM", "[phylohmm]") {
   REQUIRE(phylo_hmm_ptr->jgerm_xmsa_inds() == jgerm_xmsa_inds);
   REQUIRE(phylo_hmm_ptr->jpadding_xmsa_inds() == jpadding_xmsa_inds);
 
-  REQUIRE(phylo_hmm_ptr->new_likelihood()[0] == Approx(-75.1122515055));
+  REQUIRE(phylo_hmm_ptr->lh_loglikelihood()[0] == Approx(-75.1122515055));
   REQUIRE(phylo_hmm_ptr->naive_sequence()[0] == "NATGGTCAGGATGCG");
 
   // Test the phylogenetic likelihood calculation using the R package "phylomd".
@@ -1107,7 +1108,7 @@ TEST_CASE("PhyloHMM", "[phylohmm]") {
   yaml_path = "data/phylo_likelihood_hmm_input.yaml";
   hmm_param_dir = "data/phylo_likelihood_hmm_params";
   phylo_hmm_ptr = std::make_shared<PhyloHMM>(yaml_path, 0, hmm_param_dir);
-  phylo_hmm_ptr->RunLinearham(input_samples_path, 0, 1);
+  phylo_hmm_ptr->RunLinearhamInference(input_samples_path, output_samples_path, false, 0, 1);
 
   // library(ape)
   // library(phylomd)
@@ -1132,7 +1133,7 @@ TEST_CASE("PhyloHMM", "[phylohmm]") {
   // log(prod(likelihoods / naive.probs))
   // # -55.73483
 
-  REQUIRE(phylo_hmm_ptr->new_likelihood()[0] == Approx(-55.73483));
+  REQUIRE(phylo_hmm_ptr->lh_loglikelihood()[0] == Approx(-55.73483));
 }
 
 

@@ -3,6 +3,7 @@
 #include <csv.h>
 #include <cmath>
 #include <cstddef>
+#include <fstream>
 #include <model.hpp>
 #include <pll_util.hpp>
 #include <tuple>
@@ -22,8 +23,8 @@ PhyloHMM::PhyloHMM(const std::string& yaml_path, int cluster_ind,
 
 
 PhyloHMM::~PhyloHMM() {
-  for (const auto& tree_ptr : tree_) {
-    pll_utree_destroy(tree_ptr, pt::pll::cb_erase_data);
+  for (const auto& tree : tree_) {
+    pll_utree_destroy(tree, pt::pll::cb_erase_data);
   }
 };
 
@@ -187,8 +188,10 @@ void PhyloHMM::FillXmsaEmission() {
 };
 
 
-void PhyloHMM::RunLinearham(const std::string& input_samples_path, int burnin,
-                            int rate_categories) {
+void PhyloHMM::RunLinearhamInference(const std::string& input_samples_path,
+                                     const std::string& output_samples_path,
+                                     bool write_output, int burnin,
+                                     int rate_categories) {
   // Open the RevBayes output file.
   io::CSVReader<15, io::trim_chars<>, io::double_quote_escape<'\t', '"'>> in(
       input_samples_path);
@@ -196,20 +199,24 @@ void PhyloHMM::RunLinearham(const std::string& input_samples_path, int burnin,
                  "alpha", "er[1]", "er[2]", "er[3]", "er[4]", "er[5]", "er[6]",
                  "pi[1]", "pi[2]", "pi[3]", "pi[4]", "psi");
 
+  // Initialize the output file stream.
+  std::ofstream outfile;
+  if (write_output) outfile.open(output_samples_path);
+
   // Parse the RevBayes tree samples and compute the linearham sample
   // information.
   int iteration;
-  double old_likelihood, prior, alpha, er1, er2, er3, er4, er5, er6, pi1, pi2,
+  double rb_loglikelihood, prior, alpha, er1, er2, er3, er4, er5, er6, pi1, pi2,
       pi3, pi4;
   std::string tree_str;
 
   int i = 0;
-  while (in.read_row(iteration, old_likelihood, prior, alpha, er1, er2, er3,
+  while (in.read_row(iteration, rb_loglikelihood, prior, alpha, er1, er2, er3,
                      er4, er5, er6, pi1, pi2, pi3, pi4, tree_str)) {
     if (i < burnin) continue;
 
     iteration_.push_back(iteration);
-    old_likelihood_.push_back(old_likelihood);
+    rb_loglikelihood_.push_back(rb_loglikelihood);
     prior_.push_back(prior);
     alpha_.push_back(alpha);
     er_.push_back({er1, er2, er3, er4, er5, er6});
@@ -232,10 +239,57 @@ void PhyloHMM::RunLinearham(const std::string& input_samples_path, int burnin,
     InitializeEmission();
 
     // Compute the linearham log-likelihood and sample a naive sequence.
-    new_likelihood_.push_back(LogLikelihood());
-    weight_.push_back(new_likelihood_.back() - old_likelihood_.back());
+    lh_loglikelihood_.push_back(LogLikelihood());
+    logweight_.push_back(lh_loglikelihood_.back() - rb_loglikelihood_.back());
     naive_sequence_.push_back(SampleNaiveSequence());
+
+    // If specified, write the tree samples to the output file.
+    if (write_output) {
+      // Write the headers to the file stream.
+      if (i == 0) {
+        outfile << "Iteration\t";
+        outfile << "RBLogLikelihood\t";
+        outfile << "Prior\t";
+        outfile << "alpha\t";
+        for (int j = 1; j <= 6; j++) {
+          outfile << ("er[" + std::to_string(j) + "]\t");
+        }
+        for (int j = 1; j <= 4; j++) {
+          outfile << ("pi[" + std::to_string(j) + "]\t");
+        }
+        outfile << "psi\t";
+        for (int j = 1; j <= rate_categories; j++) {
+          outfile << ("sr[" + std::to_string(j) + "]\t");
+        }
+        outfile << "LHLogLikelihood\t";
+        outfile << "LogWeight\t";
+        outfile << "NaiveSequence\n";
+      }
+
+      outfile << iteration_.back() << "\t";
+      outfile << rb_loglikelihood_.back() << "\t";
+      outfile << prior_.back() << "\t";
+      outfile << alpha_.back() << "\t";
+      for (const auto& er : er_.back()) {
+        outfile << er << "\t";
+      }
+      for (const auto& pi : pi_.back()) {
+        outfile << pi << "\t";
+      }
+      outfile << tree_str << "\t";
+      for (const auto& sr : sr_.back()) {
+        outfile << sr << "\t";
+      }
+      outfile << lh_loglikelihood_.back() << "\t";
+      outfile << logweight_.back() << "\t";
+      outfile << naive_sequence_.back() << "\n";
+    }
+
+    i += 1;
   }
+
+  // If specified, close the file stream.
+  if (write_output) outfile.close();
 };
 
 
