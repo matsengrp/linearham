@@ -336,7 +336,6 @@ class HMM {
     return jgerm_state_str_samp_;
   };
   int jgerm_state_ind_samp() const { return jgerm_state_ind_samp_; };
-  int size() const { return msa_.cols(); };
 
   double LogLikelihood();
   std::string SampleNaiveSequence();

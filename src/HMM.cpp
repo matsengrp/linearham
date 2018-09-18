@@ -267,7 +267,7 @@ std::string HMM::SampleNaiveSequence() {
   }
 
   // Initialize the naive sequence sample.
-  naive_seq_samp_.assign(this->size(), 'N');
+  naive_seq_samp_.assign(msa_.cols(), 'N');
 
   // Sample the "germline" and "junction" states.
   SampleInitialState();
