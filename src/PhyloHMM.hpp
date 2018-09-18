@@ -39,7 +39,7 @@ class PhyloHMM : public HMM {
 
   // RevBayes tree samples
   std::vector<int> iteration_;
-  std::vector<double> old_likelihood_;
+  std::vector<double> rb_loglikelihood_;
   std::vector<double> prior_;
   std::vector<double> alpha_;
   std::vector<std::vector<double>> er_;
@@ -48,8 +48,8 @@ class PhyloHMM : public HMM {
   std::vector<std::vector<double>> sr_;
 
   // Linearham sample information
-  std::vector<double> new_likelihood_;
-  std::vector<double> weight_;
+  std::vector<double> lh_loglikelihood_;
+  std::vector<double> logweight_;
   std::vector<std::string> naive_sequence_;
 
   // Initialization functions
@@ -97,21 +97,27 @@ class PhyloHMM : public HMM {
     return jpadding_xmsa_inds_;
   };
   const std::vector<int>& iteration() const { return iteration_; };
-  const std::vector<double>& old_likelihood() const { return old_likelihood_; };
+  const std::vector<double>& rb_loglikelihood() const {
+    return rb_loglikelihood_;
+  };
   const std::vector<double>& prior() const { return prior_; };
   const std::vector<double>& alpha() const { return alpha_; };
   const std::vector<std::vector<double>>& er() const { return er_; };
   const std::vector<std::vector<double>>& pi() const { return pi_; };
   const std::vector<pll_utree_t*>& tree() const { return tree_; };
   const std::vector<std::vector<double>>& sr() const { return sr_; };
-  const std::vector<double>& new_likelihood() const { return new_likelihood_; };
-  const std::vector<double>& weight() const { return weight_; };
+  const std::vector<double>& lh_loglikelihood() const {
+    return lh_loglikelihood_;
+  };
+  const std::vector<double>& logweight() const { return logweight_; };
   const std::vector<std::string>& naive_sequence() const {
     return naive_sequence_;
   };
 
-  void RunLinearham(const std::string& input_samples_path, int burnin = 0,
-                    int rate_categories = 4);
+  void RunLinearhamInference(const std::string& input_samples_path,
+                             const std::string& output_samples_path,
+                             bool write_output = false, int burnin = 0,
+                             int rate_categories = 4);
 };
 
 
