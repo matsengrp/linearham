@@ -646,10 +646,9 @@ TEST_CASE("PhyloHMM", "[phylohmm]") {
   // Test the PhyloHMM class using the example files.
   std::string yaml_path = "data/phylo_hmm_input.yaml";
   std::string hmm_param_dir = "data/hmm_params";
-  std::string trees_path = "data/newton.tre";
-  std::string ctmc_params_path = "data/RAxML_info.newton";
-  PhyloHMMPtr phylo_hmm_ptr = std::make_shared<PhyloHMM>(
-      yaml_path, 0, hmm_param_dir, trees_path, ctmc_params_path);
+  PhyloHMMPtr phylo_hmm_ptr = std::make_shared<PhyloHMM>(yaml_path, 0, hmm_param_dir);
+  std::string input_samples_path = "data/revbayes_trees.tsv";
+  phylo_hmm_ptr->RunLinearham(input_samples_path);
 
   // For a diagram of the S-W alignment, see
   // https://github.com/matsengrp/linearham/issues/44#issue-336348821.
@@ -806,6 +805,11 @@ TEST_CASE("PhyloHMM", "[phylohmm]") {
   REQUIRE(phylo_hmm_ptr->dj_junction_transition() == dj_junction_transition);
   REQUIRE(phylo_hmm_ptr->dj_junction_jgerm_transition() == dj_junction_jgerm_transition);
   REQUIRE(phylo_hmm_ptr->jpadding_transition().isApprox(jpadding_transition));
+  REQUIRE(phylo_hmm_ptr->vgerm_scaler_count() == vgerm_scaler_count);
+  REQUIRE(phylo_hmm_ptr->vd_junction_scaler_counts() == vd_junction_scaler_counts);
+  REQUIRE(phylo_hmm_ptr->dgerm_scaler_count() == dgerm_scaler_count);
+  REQUIRE(phylo_hmm_ptr->dj_junction_scaler_counts() == dj_junction_scaler_counts);
+  REQUIRE(phylo_hmm_ptr->jgerm_scaler_count() == jgerm_scaler_count);
 
   Eigen::MatrixXi xmsa(4, 36);
   xmsa <<
@@ -860,18 +864,13 @@ TEST_CASE("PhyloHMM", "[phylohmm]") {
   REQUIRE(phylo_hmm_ptr->jgerm_xmsa_inds() == jgerm_xmsa_inds);
   REQUIRE(phylo_hmm_ptr->jpadding_xmsa_inds() == jpadding_xmsa_inds);
 
-  REQUIRE(phylo_hmm_ptr->LogLikelihood() == Approx(-75.8136));
-  REQUIRE(phylo_hmm_ptr->vgerm_scaler_count() == vgerm_scaler_count);
-  REQUIRE(phylo_hmm_ptr->vd_junction_scaler_counts() == vd_junction_scaler_counts);
-  REQUIRE(phylo_hmm_ptr->dgerm_scaler_count() == dgerm_scaler_count);
-  REQUIRE(phylo_hmm_ptr->dj_junction_scaler_counts() == dj_junction_scaler_counts);
-  REQUIRE(phylo_hmm_ptr->jgerm_scaler_count() == jgerm_scaler_count);
-  REQUIRE(phylo_hmm_ptr->SampleNaiveSequence() == "NATGAGGTAGATGCG");
+  REQUIRE(phylo_hmm_ptr->new_likelihood()[0] == Approx(-75.8136));
+  REQUIRE(phylo_hmm_ptr->naive_sequence()[0] == "NATGAGGTAGATGCG");
 
   // For clarity, we run an additional PhyloHMM test.
   yaml_path = "data/phylo_hmm_input_extra.yaml";
-  phylo_hmm_ptr = std::make_shared<PhyloHMM>(
-      yaml_path, 0, hmm_param_dir, trees_path, ctmc_params_path);
+  phylo_hmm_ptr = std::make_shared<PhyloHMM>(yaml_path, 0, hmm_param_dir);
+  phylo_hmm_ptr->RunLinearham(input_samples_path);
 
   // For a diagram of the S-W alignment, see
   // https://github.com/matsengrp/linearham/issues/44#issuecomment-406625914.
@@ -1049,6 +1048,11 @@ TEST_CASE("PhyloHMM", "[phylohmm]") {
   REQUIRE(phylo_hmm_ptr->dj_junction_transition() == dj_junction_transition);
   REQUIRE(phylo_hmm_ptr->dj_junction_jgerm_transition() == dj_junction_jgerm_transition);
   REQUIRE(phylo_hmm_ptr->jpadding_transition().isApprox(jpadding_transition));
+  REQUIRE(phylo_hmm_ptr->vgerm_scaler_count() == vgerm_scaler_count);
+  REQUIRE(phylo_hmm_ptr->vd_junction_scaler_counts() == vd_junction_scaler_counts);
+  REQUIRE(phylo_hmm_ptr->dgerm_scaler_count() == dgerm_scaler_count);
+  REQUIRE(phylo_hmm_ptr->dj_junction_scaler_counts() == dj_junction_scaler_counts);
+  REQUIRE(phylo_hmm_ptr->jgerm_scaler_count() == jgerm_scaler_count);
 
   xmsa.resize(4, 34);
   xmsa <<
@@ -1095,20 +1099,15 @@ TEST_CASE("PhyloHMM", "[phylohmm]") {
   REQUIRE(phylo_hmm_ptr->jgerm_xmsa_inds() == jgerm_xmsa_inds);
   REQUIRE(phylo_hmm_ptr->jpadding_xmsa_inds() == jpadding_xmsa_inds);
 
-  REQUIRE(phylo_hmm_ptr->LogLikelihood() == Approx(-75.1122515055));
-  REQUIRE(phylo_hmm_ptr->vgerm_scaler_count() == vgerm_scaler_count);
-  REQUIRE(phylo_hmm_ptr->vd_junction_scaler_counts() == vd_junction_scaler_counts);
-  REQUIRE(phylo_hmm_ptr->dgerm_scaler_count() == dgerm_scaler_count);
-  REQUIRE(phylo_hmm_ptr->dj_junction_scaler_counts() == dj_junction_scaler_counts);
-  REQUIRE(phylo_hmm_ptr->jgerm_scaler_count() == jgerm_scaler_count);
-  REQUIRE(phylo_hmm_ptr->SampleNaiveSequence() == "NATGGTCAGGATGCG");
+  REQUIRE(phylo_hmm_ptr->new_likelihood()[0] == Approx(-75.1122515055));
+  REQUIRE(phylo_hmm_ptr->naive_sequence()[0] == "NATGGTCAGGATGCG");
 
   // Test the phylogenetic likelihood calculation using the R package "phylomd".
   // For more details, see https://github.com/dunleavy005/phylomd.
   yaml_path = "data/phylo_likelihood_hmm_input.yaml";
   hmm_param_dir = "data/phylo_likelihood_hmm_params";
-  phylo_hmm_ptr = std::make_shared<PhyloHMM>(
-      yaml_path, 0, hmm_param_dir, trees_path, ctmc_params_path, 1);
+  phylo_hmm_ptr = std::make_shared<PhyloHMM>(yaml_path, 0, hmm_param_dir);
+  phylo_hmm_ptr->RunLinearham(input_samples_path, 0, 1);
 
   // library(ape)
   // library(phylomd)
@@ -1133,7 +1132,7 @@ TEST_CASE("PhyloHMM", "[phylohmm]") {
   // log(prod(likelihoods / naive.probs))
   // # -55.73483
 
-  REQUIRE(phylo_hmm_ptr->LogLikelihood() == Approx(-55.73483));
+  REQUIRE(phylo_hmm_ptr->new_likelihood()[0] == Approx(-55.73483));
 }
 
 
