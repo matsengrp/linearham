@@ -9,7 +9,6 @@
 
 #include <libpll/pll.h>
 #include <Eigen/Dense>
-#include <model.hpp>
 #include <pll_partition.hpp>
 #include "HMM.hpp"
 
@@ -27,7 +26,6 @@ class PhyloHMM : public HMM {
   std::vector<std::string> xmsa_seqs_;
   int xmsa_naive_ind_;
   Eigen::VectorXd xmsa_emission_;
-  pll_utree_t* tree_;
   std::unique_ptr<pt::pll::Partition> partition_;
 
   // xMSA site indices
@@ -39,10 +37,23 @@ class PhyloHMM : public HMM {
   Eigen::VectorXi jgerm_xmsa_inds_;
   Eigen::VectorXi jpadding_xmsa_inds_;
 
+  // RevBayes tree samples
+  std::vector<int> iteration_;
+  std::vector<double> old_likelihood_;
+  std::vector<double> prior_;
+  std::vector<double> alpha_;
+  std::vector<std::vector<double>> er_;
+  std::vector<std::vector<double>> pi_;
+  std::vector<pll_utree_t*> tree_;
+  std::vector<std::vector<double>> sr_;
+
+  // Linearham sample information
+  std::vector<double> new_likelihood_;
+  std::vector<double> weight_;
+  std::vector<std::string> naive_sequence_;
+
   // Initialization functions
   void InitializeXmsaStructs();
-
-  void InitializeXmsaEmission(const pt::pll::Model& model_params);
 
   void InitializeEmission() override;
 
@@ -57,11 +68,11 @@ class PhyloHMM : public HMM {
   void FillJunctionEmission(const Eigen::MatrixXi& xmsa_inds_,
                             Eigen::MatrixXd& emission_);
 
+  void FillXmsaEmission();
+
  public:
   PhyloHMM(const std::string& yaml_path, int cluster_ind,
-           const std::string& hmm_param_dir, const std::string& trees_path,
-           const std::string& ctmc_params_path, int rate_categories = 4,
-           int seed = 0);
+           const std::string& hmm_param_dir, int seed = 0);
   ~PhyloHMM();
 
   const Eigen::MatrixXi& xmsa() const { return xmsa_; };
@@ -69,7 +80,6 @@ class PhyloHMM : public HMM {
   const std::vector<std::string>& xmsa_seqs() const { return xmsa_seqs_; };
   int xmsa_naive_ind() const { return xmsa_naive_ind_; };
   const Eigen::VectorXd& xmsa_emission() const { return xmsa_emission_; };
-  const pll_utree_t& tree() const { return *tree_; };
   const pt::pll::Partition& partition() const { return *partition_; };
   const Eigen::VectorXi& vpadding_xmsa_inds() const {
     return vpadding_xmsa_inds_;
@@ -86,6 +96,22 @@ class PhyloHMM : public HMM {
   const Eigen::VectorXi& jpadding_xmsa_inds() const {
     return jpadding_xmsa_inds_;
   };
+  const std::vector<int>& iteration() const { return iteration_; };
+  const std::vector<double>& old_likelihood() const { return old_likelihood_; };
+  const std::vector<double>& prior() const { return prior_; };
+  const std::vector<double>& alpha() const { return alpha_; };
+  const std::vector<std::vector<double>>& er() const { return er_; };
+  const std::vector<std::vector<double>>& pi() const { return pi_; };
+  const std::vector<pll_utree_t*>& tree() const { return tree_; };
+  const std::vector<std::vector<double>>& sr() const { return sr_; };
+  const std::vector<double>& new_likelihood() const { return new_likelihood_; };
+  const std::vector<double>& weight() const { return weight_; };
+  const std::vector<std::string>& naive_sequence() const {
+    return naive_sequence_;
+  };
+
+  void RunLinearham(const std::string& input_samples_path, int burnin = 0,
+                    int rate_categories = 4);
 };
 
 

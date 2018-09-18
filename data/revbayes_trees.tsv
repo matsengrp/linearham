@@ -1,0 +1,2 @@
+Iteration	Posterior	Likelihood	Prior	alpha	er[1]	er[2]	er[3]	er[4]	er[5]	er[6]	pi[1]	pi[2]	pi[3]	pi[4]	psi
+0	-192.567	-210.513	17.946	1.0	1.0	1.0	1.0	1.0	1.0	1.0	0.17	0.19	0.25	0.39	((0:0.2, 1:0.4):0.6, naive:0.3, 2:0.5);

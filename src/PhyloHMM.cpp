@@ -1,7 +1,10 @@
 #include "PhyloHMM.hpp"
 
+#include <csv.h>
 #include <cmath>
 #include <cstddef>
+#include <model.hpp>
+#include <pll_util.hpp>
 #include <tuple>
 
 /// @file PhyloHMM.cpp
@@ -11,32 +14,18 @@ namespace linearham {
 
 
 PhyloHMM::PhyloHMM(const std::string& yaml_path, int cluster_ind,
-                   const std::string& hmm_param_dir,
-                   const std::string& trees_path,
-                   const std::string& ctmc_params_path, int rate_categories,
-                   int seed)
+                   const std::string& hmm_param_dir, int seed)
     : HMM(yaml_path, cluster_ind, hmm_param_dir, seed) {
   // Initialize the xMSA data structures.
   InitializeXmsaStructs();
-
-  // Initialize the phylogenetic tree object.
-  tree_ = pll_utree_parse_newick(trees_path.c_str());
-
-  // Initialize the partition object.
-  pt::pll::Model model_params =
-      pt::pll::ParseRaxmlInfo(ctmc_params_path, rate_categories);
-  partition_.reset(new pt::pll::Partition(tree_, model_params, xmsa_labels_,
-                                          xmsa_seqs_, false));
-
-  // Initialize the xMSA per-site emission probability vector.
-  InitializeXmsaEmission(model_params);
-
-  // Initialize the emission probability matrices.
-  InitializeEmission();
 };
 
 
-PhyloHMM::~PhyloHMM() { pll_utree_destroy(tree_, pt::pll::cb_erase_data); };
+PhyloHMM::~PhyloHMM() {
+  for (const auto& tree_ptr : tree_) {
+    pll_utree_destroy(tree_ptr, pt::pll::cb_erase_data);
+  }
+};
 
 
 // Initialization functions
@@ -77,27 +66,6 @@ void PhyloHMM::InitializeXmsaStructs() {
 
   // Build the xMSA and the vector of xMSA sequence strings.
   BuildXmsa(xmsa_ids);
-};
-
-
-void PhyloHMM::InitializeXmsaEmission(const pt::pll::Model& model_params) {
-  xmsa_emission_.setZero(xmsa_.cols());
-
-  // Compute the per-site phylogenetic log-likelihoods.
-  pll_unode_t* root_node = pt::pll::GetVirtualRoot(tree_);
-  partition_->TraversalUpdate(root_node, pt::pll::TraversalType::FULL);
-  partition_->LogLikelihood(root_node, xmsa_emission_.data());
-
-  // Apply the naive sequence correction to the phylogenetic log-likelihoods.
-  for (std::size_t i = 0; i < xmsa_emission_.size(); i++) {
-    // Is the current naive base an unambiguous nucleotide?
-    if (xmsa_(xmsa_naive_ind_, i) != alphabet_.size() - 1) {
-      double naive_prob = model_params.frequencies[xmsa_(xmsa_naive_ind_, i)];
-      xmsa_emission_[i] -= std::log(naive_prob);
-    }
-  }
-
-  xmsa_emission_.array() = xmsa_emission_.array().exp();
 };
 
 
@@ -194,6 +162,79 @@ void PhyloHMM::FillJunctionEmission(const Eigen::MatrixXi& xmsa_inds_,
         emission_(i, j) = xmsa_emission_[xmsa_inds_(i, j)];
       }
     }
+  }
+};
+
+
+void PhyloHMM::FillXmsaEmission() {
+  xmsa_emission_.setZero(xmsa_.cols());
+
+  // Compute the per-site phylogenetic log-likelihoods.
+  pll_unode_t* root_node = pt::pll::GetVirtualRoot(tree_.back());
+  partition_->TraversalUpdate(root_node, pt::pll::TraversalType::FULL);
+  partition_->LogLikelihood(root_node, xmsa_emission_.data());
+
+  // Apply the naive sequence correction to the phylogenetic log-likelihoods.
+  for (std::size_t i = 0; i < xmsa_emission_.size(); i++) {
+    // Is the current naive base an unambiguous nucleotide?
+    if (xmsa_(xmsa_naive_ind_, i) != alphabet_.size() - 1) {
+      double naive_prob = pi_.back()[xmsa_(xmsa_naive_ind_, i)];
+      xmsa_emission_[i] -= std::log(naive_prob);
+    }
+  }
+
+  xmsa_emission_.array() = xmsa_emission_.array().exp();
+};
+
+
+void PhyloHMM::RunLinearham(const std::string& input_samples_path, int burnin,
+                            int rate_categories) {
+  // Open the RevBayes output file.
+  io::CSVReader<15, io::trim_chars<>, io::double_quote_escape<'\t', '"'>> in(
+      input_samples_path);
+  in.read_header(io::ignore_extra_column, "Iteration", "Likelihood", "Prior",
+                 "alpha", "er[1]", "er[2]", "er[3]", "er[4]", "er[5]", "er[6]",
+                 "pi[1]", "pi[2]", "pi[3]", "pi[4]", "psi");
+
+  // Parse the RevBayes tree samples and compute the linearham sample
+  // information.
+  int iteration;
+  double old_likelihood, prior, alpha, er1, er2, er3, er4, er5, er6, pi1, pi2,
+      pi3, pi4;
+  std::string tree_str;
+
+  int i = 0;
+  while (in.read_row(iteration, old_likelihood, prior, alpha, er1, er2, er3,
+                     er4, er5, er6, pi1, pi2, pi3, pi4, tree_str)) {
+    if (i < burnin) continue;
+
+    iteration_.push_back(iteration);
+    old_likelihood_.push_back(old_likelihood);
+    prior_.push_back(prior);
+    alpha_.push_back(alpha);
+    er_.push_back({er1, er2, er3, er4, er5, er6});
+    pi_.push_back({pi1, pi2, pi3, pi4});
+    tree_.push_back(pll_utree_parse_newick_string(tree_str.c_str()));
+
+    // Calculate the site-wise rates for the current tree sample.
+    std::vector<double> sr(rate_categories);
+    pll_compute_gamma_cats(alpha_.back(), sr.size(), sr.data(),
+                           PLL_GAMMA_RATES_MEAN);
+    sr_.push_back(sr);
+
+    // Construct the partition object.
+    pt::pll::Model model_params = {"GTR", pi_.back(), er_.back(), sr_.back()};
+    partition_.reset(new pt::pll::Partition(tree_.back(), model_params,
+                                            xmsa_labels_, xmsa_seqs_, false));
+
+    // Initialize the emission probability matrices.
+    FillXmsaEmission();
+    InitializeEmission();
+
+    // Compute the linearham log-likelihood and sample a naive sequence.
+    new_likelihood_.push_back(LogLikelihood());
+    weight_.push_back(new_likelihood_.back() - old_likelihood_.back());
+    naive_sequence_.push_back(SampleNaiveSequence());
   }
 };
 
