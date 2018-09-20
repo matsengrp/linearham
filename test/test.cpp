@@ -391,6 +391,7 @@ TEST_CASE("SimpleHMM", "[simplehmm]") {
   1;
   Eigen::RowVectorXd jpadding_transition(1);
   jpadding_transition << 0.04;
+  bool cache_forward = true;
   int vgerm_scaler_count = 0;
   std::vector<int> vd_junction_scaler_counts = {0, 0, 0, 0};
   int dgerm_scaler_count = 0;
@@ -440,6 +441,7 @@ TEST_CASE("SimpleHMM", "[simplehmm]") {
   REQUIRE(simple_hmm_ptr->dj_junction_transition() == dj_junction_transition);
   REQUIRE(simple_hmm_ptr->dj_junction_jgerm_transition() == dj_junction_jgerm_transition);
   REQUIRE(simple_hmm_ptr->jpadding_transition().isApprox(jpadding_transition));
+  REQUIRE(simple_hmm_ptr->cache_forward() == cache_forward);
 
   REQUIRE(simple_hmm_ptr->LogLikelihood() == Approx(-42.8027747544));
   REQUIRE(simple_hmm_ptr->vgerm_scaler_count() == vgerm_scaler_count);
@@ -580,6 +582,7 @@ TEST_CASE("SimpleHMM", "[simplehmm]") {
                  0, 1;
   jpadding_transition.resize(2);
   jpadding_transition << 0.04, 0.04;
+  cache_forward = true;
   vgerm_scaler_count = 0;
   vd_junction_scaler_counts = {0, 0};
   dgerm_scaler_count = 0;
@@ -629,6 +632,7 @@ TEST_CASE("SimpleHMM", "[simplehmm]") {
   REQUIRE(simple_hmm_ptr->dj_junction_transition() == dj_junction_transition);
   REQUIRE(simple_hmm_ptr->dj_junction_jgerm_transition() == dj_junction_jgerm_transition);
   REQUIRE(simple_hmm_ptr->jpadding_transition().isApprox(jpadding_transition));
+  REQUIRE(simple_hmm_ptr->cache_forward() == cache_forward);
 
   REQUIRE(simple_hmm_ptr->LogLikelihood() == Approx(-37.1354672701));
   REQUIRE(simple_hmm_ptr->vgerm_scaler_count() == vgerm_scaler_count);
