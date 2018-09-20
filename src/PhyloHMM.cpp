@@ -2,7 +2,6 @@
 
 #include <cmath>
 #include <cstddef>
-#include <fstream>
 #include <regex>
 #include <tuple>
 
@@ -190,6 +189,48 @@ void PhyloHMM::FillXmsaEmission() {
 };
 
 
+void PhyloHMM::WriteOutputHeaders(std::ofstream& outfile) const {
+  outfile << "Iteration\t";
+  outfile << "RBLogLikelihood\t";
+  outfile << "Prior\t";
+  outfile << "alpha\t";
+  for (int j = 1; j <= er_.back().size(); j++) {
+    outfile << ("er[" + std::to_string(j) + "]\t");
+  }
+  for (int j = 1; j <= pi_.back().size(); j++) {
+    outfile << ("pi[" + std::to_string(j) + "]\t");
+  }
+  outfile << "tree\t";
+  for (int j = 1; j <= sr_.back().size(); j++) {
+    outfile << ("sr[" + std::to_string(j) + "]\t");
+  }
+  outfile << "LHLogLikelihood\t";
+  outfile << "LogWeight\t";
+  outfile << "NaiveSequence\n";
+};
+
+
+void PhyloHMM::WriteOutputLine(std::ofstream& outfile) const {
+  outfile << iteration_.back() << "\t";
+  outfile << rb_loglikelihood_.back() << "\t";
+  outfile << prior_.back() << "\t";
+  outfile << alpha_.back() << "\t";
+  for (const auto& er : er_.back()) {
+    outfile << er << "\t";
+  }
+  for (const auto& pi : pi_.back()) {
+    outfile << pi << "\t";
+  }
+  outfile << tree_str_.back() << "\t";
+  for (const auto& sr : sr_.back()) {
+    outfile << sr << "\t";
+  }
+  outfile << lh_loglikelihood_.back() << "\t";
+  outfile << logweight_.back() << "\t";
+  outfile << naive_sequence_.back() << "\n";
+};
+
+
 void PhyloHMM::RunLinearhamInference(const std::string& input_samples_path,
                                      const std::string& output_samples_path,
                                      bool write_output, int burnin,
@@ -201,7 +242,7 @@ void PhyloHMM::RunLinearhamInference(const std::string& input_samples_path,
                  "alpha", "er[1]", "er[2]", "er[3]", "er[4]", "er[5]", "er[6]",
                  "pi[1]", "pi[2]", "pi[3]", "pi[4]", "tree");
 
-  // Initialize the output file stream.
+  // If specified, initialize the output file stream.
   std::ofstream outfile;
   if (write_output) outfile.open(output_samples_path);
 
@@ -212,10 +253,10 @@ void PhyloHMM::RunLinearhamInference(const std::string& input_samples_path,
       pi3, pi4;
   std::string tree_str;
 
-  int i = 0;
+  int line_ind = 0;
   while (in.read_row(iteration, rb_loglikelihood, prior, alpha, er1, er2, er3,
                      er4, er5, er6, pi1, pi2, pi3, pi4, tree_str)) {
-    if (i < burnin) continue;
+    if (line_ind < burnin) continue;
 
     iteration_.push_back(iteration);
     rb_loglikelihood_.push_back(rb_loglikelihood);
@@ -223,11 +264,12 @@ void PhyloHMM::RunLinearhamInference(const std::string& input_samples_path,
     alpha_.push_back(alpha);
     er_.push_back({er1, er2, er3, er4, er5, er6});
     pi_.push_back({pi1, pi2, pi3, pi4});
+    tree_str_.push_back(tree_str);
 
     // Remove the node indices from the Newick tree string.
-    tree_str =
-        std::regex_replace(tree_str, std::regex("\\[\\&index=[0-9]+\\]"), "");
-    tree_.push_back(pll_utree_parse_newick_string(tree_str.c_str()));
+    tree_str_.back() = std::regex_replace(
+        tree_str_.back(), std::regex("\\[\\&index=[0-9]+\\]"), "");
+    tree_.push_back(pll_utree_parse_newick_string(tree_str_.back().c_str()));
 
     // Calculate the site-wise rates for the current tree sample.
     std::vector<double> sr(rate_categories);
@@ -257,49 +299,13 @@ void PhyloHMM::RunLinearhamInference(const std::string& input_samples_path,
     logweight_.push_back(lh_loglikelihood_.back() - rb_loglikelihood_.back());
     naive_sequence_.push_back(SampleNaiveSequence());
 
-    // If specified, write the tree samples to the output file.
+    // If specified, write the current tree sample to the output file.
     if (write_output) {
-      // Write the headers to the file stream.
-      if (i == 0) {
-        outfile << "Iteration\t";
-        outfile << "RBLogLikelihood\t";
-        outfile << "Prior\t";
-        outfile << "alpha\t";
-        for (int j = 1; j <= er_.back().size(); j++) {
-          outfile << ("er[" + std::to_string(j) + "]\t");
-        }
-        for (int j = 1; j <= pi_.back().size(); j++) {
-          outfile << ("pi[" + std::to_string(j) + "]\t");
-        }
-        outfile << "tree\t";
-        for (int j = 1; j <= sr_.back().size(); j++) {
-          outfile << ("sr[" + std::to_string(j) + "]\t");
-        }
-        outfile << "LHLogLikelihood\t";
-        outfile << "LogWeight\t";
-        outfile << "NaiveSequence\n";
-      }
-
-      outfile << iteration_.back() << "\t";
-      outfile << rb_loglikelihood_.back() << "\t";
-      outfile << prior_.back() << "\t";
-      outfile << alpha_.back() << "\t";
-      for (const auto& er : er_.back()) {
-        outfile << er << "\t";
-      }
-      for (const auto& pi : pi_.back()) {
-        outfile << pi << "\t";
-      }
-      outfile << tree_str << "\t";
-      for (const auto& sr : sr_.back()) {
-        outfile << sr << "\t";
-      }
-      outfile << lh_loglikelihood_.back() << "\t";
-      outfile << logweight_.back() << "\t";
-      outfile << naive_sequence_.back() << "\n";
+      if (line_ind == 0) WriteOutputHeaders(outfile);
+      WriteOutputLine(outfile);
     }
 
-    i += 1;
+    line_ind += 1;
   }
 
   // If specified, close the file stream.
