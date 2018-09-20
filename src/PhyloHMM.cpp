@@ -1,13 +1,14 @@
 #include "PhyloHMM.hpp"
 
-#include <csv.h>
 #include <cmath>
 #include <cstddef>
 #include <fstream>
-#include <model.hpp>
-#include <pll_util.hpp>
 #include <regex>
 #include <tuple>
+
+#include <csv.h>
+#include <model.hpp>
+#include <pll_util.hpp>
 
 /// @file PhyloHMM.cpp
 /// @brief Implementation of the PhyloHMM class.
