@@ -38,11 +38,6 @@ HMM::HMM(const std::string& yaml_path, int cluster_ind,
 
   // Initialize the transition probability matrices.
   InitializeTransition();
-
-  // Initialize the "germline" scaler counts.
-  vgerm_scaler_count_ = 0;
-  dgerm_scaler_count_ = 0;
-  jgerm_scaler_count_ = 0;
 };
 
 
@@ -251,8 +246,9 @@ void HMM::SampleInitialState() {
 
 double HMM::LogLikelihood() {
   // If necessary, run the forward algorithm.
-  if (jgerm_forward_.size() == 0) {
+  if (cache_forward_) {
     RunForwardAlgorithm();
+    cache_forward_ = false;
   }
 
   return std::log(jgerm_forward_.sum()) -
@@ -262,8 +258,9 @@ double HMM::LogLikelihood() {
 
 std::string HMM::SampleNaiveSequence() {
   // If necessary, run the forward algorithm.
-  if (jgerm_forward_.size() == 0) {
+  if (cache_forward_) {
     RunForwardAlgorithm();
+    cache_forward_ = false;
   }
 
   // Initialize the naive sequence sample.

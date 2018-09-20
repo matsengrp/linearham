@@ -15,8 +15,16 @@ namespace linearham {
 SimpleHMM::SimpleHMM(const std::string& yaml_path, int cluster_ind,
                      const std::string& hmm_param_dir, int seed)
     : HMM(yaml_path, cluster_ind, hmm_param_dir, seed) {
+  // Initialize the "germline" scaler counts.
+  vgerm_scaler_count_ = 0;
+  dgerm_scaler_count_ = 0;
+  jgerm_scaler_count_ = 0;
+
   // Initialize the emission probability matrices.
   InitializeEmission();
+
+  // We can now cache the forward probabilities.
+  cache_forward_ = true;
 };
 
 

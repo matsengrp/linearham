@@ -240,9 +240,17 @@ void PhyloHMM::RunLinearhamInference(const std::string& input_samples_path,
     partition_.reset(new pt::pll::Partition(tree_.back(), model_params,
                                             xmsa_labels_, xmsa_seqs_, false));
 
+    // Initialize the "germline" scaler counts.
+    vgerm_scaler_count_ = 0;
+    dgerm_scaler_count_ = 0;
+    jgerm_scaler_count_ = 0;
+
     // Initialize the emission probability matrices.
     FillXmsaEmission();
     InitializeEmission();
+
+    // We can now cache the forward probabilities.
+    cache_forward_ = true;
 
     // Compute the linearham log-likelihood and sample a naive sequence.
     lh_loglikelihood_.push_back(LogLikelihood());
@@ -257,14 +265,14 @@ void PhyloHMM::RunLinearhamInference(const std::string& input_samples_path,
         outfile << "RBLogLikelihood\t";
         outfile << "Prior\t";
         outfile << "alpha\t";
-        for (int j = 1; j <= 6; j++) {
+        for (int j = 1; j <= er_.back().size(); j++) {
           outfile << ("er[" + std::to_string(j) + "]\t");
         }
-        for (int j = 1; j <= 4; j++) {
+        for (int j = 1; j <= pi_.back().size(); j++) {
           outfile << ("pi[" + std::to_string(j) + "]\t");
         }
         outfile << "tree\t";
-        for (int j = 1; j <= rate_categories; j++) {
+        for (int j = 1; j <= sr_.back().size(); j++) {
           outfile << ("sr[" + std::to_string(j) + "]\t");
         }
         outfile << "LHLogLikelihood\t";
