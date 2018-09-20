@@ -1,6 +1,7 @@
 #ifndef LINEARHAM_PHYLOHMM_
 #define LINEARHAM_PHYLOHMM_
 
+#include <fstream>
 #include <map>
 #include <memory>
 #include <string>
@@ -44,6 +45,7 @@ class PhyloHMM : public HMM {
   std::vector<double> alpha_;
   std::vector<std::vector<double>> er_;
   std::vector<std::vector<double>> pi_;
+  std::vector<std::string> tree_str_;
   std::vector<pll_utree_t*> tree_;
   std::vector<std::vector<double>> sr_;
 
@@ -69,6 +71,10 @@ class PhyloHMM : public HMM {
                             Eigen::MatrixXd& emission_) const;
 
   void FillXmsaEmission();
+
+  void WriteOutputHeaders(std::ofstream& outfile) const;
+
+  void WriteOutputLine(std::ofstream& outfile) const;
 
  public:
   PhyloHMM(const std::string& yaml_path, int cluster_ind,
@@ -104,6 +110,7 @@ class PhyloHMM : public HMM {
   const std::vector<double>& alpha() const { return alpha_; };
   const std::vector<std::vector<double>>& er() const { return er_; };
   const std::vector<std::vector<double>>& pi() const { return pi_; };
+  const std::vector<std::string>& tree_str() const { return tree_str_; };
   const std::vector<pll_utree_t*>& tree() const { return tree_; };
   const std::vector<std::vector<double>>& sr() const { return sr_; };
   const std::vector<double>& lh_loglikelihood() const {
