@@ -108,6 +108,9 @@ class HMM {
   Eigen::RowVectorXd jgerm_emission_;
   Eigen::RowVectorXd jpadding_emission_;
 
+  // Should we cache the forward probabilities?
+  bool cache_forward_;
+
   // Forward probability matrices
   Eigen::RowVectorXd vgerm_forward_;
   Eigen::MatrixXd vd_junction_forward_;
@@ -293,6 +296,7 @@ class HMM {
   const Eigen::RowVectorXd& jpadding_emission() const {
     return jpadding_emission_;
   };
+  bool cache_forward() const { return cache_forward_; };
   const Eigen::RowVectorXd& vgerm_forward() const { return vgerm_forward_; };
   const Eigen::MatrixXd& vd_junction_forward() const {
     return vd_junction_forward_;
