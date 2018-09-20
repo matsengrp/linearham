@@ -59,7 +59,7 @@ void SimpleHMM::InitializeEmission() {
 void SimpleHMM::FillGermlineEmission(
     const std::map<std::string, std::pair<int, int>>& ggene_ranges_,
     const std::vector<int>& germ_inds_, const std::vector<int>& site_inds_,
-    Eigen::RowVectorXd& emission_, int& scaler_count_) {
+    Eigen::RowVectorXd& emission_, int& scaler_count_) const {
   emission_.setOnes(ggene_ranges_.size());
   std::vector<int> scaler_counts(ggene_ranges_.size(), 0);
   int max_scaler_count = 0;
@@ -107,7 +107,7 @@ void SimpleHMM::FillJunctionEmission(
     const std::map<std::string, std::pair<int, int>>& ggene_ranges_,
     const std::vector<int>& naive_bases_, const std::vector<int>& germ_inds_,
     const std::vector<int>& site_inds_, std::pair<int, int> left_flexbounds,
-    std::pair<int, int> right_flexbounds, Eigen::MatrixXd& emission_) {
+    std::pair<int, int> right_flexbounds, Eigen::MatrixXd& emission_) const {
   int site_start = left_flexbounds.first;
   int site_end = right_flexbounds.second;
   emission_.setZero(site_end - site_start, naive_bases_.size());
@@ -160,7 +160,7 @@ void SimpleHMM::FillJunctionEmission(
 void SimpleHMM::FillPaddingEmission(
     const std::map<std::string, std::pair<int, int>>& ggene_ranges_,
     const std::vector<int>& site_inds_, Eigen::RowVectorXd& emission_,
-    int& scaler_count_) {
+    int& scaler_count_) const {
   emission_.setOnes(ggene_ranges_.size());
   std::vector<int> scaler_counts(ggene_ranges_.size(), 0);
   int max_scaler_count = 0;
