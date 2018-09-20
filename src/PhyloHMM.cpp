@@ -118,7 +118,7 @@ void PhyloHMM::BuildXmsa(const std::map<std::pair<int, int>, int>& xmsa_ids) {
 void PhyloHMM::FillGermlinePaddingEmission(
     const std::map<std::string, std::pair<int, int>>& ggene_ranges_,
     const Eigen::VectorXi& xmsa_inds_, Eigen::RowVectorXd& emission_,
-    int& scaler_count_) {
+    int& scaler_count_) const {
   emission_.setOnes(ggene_ranges_.size());
   std::vector<int> scaler_counts(ggene_ranges_.size(), 0);
   int max_scaler_count = 0;
@@ -154,7 +154,7 @@ void PhyloHMM::FillGermlinePaddingEmission(
 
 
 void PhyloHMM::FillJunctionEmission(const Eigen::MatrixXi& xmsa_inds_,
-                                    Eigen::MatrixXd& emission_) {
+                                    Eigen::MatrixXd& emission_) const {
   emission_.setZero(xmsa_inds_.rows(), xmsa_inds_.cols());
 
   // Loop through the "junction" states and cache the associated emission

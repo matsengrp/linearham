@@ -25,18 +25,18 @@ class SimpleHMM : public HMM {
   void FillGermlineEmission(
       const std::map<std::string, std::pair<int, int>>& ggene_ranges_,
       const std::vector<int>& germ_inds_, const std::vector<int>& site_inds_,
-      Eigen::RowVectorXd& emission_, int& scaler_count_);
+      Eigen::RowVectorXd& emission_, int& scaler_count_) const;
 
   void FillJunctionEmission(
       const std::map<std::string, std::pair<int, int>>& ggene_ranges_,
       const std::vector<int>& naive_bases_, const std::vector<int>& germ_inds_,
       const std::vector<int>& site_inds_, std::pair<int, int> left_flexbounds,
-      std::pair<int, int> right_flexbounds, Eigen::MatrixXd& emission_);
+      std::pair<int, int> right_flexbounds, Eigen::MatrixXd& emission_) const;
 
   void FillPaddingEmission(
       const std::map<std::string, std::pair<int, int>>& ggene_ranges_,
       const std::vector<int>& site_inds_, Eigen::RowVectorXd& emission_,
-      int& scaler_count_);
+      int& scaler_count_) const;
 
  public:
   SimpleHMM(const std::string& yaml_path, int cluster_ind,

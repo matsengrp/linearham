@@ -63,10 +63,10 @@ class PhyloHMM : public HMM {
   void FillGermlinePaddingEmission(
       const std::map<std::string, std::pair<int, int>>& ggene_ranges_,
       const Eigen::VectorXi& xmsa_inds_, Eigen::RowVectorXd& emission_,
-      int& scaler_count_);
+      int& scaler_count_) const;
 
   void FillJunctionEmission(const Eigen::MatrixXi& xmsa_inds_,
-                            Eigen::MatrixXd& emission_);
+                            Eigen::MatrixXd& emission_) const;
 
   void FillXmsaEmission();
 
