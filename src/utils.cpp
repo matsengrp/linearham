@@ -27,7 +27,7 @@ std::pair<std::vector<std::string>, Eigen::VectorXd> ParseStringProbMap(
     i++;
   }
 
-  assert(std::fabs(probs.sum() - 1) <= EPS_PARSE);
+  assert(std::fabs(probs.sum() - 1) <= EPS);
   return {state_names, probs};
 };
 

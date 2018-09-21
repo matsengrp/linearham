@@ -15,8 +15,7 @@
 namespace linearham {
 
 
-// "Zero" for parsing YAML files.
-const double EPS_PARSE = 1e-5;
+const double EPS = 1e-6;
 
 
 std::pair<std::vector<std::string>, Eigen::VectorXd> ParseStringProbMap(

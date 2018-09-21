@@ -76,7 +76,7 @@ NPadding::NPadding(const YAML::Node& root) {
 
   assert(n_state_names == n_check_state_names);
   for (std::size_t i = 0; i < n_state_names.size(); i++) {
-    assert(std::fabs(n_probs[i] - n_check_probs[i]) <= EPS_PARSE);
+    assert(std::fabs(n_probs[i] - n_check_probs[i]) <= EPS);
   }
 
   // The "insert_[left|right]_N" state either transitions back to itself
