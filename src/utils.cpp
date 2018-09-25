@@ -2,6 +2,7 @@
 
 #include <algorithm>
 #include <cmath>
+#include <numeric>
 
 /// @file utils.cpp
 /// @brief Utility functions used in linearham.
