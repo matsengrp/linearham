@@ -878,7 +878,6 @@ TEST_CASE("PhyloHMM", "[phylohmm]") {
   REQUIRE(phylo_hmm_ptr->alpha()[0] == 1.0);
   REQUIRE(phylo_hmm_ptr->er()[0] == er);
   REQUIRE(phylo_hmm_ptr->pi()[0] == pi);
-  REQUIRE(phylo_hmm_ptr->tree_str()[0] == "((0:0.2, 1:0.4):0.6, naive:0.3, 2:0.5);");
   REQUIRE(phylo_hmm_ptr->lh_loglikelihood()[0] == Approx(-75.8136));
   REQUIRE(phylo_hmm_ptr->logweight()[0] == Approx(134.6993648291));
   REQUIRE(phylo_hmm_ptr->naive_sequence()[0] == "NATGAGGTAGATGCG");
@@ -1124,7 +1123,6 @@ TEST_CASE("PhyloHMM", "[phylohmm]") {
   REQUIRE(phylo_hmm_ptr->alpha()[0] == 1.0);
   REQUIRE(phylo_hmm_ptr->er()[0] == er);
   REQUIRE(phylo_hmm_ptr->pi()[0] == pi);
-  REQUIRE(phylo_hmm_ptr->tree_str()[0] == "((0:0.2, 1:0.4):0.6, naive:0.3, 2:0.5);");
   REQUIRE(phylo_hmm_ptr->lh_loglikelihood()[0] == Approx(-75.1122515055));
   REQUIRE(phylo_hmm_ptr->logweight()[0] == Approx(135.4007484945));
   REQUIRE(phylo_hmm_ptr->naive_sequence()[0] == "NATGGTCAGGATGCG");
