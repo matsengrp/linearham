@@ -8,6 +8,7 @@
 #include <csv.h>
 #include <model.hpp>
 #include <pll_util.hpp>
+#include "utils.hpp"
 
 /// @file PhyloHMM.cpp
 /// @brief Implementation of the PhyloHMM class.
@@ -221,7 +222,8 @@ void PhyloHMM::WriteOutputLine(std::ofstream& outfile) const {
   for (const auto& pi : pi_.back()) {
     outfile << pi << "\t";
   }
-  outfile << tree_str_.back() << "\t";
+  pll_unode_t* root_node = pt::pll::GetVirtualRoot(tree_.back());
+  outfile << pll_utree_export_newick(root_node, NULL) << "\t";
   for (const auto& sr : sr_.back()) {
     outfile << sr << "\t";
   }
@@ -264,12 +266,13 @@ void PhyloHMM::RunLinearhamInference(const std::string& input_samples_path,
     alpha_.push_back(alpha);
     er_.push_back({er1, er2, er3, er4, er5, er6});
     pi_.push_back({pi1, pi2, pi3, pi4});
-    tree_str_.push_back(tree_str);
 
     // Remove the node indices from the Newick tree string.
-    tree_str_.back() = std::regex_replace(
-        tree_str_.back(), std::regex("\\[\\&index=[0-9]+\\]"), "");
-    tree_.push_back(pll_utree_parse_newick_string(tree_str_.back().c_str()));
+    // Fix any missing branch lengths.
+    tree_str =
+        std::regex_replace(tree_str, std::regex("\\[\\&index=[0-9]+\\]"), "");
+    tree_.push_back(pll_utree_parse_newick_string(tree_str.c_str()));
+    pt::pll::set_missing_branch_length(tree_.back(), EPS);
 
     // Calculate the site-wise rates for the current tree sample.
     std::vector<double> sr(rate_categories);
