@@ -7,7 +7,7 @@ build:
             code: |
                 git submodule update --init --recursive
         - install-packages:
-            packages: flex bison libgsl0-dev
+            packages: flex bison libgsl0-dev gsl-bin
         - script:
             name: build
             code: scons
