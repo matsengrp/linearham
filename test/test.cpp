@@ -1137,7 +1137,7 @@ TEST_CASE("PhyloHMM", "[phylohmm]") {
   // library(ape)
   // library(phylomd)
   //
-  // tree = read.tree("newton.tre")
+  // tree = read.tree(text="((0:0.2, 1:0.4):0.6, naive:0.3, 2:0.5);")
   // tree = root(tree, outgroup=1, resolve.root=T)
   // msa = t(simplify2array(strsplit(c("AGGACATACGTCTNN", "TAAAAGATCAATTNN",
   //                                   "CACACGTTCGAGTNN", "CGTAGTAGGACTCNN"), "")))
@@ -1147,11 +1147,7 @@ TEST_CASE("PhyloHMM", "[phylohmm]") {
   // msa["naive",] = xmsa.naive.seq
   // subst.mod = GTR(1, 1, 1, 1, 1, 1, c(0.17, 0.19, 0.25, 0.39), scale=T)
   //
-  // likelihoods = rep(NA, ncol(msa))
-  // for (i in 1:ncol(msa)) {
-  //   likelihoods[i] = phylo.t.derivatives(tree, subst.mod, 0, msa[,i])
-  // }
-  //
+  // likelihoods = sapply(1:ncol(msa), function(i) phylo.likelihood(tree, subst.mod, msa[,i]))
   // naive.probs = subst.mod$pi[match(msa["naive",], subst.mod$states)]
   //
   // log(prod(likelihoods / naive.probs))
