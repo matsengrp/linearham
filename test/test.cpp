@@ -872,15 +872,15 @@ TEST_CASE("PhyloHMM", "[phylohmm]") {
   REQUIRE(phylo_hmm_ptr->dj_junction_xmsa_inds() == dj_junction_xmsa_inds);
   REQUIRE(phylo_hmm_ptr->jgerm_xmsa_inds() == jgerm_xmsa_inds);
   REQUIRE(phylo_hmm_ptr->jpadding_xmsa_inds() == jpadding_xmsa_inds);
-  REQUIRE(phylo_hmm_ptr->iteration()[0] == 0);
-  REQUIRE(phylo_hmm_ptr->rb_loglikelihood()[0] == Approx(-210.513));
-  REQUIRE(phylo_hmm_ptr->prior()[0] == Approx(17.946));
-  REQUIRE(phylo_hmm_ptr->alpha()[0] == 1.0);
-  REQUIRE(phylo_hmm_ptr->er()[0] == er);
-  REQUIRE(phylo_hmm_ptr->pi()[0] == pi);
-  REQUIRE(phylo_hmm_ptr->lh_loglikelihood()[0] == Approx(-75.8136));
-  REQUIRE(phylo_hmm_ptr->logweight()[0] == Approx(134.6993648291));
-  REQUIRE(phylo_hmm_ptr->naive_sequence()[0] == "NATGAGGTAGATGCG");
+  REQUIRE(phylo_hmm_ptr->iteration() == 0);
+  REQUIRE(phylo_hmm_ptr->rb_loglikelihood() == Approx(-210.513));
+  REQUIRE(phylo_hmm_ptr->prior() == Approx(17.946));
+  REQUIRE(phylo_hmm_ptr->alpha() == 1.0);
+  REQUIRE(phylo_hmm_ptr->er() == er);
+  REQUIRE(phylo_hmm_ptr->pi() == pi);
+  REQUIRE(phylo_hmm_ptr->lh_loglikelihood() == Approx(-75.8136));
+  REQUIRE(phylo_hmm_ptr->logweight() == Approx(134.6993648291));
+  REQUIRE(phylo_hmm_ptr->naive_sequence() == "NATGAGGTAGATGCG");
 
   // For clarity, we run an additional PhyloHMM test.
   yaml_path = "data/phylo_hmm_input_extra.yaml";
@@ -1117,15 +1117,15 @@ TEST_CASE("PhyloHMM", "[phylohmm]") {
   REQUIRE(phylo_hmm_ptr->dj_junction_xmsa_inds() == dj_junction_xmsa_inds);
   REQUIRE(phylo_hmm_ptr->jgerm_xmsa_inds() == jgerm_xmsa_inds);
   REQUIRE(phylo_hmm_ptr->jpadding_xmsa_inds() == jpadding_xmsa_inds);
-  REQUIRE(phylo_hmm_ptr->iteration()[0] == 0);
-  REQUIRE(phylo_hmm_ptr->rb_loglikelihood()[0] == Approx(-210.513));
-  REQUIRE(phylo_hmm_ptr->prior()[0] == Approx(17.946));
-  REQUIRE(phylo_hmm_ptr->alpha()[0] == 1.0);
-  REQUIRE(phylo_hmm_ptr->er()[0] == er);
-  REQUIRE(phylo_hmm_ptr->pi()[0] == pi);
-  REQUIRE(phylo_hmm_ptr->lh_loglikelihood()[0] == Approx(-75.1122515055));
-  REQUIRE(phylo_hmm_ptr->logweight()[0] == Approx(135.4007484945));
-  REQUIRE(phylo_hmm_ptr->naive_sequence()[0] == "NATGGTCAGGATGCG");
+  REQUIRE(phylo_hmm_ptr->iteration() == 0);
+  REQUIRE(phylo_hmm_ptr->rb_loglikelihood() == Approx(-210.513));
+  REQUIRE(phylo_hmm_ptr->prior() == Approx(17.946));
+  REQUIRE(phylo_hmm_ptr->alpha() == 1.0);
+  REQUIRE(phylo_hmm_ptr->er() == er);
+  REQUIRE(phylo_hmm_ptr->pi() == pi);
+  REQUIRE(phylo_hmm_ptr->lh_loglikelihood() == Approx(-75.1122515055));
+  REQUIRE(phylo_hmm_ptr->logweight() == Approx(135.4007484945));
+  REQUIRE(phylo_hmm_ptr->naive_sequence() == "NATGGTCAGGATGCG");
 
   // Test the phylogenetic likelihood calculation using the R package "phylomd".
   // For more details, see https://github.com/dunleavy005/phylomd.
@@ -1157,7 +1157,7 @@ TEST_CASE("PhyloHMM", "[phylohmm]") {
   // log(prod(likelihoods / naive.probs))
   // # -55.73483
 
-  REQUIRE(phylo_hmm_ptr->lh_loglikelihood()[0] == Approx(-55.73483));
+  REQUIRE(phylo_hmm_ptr->lh_loglikelihood() == Approx(-55.73483));
 }
 
 

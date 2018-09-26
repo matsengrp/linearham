@@ -38,20 +38,20 @@ class PhyloHMM : public HMM {
   Eigen::VectorXi jgerm_xmsa_inds_;
   Eigen::VectorXi jpadding_xmsa_inds_;
 
-  // RevBayes tree samples
-  std::vector<int> iteration_;
-  std::vector<double> rb_loglikelihood_;
-  std::vector<double> prior_;
-  std::vector<double> alpha_;
-  std::vector<std::vector<double>> er_;
-  std::vector<std::vector<double>> pi_;
-  std::vector<pll_utree_t*> tree_;
-  std::vector<std::vector<double>> sr_;
+  // RevBayes tree sample
+  int iteration_;
+  double rb_loglikelihood_;
+  double prior_;
+  double alpha_;
+  std::vector<double> er_;
+  std::vector<double> pi_;
+  pll_utree_t* tree_;
+  std::vector<double> sr_;
 
   // Linearham sample information
-  std::vector<double> lh_loglikelihood_;
-  std::vector<double> logweight_;
-  std::vector<std::string> naive_sequence_;
+  double lh_loglikelihood_;
+  double logweight_;
+  std::string naive_sequence_;
 
   // Initialization functions
   void InitializeXmsaStructs();
@@ -78,7 +78,6 @@ class PhyloHMM : public HMM {
  public:
   PhyloHMM(const std::string& yaml_path, int cluster_ind,
            const std::string& hmm_param_dir, int seed = 0);
-  ~PhyloHMM();
 
   const Eigen::MatrixXi& xmsa() const { return xmsa_; };
   const std::vector<std::string>& xmsa_labels() const { return xmsa_labels_; };
@@ -101,23 +100,17 @@ class PhyloHMM : public HMM {
   const Eigen::VectorXi& jpadding_xmsa_inds() const {
     return jpadding_xmsa_inds_;
   };
-  const std::vector<int>& iteration() const { return iteration_; };
-  const std::vector<double>& rb_loglikelihood() const {
-    return rb_loglikelihood_;
-  };
-  const std::vector<double>& prior() const { return prior_; };
-  const std::vector<double>& alpha() const { return alpha_; };
-  const std::vector<std::vector<double>>& er() const { return er_; };
-  const std::vector<std::vector<double>>& pi() const { return pi_; };
-  const std::vector<pll_utree_t*>& tree() const { return tree_; };
-  const std::vector<std::vector<double>>& sr() const { return sr_; };
-  const std::vector<double>& lh_loglikelihood() const {
-    return lh_loglikelihood_;
-  };
-  const std::vector<double>& logweight() const { return logweight_; };
-  const std::vector<std::string>& naive_sequence() const {
-    return naive_sequence_;
-  };
+  int iteration() const { return iteration_; };
+  double rb_loglikelihood() const { return rb_loglikelihood_; };
+  double prior() const { return prior_; };
+  double alpha() const { return alpha_; };
+  const std::vector<double>& er() const { return er_; };
+  const std::vector<double>& pi() const { return pi_; };
+  const pll_utree_t& tree() const { return *tree_; };
+  const std::vector<double>& sr() const { return sr_; };
+  double lh_loglikelihood() const { return lh_loglikelihood_; };
+  double logweight() const { return logweight_; };
+  const std::string& naive_sequence() const { return naive_sequence_; };
 
   void RunLinearhamInference(const std::string& input_samples_path,
                              const std::string& output_samples_path,
