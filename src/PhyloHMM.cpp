@@ -24,13 +24,6 @@ PhyloHMM::PhyloHMM(const std::string& yaml_path, int cluster_ind,
 };
 
 
-PhyloHMM::~PhyloHMM() {
-  for (const auto& tree : tree_) {
-    pll_utree_destroy(tree, pt::pll::cb_erase_data);
-  }
-};
-
-
 // Initialization functions
 
 
@@ -173,7 +166,7 @@ void PhyloHMM::FillXmsaEmission() {
   xmsa_emission_.setZero(xmsa_.cols());
 
   // Compute the per-site phylogenetic log-likelihoods.
-  pll_unode_t* root_node = pt::pll::GetVirtualRoot(tree_.back());
+  pll_unode_t* root_node = pt::pll::GetVirtualRoot(tree_);
   partition_->TraversalUpdate(root_node, pt::pll::TraversalType::FULL);
   partition_->LogLikelihood(root_node, xmsa_emission_.data());
 
@@ -181,7 +174,7 @@ void PhyloHMM::FillXmsaEmission() {
   for (std::size_t i = 0; i < xmsa_emission_.size(); i++) {
     // Is the current naive base an unambiguous nucleotide?
     if (xmsa_(xmsa_naive_ind_, i) != alphabet_.size() - 1) {
-      double naive_prob = pi_.back()[xmsa_(xmsa_naive_ind_, i)];
+      double naive_prob = pi_[xmsa_(xmsa_naive_ind_, i)];
       xmsa_emission_[i] -= std::log(naive_prob);
     }
   }
@@ -195,14 +188,14 @@ void PhyloHMM::WriteOutputHeaders(std::ofstream& outfile) const {
   outfile << "RBLogLikelihood\t";
   outfile << "Prior\t";
   outfile << "alpha\t";
-  for (int j = 1; j <= er_.back().size(); j++) {
+  for (int j = 1; j <= er_.size(); j++) {
     outfile << ("er[" + std::to_string(j) + "]\t");
   }
-  for (int j = 1; j <= pi_.back().size(); j++) {
+  for (int j = 1; j <= pi_.size(); j++) {
     outfile << ("pi[" + std::to_string(j) + "]\t");
   }
   outfile << "tree\t";
-  for (int j = 1; j <= sr_.back().size(); j++) {
+  for (int j = 1; j <= sr_.size(); j++) {
     outfile << ("sr[" + std::to_string(j) + "]\t");
   }
   outfile << "LHLogLikelihood\t";
@@ -212,24 +205,24 @@ void PhyloHMM::WriteOutputHeaders(std::ofstream& outfile) const {
 
 
 void PhyloHMM::WriteOutputLine(std::ofstream& outfile) const {
-  outfile << iteration_.back() << "\t";
-  outfile << rb_loglikelihood_.back() << "\t";
-  outfile << prior_.back() << "\t";
-  outfile << alpha_.back() << "\t";
-  for (const auto& er : er_.back()) {
+  outfile << iteration_ << "\t";
+  outfile << rb_loglikelihood_ << "\t";
+  outfile << prior_ << "\t";
+  outfile << alpha_ << "\t";
+  for (auto er : er_) {
     outfile << er << "\t";
   }
-  for (const auto& pi : pi_.back()) {
+  for (auto pi : pi_) {
     outfile << pi << "\t";
   }
-  pll_unode_t* root_node = pt::pll::GetVirtualRoot(tree_.back());
+  pll_unode_t* root_node = pt::pll::GetVirtualRoot(tree_);
   outfile << pll_utree_export_newick(root_node, NULL) << "\t";
-  for (const auto& sr : sr_.back()) {
+  for (auto sr : sr_) {
     outfile << sr << "\t";
   }
-  outfile << lh_loglikelihood_.back() << "\t";
-  outfile << logweight_.back() << "\t";
-  outfile << naive_sequence_.back() << "\n";
+  outfile << lh_loglikelihood_ << "\t";
+  outfile << logweight_ << "\t";
+  outfile << naive_sequence_ << "\n";
 };
 
 
@@ -250,43 +243,35 @@ void PhyloHMM::RunLinearhamInference(const std::string& input_samples_path,
 
   // Parse the RevBayes tree samples and compute the linearham sample
   // information.
-  int iteration;
-  double rb_loglikelihood, prior, alpha, er1, er2, er3, er4, er5, er6, pi1, pi2,
-      pi3, pi4;
+  er_.assign(6, 0.0);
+  pi_.assign(4, 0.0);
   std::string tree_str;
+  sr_.assign(rate_categories, 0.0);
 
   int line_ind = 0;
-  while (in.read_row(iteration, rb_loglikelihood, prior, alpha, er1, er2, er3,
-                     er4, er5, er6, pi1, pi2, pi3, pi4, tree_str)) {
+  while (in.read_row(iteration_, rb_loglikelihood_, prior_, alpha_, er_[0],
+                     er_[1], er_[2], er_[3], er_[4], er_[5], pi_[0], pi_[1],
+                     pi_[2], pi_[3], tree_str)) {
     if (line_ind < burnin) {
       line_ind += 1;
       continue;
     }
 
-    iteration_.push_back(iteration);
-    rb_loglikelihood_.push_back(rb_loglikelihood);
-    prior_.push_back(prior);
-    alpha_.push_back(alpha);
-    er_.push_back({er1, er2, er3, er4, er5, er6});
-    pi_.push_back({pi1, pi2, pi3, pi4});
-
     // Remove the node indices from the Newick tree string.
     // Fix any missing branch lengths.
     tree_str =
         std::regex_replace(tree_str, std::regex("\\[\\&index=[0-9]+\\]"), "");
-    tree_.push_back(pll_utree_parse_newick_string(tree_str.c_str()));
-    pt::pll::set_missing_branch_length(tree_.back(), EPS);
+    tree_ = pll_utree_parse_newick_string(tree_str.c_str());
+    pt::pll::set_missing_branch_length(tree_, EPS);
 
     // Calculate the site-wise rates for the current tree sample.
-    std::vector<double> sr(rate_categories);
-    pll_compute_gamma_cats(alpha_.back(), sr.size(), sr.data(),
+    pll_compute_gamma_cats(alpha_, sr_.size(), sr_.data(),
                            PLL_GAMMA_RATES_MEAN);
-    sr_.push_back(sr);
 
     // Construct the partition object.
-    pt::pll::Model model_params = {"GTR", pi_.back(), er_.back(), sr_.back()};
-    partition_.reset(new pt::pll::Partition(tree_.back(), model_params,
-                                            xmsa_labels_, xmsa_seqs_, false));
+    pt::pll::Model model_params = {"GTR", pi_, er_, sr_};
+    partition_.reset(new pt::pll::Partition(tree_, model_params, xmsa_labels_,
+                                            xmsa_seqs_, false));
 
     // Initialize the "germline" scaler counts.
     vgerm_scaler_count_ = 0;
@@ -301,15 +286,18 @@ void PhyloHMM::RunLinearhamInference(const std::string& input_samples_path,
     cache_forward_ = true;
 
     // Compute the linearham log-likelihood and sample a naive sequence.
-    lh_loglikelihood_.push_back(LogLikelihood());
-    logweight_.push_back(lh_loglikelihood_.back() - rb_loglikelihood_.back());
-    naive_sequence_.push_back(SampleNaiveSequence());
+    lh_loglikelihood_ = LogLikelihood();
+    logweight_ = lh_loglikelihood_ - rb_loglikelihood_;
+    naive_sequence_ = SampleNaiveSequence();
 
     // If specified, write the current tree sample to the output file.
     if (write_output) {
       if (line_ind == burnin) WriteOutputHeaders(outfile);
       WriteOutputLine(outfile);
     }
+
+    // Free the dynamically allocated tree structure.
+    pll_utree_destroy(tree_, pt::pll::cb_erase_data);
 
     line_ind += 1;
   }

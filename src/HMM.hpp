@@ -158,7 +158,6 @@ class HMM {
  public:
   HMM(const std::string& yaml_path, int cluster_ind,
       const std::string& hmm_param_dir, int seed);
-  virtual ~HMM(){};
 
   const YAML::Node& cluster_data() const { return cluster_data_; };
   const std::map<std::string, std::pair<int, int>>& flexbounds() const {
