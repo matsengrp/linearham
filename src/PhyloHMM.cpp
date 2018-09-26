@@ -258,7 +258,10 @@ void PhyloHMM::RunLinearhamInference(const std::string& input_samples_path,
   int line_ind = 0;
   while (in.read_row(iteration, rb_loglikelihood, prior, alpha, er1, er2, er3,
                      er4, er5, er6, pi1, pi2, pi3, pi4, tree_str)) {
-    if (line_ind < burnin) continue;
+    if (line_ind < burnin) {
+      line_ind += 1;
+      continue;
+    }
 
     iteration_.push_back(iteration);
     rb_loglikelihood_.push_back(rb_loglikelihood);
@@ -304,7 +307,7 @@ void PhyloHMM::RunLinearhamInference(const std::string& input_samples_path,
 
     // If specified, write the current tree sample to the output file.
     if (write_output) {
-      if (line_ind == 0) WriteOutputHeaders(outfile);
+      if (line_ind == burnin) WriteOutputHeaders(outfile);
       WriteOutputLine(outfile);
     }
 
