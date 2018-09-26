@@ -347,9 +347,6 @@ class HMM {
 
 typedef std::shared_ptr<HMM> HMMPtr;
 
-const double SCALE_FACTOR = std::pow(2, 256);
-const double SCALE_THRESHOLD = 1.0 / SCALE_FACTOR;
-
 
 // Auxiliary functions
 
@@ -465,14 +462,6 @@ void SampleGermlineState(
     std::mt19937& rng_, std::discrete_distribution<int>& distr_,
     std::string& naive_seq_samp_, std::string& germ_state_str_samp_,
     int& germ_state_ind_samp_);
-
-int ScaleMatrix(Eigen::Ref<Eigen::MatrixXd> m);
-
-Eigen::RowVectorXi ConvertSeqToInts(const std::string& seq_str,
-                                    const std::string& alphabet);
-
-std::string ConvertIntsToSeq(const Eigen::RowVectorXi& seq,
-                             const std::string& alphabet);
 
 
 }  // namespace linearham

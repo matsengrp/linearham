@@ -1,6 +1,7 @@
 #ifndef LINEARHAM_UTILS_
 #define LINEARHAM_UTILS_
 
+#include <cmath>
 #include <regex>
 #include <string>
 #include <utility>
@@ -16,6 +17,8 @@ namespace linearham {
 
 
 const double EPS = 1e-6;
+const double SCALE_FACTOR = std::pow(2, 256);
+const double SCALE_THRESHOLD = 1.0 / SCALE_FACTOR;
 
 
 std::pair<std::vector<std::string>, Eigen::VectorXd> ParseStringProbMap(
@@ -31,6 +34,14 @@ std::regex GetNTIStateRegex(const std::string& alphabet);
 
 std::pair<int, int> FindGermlineStartEnd(const YAML::Node& root,
                                          const std::string& gname);
+
+int ScaleMatrix(Eigen::Ref<Eigen::MatrixXd> m);
+
+Eigen::RowVectorXi ConvertSeqToInts(const std::string& seq_str,
+                                    const std::string& alphabet);
+
+std::string ConvertIntsToSeq(const Eigen::RowVectorXi& seq,
+                             const std::string& alphabet);
 
 
 }  // namespace linearham

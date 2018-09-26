@@ -2,6 +2,7 @@
 
 #include <algorithm>
 #include <cmath>
+#include <cstddef>
 #include <numeric>
 
 /// @file utils.cpp
@@ -108,6 +109,42 @@ std::pair<int, int> FindGermlineStartEnd(const YAML::Node& root,
   }
 
   return {gstart, gend};
+};
+
+
+int ScaleMatrix(Eigen::Ref<Eigen::MatrixXd> m) {
+  int n = 0;
+
+  while ((0 < m.array() && m.array() < SCALE_THRESHOLD).any()) {
+    m *= SCALE_FACTOR;
+    n += 1;
+  }
+
+  return n;
+};
+
+
+Eigen::RowVectorXi ConvertSeqToInts(const std::string& seq_str,
+                                    const std::string& alphabet) {
+  Eigen::RowVectorXi seq(seq_str.size());
+
+  for (std::size_t i = 0; i < seq_str.size(); i++) {
+    seq[i] = GetAlphabetIndex(alphabet, seq_str[i]);
+  }
+
+  return seq;
+};
+
+
+std::string ConvertIntsToSeq(const Eigen::RowVectorXi& seq,
+                             const std::string& alphabet) {
+  std::string seq_str(seq.size(), ' ');
+
+  for (std::size_t i = 0; i < seq.size(); i++) {
+    seq_str[i] = alphabet.at(seq[i]);
+  }
+
+  return seq_str;
 };
 
 
