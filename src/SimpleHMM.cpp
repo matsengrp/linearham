@@ -5,6 +5,7 @@
 #include <tuple>
 
 #include "VDJGermline.hpp"
+#include "utils.hpp"
 
 /// @file SimpleHMM.cpp
 /// @brief Implementation of the SimpleHMM class.
