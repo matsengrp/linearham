@@ -10,3 +10,6 @@
 [submodule "lib/libptpll"]
 	path = lib/libptpll
 	url = https://github.com/matsengrp/libptpll.git
+[submodule "lib/tclap"]
+	path = lib/tclap
+	url = https://git.code.sf.net/p/tclap/code
