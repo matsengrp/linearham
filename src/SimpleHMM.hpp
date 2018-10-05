@@ -40,7 +40,7 @@ class SimpleHMM : public HMM {
 
  public:
   SimpleHMM(const std::string& yaml_path, int cluster_ind,
-            const std::string& hmm_param_dir, int seed = 0);
+            const std::string& hmm_param_dir, int seed);
 };
 
 

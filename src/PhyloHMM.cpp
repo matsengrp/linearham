@@ -226,9 +226,9 @@ void PhyloHMM::WriteOutputLine(std::ofstream& outfile) const {
 };
 
 
-void PhyloHMM::RunLinearhamInference(const std::string& input_samples_path,
-                                     const std::string& output_samples_path,
-                                     bool write_output, int rate_categories) {
+void PhyloHMM::RunRevBayesInference(const std::string& input_samples_path,
+                                    const std::string& output_samples_path,
+                                    int rate_categories) {
   // Open the RevBayes output file.
   io::CSVReader<15, io::trim_chars<>, io::double_quote_escape<'\t', '"'>> in(
       input_samples_path);
@@ -236,9 +236,9 @@ void PhyloHMM::RunLinearhamInference(const std::string& input_samples_path,
                  "alpha", "er[1]", "er[2]", "er[3]", "er[4]", "er[5]", "er[6]",
                  "pi[1]", "pi[2]", "pi[3]", "pi[4]", "tree");
 
-  // If specified, initialize the output file stream.
+  // Initialize the output file stream.
   std::ofstream outfile;
-  if (write_output) outfile.open(output_samples_path);
+  outfile.open(output_samples_path);
 
   // Parse the RevBayes tree samples and compute the linearham sample
   // information.
@@ -262,33 +262,15 @@ void PhyloHMM::RunLinearhamInference(const std::string& input_samples_path,
     pll_compute_gamma_cats(alpha_, sr_.size(), sr_.data(),
                            PLL_GAMMA_RATES_MEAN);
 
-    // Construct the partition object.
-    pt::pll::Model model_params = {"GTR", pi_, er_, sr_};
-    partition_.reset(new pt::pll::Partition(tree_, model_params, xmsa_labels_,
-                                            xmsa_seqs_, false));
-
-    // Initialize the "germline" scaler counts.
-    vgerm_scaler_count_ = 0;
-    dgerm_scaler_count_ = 0;
-    jgerm_scaler_count_ = 0;
-
-    // Initialize the emission probability matrices.
-    FillXmsaEmission();
-    InitializeEmission();
-
-    // We can now cache the forward probabilities.
-    cache_forward_ = true;
-
     // Compute the linearham log-likelihood and sample a naive sequence.
+    InitializePhyloEmission();
     lh_loglikelihood_ = LogLikelihood();
     logweight_ = lh_loglikelihood_ - rb_loglikelihood_;
     naive_sequence_ = SampleNaiveSequence();
 
-    // If specified, write the current tree sample to the output file.
-    if (write_output) {
-      if (line_ind == 0) WriteOutputHeaders(outfile);
-      WriteOutputLine(outfile);
-    }
+    // Write the current tree sample to the output file.
+    if (line_ind == 0) WriteOutputHeaders(outfile);
+    WriteOutputLine(outfile);
 
     // Free the dynamically allocated tree structure.
     pll_utree_destroy(tree_, pt::pll::cb_erase_data);
@@ -296,8 +278,43 @@ void PhyloHMM::RunLinearhamInference(const std::string& input_samples_path,
     line_ind += 1;
   }
 
-  // If specified, close the file stream.
-  if (write_output) outfile.close();
+  // Close the file stream.
+  outfile.close();
+};
+
+
+void PhyloHMM::InitializePhyloParameters(const std::string& newick_path,
+                                         const std::vector<double>& er,
+                                         const std::vector<double>& pi,
+                                         double alpha, int rate_categories) {
+  // Initialize the phylogeny-related parameters.
+  tree_ = pll_utree_parse_newick(newick_path.c_str());
+  pt::pll::set_missing_branch_length(tree_, EPS);
+  er_ = er;
+  pi_ = pi;
+  alpha_ = alpha;
+  sr_.assign(rate_categories, 0.0);
+  pll_compute_gamma_cats(alpha_, sr_.size(), sr_.data(), PLL_GAMMA_RATES_MEAN);
+};
+
+
+void PhyloHMM::InitializePhyloEmission() {
+  // Construct the partition object.
+  pt::pll::Model model_params = {"GTR", pi_, er_, sr_};
+  partition_.reset(new pt::pll::Partition(tree_, model_params, xmsa_labels_,
+                                          xmsa_seqs_, false));
+
+  // Initialize the "germline" scaler counts.
+  vgerm_scaler_count_ = 0;
+  dgerm_scaler_count_ = 0;
+  jgerm_scaler_count_ = 0;
+
+  // Initialize the emission probability matrices.
+  FillXmsaEmission();
+  InitializeEmission();
+
+  // We can now cache the forward probabilities.
+  cache_forward_ = true;
 };
 
 
