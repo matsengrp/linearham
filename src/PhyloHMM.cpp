@@ -228,8 +228,7 @@ void PhyloHMM::WriteOutputLine(std::ofstream& outfile) const {
 
 void PhyloHMM::RunLinearhamInference(const std::string& input_samples_path,
                                      const std::string& output_samples_path,
-                                     bool write_output, int burnin,
-                                     int rate_categories) {
+                                     bool write_output, int rate_categories) {
   // Open the RevBayes output file.
   io::CSVReader<15, io::trim_chars<>, io::double_quote_escape<'\t', '"'>> in(
       input_samples_path);
@@ -252,11 +251,6 @@ void PhyloHMM::RunLinearhamInference(const std::string& input_samples_path,
   while (in.read_row(iteration_, rb_loglikelihood_, prior_, alpha_, er_[0],
                      er_[1], er_[2], er_[3], er_[4], er_[5], pi_[0], pi_[1],
                      pi_[2], pi_[3], tree_str)) {
-    if (line_ind < burnin) {
-      line_ind += 1;
-      continue;
-    }
-
     // Remove the node indices from the Newick tree string.
     // Fix any missing branch lengths.
     tree_str =
@@ -292,7 +286,7 @@ void PhyloHMM::RunLinearhamInference(const std::string& input_samples_path,
 
     // If specified, write the current tree sample to the output file.
     if (write_output) {
-      if (line_ind == burnin) WriteOutputHeaders(outfile);
+      if (line_ind == 0) WriteOutputHeaders(outfile);
       WriteOutputLine(outfile);
     }
 
