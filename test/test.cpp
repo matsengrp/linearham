@@ -1132,7 +1132,7 @@ TEST_CASE("PhyloHMM", "[phylohmm]") {
   yaml_path = "data/phylo_likelihood_hmm_input.yaml";
   hmm_param_dir = "data/phylo_likelihood_hmm_params";
   phylo_hmm_ptr = std::make_shared<PhyloHMM>(yaml_path, 0, hmm_param_dir);
-  phylo_hmm_ptr->RunLinearhamInference(input_samples_path, output_samples_path, false, 0, 1);
+  phylo_hmm_ptr->RunLinearhamInference(input_samples_path, output_samples_path, false, 1);
 
   // library(ape)
   // library(phylomd)

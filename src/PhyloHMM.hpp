@@ -114,7 +114,7 @@ class PhyloHMM : public HMM {
 
   void RunLinearhamInference(const std::string& input_samples_path,
                              const std::string& output_samples_path,
-                             bool write_output = false, int burnin = 0,
+                             bool write_output = false,
                              int rate_categories = 4);
 };
 
