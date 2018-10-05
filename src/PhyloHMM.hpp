@@ -77,7 +77,7 @@ class PhyloHMM : public HMM {
 
  public:
   PhyloHMM(const std::string& yaml_path, int cluster_ind,
-           const std::string& hmm_param_dir, int seed = 0);
+           const std::string& hmm_param_dir, int seed);
 
   const Eigen::MatrixXi& xmsa() const { return xmsa_; };
   const std::vector<std::string>& xmsa_labels() const { return xmsa_labels_; };
@@ -112,10 +112,14 @@ class PhyloHMM : public HMM {
   double logweight() const { return logweight_; };
   const std::string& naive_sequence() const { return naive_sequence_; };
 
-  void RunLinearhamInference(const std::string& input_samples_path,
-                             const std::string& output_samples_path,
-                             bool write_output = false,
-                             int rate_categories = 4);
+  void RunRevBayesInference(const std::string& input_samples_path,
+                            const std::string& output_samples_path,
+                            int rate_categories);
+  void InitializePhyloParameters(const std::string& newick_path,
+                                 const std::vector<double>& er,
+                                 const std::vector<double>& pi, double alpha,
+                                 int rate_categories);
+  void InitializePhyloEmission();
 };
 
 
