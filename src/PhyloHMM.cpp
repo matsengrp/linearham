@@ -228,7 +228,7 @@ void PhyloHMM::WriteOutputLine(std::ofstream& outfile) const {
 
 void PhyloHMM::RunRevBayesInference(const std::string& input_samples_path,
                                     const std::string& output_samples_path,
-                                    int rate_categories) {
+                                    int num_rates) {
   // Open the RevBayes output file.
   io::CSVReader<15, io::trim_chars<>, io::double_quote_escape<'\t', '"'>> in(
       input_samples_path);
@@ -245,7 +245,7 @@ void PhyloHMM::RunRevBayesInference(const std::string& input_samples_path,
   er_.assign(6, 0.0);
   pi_.assign(4, 0.0);
   std::string tree_str;
-  sr_.assign(rate_categories, 0.0);
+  sr_.assign(num_rates, 0.0);
 
   int line_ind = 0;
   while (in.read_row(iteration_, rb_loglikelihood_, prior_, alpha_, er_[0],
@@ -286,14 +286,14 @@ void PhyloHMM::RunRevBayesInference(const std::string& input_samples_path,
 void PhyloHMM::InitializePhyloParameters(const std::string& newick_path,
                                          const std::vector<double>& er,
                                          const std::vector<double>& pi,
-                                         double alpha, int rate_categories) {
+                                         double alpha, int num_rates) {
   // Initialize the phylogeny-related parameters.
   tree_ = pll_utree_parse_newick(newick_path.c_str());
   pt::pll::set_missing_branch_length(tree_, EPS);
   er_ = er;
   pi_ = pi;
   alpha_ = alpha;
-  sr_.assign(rate_categories, 0.0);
+  sr_.assign(num_rates, 0.0);
   pll_compute_gamma_cats(alpha_, sr_.size(), sr_.data(), PLL_GAMMA_RATES_MEAN);
 };
 

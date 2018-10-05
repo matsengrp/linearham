@@ -114,11 +114,11 @@ class PhyloHMM : public HMM {
 
   void RunRevBayesInference(const std::string& input_samples_path,
                             const std::string& output_samples_path,
-                            int rate_categories);
+                            int num_rates);
   void InitializePhyloParameters(const std::string& newick_path,
                                  const std::vector<double>& er,
                                  const std::vector<double>& pi, double alpha,
-                                 int rate_categories);
+                                 int num_rates);
   void InitializePhyloEmission();
 };
 
