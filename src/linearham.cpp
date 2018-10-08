@@ -171,7 +171,7 @@ int main(int argc, char** argv) {
                                     "' is not a valid subcommand.");
       }
     } else {
-      // Define the subcommand argument object for the main command.
+      // Define the subcommand argument objects for the main command.
       TCLAP::SwitchArg compute_logl_arg(
           "", "compute-logl",
           "The Phylo-HMM log-likelihood computation subcommand.");
