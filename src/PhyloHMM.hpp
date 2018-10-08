@@ -115,14 +115,13 @@ class PhyloHMM : public HMM {
   double logweight() const { return logweight_; };
   const std::string& naive_sequence() const { return naive_sequence_; };
 
-  void RunRevBayesInference(const std::string& input_samples_path,
-                            const std::string& output_samples_path,
-                            int num_rates);
   void InitializePhyloParameters(const std::string& newick_path,
                                  const std::vector<double>& er,
                                  const std::vector<double>& pi, double alpha,
                                  int num_rates);
   void InitializePhyloEmission();
+  void RunPipeline(const std::string& input_path,
+                   const std::string& output_path, int num_rates);
 };
 
 
