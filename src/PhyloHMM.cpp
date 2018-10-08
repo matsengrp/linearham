@@ -24,6 +24,9 @@ PhyloHMM::PhyloHMM(const std::string& yaml_path, int cluster_ind,
 };
 
 
+PhyloHMM::~PhyloHMM() { DestroyTree(); };
+
+
 // Initialization functions
 
 
@@ -226,6 +229,14 @@ void PhyloHMM::WriteOutputLine(std::ofstream& outfile) const {
 };
 
 
+void PhyloHMM::DestroyTree() {
+  if (tree_) {
+    pll_utree_destroy(tree_, pt::pll::cb_erase_data);
+    tree_ = nullptr;
+  }
+};
+
+
 void PhyloHMM::RunRevBayesInference(const std::string& input_samples_path,
                                     const std::string& output_samples_path,
                                     int num_rates) {
@@ -273,7 +284,7 @@ void PhyloHMM::RunRevBayesInference(const std::string& input_samples_path,
     WriteOutputLine(outfile);
 
     // Free the dynamically allocated tree structure.
-    pll_utree_destroy(tree_, pt::pll::cb_erase_data);
+    DestroyTree();
 
     line_ind += 1;
   }
