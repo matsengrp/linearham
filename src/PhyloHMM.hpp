@@ -75,9 +75,12 @@ class PhyloHMM : public HMM {
 
   void WriteOutputLine(std::ofstream& outfile) const;
 
+  void DestroyTree();
+
  public:
   PhyloHMM(const std::string& yaml_path, int cluster_ind,
            const std::string& hmm_param_dir, int seed);
+  ~PhyloHMM();
 
   const Eigen::MatrixXi& xmsa() const { return xmsa_; };
   const std::vector<std::string>& xmsa_labels() const { return xmsa_labels_; };

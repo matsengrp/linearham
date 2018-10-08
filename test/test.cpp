@@ -453,7 +453,7 @@ TEST_CASE("SimpleHMM", "[simplehmm]") {
 
   // For clarity, we run an additional SimpleHMM test.
   yaml_path = "data/simple_hmm_input_extra.yaml";
-  simple_hmm_ptr = std::make_shared<SimpleHMM>(yaml_path, 0, hmm_param_dir, 0);
+  simple_hmm_ptr.reset(new SimpleHMM(yaml_path, 0, hmm_param_dir, 0));
 
   // For a diagram of the S-W alignment, see
   // https://github.com/matsengrp/linearham/issues/44#issuecomment-406625914.
@@ -881,7 +881,7 @@ TEST_CASE("PhyloHMM", "[phylohmm]") {
 
   // For clarity, we run an additional PhyloHMM test.
   yaml_path = "data/phylo_hmm_input_extra.yaml";
-  phylo_hmm_ptr = std::make_shared<PhyloHMM>(yaml_path, 0, hmm_param_dir, 0);
+  phylo_hmm_ptr.reset(new PhyloHMM(yaml_path, 0, hmm_param_dir, 0));
   phylo_hmm_ptr->InitializePhyloParameters(
       newick_path, {1.0, 1.0, 1.0, 1.0, 1.0, 1.0}, {0.17, 0.19, 0.25, 0.39}, 1.0, 4);
   phylo_hmm_ptr->InitializePhyloEmission();
@@ -1126,7 +1126,7 @@ TEST_CASE("PhyloHMM", "[phylohmm]") {
   // For more details, see https://github.com/dunleavy005/phylomd.
   yaml_path = "data/phylo_likelihood_hmm_input.yaml";
   hmm_param_dir = "data/phylo_likelihood_hmm_params";
-  phylo_hmm_ptr = std::make_shared<PhyloHMM>(yaml_path, 0, hmm_param_dir, 0);
+  phylo_hmm_ptr.reset(new PhyloHMM(yaml_path, 0, hmm_param_dir, 0));
   phylo_hmm_ptr->InitializePhyloParameters(
       newick_path, {1.0, 1.0, 1.0, 1.0, 1.0, 1.0}, {0.17, 0.19, 0.25, 0.39}, 1.0, 1);
   phylo_hmm_ptr->InitializePhyloEmission();
