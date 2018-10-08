@@ -22,29 +22,29 @@ libptpll_env.Command('_build/libptpll/libptpll_static.a', '',
 
 ## linearham ##
 
-common_env = env.Clone()
-common_env.Append(CPPPATH=['lib/eigen', 'lib/yaml-cpp/include',
-                           'lib/fast-cpp-csv-parser', 'lib/libptpll/src',
-                           '_build/libptpll/_build/lib/_prefix/include'])
-common_env.Append(CCFLAGS=['-pthread', '-std=c++11', '-g'])
-common_env.Append(LIBPATH=['_build/yaml-cpp', '_build/libptpll'])
-common_env.Append(LIBS=['ptpll_static', 'pll_algorithm', 'pll_optimize',
-                        'pll_tree', 'pll_util', 'pll', 'lesplace-static', 'gsl',
-                        'blas', 'yaml-cpp', 'pthread'])
-common_env.Append(LINKFLAGS=['-g'])
-
-# Doubles compilation time.
-#common_env.Append(CCFLAGS=['-O3', '-msse2'])
-
-linearham_env = common_env.Clone()
+linearham_env = env.Clone()
+linearham_env.Append(CPPPATH=['lib/eigen', 'lib/yaml-cpp/include',
+                              'lib/fast-cpp-csv-parser', 'lib/libptpll/src',
+                              'lib/tclap/include',
+                              '_build/libptpll/_build/lib/_prefix/include'])
+linearham_env.Append(CCFLAGS=['-pthread', '-std=c++11', '-g'])
+linearham_env.Append(LIBPATH=['_build/yaml-cpp', '_build/libptpll'])
+linearham_env.Append(LIBS=['ptpll_static', 'pll_algorithm', 'pll_optimize',
+                           'pll_tree', 'pll_util', 'pll', 'lesplace-static',
+                           'gsl', 'blas', 'yaml-cpp', 'pthread'])
+linearham_env.Append(LINKFLAGS=['-g'])
 linearham_env.VariantDir('_build/linearham', 'src')
-linearham_env.StaticLibrary(target='_build/linearham/linearham',
-                            source=Glob('_build/linearham/*.cpp'))
+linearham_env.StaticLibrary(
+    target='_build/linearham/liblinearham.a',
+    source=Glob('_build/linearham/*.cpp',
+                exclude=['_build/linearham/linearham.cpp'])
+)
+linearham_env.Append(CPPPATH=['src'])
+linearham_env.Append(LIBPATH=['_build/linearham'])
+linearham_env.Prepend(LIBS=['linearham'])
+linearham_env.Program(target='_build/linearham/linearham',
+                      source='_build/linearham/linearham.cpp')
 
-test_env = common_env.Clone()
+test_env = linearham_env.Clone()
 test_env.VariantDir('_build/test', 'test')
-test_env.Append(CPPPATH=['src'])
-test_env.Append(LIBPATH=['_build/linearham'])
-test_env.Prepend(LIBS=['linearham'])
-test_env.Program(target='_build/test/test',
-                 source=Glob('_build/test/test.cpp'))
+test_env.Program(target='_build/test/test', source='_build/test/test.cpp')
