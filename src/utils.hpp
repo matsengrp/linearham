@@ -11,13 +11,16 @@
 #include <Eigen/Dense>
 
 /// @file utils.hpp
-/// @brief Utility functions used in linearham.
+/// @brief Utility functions and constants used in linearham.
 
 namespace linearham {
 
 
+/// @brief The linearham epsilon.
 const double EPS = 1e-6;
+/// @brief The linearham scale factor for dealing with numeric underflow.
 const double SCALE_FACTOR = std::pow(2, 256);
+/// @brief The linearham scale threshold for dealing with numeric underflow.
 const double SCALE_THRESHOLD = 1.0 / SCALE_FACTOR;
 
 
