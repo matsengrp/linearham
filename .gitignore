@@ -1,10 +1,4 @@
-*.a
-*.o
 .sconsign.dblite
 _build/
-doxygen_sqlite3.db
 html/
 latex/
-.ycm_extra_conf.pyc
-_ignore
-.ipynb_checkpoints
