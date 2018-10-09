@@ -9,27 +9,37 @@
 namespace linearham {
 
 
+/// @brief Casts the internal Germline pointer to a VGermline pointer.
+/// @return
+/// A pointer to an object of class VGermline.
 VGermlinePtr GermlineGene::VGermlinePtrCast() const {
   assert(type == GermlineType::V);
   return std::static_pointer_cast<VGermline>(germ_ptr);
 };
 
 
+/// @brief Casts the internal Germline pointer to a DGermline pointer.
+/// @return
+/// A pointer to an object of class DGermline.
 DGermlinePtr GermlineGene::DGermlinePtrCast() const {
   assert(type == GermlineType::D);
   return std::static_pointer_cast<DGermline>(germ_ptr);
 };
 
 
+/// @brief Casts the internal Germline pointer to a JGermline pointer.
+/// @return
+/// A pointer to an object of class JGermline.
 JGermlinePtr GermlineGene::JGermlinePtrCast() const {
   assert(type == GermlineType::J);
   return std::static_pointer_cast<JGermline>(germ_ptr);
 };
 
 
-/// @brief Constructs a GermlineGene map from partis germline YAML files.
+/// @brief Constructs a GermlineGene map from partis HMM germline parameter
+/// files.
 /// @param[in] hmm_param_dir
-/// Path to a directory of germline gene HMM YAML files.
+/// The directory of partis HMM germline parameter files.
 /// @return
 /// A map holding (germline name, GermlineGene) pairs.
 std::unordered_map<std::string, GermlineGene> CreateGermlineGeneMap(

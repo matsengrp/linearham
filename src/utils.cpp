@@ -6,7 +6,7 @@
 #include <numeric>
 
 /// @file utils.cpp
-/// @brief Utility functions used in linearham.
+/// @brief Utility functions and constants used in linearham.
 
 namespace linearham {
 
@@ -112,6 +112,12 @@ std::pair<int, int> FindGermlineStartEnd(const YAML::Node& root,
 };
 
 
+/// @brief Scales a matrix by SCALE_FACTOR as many times as needed to bring all
+/// non-zero matrix entries above SCALE_THRESHOLD.
+/// @param[in,out] m
+/// Matrix.
+/// @return
+/// Number of times we multiplied by SCALE_FACTOR.
 int ScaleMatrix(Eigen::Ref<Eigen::MatrixXd> m) {
   int n = 0;
 
@@ -124,6 +130,14 @@ int ScaleMatrix(Eigen::Ref<Eigen::MatrixXd> m) {
 };
 
 
+/// @brief Converts a string sequence to an integer sequence according to the
+/// alphabet.
+/// @param[in] seq
+/// The string sequence.
+/// @param[in] alphabet
+/// The nucleotide alphabet.
+/// @return
+/// The integer sequence.
 Eigen::RowVectorXi ConvertSeqToInts(const std::string& seq_str,
                                     const std::string& alphabet) {
   Eigen::RowVectorXi seq(seq_str.size());
@@ -136,6 +150,14 @@ Eigen::RowVectorXi ConvertSeqToInts(const std::string& seq_str,
 };
 
 
+/// @brief Converts an integer sequence to a string sequence according to the
+/// alphabet.
+/// @param[in] seq_ints
+/// The integer sequence.
+/// @param[in] alphabet
+/// The nucleotide alphabet.
+/// @return
+/// The string sequence.
 std::string ConvertIntsToSeq(const Eigen::RowVectorXi& seq,
                              const std::string& alphabet) {
   std::string seq_str(seq.size(), ' ');
