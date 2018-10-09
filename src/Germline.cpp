@@ -1,5 +1,6 @@
 #include "Germline.hpp"
 
+#include <cassert>
 #include <cstddef>
 #include <regex>
 #include <tuple>

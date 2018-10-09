@@ -1,5 +1,6 @@
 #include "NPadding.hpp"
 
+#include <cassert>
 #include <cmath>
 #include <cstddef>
 #include <string>

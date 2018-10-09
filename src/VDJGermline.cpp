@@ -1,6 +1,7 @@
 #include "VDJGermline.hpp"
 
 #include <dirent.h>
+#include <cassert>
 #include <regex>
 
 /// @file VDJGermline.cpp

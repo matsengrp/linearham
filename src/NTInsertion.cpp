@@ -1,5 +1,6 @@
 #include "NTInsertion.hpp"
 
+#include <cassert>
 #include <cstddef>
 #include <regex>
 #include <string>
