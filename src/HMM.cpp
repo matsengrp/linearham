@@ -1,6 +1,7 @@
 #include "HMM.hpp"
 
 #include <algorithm>
+#include <cassert>
 #include <cstddef>
 #include <tuple>
 
