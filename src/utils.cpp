@@ -133,7 +133,7 @@ int ScaleMatrix(Eigen::Ref<Eigen::MatrixXd> m) {
 
 /// @brief Converts a string sequence to an integer sequence according to the
 /// alphabet.
-/// @param[in] seq
+/// @param[in] seq_str
 /// The string sequence.
 /// @param[in] alphabet
 /// The nucleotide alphabet.
@@ -153,7 +153,7 @@ Eigen::RowVectorXi ConvertSeqToInts(const std::string& seq_str,
 
 /// @brief Converts an integer sequence to a string sequence according to the
 /// alphabet.
-/// @param[in] seq_ints
+/// @param[in] seq
 /// The integer sequence.
 /// @param[in] alphabet
 /// The nucleotide alphabet.
