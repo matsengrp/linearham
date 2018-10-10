@@ -171,4 +171,38 @@ std::string ConvertIntsToSeq(const Eigen::RowVectorXi& seq,
 };
 
 
+/// @brief This function takes the coefficient-wise product of b and every
+/// column of A.
+/// @param[in] b Input vector.
+/// @param[in] A Input matrix.
+/// @param[out] B Output matrix.
+///  \f[
+///  B_{i,j} = b_i A_{i,j}
+///  \f]
+void ColVecMatCwise(const Eigen::Ref<const Eigen::VectorXd>& b,
+                    const Eigen::Ref<const Eigen::MatrixXd>& A,
+                    Eigen::Ref<Eigen::MatrixXd> B) {
+  for (int i = 0; i < B.cols(); i++) {
+    B.col(i) = b.cwiseProduct(A.col(i));
+  }
+};
+
+
+/// @brief This function takes the coefficient-wise product of b and every row
+/// of A.
+/// @param[in] b Input vector.
+/// @param[in] A Input matrix.
+/// @param[out] B Output matrix.
+///  \f[
+///  B_{i,j} = b_j A_{i,j}
+///  \f]
+void RowVecMatCwise(const Eigen::Ref<const Eigen::RowVectorXd>& b,
+                    const Eigen::Ref<const Eigen::MatrixXd>& A,
+                    Eigen::Ref<Eigen::MatrixXd> B) {
+  for (int i = 0; i < B.rows(); i++) {
+    B.row(i) = b.cwiseProduct(A.row(i));
+  }
+};
+
+
 }  // namespace linearham

@@ -5,7 +5,6 @@
 #include <cstddef>
 #include <tuple>
 
-#include "linalg.hpp"
 #include "utils.hpp"
 
 /// @file HMM.cpp

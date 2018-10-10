@@ -46,6 +46,14 @@ Eigen::RowVectorXi ConvertSeqToInts(const std::string& seq_str,
 std::string ConvertIntsToSeq(const Eigen::RowVectorXi& seq,
                              const std::string& alphabet);
 
+void ColVecMatCwise(const Eigen::Ref<const Eigen::VectorXd>& b,
+                    const Eigen::Ref<const Eigen::MatrixXd>& A,
+                    Eigen::Ref<Eigen::MatrixXd> B);
+
+void RowVecMatCwise(const Eigen::Ref<const Eigen::RowVectorXd>& b,
+                    const Eigen::Ref<const Eigen::MatrixXd>& A,
+                    Eigen::Ref<Eigen::MatrixXd> B);
+
 
 }  // namespace linearham
 
