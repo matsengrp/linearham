@@ -8,7 +8,6 @@
 #include <yaml-cpp/yaml.h>
 #include <Eigen/Dense>
 #include "catch.hpp"
-#include "linalg.hpp"
 #include "Germline.hpp"
 #include "NTInsertion.hpp"
 #include "NPadding.hpp"
@@ -21,44 +20,6 @@
 namespace test {
 
 using namespace linearham;
-
-
-// Linear algebra tests
-
-TEST_CASE("ColVecMatCwise", "[linalg]") {
-  Eigen::VectorXd b(3);
-  Eigen::MatrixXd A(3,4), B(3,4), correct_B(3,4);
-  A << 1, 2.9,  3,  4,
-       5,   6,  7,  8,
-       9,  10, 11, 12;
-  b << 0, 4, 1;
-  correct_B << 0,  0,  0,  0,
-              20, 24, 28, 32,
-               9, 10, 11, 12;
-
-  ColVecMatCwise(b, A, B);
-  REQUIRE(B == correct_B);
-
-  // Check that we can use matrices as lvalues and rvalues in the same expression.
-  ColVecMatCwise(b, A, A);
-  REQUIRE(A == correct_B);
-}
-
-
-TEST_CASE("RowVecMatCwise", "[linalg]") {
-  Eigen::RowVectorXd b(4);
-  Eigen::MatrixXd A(3,4), B(3,4), correct_B(3,4);
-  A << 1, 2.9,  3,  4,
-       5,   6,  7,  8,
-       9,  10, 11, 12;
-  b << 0, 4, 1, 10;
-  correct_B << 0, 11.6,  3,  40,
-               0,   24,  7,  80,
-               0,   40, 11, 120;
-
-  RowVecMatCwise(b, A, B);
-  REQUIRE(B == correct_B);
-}
 
 
 // Germline tests
