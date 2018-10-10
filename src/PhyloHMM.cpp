@@ -16,6 +16,15 @@
 namespace linearham {
 
 
+/// @brief PhyloHMM constructor.
+/// @param[in] yaml_path
+/// The partis output YAML file path.
+/// @param[in] cluster_ind
+/// An index specifying the clonal family of interest.
+/// @param[in] hmm_param_dir
+/// The directory of partis HMM germline parameter files.
+/// @param[in] seed
+/// The RNG seed.
 PhyloHMM::PhyloHMM(const std::string& yaml_path, int cluster_ind,
                    const std::string& hmm_param_dir, int seed)
     : HMM(yaml_path, cluster_ind, hmm_param_dir, seed) {
@@ -24,12 +33,14 @@ PhyloHMM::PhyloHMM(const std::string& yaml_path, int cluster_ind,
 };
 
 
+/// @brief PhyloHMM destructor.
 PhyloHMM::~PhyloHMM() { DestroyTree(); };
 
 
 // Initialization functions
 
 
+/// @brief Initializes the xMSA data structures.
 void PhyloHMM::InitializeXmsaStructs() {
   // Initialize the xMSA sequence labels and naive sequence index.
   // The xMSA naive sequence index is always 0.
@@ -68,6 +79,8 @@ void PhyloHMM::InitializeXmsaStructs() {
 };
 
 
+/// @brief Initializes the emission probability matrices under the phylogenetic
+/// tree assumption.
 void PhyloHMM::InitializeEmission() {
   FillGermlinePaddingEmission(vpadding_ggene_ranges_, vpadding_xmsa_inds_,
                               vpadding_emission_, vgerm_scaler_count_);
@@ -87,6 +100,9 @@ void PhyloHMM::InitializeEmission() {
 // Auxiliary functions
 
 
+/// @brief Builds the xMSA and the vector of xMSA sequence strings.
+/// @param[in] xmsa_ids
+/// A map identifying already cached xMSA site indices.
 void PhyloHMM::BuildXmsa(const std::map<std::pair<int, int>, int>& xmsa_ids) {
   xmsa_.setConstant(msa_.rows() + 1, xmsa_ids.size(), -1);
   xmsa_seqs_.assign(msa_.rows() + 1, "");
@@ -111,6 +127,17 @@ void PhyloHMM::BuildXmsa(const std::map<std::pair<int, int>, int>& xmsa_ids) {
 };
 
 
+/// @brief Fills the ["germline"|"padding"] emission probability row vector
+/// under the phylogenetic tree assumption.
+/// @param[in] ggene_ranges_
+/// A map that holds start/end indices for the ["germline"|"padding"] data
+/// structures.
+/// @param[in] xmsa_inds_
+/// The xMSA site indices in the ["germline"|"padding"] region.
+/// @param[out] emission_
+/// The ["germline"|"padding"] emission probability row vector.
+/// @param[out] scaler_count_
+/// The ["germline"|"padding"] scaler count.
 void PhyloHMM::FillGermlinePaddingEmission(
     const std::map<std::string, std::pair<int, int>>& ggene_ranges_,
     const Eigen::VectorXi& xmsa_inds_, Eigen::RowVectorXd& emission_,
@@ -149,6 +176,12 @@ void PhyloHMM::FillGermlinePaddingEmission(
 };
 
 
+/// @brief Fills the "junction" emission probability matrix under the
+/// phylogenetic tree assumption.
+/// @param[in] xmsa_inds_
+/// The xMSA site indices in the "junction" region.
+/// @param[out] emission_
+/// The "junction" emission probability matrix.
 void PhyloHMM::FillJunctionEmission(const Eigen::MatrixXi& xmsa_inds_,
                                     Eigen::MatrixXd& emission_) const {
   emission_.setZero(xmsa_inds_.rows(), xmsa_inds_.cols());
@@ -165,6 +198,8 @@ void PhyloHMM::FillJunctionEmission(const Eigen::MatrixXi& xmsa_inds_,
 };
 
 
+/// @brief Fills the xMSA emission probability vector with naive-conditional
+/// phylogenetic likelihoods.
 void PhyloHMM::FillXmsaEmission() {
   xmsa_emission_.setZero(xmsa_.cols());
 
@@ -186,6 +221,9 @@ void PhyloHMM::FillXmsaEmission() {
 };
 
 
+/// @brief Writes the headers to the output file stream.
+/// @param[out] outfile
+/// The output file stream.
 void PhyloHMM::WriteOutputHeaders(std::ofstream& outfile) const {
   outfile << "Iteration\t";
   outfile << "RBLogLikelihood\t";
@@ -207,6 +245,9 @@ void PhyloHMM::WriteOutputHeaders(std::ofstream& outfile) const {
 };
 
 
+/// @brief Writes a tree sample to the output file stream.
+/// @param[out] outfile
+/// The output file stream.
 void PhyloHMM::WriteOutputLine(std::ofstream& outfile) const {
   outfile << iteration_ << "\t";
   outfile << rb_loglikelihood_ << "\t";
@@ -229,6 +270,7 @@ void PhyloHMM::WriteOutputLine(std::ofstream& outfile) const {
 };
 
 
+/// @brief Destroys the dynamically allocated tree structure.
 void PhyloHMM::DestroyTree() {
   if (tree_) {
     pll_utree_destroy(tree_, pt::pll::cb_erase_data);
@@ -237,11 +279,21 @@ void PhyloHMM::DestroyTree() {
 };
 
 
+/// @brief Initializes the phylogeny-related parameters.
+/// @param[in] newick_path
+/// The Newick tree file path.
+/// @param[in] er
+/// The GTR exchangeability rates.
+/// @param[in] pi
+/// The GTR stationary distribution.
+/// @param[in] alpha
+/// The gamma shape parameter for among-site rate variation.
+/// @param[in] num_rates
+/// The number of gamma rate categories.
 void PhyloHMM::InitializePhyloParameters(const std::string& newick_path,
                                          const std::vector<double>& er,
                                          const std::vector<double>& pi,
                                          double alpha, int num_rates) {
-  // Initialize the phylogeny-related parameters.
   tree_ = pll_utree_parse_newick(newick_path.c_str());
   pt::pll::set_missing_branch_length(tree_, EPS);
   er_ = er;
@@ -252,6 +304,8 @@ void PhyloHMM::InitializePhyloParameters(const std::string& newick_path,
 };
 
 
+/// @brief Initializes the phylogeny-related emission probability data
+/// structures.
 void PhyloHMM::InitializePhyloEmission() {
   // Construct the partition object.
   pt::pll::Model model_params = {"GTR", pi_, er_, sr_};
@@ -272,6 +326,13 @@ void PhyloHMM::InitializePhyloEmission() {
 };
 
 
+/// @brief Runs the linearham pipeline.
+/// @param[in] input_path
+/// The RevBayes output TSV file path.
+/// @param[in] output_path
+/// The linearham output TSV file path.
+/// @param[in] num_rates
+/// The number of gamma rate categories.
 void PhyloHMM::RunPipeline(const std::string& input_path,
                            const std::string& output_path, int num_rates) {
   // Open the RevBayes output file.
@@ -331,6 +392,15 @@ void PhyloHMM::RunPipeline(const std::string& input_path,
 // Auxiliary functions
 
 
+/// @brief Stores the xMSA site indices in the ["germline"|"padding"] region.
+/// @param[in] naive_bases_
+/// A vector of ["germline"|"padding"] naive base indices.
+/// @param[in] site_inds_
+/// A vector of ["germline"|"padding"] site indices.
+/// @param[out] xmsa_ids
+/// A map identifying already cached xMSA site indices.
+/// @param[out] xmsa_inds_
+/// The xMSA site indices in the ["germline"|"padding"] region.
 void StoreGermlinePaddingXmsaIndices(
     const std::vector<int>& naive_bases_, const std::vector<int>& site_inds_,
     std::map<std::pair<int, int>, int>& xmsa_ids, Eigen::VectorXi& xmsa_inds_) {
@@ -344,6 +414,21 @@ void StoreGermlinePaddingXmsaIndices(
 };
 
 
+/// @brief Stores the xMSA site indices in the "junction" region.
+/// @param[in] naive_bases_
+/// A vector of "junction" naive base indices.
+/// @param[in] site_inds_
+/// A vector of "junction" site indices.
+/// @param[in] left_flexbounds
+/// A 2-tuple of MSA positions describing the possible "junction" entry
+/// locations.
+/// @param[in] right_flexbounds
+/// A 2-tuple of MSA positions describing the possible "junction" exit
+/// locations.
+/// @param[out] xmsa_ids
+/// A map identifying already cached xMSA site indices.
+/// @param[out] xmsa_inds_
+/// The xMSA site indices in the "junction" region.
 void StoreJunctionXmsaIndices(const std::vector<int>& naive_bases_,
                               const std::vector<int>& site_inds_,
                               std::pair<int, int> left_flexbounds,
@@ -371,6 +456,13 @@ void StoreJunctionXmsaIndices(const std::vector<int>& naive_bases_,
 };
 
 
+/// @brief Stores a xMSA site index.
+/// @param[in] id
+/// A (naive base, MSA position) pair.
+/// @param[out] xmsa_ids
+/// A map identifying already cached xMSA site indices.
+/// @param[out] xmsa_ind
+/// The xMSA site index.
 void StoreXmsaIndex(std::pair<int, int> id,
                     std::map<std::pair<int, int>, int>& xmsa_ids,
                     int& xmsa_ind) {
