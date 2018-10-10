@@ -342,7 +342,7 @@ std::string HMM::SampleNaiveSequence() {
 /// @param[out] state_strs_
 /// A vector of "germline" state names.
 /// @param[out] ggene_ranges_
-/// A map that holds start/end range indices for the "germline" data structures.
+/// A map that holds start/end indices for the "germline" data structures.
 /// @param[out] naive_bases_
 /// A vector of "germline" naive base indices.
 /// @param[out] germ_inds_
@@ -397,7 +397,7 @@ void CacheGermlineStates(
 /// @param[out] state_strs_
 /// A vector of "junction" state names.
 /// @param[out] ggene_ranges_
-/// A map that holds start/end range indices for the "junction" data structures.
+/// A map that holds start/end indices for the "junction" data structures.
 /// @param[out] naive_bases_
 /// A vector of "junction" naive base indices.
 /// @param[out] germ_inds_
@@ -458,7 +458,7 @@ void CacheJunctionStates(
 /// @param[in] left_end
 /// Is a "padding" region to the left of the germline gene?
 /// @param[out] ggene_ranges_
-/// A map that holds start/end range indices for the "padding" data structures.
+/// A map that holds start/end indices for the "padding" data structures.
 /// @param[out] naive_bases_
 /// A vector of "padding" naive base indices.
 /// @param[out] site_inds_
@@ -494,7 +494,7 @@ void CachePaddingStates(
 /// @param[in] germ_state_strs_
 /// A vector of "germline" state names.
 /// @param[in] germ_ggene_ranges_
-/// A map that holds start/end range indices for the "germline" data structures.
+/// A map that holds start/end indices for the "germline" data structures.
 /// @param[in] germ_germ_inds_
 /// A vector of "germline" germline position indices.
 /// @param[in] germ_site_inds_
@@ -502,7 +502,7 @@ void CachePaddingStates(
 /// @param[in] junction_state_strs_
 /// A vector of "junction" state names.
 /// @param[in] junction_ggene_ranges_
-/// A map that holds start/end range indices for the "junction" data structures.
+/// A map that holds start/end indices for the "junction" data structures.
 /// @param[in] junction_germ_inds_
 /// A vector of "junction" germline position indices.
 /// @param[in] junction_site_inds_
@@ -581,7 +581,7 @@ void ComputeGermlineJunctionTransition(
 /// @param[in] junction_state_strs_
 /// A vector of "junction" state names.
 /// @param[in] junction_ggene_ranges_
-/// A map that holds start/end range indices for the "junction" data structures.
+/// A map that holds start/end indices for the "junction" data structures.
 /// @param[in] junction_germ_inds_
 /// A vector of "junction" germline position indices.
 /// @param[in] junction_site_inds_
@@ -659,7 +659,7 @@ void ComputeJunctionTransition(
 /// @param[in] junction_state_strs_
 /// A vector of "junction" state names.
 /// @param[in] junction_ggene_ranges_
-/// A map that holds start/end range indices for the "junction" data structures.
+/// A map that holds start/end indices for the "junction" data structures.
 /// @param[in] junction_germ_inds_
 /// A vector of "junction" germline position indices.
 /// @param[in] junction_site_inds_
@@ -667,7 +667,7 @@ void ComputeJunctionTransition(
 /// @param[in] germ_state_strs_
 /// A vector of "germline" state names.
 /// @param[in] germ_ggene_ranges_
-/// A map that holds start/end range indices for the "germline" data structures.
+/// A map that holds start/end indices for the "germline" data structures.
 /// @param[in] germ_germ_inds_
 /// A vector of "germline" germline position indices.
 /// @param[in] germ_site_inds_
@@ -753,7 +753,7 @@ void ComputeJunctionGermlineTransition(
 /// @brief Computes the "padding" transition probabilities for the different
 /// "germline" states.
 /// @param[in] ggene_ranges_
-/// A map that holds start/end range indices for the "padding" data structures.
+/// A map that holds start/end indices for the "padding" data structures.
 /// @param[in] ggenes_
 /// A map holding (germline name, GermlineGene) pairs.
 /// @param[out] transition_
@@ -1123,7 +1123,7 @@ void SampleJunctionStates(int germ_state_ind_samp_,
 /// @param[in] germ_state_strs_
 /// A vector of "germline" state names.
 /// @param[in] germ_ggene_ranges_
-/// A map that holds start/end range indices for the "germline" data structures.
+/// A map that holds start/end indices for the "germline" data structures.
 /// @param[in] germ_naive_bases_
 /// A vector of "germline" naive base indices.
 /// @param[in] germ_site_inds_

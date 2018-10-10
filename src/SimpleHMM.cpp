@@ -71,7 +71,7 @@ void SimpleHMM::InitializeEmission() {
 /// @brief Fills the "germline" emission probability row vector under the
 /// star tree assumption.
 /// @param[in] ggene_ranges_
-/// A map that holds start/end range indices for the "germline" data structures.
+/// A map that holds start/end indices for the "germline" data structures.
 /// @param[in] germ_inds_
 /// A vector of "germline" germline position indices.
 /// @param[in] site_inds_
@@ -130,7 +130,7 @@ void SimpleHMM::FillGermlineEmission(
 /// @brief Fills the "junction" emission probability matrix under the star tree
 /// assumption.
 /// @param[in] ggene_ranges_
-/// A map that holds start/end range indices for the "junction" data structures.
+/// A map that holds start/end indices for the "junction" data structures.
 /// @param[in] naive_bases_
 /// A vector of "junction" naive base indices.
 /// @param[in] germ_inds_
@@ -202,7 +202,7 @@ void SimpleHMM::FillJunctionEmission(
 /// @brief Fills the "padding" emission probability row vector associated with
 /// the adjacent "germline" region under the star tree assumption.
 /// @param[in] ggene_ranges_
-/// A map that holds start/end range indices for the "padding" data structures.
+/// A map that holds start/end indices for the "padding" data structures.
 /// @param[in] site_inds_
 /// A vector of "padding" site indices.
 /// @param[out] emission_
