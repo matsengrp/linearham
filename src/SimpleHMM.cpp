@@ -13,6 +13,15 @@
 namespace linearham {
 
 
+/// @brief SimpleHMM constructor.
+/// @param[in] yaml_path
+/// The partis output YAML file path.
+/// @param[in] cluster_ind
+/// An index specifying the clonal family of interest.
+/// @param[in] hmm_param_dir
+/// The directory of partis HMM germline parameter files.
+/// @param[in] seed
+/// The RNG seed.
 SimpleHMM::SimpleHMM(const std::string& yaml_path, int cluster_ind,
                      const std::string& hmm_param_dir, int seed)
     : HMM(yaml_path, cluster_ind, hmm_param_dir, seed) {
@@ -32,6 +41,8 @@ SimpleHMM::SimpleHMM(const std::string& yaml_path, int cluster_ind,
 // Initialization functions
 
 
+/// @brief Initializes the emission probability matrices under the star-tree
+/// assumption.
 void SimpleHMM::InitializeEmission() {
   FillPaddingEmission(vpadding_ggene_ranges_, vpadding_site_inds_,
                       vpadding_emission_, vgerm_scaler_count_);
@@ -57,6 +68,18 @@ void SimpleHMM::InitializeEmission() {
 // Auxiliary functions
 
 
+/// @brief Fills the "germline" emission probability row vector under the
+/// star-tree assumption.
+/// @param[in] ggene_ranges_
+/// A map that holds start/end range indices for the "germline" data structures.
+/// @param[in] germ_inds_
+/// A vector of "germline" germline position indices.
+/// @param[in] site_inds_
+/// A vector of "germline" site indices.
+/// @param[out] emission_
+/// The "germline" emission probability row vector.
+/// @param[out] scaler_count_
+/// The "germline" scaler count.
 void SimpleHMM::FillGermlineEmission(
     const std::map<std::string, std::pair<int, int>>& ggene_ranges_,
     const std::vector<int>& germ_inds_, const std::vector<int>& site_inds_,
@@ -104,6 +127,24 @@ void SimpleHMM::FillGermlineEmission(
 };
 
 
+/// @brief Fills the "junction" emission probability matrix under the star-tree
+/// assumption.
+/// @param[in] ggene_ranges_
+/// A map that holds start/end range indices for the "junction" data structures.
+/// @param[in] naive_bases_
+/// A vector of "junction" naive base indices.
+/// @param[in] germ_inds_
+/// A vector of "junction" germline position indices.
+/// @param[in] site_inds_
+/// A vector of "junction" site indices.
+/// @param[in] left_flexbounds
+/// A 2-tuple of MSA positions describing the possible "junction" entry
+/// locations.
+/// @param[in] right_flexbounds
+/// A 2-tuple of MSA positions describing the possible "junction" exit
+/// locations.
+/// @param[out] emission_
+/// The "junction" emission probability matrix.
 void SimpleHMM::FillJunctionEmission(
     const std::map<std::string, std::pair<int, int>>& ggene_ranges_,
     const std::vector<int>& naive_bases_, const std::vector<int>& germ_inds_,
@@ -158,6 +199,16 @@ void SimpleHMM::FillJunctionEmission(
 };
 
 
+/// @brief Fills the "padding" emission probability row vector associated with
+/// the adjacent "germline" region under the star-tree assumption.
+/// @param[in] ggene_ranges_
+/// A map that holds start/end range indices for the "padding" data structures.
+/// @param[in] site_inds_
+/// A vector of "padding" site indices.
+/// @param[out] emission_
+/// The "padding" emission probability row vector.
+/// @param[out] scaler_count_
+/// The "padding" scaler count.
 void SimpleHMM::FillPaddingEmission(
     const std::map<std::string, std::pair<int, int>>& ggene_ranges_,
     const std::vector<int>& site_inds_, Eigen::RowVectorXd& emission_,

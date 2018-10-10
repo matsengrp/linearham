@@ -16,6 +16,9 @@
 namespace linearham {
 
 
+/// @brief A star-tree HMM implementation (similar to that found in `partis`).
+/// This derived class is used to compute the star-tree emission probabilities
+/// from `partis` HMM germline parameter files.
 class SimpleHMM : public HMM {
  private:
   // Initialization functions
