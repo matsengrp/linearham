@@ -19,6 +19,8 @@
 namespace linearham {
 
 
+/// @brief This Phylo-HMM class computes emission probabilities using a
+/// phylogenetic tree.
 class PhyloHMM : public HMM {
  private:
   // Emission probability data structures
