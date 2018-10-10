@@ -21,6 +21,13 @@
 namespace linearham {
 
 
+/// @brief Abstract base class for SimpleHMM and PhyloHMM.
+///
+/// This class stores all the information that is shared between the SimpleHMM
+/// and PhyloHMM.  For example, it holds the observed sequence alignment, state
+/// space information, and transition/emission/forward probability matrices.
+/// There are also member functions that compute the HMM log-likelihood and
+/// sample HMM hidden state sequences.
 class HMM {
  protected:
   // Partis cluster data
