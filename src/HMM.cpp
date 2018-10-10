@@ -9,11 +9,21 @@
 #include "utils.hpp"
 
 /// @file HMM.cpp
-/// @brief Partial implementation of the pure virtual HMM base class.
+/// @brief Implementation of the HMM class.
 
 namespace linearham {
 
 
+/// @brief Constructor for HMM that is called from the (Simple|Phylo)HMM
+/// constructor.
+/// @param[in] yaml_path
+/// The partis output YAML file path.
+/// @param[in] cluster_ind
+/// An index specifying the clonal family of interest.
+/// @param[in] hmm_param_dir
+/// The directory of partis HMM germline parameter files.
+/// @param[in] seed
+/// The RNG seed.
 HMM::HMM(const std::string& yaml_path, int cluster_ind,
          const std::string& hmm_param_dir, int seed) {
   // Parse the `flexbounds` and `relpos` YAML data.
@@ -45,6 +55,8 @@ HMM::HMM(const std::string& yaml_path, int cluster_ind,
 // Initialization functions
 
 
+/// @brief Initializes the clonal family sequence alignment from the partis
+/// output YAML file.
 void HMM::InitializeMsa() {
   msa_.setConstant(cluster_data_["unique_ids"].size(),
                    cluster_data_["naive_seq"].as<std::string>().size(), -1);
@@ -60,6 +72,12 @@ void HMM::InitializeMsa() {
 };
 
 
+/// @brief Initializes the HMM state space for this clonal family.
+///
+/// There are 7 distinct regions of the HMM: V "padding", V "germline", V-D
+/// "junction", D "germline", D-J "junction", J "germline", and J "padding". The
+/// state space for each region is determined by the Smith-Waterman alignment
+/// information from partis.
 void HMM::InitializeStateSpace() {
   // Iterate across the relpos map from left to right.
   for (auto it = relpos_.begin(); it != relpos_.end(); ++it) {
@@ -133,6 +151,8 @@ void HMM::InitializeStateSpace() {
 };
 
 
+/// @brief Initializes the transition probability matrices between adjacent HMM
+/// regions.
 void HMM::InitializeTransition() {
   ComputePaddingTransition(vpadding_ggene_ranges_, ggenes_,
                            vpadding_transition_);
@@ -172,6 +192,8 @@ void HMM::InitializeTransition() {
 // Auxiliary functions
 
 
+/// @brief Runs the forward algorithm and caches the forward probabilities
+/// needed for log-likelihood computation and hidden state sampling.
 void HMM::RunForwardAlgorithm() {
   ComputeInitialForwardProbabilities();
   ComputeJunctionForwardProbabilities(
@@ -195,6 +217,7 @@ void HMM::RunForwardAlgorithm() {
 };
 
 
+/// @brief Computes the forward probabilities in the V "germline" region.
 void HMM::ComputeInitialForwardProbabilities() {
   vgerm_forward_.setZero(vgerm_state_strs_.size());
 
@@ -226,6 +249,7 @@ void HMM::ComputeInitialForwardProbabilities() {
 };
 
 
+/// @brief Samples a J "germline" state.
 void HMM::SampleInitialState() {
   // Create the sampling distribution.
   distr_.param(std::discrete_distribution<int>::param_type(
@@ -245,6 +269,7 @@ void HMM::SampleInitialState() {
 };
 
 
+/// @brief Computes the HMM log-likelihood.
 double HMM::LogLikelihood() {
   // If necessary, run the forward algorithm.
   if (cache_forward_) {
@@ -257,6 +282,7 @@ double HMM::LogLikelihood() {
 };
 
 
+/// @brief Samples a HMM hidden state path (i.e. a naive sequence).
 std::string HMM::SampleNaiveSequence() {
   // If necessary, run the forward algorithm.
   if (cache_forward_) {
@@ -299,6 +325,31 @@ std::string HMM::SampleNaiveSequence() {
 // Auxiliary functions
 
 
+/// @brief Caches the "germline" state information for a given germline gene.
+/// @param[in] germ_ptr
+/// A pointer to an object of class Germline.
+/// @param[in] left_flexbounds
+/// A 2-tuple of MSA positions describing the possible "germline" entry
+/// locations.
+/// @param[in] right_flexbounds
+/// A 2-tuple of MSA positions describing the possible "germline" exit
+/// locations.
+/// @param[in] relpos
+/// The MSA position of the first germline base.
+/// @param[in] left_end
+/// Is a "padding" region to the left of the germline gene?
+/// @param[in] right_end
+/// Is a "padding" region to the right of the germline gene?
+/// @param[out] state_strs_
+/// A vector of "germline" state names.
+/// @param[out] ggene_ranges_
+/// A map that holds start/end range indices for the "germline" data structures.
+/// @param[out] naive_bases_
+/// A vector of "germline" naive base indices.
+/// @param[out] germ_inds_
+/// A vector of "germline" germline position indices.
+/// @param[out] site_inds_
+/// A vector of "germline" site indices.
 void CacheGermlineStates(
     GermlinePtr germ_ptr, std::pair<int, int> left_flexbounds,
     std::pair<int, int> right_flexbounds, int relpos, bool left_end,
@@ -331,6 +382,29 @@ void CacheGermlineStates(
 };
 
 
+/// @brief Caches the "junction" state information for a given germline gene.
+/// @param[in] germ_ptr
+/// A pointer to an object of class Germline.
+/// @param[in] left_flexbounds
+/// A 2-tuple of MSA positions describing the possible "junction" entry
+/// locations.
+/// @param[in] right_flexbounds
+/// A 2-tuple of MSA positions describing the possible "junction" exit
+/// locations.
+/// @param[in] relpos
+/// The MSA position of the first germline base.
+/// @param[in] left_end
+/// Is the left end of the germline gene in the "junction" region?
+/// @param[out] state_strs_
+/// A vector of "junction" state names.
+/// @param[out] ggene_ranges_
+/// A map that holds start/end range indices for the "junction" data structures.
+/// @param[out] naive_bases_
+/// A vector of "junction" naive base indices.
+/// @param[out] germ_inds_
+/// A vector of "junction" germline position indices.
+/// @param[out] site_inds_
+/// A vector of "junction" site indices.
 void CacheJunctionStates(
     GermlinePtr germ_ptr, std::pair<int, int> left_flexbounds,
     std::pair<int, int> right_flexbounds, int relpos, bool left_end,
@@ -374,6 +448,22 @@ void CacheJunctionStates(
 };
 
 
+/// @brief Caches the "padding" state information for a given germline gene.
+/// @param[in] germ_ptr
+/// A pointer to an object of class Germline.
+/// @param[in] leftright_flexbounds
+/// A 2-tuple of MSA positions describing the possible "padding" exit/entry
+/// locations.
+/// @param[in] relpos
+/// The MSA position of the first germline base.
+/// @param[in] left_end
+/// Is a "padding" region to the left of the germline gene?
+/// @param[out] ggene_ranges_
+/// A map that holds start/end range indices for the "padding" data structures.
+/// @param[out] naive_bases_
+/// A vector of "padding" naive base indices.
+/// @param[out] site_inds_
+/// A vector of "padding" site indices.
 void CachePaddingStates(
     GermlinePtr germ_ptr, std::pair<int, int> leftright_flexbounds, int relpos,
     bool left_end, std::map<std::string, std::pair<int, int>>& ggene_ranges_,
@@ -401,6 +491,31 @@ void CachePaddingStates(
 };
 
 
+/// @brief Computes the "germline"-to-"junction" transition probability matrix.
+/// @param[in] germ_state_strs_
+/// A vector of "germline" state names.
+/// @param[in] germ_ggene_ranges_
+/// A map that holds start/end range indices for the "germline" data structures.
+/// @param[in] germ_germ_inds_
+/// A vector of "germline" germline position indices.
+/// @param[in] germ_site_inds_
+/// A vector of "germline" site indices.
+/// @param[in] junction_state_strs_
+/// A vector of "junction" state names.
+/// @param[in] junction_ggene_ranges_
+/// A map that holds start/end range indices for the "junction" data structures.
+/// @param[in] junction_germ_inds_
+/// A vector of "junction" germline position indices.
+/// @param[in] junction_site_inds_
+/// A vector of "junction" site indices.
+/// @param[in] left_gtype
+/// The germline gene type on the left side of the "junction" region.
+/// @param[in] right_gtype
+/// The germline gene type on the right side of the "junction" region.
+/// @param[in] ggenes_
+/// A map holding (germline name, GermlineGene) pairs.
+/// @param[out] germ_junction_transition_
+/// A reference to the "germline"-to-"junction" transition probability matrix.
 void ComputeGermlineJunctionTransition(
     const std::vector<std::string>& germ_state_strs_,
     const std::map<std::string, std::pair<int, int>>& germ_ggene_ranges_,
@@ -463,6 +578,23 @@ void ComputeGermlineJunctionTransition(
 };
 
 
+/// @brief Computes the "junction" transition probability matrix.
+/// @param[in] junction_state_strs_
+/// A vector of "junction" state names.
+/// @param[in] junction_ggene_ranges_
+/// A map that holds start/end range indices for the "junction" data structures.
+/// @param[in] junction_germ_inds_
+/// A vector of "junction" germline position indices.
+/// @param[in] junction_site_inds_
+/// A vector of "junction" site indices.
+/// @param[in] left_gtype
+/// The germline gene type on the left side of the "junction" region.
+/// @param[in] right_gtype
+/// The germline gene type on the right side of the "junction" region.
+/// @param[in] ggenes_
+/// A map holding (germline name, GermlineGene) pairs.
+/// @param[out] junction_transition_
+/// A reference to the "junction" transition probability matrix.
 void ComputeJunctionTransition(
     const std::vector<std::string>& junction_state_strs_,
     const std::map<std::string, std::pair<int, int>>& junction_ggene_ranges_,
@@ -524,6 +656,31 @@ void ComputeJunctionTransition(
 };
 
 
+/// @brief Computes the "junction"-to-"germline" transition probability matrix.
+/// @param[in] junction_state_strs_
+/// A vector of "junction" state names.
+/// @param[in] junction_ggene_ranges_
+/// A map that holds start/end range indices for the "junction" data structures.
+/// @param[in] junction_germ_inds_
+/// A vector of "junction" germline position indices.
+/// @param[in] junction_site_inds_
+/// A vector of "junction" site indices.
+/// @param[in] germ_state_strs_
+/// A vector of "germline" state names.
+/// @param[in] germ_ggene_ranges_
+/// A map that holds start/end range indices for the "germline" data structures.
+/// @param[in] germ_germ_inds_
+/// A vector of "germline" germline position indices.
+/// @param[in] germ_site_inds_
+/// A vector of "germline" site indices.
+/// @param[in] left_gtype
+/// The germline gene type on the left side of the "junction" region.
+/// @param[in] right_gtype
+/// The germline gene type on the right side of the "junction" region.
+/// @param[in] ggenes_
+/// A map holding (germline name, GermlineGene) pairs.
+/// @param[out] junction_germ_transition_
+/// A reference to the "junction"-to-"germline" transition probability matrix.
 void ComputeJunctionGermlineTransition(
     const std::vector<std::string>& junction_state_strs_,
     const std::map<std::string, std::pair<int, int>>& junction_ggene_ranges_,
@@ -594,6 +751,15 @@ void ComputeJunctionGermlineTransition(
 };
 
 
+/// @brief Computes the "padding" transition probabilities for the different
+/// "germline" states.
+/// @param[in] ggene_ranges_
+/// A map that holds start/end range indices for the "padding" data structures.
+/// @param[in] ggenes_
+/// A map holding (germline name, GermlineGene) pairs.
+/// @param[out] transition_
+/// A reference to the row vector holding the "padding" transition
+/// probabilities.
 void ComputePaddingTransition(
     const std::map<std::string, std::pair<int, int>>& ggene_ranges_,
     const std::unordered_map<std::string, GermlineGene>& ggenes_,
@@ -621,6 +787,52 @@ void ComputePaddingTransition(
 };
 
 
+/// @brief Fills a block of the transition probability matrix with transition
+/// probabilities between two germline genes.
+/// @param[in] from_ggene
+/// An object of class GermlineGene that represents the germline gene being
+/// transitioned from.
+/// @param[in] to_ggene
+/// An object of class GermlineGene that represents the germline gene being
+/// transitioned to.
+/// @param[in] left_gtype
+/// The germline gene type of the germline gene being transitioned from.
+/// @param[in] right_gtype
+/// The germline gene type of the germline gene being transitioned to.
+/// @param[in] germ_ind_row_start
+/// The germline position index associated with the first row of the block.
+/// @param[in] germ_ind_col_start
+/// The germline position index associated with the first column of the block.
+/// @param[in] site_ind_row_start
+/// The site index associated with the first row of the block.
+/// @param[in] site_ind_col_start
+/// The site index associated with the first column of the block.
+/// @param[in] nti_row_start
+/// The row index of the transition probability matrix corresponding to the
+/// first NTI state of the germline gene being transitioned from.
+/// @param[in] nti_col_start
+/// The column index of the transition probability matrix corresponding to the
+/// first NTI state of the germline gene being transitioned to.
+/// @param[in] nti_row_length
+/// The number of rows of the transition probability matrix corresponding to the
+/// number of NTI states of the germline gene being transitioned from.
+/// @param[in] nti_col_length
+/// The number of columns of the transition probability matrix corresponding to
+/// the number of NTI states of the germline gene being transitioned to.
+/// @param[in] germ_row_start
+/// The row index of the transition probability matrix corresponding to the
+/// first germline state of the germline gene being transitioned from.
+/// @param[in] germ_col_start
+/// The column index of the transition probability matrix corresponding to the
+/// first germline state of the germline gene being transitioned to.
+/// @param[in] germ_row_length
+/// The number of rows of the transition probability matrix corresponding to the
+/// number of germline states of the germline gene being transitioned from.
+/// @param[in] germ_col_length
+/// The number of columns of the transition probability matrix corresponding to
+/// the number of germline states of the germline gene being transitioned to.
+/// @param[out] transition_
+/// The transition probability matrix.
 void FillTransition(const GermlineGene& from_ggene,
                     const GermlineGene& to_ggene, GermlineType left_gtype,
                     GermlineType right_gtype, int germ_ind_row_start,
@@ -749,6 +961,21 @@ void FillTransition(const GermlineGene& from_ggene,
 };
 
 
+/// @brief Computes the forward probabilities in the "junction" region.
+/// @param[in] germ_forward_
+/// The forward probabilities associated with the previous "germline" region.
+/// @param[in] germ_scaler_count_
+/// The scaler count associated with the previous "germline" region.
+/// @param[in] germ_junction_transition_
+/// The "germline"-to-"junction" transition probability matrix.
+/// @param[in] junction_transition_
+/// The "junction" transition probability matrix.
+/// @param[in] junction_emission_
+/// The "junction" emission probability matrix.
+/// @param[out] junction_forward_
+/// The "junction" forward probability matrix.
+/// @param[out] junction_scaler_counts_
+/// The "junction" scaler counts.
 void ComputeJunctionForwardProbabilities(
     const Eigen::RowVectorXd& germ_forward_, int germ_scaler_count_,
     const Eigen::MatrixXd& germ_junction_transition_,
@@ -784,6 +1011,24 @@ void ComputeJunctionForwardProbabilities(
 };
 
 
+/// @brief Computes the forward probabilities in the "germline" region.
+/// @param[in] junction_forward_
+/// The forward probabilities associated with the previous "junction" region.
+/// @param[in] junction_scaler_counts_
+/// The scaler counts associated with the previous "junction" region.
+/// @param[in] junction_germ_transition_
+/// The "junction"-to-"germline" transition probability matrix.
+/// @param[in] germ_emission_
+/// The "germline" emission probability row vector.
+/// @param[in] padding_transition_
+/// The "padding" transition probabilities associated with the "germline"
+/// states.
+/// @param[in] padding_emission_
+/// The "padding" emission probabilities associated with the "germline" states.
+/// @param[out] germ_forward_
+/// The "germline" forward probability row vector.
+/// @param[out] germ_scaler_count_
+/// The "germline" scaler count.
 void ComputeGermlineForwardProbabilities(
     const Eigen::MatrixXd& junction_forward_,
     const std::vector<int>& junction_scaler_counts_,
@@ -804,6 +1049,34 @@ void ComputeGermlineForwardProbabilities(
 };
 
 
+/// @brief Samples a "junction" state.
+/// @param[in] germ_state_ind_samp_
+/// The index of the previously sampled "germline" state.
+/// @param[in] junction_germ_transition_
+/// The "junction"-to-"germline" transition probability matrix.
+/// @param[in] junction_state_strs_
+/// A vector of "junction" state names.
+/// @param[in] junction_naive_bases_
+/// A vector of "junction" naive base indices.
+/// @param[in] junction_transition_
+/// The "junction" transition probability matrix.
+/// @param[in] junction_forward_
+/// The "junction" forward probability matrix.
+/// @param[in] left_flexbounds
+/// A 2-tuple of MSA positions describing the possible "junction" entry
+/// locations.
+/// @param[in] alphabet
+/// The nucleotide alphabet.
+/// @param[out] rng_
+/// A Mersenne Twister RNG object.
+/// @param[out] distr_
+/// A discrete distribution object.
+/// @param[out] naive_seq_samp_
+/// A reference to the naive sequence sample.
+/// @param[out] junction_state_str_samps_
+/// A reference to the "junction" state samples.
+/// @param[out] junction_state_ind_samps_
+/// A reference to the "junction" state index samples.
 void SampleJunctionStates(int germ_state_ind_samp_,
                           const Eigen::MatrixXd& junction_germ_transition_,
                           const std::vector<std::string>& junction_state_strs_,
@@ -843,6 +1116,33 @@ void SampleJunctionStates(int germ_state_ind_samp_,
 };
 
 
+/// @brief Samples a "germline" state.
+/// @param[in] junction_state_ind_samps_
+/// The indices of the previously sampled "junction" states.
+/// @param[in] germ_junction_transition_
+/// The "germline"-to-"junction" transition probability matrix.
+/// @param[in] germ_state_strs_
+/// A vector of "germline" state names.
+/// @param[in] germ_ggene_ranges_
+/// A map that holds start/end range indices for the "germline" data structures.
+/// @param[in] germ_naive_bases_
+/// A vector of "germline" naive base indices.
+/// @param[in] germ_site_inds_
+/// A vector of "germline" site indices.
+/// @param[in] germ_forward_
+/// The "germline" forward probability row vector.
+/// @param[in] alphabet
+/// The nucleotide alphabet.
+/// @param[out] rng_
+/// A Mersenne Twister RNG object.
+/// @param[out] distr_
+/// A discrete distribution object.
+/// @param[out] naive_seq_samp_
+/// A reference to the naive sequence sample.
+/// @param[out] germ_state_str_samp_
+/// A reference to the "germline" state sample.
+/// @param[out] germ_state_ind_samp_
+/// A reference to the "germline" state index sample.
 void SampleGermlineState(
     const std::vector<int>& junction_state_ind_samps_,
     const Eigen::MatrixXd& germ_junction_transition_,
