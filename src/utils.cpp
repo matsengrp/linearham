@@ -115,7 +115,7 @@ std::pair<int, int> FindGermlineStartEnd(const YAML::Node& root,
 
 /// @brief Scales a matrix by SCALE_FACTOR as many times as needed to bring all
 /// non-zero matrix entries above SCALE_THRESHOLD.
-/// @param[in,out] m
+/// @param[out] m
 /// Matrix.
 /// @return
 /// Number of times we multiplied by SCALE_FACTOR.

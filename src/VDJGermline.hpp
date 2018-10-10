@@ -11,7 +11,7 @@
 #include "NTInsertion.hpp"
 
 /// @file VDJGermline.hpp
-/// @brief Headers for the V, D, and J germline classes.
+/// @brief Header for the V, D, and J germline classes.
 
 namespace linearham {
 

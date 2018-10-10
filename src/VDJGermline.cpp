@@ -5,7 +5,7 @@
 #include <regex>
 
 /// @file VDJGermline.cpp
-/// @brief Implementations of the V, D, and J germline classes.
+/// @brief Implementation of the V, D, and J germline classes.
 
 namespace linearham {
 
