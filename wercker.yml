@@ -24,7 +24,7 @@ build:
 deploy:
     steps:
         - install-packages:
-            packages: curl doxygen git
+            packages: curl doxygen git graphviz
         - script:
             name: build docs
             code: doxygen Doxyfile
