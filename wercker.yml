@@ -20,3 +20,19 @@ build:
             url: $SLACK_URL
             channel: bcell
             username: linearham build
+
+deploy:
+    steps:
+        - script:
+            name: build docs
+            code: doxygen Doxyfile
+        - ematsen/gh-pages:
+            token: $GITHUB_TOKEN
+            repo: matsengrp/linearham
+            path: html
+
+    after-steps:
+        - slack-notifier:
+            url: $SLACK_URL
+            channel: bcell
+            username: linearham build docs
