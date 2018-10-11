@@ -1,27 +1,27 @@
 box: debian:stretch
 
+# build:
+#     steps:
+#         - install-packages:
+#             packages: autoconf bison libblas-dev build-essential cmake curl flex git libgsl-dev scons libtool
+#         - script:
+#             name: initialize git submodules
+#             code: |
+#                 git submodule update --init --recursive
+#         - script:
+#             name: build
+#             code: scons
+#         - script:
+#             name: test
+#             code: _build/test/test
+#
+#     after-steps:
+#         - slack-notifier:
+#             url: $SLACK_URL
+#             channel: bcell
+#             username: linearham build
+
 build:
-    steps:
-        - install-packages:
-            packages: autoconf bison libblas-dev build-essential cmake curl flex git libgsl-dev scons libtool
-        - script:
-            name: initialize git submodules
-            code: |
-                git submodule update --init --recursive
-        - script:
-            name: build
-            code: scons
-        - script:
-            name: test
-            code: _build/test/test
-
-    after-steps:
-        - slack-notifier:
-            url: $SLACK_URL
-            channel: bcell
-            username: linearham build
-
-deploy:
     steps:
         - install-packages:
             packages: curl doxygen git graphviz
