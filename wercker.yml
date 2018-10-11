@@ -3,7 +3,7 @@ box: debian:stretch
 build:
     steps:
         - install-packages:
-            packages: autoconf build-essential cmake git scons
+            packages: autoconf build-essential cmake git libgsl-dev scons
               #autoconf bison libblas-dev build-essential cmake curl flex git libgsl-dev scons libtool
         - script:
             name: initialize git submodules
