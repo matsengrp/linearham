@@ -14,6 +14,9 @@ build:
         - script:
             name: test
             code: _build/test/test
+        - script:
+            name: deploy src
+            code: cp -r Doxyfile src/ $WERCKER_OUTPUT_DIR
 
     after-steps:
         - slack-notifier:
