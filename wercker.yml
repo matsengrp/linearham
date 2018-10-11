@@ -24,7 +24,7 @@ build:
 deploy:
     steps:
         - install-packages:
-            packages: curl doxygen
+            packages: curl doxygen git
         - script:
             name: build docs
             code: doxygen Doxyfile
