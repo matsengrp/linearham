@@ -1,6 +1,6 @@
 env = Environment()
 
-## dependencies ##
+# Build the linearham dependencies.
 
 yamlcpp_env = env.Clone()
 yamlcpp_env.VariantDir('_build/yaml-cpp', 'lib/yaml-cpp', duplicate=0)
@@ -20,7 +20,7 @@ libptpll_env.Command('_build/libptpll/libptpll_static.a', '',
                      '_build/lib/_prefix/lib/libpll.a ' + \
                      '_build/lib/lesplace/src/liblesplace-static.a')
 
-## linearham ##
+# Build the linearham executable.
 
 linearham_env = env.Clone()
 linearham_env.Append(CPPPATH=['lib/eigen', 'lib/yaml-cpp/include',
