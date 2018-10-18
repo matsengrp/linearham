@@ -13,3 +13,7 @@
 [submodule "lib/tclap"]
 	path = lib/tclap
 	url = https://git.code.sf.net/p/tclap/code
+[submodule "lib/partis"]
+	path = lib/partis
+	url = https://github.com/psathyrella/partis.git
+	branch = dev
