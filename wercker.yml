@@ -3,7 +3,7 @@ box: debian:stretch
 build:
     steps:
         - install-packages:
-            packages: autoconf bison libblas-dev build-essential cmake curl flex git libgsl-dev pip scons libtool
+            packages: autoconf bison libblas-dev build-essential cmake curl flex git libgsl-dev python-pip scons libtool
         - pip-install:
             packages_list: "nestly"
         - script:
