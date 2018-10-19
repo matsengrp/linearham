@@ -5,6 +5,7 @@ build:
         - install-packages:
             packages: autoconf bison libblas-dev build-essential cmake curl flex git libgsl-dev python-pip scons libtool
         - pip-install:
+            requirements_file: ""
             packages_list: "nestly"
         - script:
             name: initialize git submodules
