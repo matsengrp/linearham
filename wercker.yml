@@ -3,7 +3,9 @@ box: debian:stretch
 build:
     steps:
         - install-packages:
-            packages: autoconf bison libblas-dev build-essential cmake curl flex git libgsl-dev nestly scons libtool
+            packages: autoconf bison libblas-dev build-essential cmake curl flex git libgsl-dev scons libtool
+        - pip-install:
+            packages_list: "nestly"
         - script:
             name: initialize git submodules
             code: |
