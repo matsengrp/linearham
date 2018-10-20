@@ -3,7 +3,7 @@ box: debian:stretch
 build:
     steps:
         - install-packages:
-            packages: autoconf bison libblas-dev build-essential cmake curl flex git libgsl-dev python-pip scons libtool zlib1g-dev
+            packages: autoconf bison libblas-dev build-essential cmake curl flex git libgsl-dev python-pip scons libtool
         - pip-install:
             requirements_file: ""
             packages_list: "nestly"
@@ -13,7 +13,7 @@ build:
                 git submodule update --init --recursive
         - script:
             name: build
-            code: scons
+            code: scons --build-linearham
         - script:
             name: test
             code: _build/test/test
