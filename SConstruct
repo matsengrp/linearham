@@ -187,7 +187,6 @@ if options["run_partis"]:
                 + " --parameter-dir " + os.path.join(outdir, "hmm_param_dir/") \
                 + " --outfname ${TARGETS[0]}" \
                 + " > ${TARGETS[1]}")
-        env.Depends(partis_output, c["partis_build"])
         return partis_output
 
 
