@@ -256,7 +256,7 @@ if options["run_linearham"]:
         return os.path.join(outdir, "input_seqs.fasta")
 
     @nest.add_nest(label_func=default_label)
-    def revbayes_settings(c):
+    def revbayes_setting(c):
         return [{"id": "mcmc-iter" + str(mcmc_iter) + "_mcmc-thin" + str(mcmc_thin) + \
                        "_tune-iter" + str(tune_iter) + "_tune-thin" + str(tune_thin) + \
                        "_num-rates" + str(num_rates) + "_seed" + str(seed),
@@ -276,12 +276,12 @@ if options["run_linearham"]:
             os.path.join(outdir, "revbayes_run.rev"), options["template_path"],
             "scripts/generate_revbayes_rev_file.py $SOURCE" \
                 + " --fasta-path " + c["partition_fasta_file"] \
-                + " --mcmc-iter " + str(c["revbayes_settings"]["mcmc_iter"]) \
-                + " --mcmc-thin " + str(c["revbayes_settings"]["mcmc_thin"]) \
-                + " --tune-iter " + str(c["revbayes_settings"]["tune_iter"]) \
-                + " --tune-thin " + str(c["revbayes_settings"]["tune_thin"]) \
-                + " --num-rates " + str(c["revbayes_settings"]["num_rates"]) \
-                + " --seed " + str(c["revbayes_settings"]["seed"]) \
+                + " --mcmc-iter " + str(c["revbayes_setting"]["mcmc_iter"]) \
+                + " --mcmc-thin " + str(c["revbayes_setting"]["mcmc_thin"]) \
+                + " --tune-iter " + str(c["revbayes_setting"]["tune_iter"]) \
+                + " --tune-thin " + str(c["revbayes_setting"]["tune_thin"]) \
+                + " --num-rates " + str(c["revbayes_setting"]["num_rates"]) \
+                + " --seed " + str(c["revbayes_setting"]["seed"]) \
                 + " --output-path $TARGET")
         env.Depends(revbayes_rev_file, "scripts/generate_revbayes_rev_file.py")
         return revbayes_rev_file
