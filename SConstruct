@@ -292,4 +292,3 @@ if options["run_linearham"]:
             "lib/revbayes/projects/cmake/rb $SOURCE > ${TARGETS[2]}")
         env.Depends(revbayes_output, "lib/revbayes/projects/cmake/rb")
         return revbayes_output
-        
