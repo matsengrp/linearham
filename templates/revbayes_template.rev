@@ -3,6 +3,7 @@ seed({{ seed }})
 
 # read in clonal family sequence data
 data = readDiscreteCharacterData("{{ fasta_path }}")
+if (type(data) == "NULL") quit()
 
 # compute some useful constants
 num_taxa <- data.ntaxa()
