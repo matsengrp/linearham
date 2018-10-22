@@ -17,3 +17,6 @@
 	path = lib/partis
 	url = https://github.com/psathyrella/partis.git
 	branch = dev
+[submodule "lib/revbayes"]
+	path = lib/revbayes
+	url = https://github.com/revbayes/revbayes.git
