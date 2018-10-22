@@ -13,7 +13,7 @@ build:
                 git submodule update --init --recursive
         - script:
             name: build
-            code: scons --build-linearham
+            code: scons --build-deps
         - script:
             name: test
             code: _build/test/test
