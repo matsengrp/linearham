@@ -41,7 +41,7 @@ Q := fnGTR(er, pi)
 alpha ~ dnExponential(1)
 moves[mvi++] = mvScaleBactrian(alpha, weight=2.0)
 
-sr := fnDiscretizeGamma(alpha, alpha, 4, median=false)
+sr := fnDiscretizeGamma(alpha, alpha, {{ num_rates }}, median=false)
 
 
 ##############

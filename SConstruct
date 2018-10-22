@@ -167,53 +167,53 @@ if options["build_deps"]:
         return env.Command("lib/revbayes/projects/cmake/rb", "",
                            "cd lib/revbayes/projects/cmake && ./build.sh")
 
-    # @nest.add_target()
-    # def linearham_build(outdir, c):
-    #     yamlcpp_env = env.Clone()
-    #     yamlcpp_env.VariantDir("_build/yaml-cpp", "lib/yaml-cpp", duplicate=0)
-    #     yamlcpp_env.Command("_build/yaml-cpp/libyaml-cpp.a", "",
-    #                         "cp -r lib/yaml-cpp _build/ && " + \
-    #                         "cd _build/yaml-cpp && cmake . && make")
-    #
-    #     libptpll_env = env.Clone()
-    #     libptpll_env.VariantDir("_build/libptpll", "lib/libptpll", duplicate=0)
-    #     libptpll_env.Command("_build/libptpll/libptpll_static.a", "",
-    #                          "cp -r lib/libptpll _build/ && cd _build/libptpll && " + \
-    #                          "make && cp -t . _build/src/libptpll_static.a " + \
-    #                          "_build/lib/_prefix/lib/libpll_algorithm.a " + \
-    #                          "_build/lib/_prefix/lib/libpll_optimize.a " + \
-    #                          "_build/lib/_prefix/lib/libpll_tree.a " + \
-    #                          "_build/lib/_prefix/lib/libpll_util.a " + \
-    #                          "_build/lib/_prefix/lib/libpll.a " + \
-    #                          "_build/lib/lesplace/src/liblesplace-static.a")
-    #
-    #     linearham_env = env.Clone()
-    #     linearham_env.Append(CPPPATH=["lib/eigen", "lib/yaml-cpp/include",
-    #                                   "lib/fast-cpp-csv-parser", "lib/libptpll/src",
-    #                                   "lib/tclap/include",
-    #                                   "_build/libptpll/_build/lib/_prefix/include"])
-    #     linearham_env.Append(CCFLAGS=["-pthread", "-std=c++11", "-g"])
-    #     linearham_env.Append(LIBPATH=["_build/yaml-cpp", "_build/libptpll"])
-    #     linearham_env.Append(LIBS=["ptpll_static", "pll_algorithm", "pll_optimize",
-    #                                "pll_tree", "pll_util", "pll", "lesplace-static",
-    #                                "gsl", "blas", "yaml-cpp", "pthread"])
-    #     linearham_env.Append(LINKFLAGS=["-g"])
-    #     linearham_env.VariantDir("_build/linearham", "src")
-    #     linearham_env.StaticLibrary(
-    #         target="_build/linearham/liblinearham.a",
-    #         source=Glob("_build/linearham/*.cpp",
-    #                     exclude=["_build/linearham/linearham.cpp"])
-    #     )
-    #     linearham_env.Append(CPPPATH=["src"])
-    #     linearham_env.Append(LIBPATH=["_build/linearham"])
-    #     linearham_env.Prepend(LIBS=["linearham"])
-    #     linearham_bin = linearham_env.Program(target="_build/linearham/linearham",
-    #                                           source="_build/linearham/linearham.cpp")
-    #
-    #     test_env = linearham_env.Clone()
-    #     test_env.VariantDir("_build/test", "test")
-    #     test_env.Program(target="_build/test/test", source="_build/test/test.cpp")
-    #     return linearham_bin
+    @nest.add_target()
+    def linearham_build(outdir, c):
+        yamlcpp_env = env.Clone()
+        yamlcpp_env.VariantDir("_build/yaml-cpp", "lib/yaml-cpp", duplicate=0)
+        yamlcpp_env.Command("_build/yaml-cpp/libyaml-cpp.a", "",
+                            "cp -r lib/yaml-cpp _build/ && " + \
+                            "cd _build/yaml-cpp && cmake . && make")
+
+        libptpll_env = env.Clone()
+        libptpll_env.VariantDir("_build/libptpll", "lib/libptpll", duplicate=0)
+        libptpll_env.Command("_build/libptpll/libptpll_static.a", "",
+                             "cp -r lib/libptpll _build/ && cd _build/libptpll && " + \
+                             "make && cp -t . _build/src/libptpll_static.a " + \
+                             "_build/lib/_prefix/lib/libpll_algorithm.a " + \
+                             "_build/lib/_prefix/lib/libpll_optimize.a " + \
+                             "_build/lib/_prefix/lib/libpll_tree.a " + \
+                             "_build/lib/_prefix/lib/libpll_util.a " + \
+                             "_build/lib/_prefix/lib/libpll.a " + \
+                             "_build/lib/lesplace/src/liblesplace-static.a")
+
+        linearham_env = env.Clone()
+        linearham_env.Append(CPPPATH=["lib/eigen", "lib/yaml-cpp/include",
+                                      "lib/fast-cpp-csv-parser", "lib/libptpll/src",
+                                      "lib/tclap/include",
+                                      "_build/libptpll/_build/lib/_prefix/include"])
+        linearham_env.Append(CCFLAGS=["-pthread", "-std=c++11", "-g"])
+        linearham_env.Append(LIBPATH=["_build/yaml-cpp", "_build/libptpll"])
+        linearham_env.Append(LIBS=["ptpll_static", "pll_algorithm", "pll_optimize",
+                                   "pll_tree", "pll_util", "pll", "lesplace-static",
+                                   "gsl", "blas", "yaml-cpp", "pthread"])
+        linearham_env.Append(LINKFLAGS=["-g"])
+        linearham_env.VariantDir("_build/linearham", "src")
+        linearham_env.StaticLibrary(
+            target="_build/linearham/liblinearham.a",
+            source=Glob("_build/linearham/*.cpp",
+                        exclude=["_build/linearham/linearham.cpp"])
+        )
+        linearham_env.Append(CPPPATH=["src"])
+        linearham_env.Append(LIBPATH=["_build/linearham"])
+        linearham_env.Prepend(LIBS=["linearham"])
+        linearham_bin = linearham_env.Program(target="_build/linearham/linearham",
+                                              source="_build/linearham/linearham.cpp")
+
+        test_env = linearham_env.Clone()
+        test_env.VariantDir("_build/test", "test")
+        test_env.Program(target="_build/test/test", source="_build/test/test.cpp")
+        return linearham_bin
 
 
 #### Run partis (if necessary)
@@ -224,7 +224,7 @@ if options["run_partis"]:
     def partis_output(outdir, c):
         partis_output = env.Command(
             [os.path.join(outdir, filename) for filename in
-                ["partis_output.yaml", "partis_output.stdout.log"]],
+                ["partis_run.yaml", "partis_run.stdout.log"]],
             options["fasta_path"],
             "lib/partis/bin/partis partition --linearham" \
                 + " --infname $SOURCE" \
@@ -241,7 +241,7 @@ if options["run_linearham"]:
 
     @nest.add_target()
     def partis_yaml_file(outdir, c):
-        return os.path.join(outdir, "partis_output.yaml")
+        return os.path.join(outdir, "partis_run.yaml")
 
     @nest.add_target()
     def hmm_param_dir(outdir, c):
@@ -259,25 +259,28 @@ if options["run_linearham"]:
     def revbayes_settings(c):
         return [{"id": "mcmc-iter" + str(mcmc_iter) + "_mcmc-thin" + str(mcmc_thin) + \
                        "_tune-iter" + str(tune_iter) + "_tune-thin" + str(tune_thin) + \
-                       "_seed" + str(seed),
+                       "_num-rates" + str(num_rates) + "_seed" + str(seed),
                  "mcmc_iter": mcmc_iter, "mcmc_thin": mcmc_thin,
-                 "tune_iter": tune_iter, "tune_thin": tune_thin, "seed": seed}
+                 "tune_iter": tune_iter, "tune_thin": tune_thin,
+                 "num_rates": num_rates, "seed": seed}
                 for mcmc_iter in options["mcmc_iter"]
                 for mcmc_thin in options["mcmc_thin"]
                 for tune_iter in options["tune_iter"]
                 for tune_thin in options["tune_thin"]
+                for num_rates in options["num_rates"]
                 for seed in options["seed"]]
 
     @nest.add_target()
     def revbayes_rev_file(outdir, c):
         revbayes_rev_file = env.Command(
-            os.path.join(outdir, "revbayes_script.rev"), options["template_path"],
+            os.path.join(outdir, "revbayes_run.rev"), options["template_path"],
             "scripts/generate_revbayes_rev_file.py $SOURCE" \
-                + " --fasta-path " + str(c["partition_fasta_file"]) \
+                + " --fasta-path " + c["partition_fasta_file"] \
                 + " --mcmc-iter " + str(c["revbayes_settings"]["mcmc_iter"]) \
                 + " --mcmc-thin " + str(c["revbayes_settings"]["mcmc_thin"]) \
                 + " --tune-iter " + str(c["revbayes_settings"]["tune_iter"]) \
                 + " --tune-thin " + str(c["revbayes_settings"]["tune_thin"]) \
+                + " --num-rates " + str(c["revbayes_settings"]["num_rates"]) \
                 + " --seed " + str(c["revbayes_settings"]["seed"]) \
                 + " --output-path $TARGET")
         env.Depends(revbayes_rev_file, "scripts/generate_revbayes_rev_file.py")
@@ -287,7 +290,7 @@ if options["run_linearham"]:
     def revbayes_output(outdir, c):
         revbayes_output = env.Command(
             [os.path.join(outdir, filename) for filename in
-                ["revbayes_output.trees", "revbayes_output.log", "revbayes_output.stdout.log"]],
+                ["revbayes_run.trees", "revbayes_run.log", "revbayes_run.stdout.log"]],
             c["revbayes_rev_file"],
             "lib/revbayes/projects/cmake/rb $SOURCE > ${TARGETS[2]}")
         env.Depends(revbayes_output, "lib/revbayes/projects/cmake/rb")
