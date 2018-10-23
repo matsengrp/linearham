@@ -310,3 +310,26 @@ if options["run_linearham"]:
                 + " --output-path $TARGET")
         env.Depends(linearham_intermediate_output, "_build/linearham/linearham")
         return linearham_intermediate_output
+
+    @nest.add_nest(label_func=default_label)
+    def linearham_setting(c):
+        return [{"id": "burnin-frac" + str(burnin_frac) + "_subsamp-frac" + str(subsamp_frac),
+                 "burnin_frac": burnin_frac, "subsamp_frac": subsamp_frac}
+                for burnin_frac in options["burnin_frac"]
+                for subsamp_frac in options["subsamp_frac"]]
+
+    @nest.add_target()
+    def linearham_final_output(outdir, c):
+        linearham_final_output = env.Command(
+            os.path.join(outdir, "linearham_run.trees"),
+            c["linearham_intermediate_output"],
+            "Rscript --slave --vanilla scripts/run_bootstrap_asr.R" \
+                + " $SOURCE" \
+                + " " + c["partition_fasta_file"] \
+                + " " + str(c["linearham_setting"]["burnin_frac"]) \
+                + " " + str(c["linearham_setting"]["subsamp_frac"]) \
+                + " " + str(options["num_cores"]) \
+                + " " + str(c["revbayes_setting"]["seed"]) \
+                + " $TARGET")
+        env.Depends(linearham_final_output, "scripts/run_bootstrap_asr.R")
+        return linearham_final_output
