@@ -3,10 +3,10 @@ box: debian:stretch
 build:
     steps:
         - install-packages:
-            packages: autoconf bison libblas-dev build-essential cmake curl flex git libgsl-dev libncurses-dev python-pip scons libtool libyaml-cpp-dev libz-dev
+            packages: autoconf bison libblas-dev build-essential cmake curl flex git libgsl-dev libncurses-dev python2.7 python-pip scons libtool libyaml-cpp-dev libz-dev
         - pip-install:
             requirements_file: ""
-            packages_list: "colored-traceback dendropy nestly numpy psutil pysam scipy biopython pandas seaborn pyyaml scikit-learn"
+            packages_list: "colored-traceback dendropy nestly numpy psutil pysam scipy"
         - script:
             name: initialize git submodules
             code: |
