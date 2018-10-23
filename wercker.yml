@@ -13,7 +13,7 @@ build:
                 git submodule update --init --recursive
         - script:
             name: build
-            code: export HOME=/root && scons --build-deps
+            code: export HOME && scons --build-deps
         - script:
             name: test
             code: _build/test/test
