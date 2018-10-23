@@ -12,6 +12,9 @@ build:
             code: |
                 git submodule update --init --recursive
         - script:
+            name: tmp
+            code: echo $HOME
+        - script:
             name: build
             code: scons --build-deps
         - script:
