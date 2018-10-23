@@ -16,7 +16,9 @@ build:
                 env
         - script:
             name: build
-            code: export HOME && scons --build-deps
+            code: |
+                export HOME
+                scons --build-deps
         - script:
             name: test
             code: _build/test/test
