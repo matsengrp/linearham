@@ -245,7 +245,7 @@ if options["run_linearham"]:
 
     @nest.add_target()
     def hmm_param_dir(outdir, c):
-        return os.path.join(outdir, "hmm_param_dir/")
+        return os.path.join(outdir, "hmm_param_dir/hmm/hmms/")
 
     @nest.add_nest(label_func=default_label)
     def partition(c):
@@ -295,3 +295,18 @@ if options["run_linearham"]:
             "lib/revbayes/projects/cmake/rb $SOURCE > ${TARGETS[2]}")
         env.Depends(revbayes_output, "lib/revbayes/projects/cmake/rb")
         return revbayes_output
+
+    @nest.add_target()
+    def linearham_intermediate_output(outdir, c):
+        linearham_intermediate_output = env.Command(
+            os.path.join(outdir, "lh_revbayes_run.trees"), c["revbayes_output"][0],
+            "_build/linearham/linearham --pipeline" \
+                + " --yaml-path " + c["partis_yaml_file"] \
+                + " --cluster-ind " + str(c["partition"]["index"]) \
+                + " --hmm-param-dir " + c["hmm_param_dir"] \
+                + " --seed " + str(c["revbayes_setting"]["seed"]) \
+                + " --num-rates " + str(c["revbayes_setting"]["num_rates"]) \
+                + " --input-path $SOURCE" \
+                + " --output-path $TARGET")
+        env.Depends(linearham_intermediate_output, "_build/linearham/linearham")
+        return linearham_intermediate_output
