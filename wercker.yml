@@ -12,6 +12,9 @@ build:
             code: |
                 git submodule update --init --recursive
         - script:
+            code: |
+                env
+        - script:
             name: build
             code: export HOME && scons --build-deps
         - script:
