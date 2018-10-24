@@ -169,12 +169,6 @@ if options["build_deps"]:
 
     @nest.add_target()
     def linearham_build(outdir, c):
-        # yamlcpp_env = env.Clone()
-        # yamlcpp_env.VariantDir("_build/yaml-cpp", "lib/yaml-cpp", duplicate=0)
-        # yamlcpp_env.Command("_build/yaml-cpp/libyaml-cpp.a", "",
-        #                     "cp -r lib/yaml-cpp _build/ && " + \
-        #                     "cd _build/yaml-cpp && cmake . && make")
-
         libptpll_env = env.Clone()
         libptpll_env.VariantDir("_build/libptpll", "lib/libptpll", duplicate=0)
         libptpll_env.Command("_build/libptpll/libptpll_static.a", "",
