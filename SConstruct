@@ -23,6 +23,12 @@ Script.AddOption("--fasta-path",
         default=None,
         help="The repertoire FASTA file path.")
 
+Script.AddOption("--all-clonal-seqs",
+        dest="all_clonal_seqs",
+        action="store_true",
+        default=False,
+        help="Should we assume all the sequences in the FASTA file are clonal?")
+
 # linearham arguments
 
 Script.AddOption("--run-linearham",
@@ -121,6 +127,7 @@ def get_options(env):
         # partis arguments
         run_partis = env.GetOption("run_partis"),
         fasta_path = env.GetOption("fasta_path"),
+        all_clonal_seqs = env.GetOption("all_clonal_seqs"),
 
         # linearham arguments
         run_linearham = env.GetOption("run_linearham"),
@@ -162,51 +169,51 @@ if options["build_deps"]:
         return env.Command("lib/partis/packages/ham/bcrham", "",
                            "cd lib/partis && ./bin/build.sh")
 
-    # @nest.add_target()
-    # def revbayes_build(outdir, c):
-    #     return env.Command("lib/revbayes/projects/cmake/rb", "",
-    #                        "cd lib/revbayes/projects/cmake && ./build.sh")
+    @nest.add_target()
+    def revbayes_build(outdir, c):
+        return env.Command("lib/revbayes/projects/cmake/rb", "",
+                           "cd lib/revbayes/projects/cmake && ./build.sh")
 
-    # @nest.add_target()
-    # def linearham_build(outdir, c):
-    #     libptpll_env = env.Clone()
-    #     libptpll_env.VariantDir("_build/libptpll", "lib/libptpll", duplicate=0)
-    #     libptpll_env.Command("_build/libptpll/libptpll_static.a", "",
-    #                          "cp -r lib/libptpll _build/ && cd _build/libptpll && " + \
-    #                          "make && cp -t . _build/src/libptpll_static.a " + \
-    #                          "_build/lib/_prefix/lib/libpll_algorithm.a " + \
-    #                          "_build/lib/_prefix/lib/libpll_optimize.a " + \
-    #                          "_build/lib/_prefix/lib/libpll_tree.a " + \
-    #                          "_build/lib/_prefix/lib/libpll_util.a " + \
-    #                          "_build/lib/_prefix/lib/libpll.a " + \
-    #                          "_build/lib/lesplace/src/liblesplace-static.a")
-    #
-    #     linearham_env = env.Clone()
-    #     linearham_env.Append(CPPPATH=["lib/eigen", "lib/fast-cpp-csv-parser",
-    #                                   "lib/libptpll/src", "lib/tclap/include",
-    #                                   "_build/libptpll/_build/lib/_prefix/include"])
-    #     linearham_env.Append(CCFLAGS=["-pthread", "-std=c++11", "-g"])
-    #     linearham_env.Append(LIBPATH=["_build/libptpll"])
-    #     linearham_env.Append(LIBS=["ptpll_static", "pll_algorithm", "pll_optimize",
-    #                                "pll_tree", "pll_util", "pll", "lesplace-static",
-    #                                "gsl", "blas", "yaml-cpp", "pthread"])
-    #     linearham_env.Append(LINKFLAGS=["-g"])
-    #     linearham_env.VariantDir("_build/linearham", "src")
-    #     linearham_env.StaticLibrary(
-    #         target="_build/linearham/liblinearham.a",
-    #         source=Glob("_build/linearham/*.cpp",
-    #                     exclude=["_build/linearham/linearham.cpp"])
-    #     )
-    #     linearham_env.Append(CPPPATH=["src"])
-    #     linearham_env.Append(LIBPATH=["_build/linearham"])
-    #     linearham_env.Prepend(LIBS=["linearham"])
-    #     linearham_bin = linearham_env.Program(target="_build/linearham/linearham",
-    #                                           source="_build/linearham/linearham.cpp")
-    #
-    #     test_env = linearham_env.Clone()
-    #     test_env.VariantDir("_build/test", "test")
-    #     test_env.Program(target="_build/test/test", source="_build/test/test.cpp")
-    #     return linearham_bin
+    @nest.add_target()
+    def linearham_build(outdir, c):
+        libptpll_env = env.Clone()
+        libptpll_env.VariantDir("_build/libptpll", "lib/libptpll", duplicate=0)
+        libptpll_env.Command("_build/libptpll/libptpll_static.a", "",
+                             "cp -r lib/libptpll _build/ && cd _build/libptpll && " + \
+                             "make && cp -t . _build/src/libptpll_static.a " + \
+                             "_build/lib/_prefix/lib/libpll_algorithm.a " + \
+                             "_build/lib/_prefix/lib/libpll_optimize.a " + \
+                             "_build/lib/_prefix/lib/libpll_tree.a " + \
+                             "_build/lib/_prefix/lib/libpll_util.a " + \
+                             "_build/lib/_prefix/lib/libpll.a " + \
+                             "_build/lib/lesplace/src/liblesplace-static.a")
+
+        linearham_env = env.Clone()
+        linearham_env.Append(CPPPATH=["lib/eigen", "lib/fast-cpp-csv-parser",
+                                      "lib/libptpll/src", "lib/tclap/include",
+                                      "_build/libptpll/_build/lib/_prefix/include"])
+        linearham_env.Append(CCFLAGS=["-pthread", "-std=c++11", "-g"])
+        linearham_env.Append(LIBPATH=["_build/libptpll"])
+        linearham_env.Append(LIBS=["ptpll_static", "pll_algorithm", "pll_optimize",
+                                   "pll_tree", "pll_util", "pll", "lesplace-static",
+                                   "gsl", "blas", "yaml-cpp", "pthread"])
+        linearham_env.Append(LINKFLAGS=["-g"])
+        linearham_env.VariantDir("_build/linearham", "src")
+        linearham_env.StaticLibrary(
+            target="_build/linearham/liblinearham.a",
+            source=Glob("_build/linearham/*.cpp",
+                        exclude=["_build/linearham/linearham.cpp"])
+        )
+        linearham_env.Append(CPPPATH=["src"])
+        linearham_env.Append(LIBPATH=["_build/linearham"])
+        linearham_env.Prepend(LIBS=["linearham"])
+        linearham_bin = linearham_env.Program(target="_build/linearham/linearham",
+                                              source="_build/linearham/linearham.cpp")
+
+        test_env = linearham_env.Clone()
+        test_env.VariantDir("_build/test", "test")
+        test_env.Program(target="_build/test/test", source="_build/test/test.cpp")
+        return linearham_bin
 
 
 #### Run partis (if necessary)
@@ -215,15 +222,17 @@ if options["run_partis"]:
 
     @nest.add_target()
     def partis_output(outdir, c):
+        partis_mode = "annotate" if options["all_clonal_seqs"] else "partition"
         partis_output = env.Command(
             [os.path.join(outdir, filename) for filename in
                 ["partis_run.yaml", "partis_run.stdout.log"]],
             options["fasta_path"],
-            "lib/partis/bin/partis partition --linearham" \
-                + " --infname $SOURCE" \
-                + " --parameter-dir " + os.path.join(outdir, "hmm_param_dir/") \
-                + " --outfname ${TARGETS[0]}" \
-                + " > ${TARGETS[1]}")
+            "lib/partis/bin/partis " + partis_mode + " --linearham" \
+                + (" --all-seqs-simultaneous" if options["all_clonal_seqs"] else "") \
+                +  " --infname $SOURCE" \
+                +  " --parameter-dir " + os.path.join(outdir, "hmm_param_dir/") \
+                +  " --outfname ${TARGETS[0]}" \
+                +  " > ${TARGETS[1]}")
         env.Depends(partis_output, "lib/partis/packages/ham/bcrham")
         return partis_output
 
