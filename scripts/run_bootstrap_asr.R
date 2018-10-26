@@ -71,6 +71,7 @@ annotated.trees = unlist(parallel::clusterApplyLB(cl, 1:nrow(tree.data), functio
   # 1) sample the rate scaler;
   # 2) sample the ASR bases on the rate-scaled tree.
   naive.probs = subst.mod$pi[match(msa["naive", ], subst.mod$states)]
+  naive.probs = ifelse(is.na(naive.probs), 1.0, naive.probs)
 
   tree$node.comment = sapply(1:ncol(msa), function(j) {
     sr.probs = sapply(1:length(sr), function(k) {
