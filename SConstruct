@@ -157,15 +157,15 @@ def default_label(d):
 
 if options["build_deps"]:
 
-    # @nest.add_target()
-    # def partis_build(outdir, c):
-    #     return env.Command("lib/partis/packages/ham/bcrham", "",
-    #                        "cd lib/partis && ./bin/build.sh")
-
     @nest.add_target()
-    def revbayes_build(outdir, c):
-        return env.Command("lib/revbayes/projects/cmake/rb", "",
-                           "cd lib/revbayes/projects/cmake && ./build.sh")
+    def partis_build(outdir, c):
+        return env.Command("lib/partis/packages/ham/bcrham", "",
+                           "cd lib/partis && ./bin/build.sh")
+
+    # @nest.add_target()
+    # def revbayes_build(outdir, c):
+    #     return env.Command("lib/revbayes/projects/cmake/rb", "",
+    #                        "cd lib/revbayes/projects/cmake && ./build.sh")
 
     # @nest.add_target()
     # def linearham_build(outdir, c):
