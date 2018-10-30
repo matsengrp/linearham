@@ -14,11 +14,11 @@ output.path = as.character(args[7])
 cran.packages = c("ape", "data.table", "devtools", "parallel", "phylotate")
 for (package in cran.packages) {
   if (suppressWarnings(!require(package, quietly = TRUE, character.only = TRUE))) {
-    suppressMessages(install.packages(package, repos = "http://cran.us.r-project.org", quiet = TRUE))
+    install.packages(package, repos = "https://cloud.r-project.org")
   }
 }
 
-suppressMessages(devtools::install_github("dunleavy005/phylomd", quiet = TRUE))
+devtools::install_github("dunleavy005/phylomd")
 
 # Set the RNG seed.
 set.seed(seed)

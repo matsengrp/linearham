@@ -148,7 +148,7 @@ def get_options(env):
         outdir = env.GetOption("outdir")
     )
 
-env = Environment()
+env = Environment(ENV = os.environ)
 options = get_options(env)
 
 
@@ -259,9 +259,9 @@ if options["run_linearham"]:
 
     @nest.add_nest(label_func=default_label)
     def revbayes_setting(c):
-        return [{"id": "mcmc-iter" + str(mcmc_iter) + "_mcmc-thin" + str(mcmc_thin) + \
-                       "_tune-iter" + str(tune_iter) + "_tune-thin" + str(tune_thin) + \
-                       "_num-rates" + str(num_rates) + "_seed" + str(seed),
+        return [{"id": "mcmciter" + str(mcmc_iter) + "_mcmcthin" + str(mcmc_thin) + \
+                       "_tuneiter" + str(tune_iter) + "_tunethin" + str(tune_thin) + \
+                       "_numrates" + str(num_rates) + "_seed" + str(seed),
                  "mcmc_iter": mcmc_iter, "mcmc_thin": mcmc_thin,
                  "tune_iter": tune_iter, "tune_thin": tune_thin,
                  "num_rates": num_rates, "seed": seed}
@@ -315,7 +315,7 @@ if options["run_linearham"]:
 
     @nest.add_nest(label_func=default_label)
     def linearham_setting(c):
-        return [{"id": "burnin-frac" + str(burnin_frac) + "_subsamp-frac" + str(subsamp_frac),
+        return [{"id": "burninfrac" + str(burnin_frac) + "_subsampfrac" + str(subsamp_frac),
                  "burnin_frac": burnin_frac, "subsamp_frac": subsamp_frac}
                 for burnin_frac in options["burnin_frac"]
                 for subsamp_frac in options["subsamp_frac"]]

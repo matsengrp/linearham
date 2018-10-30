@@ -4,6 +4,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
   autoconf \
   automake \
   bison \
+  libblas-dev \
   build-essential \
   cmake \
   flex \
@@ -12,14 +13,19 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
   python-dev \
   python-pip \
   python-setuptools \
+  r-cran-ape \
+  r-cran-data.table \
+  r-cran-littler \
   scons \
   libtool \
+  libyaml-dev \
   libyaml-cpp-dev \
   libz-dev
-RUN pip install colored-traceback dendropy matplotlib nestly numpy psutil pysam scipy
+RUN pip install colored-traceback dendropy jinja2 matplotlib nestly numpy psutil pysam pyyaml scipy
 
 COPY . /linearham
 WORKDIR /linearham
+
 
 # RUN conda update -y conda
 # RUN conda install -y python=2.7
