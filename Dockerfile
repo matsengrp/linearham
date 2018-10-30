@@ -9,6 +9,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
   cmake \
   flex \
   libgsl0-dev \
+  liblapack-dev \
   libncurses-dev \
   python-dev \
   python-pip \
@@ -22,19 +23,14 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
   libyaml-cpp-dev \
   libz-dev
 RUN pip install colored-traceback dendropy jinja2 matplotlib nestly numpy psutil pysam pyyaml scipy
-RUN Rscript -e "Rscript -e 'install.packages(\"lib/phylomd\", repos = NULL, type = \"source\")'
-RUN Rscript -e "Rscript -e 'install.packages(\"phylotate\", repos = \"https://cloud.r-project.org\")'
+RUN Rscript --slave --vanilla -e 'install.packages(c("phylotate", "Rcpp", "RcppArmadillo"), repos = "https://cloud.r-project.org")'
 
 COPY . /linearham
 WORKDIR /linearham
 
+RUN Rscript --slave --vanilla -e 'install.packages("lib/phylomd", repos = NULL, type = "source")'
+RUN cd lib/revbayes/projects/cmake && ./build.sh
+RUN scons --build-partis-linearham
 
-# RUN conda update -y conda
-# RUN conda install -y python=2.7
-# RUN conda install -y biopython pandas psutil pysam scons seaborn zlib pyyaml scikit-learn
-# RUN conda install -y -c biocore mafft
-# RUN pip install colored-traceback dendropy==4.0.0
-# COPY . /partis
-# WORKDIR /partis
-# RUN ./bin/build.sh
-# CMD ./test/test.py --quick
+CMD scons --run-partis --fasta-path=data/liao_dataset.fasta --all-clonal-seqs \
+    && scons --run-linearham --template-path=templates/revbayes_template.rev --mcmc-iter=25 --mcmc-thin=1 --tune-iter=0

@@ -101,3 +101,4 @@ mymcmc.run(generations={{ mcmc_iter }}, tuningInterval=0)
 mymcmc.operatorSummary()
 
 quit()
+
