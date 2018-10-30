@@ -17,6 +17,3 @@
 [submodule "lib/revbayes"]
 	path = lib/revbayes
 	url = https://github.com/revbayes/revbayes.git
-[submodule "lib/phylomd"]
-	path = lib/phylomd
-	url = https://github.com/dunleavy005/phylomd.git
