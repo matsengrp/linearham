@@ -105,11 +105,11 @@ Script.AddOption("--seed",
 
 # partis/linearham arguments
 
-Script.AddOption("--build-deps",
-        dest="build_deps",
+Script.AddOption("--build-partis-linearham",
+        dest="build_partis_linearham",
         action="store_true",
         default=False,
-        help="Should we build the dependencies?")
+        help="Should we build partis and linearham?")
 
 Script.AddOption("--outdir",
         dest="outdir",
@@ -144,7 +144,7 @@ def get_options(env):
         seed = process_multiarg(env.GetOption("seed"), int, ","),
 
         # partis/linearham arguments
-        build_deps = env.GetOption("build_deps"),
+        build_partis_linearham = env.GetOption("build_partis_linearham"),
         outdir = env.GetOption("outdir")
     )
 
@@ -160,19 +160,14 @@ def default_label(d):
     return d.get("id")
 
 
-#### Install the dependencies (if necessary)
+#### Install partis and linearham (if necessary)
 
-if options["build_deps"]:
+if options["build_partis_linearham"]:
 
     @nest.add_target()
     def partis_build(outdir, c):
         return env.Command("lib/partis/packages/ham/bcrham", "",
                            "cd lib/partis && ./bin/build.sh")
-
-    @nest.add_target()
-    def revbayes_build(outdir, c):
-        return env.Command("lib/revbayes/projects/cmake/rb", "",
-                           "cd lib/revbayes/projects/cmake && ./build.sh")
 
     @nest.add_target()
     def linearham_build(outdir, c):
