@@ -10,16 +10,6 @@ num.cores = as.numeric(args[5])
 seed = as.numeric(args[6])
 output.path = as.character(args[7])
 
-# Install the necessary packages.
-cran.packages = c("ape", "data.table", "devtools", "parallel", "phylotate")
-for (package in cran.packages) {
-  if (suppressWarnings(!require(package, quietly = TRUE, character.only = TRUE))) {
-    install.packages(package, repos = "https://cloud.r-project.org")
-  }
-}
-
-devtools::install_github("dunleavy005/phylomd")
-
 # Set the RNG seed.
 set.seed(seed)
 

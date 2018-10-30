@@ -22,6 +22,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
   libyaml-cpp-dev \
   libz-dev
 RUN pip install colored-traceback dendropy jinja2 matplotlib nestly numpy psutil pysam pyyaml scipy
+RUN Rscript -e "Rscript -e 'install.packages(\"lib/phylomd\", repos = NULL, type = \"source\")'
+RUN Rscript -e "Rscript -e 'install.packages(\"phylotate\", repos = \"https://cloud.r-project.org\")'
 
 COPY . /linearham
 WORKDIR /linearham
