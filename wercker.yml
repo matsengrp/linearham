@@ -3,7 +3,7 @@ box: debian:stretch
 build:
     steps:
         - install-packages:
-            packages: |
+            packages: >
                 autoconf bison libblas-dev build-essential cmake curl doxygen flex git graphviz libgsl0-dev
                 liblapack-dev libncurses-dev python-dev python-pip python-setuptools r-cran-ape
                 r-cran-data.table r-cran-littler scons libtool libyaml-dev libyaml-cpp-dev libz-dev
