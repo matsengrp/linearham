@@ -3,36 +3,37 @@ box: debian:stretch
 build:
     steps:
         - install-packages:
-            packages: autoconf bison libblas-dev build-essential cmake curl flex git libgsl-dev libncurses-dev python-pip scons libtool libyaml-cpp-dev libz-dev
+            packages: autoconf bison libblas-dev build-essential cmake curl doxygen flex git graphviz libgsl0-dev \
+                liblapack-dev libncurses-dev python-dev python-pip python-setuptools r-cran-ape \
+                r-cran-data.table r-cran-littler scons libtool libyaml-dev libyaml-cpp-dev libz-dev
         - pip-install:
             requirements_file: ""
-            packages_list: "colored-traceback dendropy matplotlib nestly numpy psutil pysam scipy"
+            packages_list: "colored-traceback dendropy jinja2 matplotlib nestly numpy psutil pysam pyyaml scipy"
         - script:
             name: initialize git submodules
             code: |
                 git submodule update --init --recursive
         - script:
-            name: build
-            code: scons --build-deps
+            name: install R packages
+            code: |
+                Rscript --slave --vanilla -e 'install.packages(c("phylotate", "Rcpp", "RcppArmadillo"), repos = "https://cloud.r-project.org")'
+                Rscript --slave --vanilla -e 'install.packages("lib/phylomd", repos = NULL, type = "source")'
         - script:
-            name: test
+            name: install RevBayes
+            code: cd lib/revbayes/projects/cmake && ./build.sh
+        - script:
+            name: install partis and linearham
+            code: scons --build-partis-linearham
+        - script:
+            name: run tests
             code: _build/test/test
         - script:
-            name: deploy src
-            code: cp -r Doxyfile src/ $WERCKER_OUTPUT_DIR
-
-    after-steps:
-        - slack-notifier:
-            url: $SLACK_URL
-            channel: bcell
-            username: linearham build
-
-deploy:
-    steps:
-        - install-packages:
-            packages: curl doxygen git graphviz
+            name: run example command
+            code: |
+                scons --run-partis --fasta-path=data/liao_dataset.fasta --all-clonal-seqs
+                scons --run-linearham --template-path=templates/revbayes_template.rev --mcmc-iter=25 --mcmc-thin=1 --tune-iter=0
         - script:
-            name: build docs
+            name: build documentation
             code: doxygen Doxyfile
         - ematsen/gh-pages:
             token: $GITHUB_TOKEN
@@ -43,4 +44,4 @@ deploy:
         - slack-notifier:
             url: $SLACK_URL
             channel: bcell
-            username: linearham build docs
+            username: linearham build
