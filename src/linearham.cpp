@@ -11,6 +11,35 @@
 /// @file linearham.cpp
 /// @brief The command line interface of linearham.
 
+/// @mainpage
+/// @tableofcontents
+///
+/// In the following sections, we provide an overview of the abstractions used
+/// to implement the Phylo-HMM.
+///
+/// @section vdj_section [VDJ]Germline classes
+///
+/// We construct three germline gene classes, one for each type of germline gene
+/// (i.e. V, D, and J). These classes `VGermline`, `DGermline`, and `JGermline`
+/// are inherited from three classes that store `partis` HMM germline parameter
+/// information (i.e. `Germline`, `NTInsertion`, and `NPadding`). The
+/// corresponding inheritance diagram is shown below.
+///
+/// \dot
+/// digraph {
+///     rankdir=BT
+///     VGermline -> {Germline NPadding} [color=blue4]
+///     DGermline -> {Germline NTInsertion} [color=blue4]
+///     JGermline -> {Germline NTInsertion NPadding} [color=blue4]
+///     {VGermline DGermline JGermline} [rank=same]
+/// }
+/// \enddot
+///
+/// Looking at this diagram, it is clear we account for non-templated insertions
+/// to the left of germline genes. In the code, we parse the parameter files (in
+/// YAML format) and store these `[VDJ]Germline` objects in a common
+/// `GermlineGene` class, which is conceptually similar to a tagged union class.
+
 int main(int argc, char** argv) {
   try {
     // Define the command line object.
