@@ -15,17 +15,17 @@
 /// @tableofcontents
 ///
 /// In the following sections, we provide an overview of the abstractions used
-/// to implement the Phylo-HMM.
+/// in the linearham codebase.
 ///
 /// @section vdj_section [VDJ]Germline classes
 ///
 /// We construct three germline gene classes, one for each type of germline gene
-/// (i.e. V, D, and J). These classes `VGermline`, `DGermline`, and `JGermline`
-/// are inherited from three classes that store `partis` HMM germline parameter
+/// (i.e. V/D/J). These classes `VGermline`, `DGermline`, and `JGermline` are
+/// inherited from three classes that store `partis` HMM germline parameter
 /// information (i.e. `Germline`, `NTInsertion`, and `NPadding`). The
 /// corresponding inheritance diagram is shown below.
 ///
-/// \dot
+/// @dot
 /// digraph {
 ///     rankdir=BT
 ///     VGermline -> {Germline NPadding} [color=blue4]
@@ -33,12 +33,41 @@
 ///     JGermline -> {Germline NTInsertion NPadding} [color=blue4]
 ///     {VGermline DGermline JGermline} [rank=same]
 /// }
-/// \enddot
+/// @enddot
 ///
 /// Looking at this diagram, it is clear we account for non-templated insertions
 /// to the left of germline genes. In the code, we parse the parameter files (in
 /// YAML format) and store these `[VDJ]Germline` objects in a common
 /// `GermlineGene` class, which is conceptually similar to a tagged union class.
+///
+/// @section hmm HMM abstract base class
+///
+/// @subsection sw_alignment Smith-Waterman alignment information
+///
+/// To allow for more tractable inference on the HMM, we utilize Smith-Waterman
+/// alignment information between the clonal family sequences and the germline
+/// genes. Of course, the Smith-Waterman algorithm aligns two sequences at a
+/// time, but we use heuristics to determine the final alignment between all the
+/// relevant germline genes and the equal-length clonal sequences. For more
+/// information on these heuristics, see the `add_linearham_info()` function in
+/// `python/utils.py` of `partis` (`dev` branch).
+///
+/// The diagram shown below provides an example alignment between a
+/// single-sequence clonal family and a V/D/J gene. In the code, we have two
+/// important Smith-Waterman information objects: `flexbounds_` and `relpos_`.
+/// `flexbounds_` is a map holding (`[vdj]_[lr]`, `int`) pairs, which represent
+/// the possible V/D/J starting/ending match positions; this is a contrived
+/// example so in reality, given single V/D/J gene matches, we would expect the
+/// flexbounds to be length 1. In this example, `flexbounds_ = {{"v_l", {0,`
+/// `2}}, {"v_r", {4, 6}}, {"d_l", {7, 8}}, {"d_r", {9, 10}}, {"j_l", {11,`
+/// `12}}, {"j_r", {15, 15}}}`. Note that the last V gene starting position is 2
+/// and the first V gene ending position is 4, which means only positions 2 and
+/// 3 are guaranteed to be in the V gene. This logic will be important when we
+/// describe how the HMM state space is constructed. `relpos_` is a map
+/// specifying the starting positions of the germline genes. In this example,
+/// `relpos_ = {{"IGHV_ex*01", 1}, {"IGHD_ex*01", 5}, {"IGHJ_ex*01", 10}}`.
+///
+/// @image html sw_alignment.jpg
 
 int main(int argc, char** argv) {
   try {
