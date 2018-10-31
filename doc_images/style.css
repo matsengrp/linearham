@@ -1,3 +1,7 @@
 div.image img[src="sw_alignment.jpg"] {
-  width:75%;
+  width:50%;
+}
+
+div.image img[src="sw_alignment_extra.jpg"] {
+  width:50%;
 }
