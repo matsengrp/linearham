@@ -72,24 +72,42 @@
 ///
 /// @subsection state_space Hidden state space construction
 ///
-/// Our hidden state space is similar to that of `ham` (https://github.com/psathyrella/ham).
-/// `ham` uses states of the form \f$(V, j)\f$, \f$(D, j)\f$, \f$(D, N)\f$, \f$(J, j)\f$, and \f$(J, N)\f$ for a V gene \f$V\f$, D gene \f$D\f$, J gene \f$J\f$, germline position \f$j\f$, and non-templated insertion base \f$N \in \{N_A, N_C, N_G, N_T\}\f$.
-/// The important difference for `linearham` is that we use the Smith-Waterman alignment information to collapse the germline state space.
+/// Our hidden state space is similar to that of `ham`
+/// (https://github.com/psathyrella/ham). `ham` uses states of the form \f$(V,
+/// j)\f$, \f$(D, j)\f$, \f$(D, N)\f$, \f$(J, j)\f$, and \f$(J, N)\f$ for a V
+/// gene \f$V\f$, D gene \f$D\f$, J gene \f$J\f$, germline position \f$j\f$, and
+/// non-templated insertion base \f$N \in \{N_A, N_C, N_G, N_T\}\f$. The
+/// important difference for `linearham` is that we use the Smith-Waterman
+/// alignment information to collapse the germline state space.
 ///
-/// Looking at the Smith-Waterman alignment diagram above, it is easy to see that positions 3 and 4 represent the sites "guaranteed" to be in a hidden V germline state according to Smith-Waterman.
-/// In this "germline" region, we do not need to care about the different possibilities of hidden states beyond which V gene is entered because we know that the HMM must march along the gene until it exits that gene.
-/// Thus, the only possible hidden state in the V "germline" region is \f$V\f$.
+/// Looking at the Smith-Waterman alignment diagram above, it is easy to see
+/// that positions 3 and 4 represent the sites "guaranteed" to be in a hidden V
+/// germline state according to Smith-Waterman. In this "germline" region, we do
+/// not need to care about the different possibilities of hidden states beyond
+/// which V gene is entered because we know that the HMM must march along the
+/// gene until it exits that gene. Thus, the only possible hidden state in the V
+/// "germline" region is \f$V\f$.
 ///
-/// We provide another Smith-Waterman alignment diagram below with more than one V/D/J germline gene.
-/// In this new example, the hidden V "germline" state can be either \f$V_{01}\f$ or \f$V_{99}\f$.
-/// The V-D "junction" region (i.e. sites 4 and 5) can have hidden states associated with V genes, non-templated insertions, and D genes.
-/// In particular, the hidden state space consists of \f$(V_{01}, 3)\f$, \f$(V_{01}, 4)\f$, \f$(V_{99}, 3)\f$, \f$(V_{99}, 4)\f$, \f$(D_{01}, N_A)\f$, \f$(D_{01}, N_C)\f$, \f$(D_{01}, N_G)\f$, \f$(D_{01}, N_T)\f$, \f$(D_{01}, 0)\f$, \f$(D_{99}, N_A)\f$, \f$(D_{99}, N_C)\f$, \f$(D_{99}, N_G)\f$, \f$(D_{99}, N_T)\f$, \f$(D_{99}, 1)\f$, \f$(D_{99}, 2)\f$.
-/// Note that this discussion about the V "germline" and V-D "junction" states applies to the D/J "germline" and D-J "junction" states as well.
+/// We provide another Smith-Waterman alignment diagram below with more than one
+/// V/D/J germline gene. In this new example, the hidden V "germline" state can
+/// be either \f$V_{01}\f$ or \f$V_{99}\f$. The V-D "junction" region (i.e.
+/// sites 4 and 5) can have hidden states associated with V genes, non-templated
+/// insertions, and D genes. In particular, the hidden state space consists of
+/// \f$(V_{01}, 3)\f$, \f$(V_{01}, 4)\f$, \f$(V_{99}, 3)\f$, \f$(V_{99}, 4)\f$,
+/// \f$(D_{01}, N_A)\f$, \f$(D_{01}, N_C)\f$, \f$(D_{01}, N_G)\f$, \f$(D_{01},
+/// N_T)\f$, \f$(D_{01}, 0)\f$, \f$(D_{99}, N_A)\f$, \f$(D_{99}, N_C)\f$,
+/// \f$(D_{99}, N_G)\f$, \f$(D_{99}, N_T)\f$, \f$(D_{99}, 1)\f$, \f$(D_{99},
+/// 2)\f$. Note that this discussion about the V "germline" and V-D "junction"
+/// states applies to the D/J "germline" and D-J "junction" states as well.
 ///
 /// @image html sw_alignment_extra.jpg
 ///
-/// This "germline" and "junction" state space decomposition allows us to reduce the space-time complexity of the forward algorithm, which is quadratic in the number of hidden states.
-/// By collapsing the "germline" state space using Smith-Waterman alignment information, the forward algorithm scales approximately linearly in the number of `ham` hidden states (hence the name `linearham`).
+/// This "germline" and "junction" state space decomposition allows us to reduce
+/// the space-time complexity of the forward algorithm, which is quadratic in
+/// the number of hidden states. By collapsing the "germline" state space using
+/// Smith-Waterman alignment information, the forward algorithm scales
+/// approximately linearly in the number of `ham` hidden states (hence the name
+/// `linearham`).
 
 int main(int argc, char** argv) {
   try {
