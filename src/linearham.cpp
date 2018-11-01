@@ -66,11 +66,11 @@
 /// 3 are guaranteed to be in the V gene. This logic will be important when we
 /// describe how the HMM hidden state space is constructed. `relpos_` is a map
 /// specifying the starting positions of the germline genes. In this example,
-/// `relpos_ = {{"IGHV_ex*01", 1}, {"IGHD_ex*01", 5}, {"IGHJ_ex*01", 10}}`.
+/// `relpos_ = {{"V", 1}, {"D", 5}, {"J", 10}}`.
 ///
 /// @image html sw_alignment.jpg
 ///
-/// @subsection state_space Hidden state space construction
+/// @subsection state_space Hidden state space
 ///
 /// Our hidden state space is similar to that of `ham`
 /// (https://github.com/psathyrella/ham). `ham` uses states of the form \f$(V,
@@ -109,6 +109,35 @@
 /// Smith-Waterman alignment information, the forward algorithm scales
 /// approximately linearly in the number of `ham` hidden states (hence the name
 /// `linearham`).
+///
+/// @subsection trans_prob Hidden state transition probability matrices
+///
+/// Because the `linearham` HMM has different hidden state spaces for the
+/// "germline" and "junction" regions, we need to specify
+/// "germline"-to-"junction", "junction", and "junction"-to-"germline" hidden
+/// state transition probability matrices. To help illustrate how these matrices
+/// are structured, we revisit the Smith-Waterman example alignment first
+/// discussed in @ref sw_alignment. Specifically, we focus our attention on the
+/// V "germline" region, V-D "junction" region, and D "germline" region; the
+/// other "germline" and "junction" regions can be treated analogously.
+///
+/// The hidden state spaces for the V "germline" region, V-D "junction" region,
+/// and D "germline" region are \f$\{V\}\f$, \f$\{(V, 3)\f$, \f$(V, 4)\f$,
+/// \f$(D, N_A)\f$, \f$(D, N_C)\f$, \f$(D, N_G)\f$, \f$(D, N_T)\f$, \f$(D,
+/// 0)\f$, \f$(D, 1)\f$, \f$(D, 2)\}\f$, and \f$\{D\}\f$, respectively.
+/// Therefore, the transition probability matrix between the V "germline" region
+/// and V-D "junction" region has 1 row and 9 columns. The first matrix entry
+/// \f$P(V \rightarrow (V, 3))\f$ is equal to the `partis`-inferred transition
+/// probability going from position 2 to position 3 in germline gene "V", while
+/// the second entry \f$P(V \rightarrow (V, 4))\f$ is equal to 0 because it is
+/// impossible to skip over positions in any germline gene. Similarly, \f$P(V
+/// \rightarrow (D, 1))\f$ is equal to \f$P(V \rightarrow (V, end)) P(D) P((D,
+/// init) \rightarrow (D, 1))\f$. The other matrix entries, the (\f$9 \times
+/// 9\f$) V-D "junction" transition probability matrix, and the (\f$9 \times
+/// 1\f$) [V-D "junction"]-to-[D "germline"] transition probability matrix are
+/// filled using analogous logic. However, when computing the transition
+/// probabilities between the V-D "junction" region and D "germline" region, we
+/// must account for the transitions within the D "germline" region as well.
 
 int main(int argc, char** argv) {
   try {
