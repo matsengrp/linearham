@@ -86,7 +86,8 @@
 /// not need to care about the different possibilities of hidden states beyond
 /// which V gene is entered because we know that the HMM must march along the
 /// gene until it exits that gene. Thus, the only possible hidden state in the V
-/// "germline" region is \f$V\f$.
+/// "germline" region is \f$V\f$. It is helpful to think about the V "germline"
+/// region as a single site position in the HMM.
 ///
 /// We provide another Smith-Waterman alignment diagram below with more than one
 /// V/D/J germline gene. In this new example, the hidden V "germline" state can
