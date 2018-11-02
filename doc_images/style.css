@@ -5,3 +5,11 @@ div.image img[src="sw_alignment.jpg"] {
 div.image img[src="sw_alignment_extra.jpg"] {
   width:50%;
 }
+
+div.image img[src="msa.jpg"] {
+  width:50%;
+}
+
+div.image img[src="xmsa.jpg"] {
+  width:90%;
+}

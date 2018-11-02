@@ -90,13 +90,13 @@
 /// alignment information to collapse the germline state space.
 ///
 /// Looking at the Smith-Waterman alignment diagram above, it is easy to see
-/// that positions 3 and 4 represent the sites "guaranteed" to be in a hidden V
-/// germline state according to Smith-Waterman. In this "germline" region, we do
-/// not need to care about the different possibilities of hidden states beyond
-/// which V gene is entered because we know that the HMM must march along the
-/// gene until it exits that gene. Thus, the only possible hidden state in the V
-/// "germline" region is \f$V\f$. It is helpful to think about the V "germline"
-/// region as a single site position in the HMM.
+/// that site positions 2 and 3 represent the sites "guaranteed" to be in a
+/// hidden V germline state according to Smith-Waterman. In this "germline"
+/// region, we do not need to care about the different possibilities of hidden
+/// states beyond which V gene is entered because we know that the HMM must
+/// march along the gene until it exits that gene. Thus, the only possible
+/// hidden state in the V "germline" region is \f$V\f$. It is helpful to think
+/// about the V "germline" region as a single site position in the HMM.
 ///
 /// We provide another Smith-Waterman alignment diagram below with more than one
 /// V/D/J germline gene. In this new example, the hidden V "germline" state can
@@ -181,6 +181,33 @@
 /// of these scaler counts as the forward algorithm progresses along the site
 /// positions of the HMM and undo the scaling according to the final scaler
 /// count to compute the HMM log-likelihood.
+///
+/// @section xmsa Phylo-HMM "expanded" multiple sequence alignment
+///
+/// For large clonal families (and thus large trees), phylogenetic
+/// log-likelihood computations are expensive operations so we introduce the
+/// idea of an "expanded" multiple sequence alignment (xMSA) to minimize the
+/// number of redundant likelihood calculations. Suppose we have a
+/// Smith-Waterman alignment as shown in @ref sw_alignment, but instead we have
+/// a clonal family with 3 sequences (see diagram below).
+///
+/// @image html msa.jpg
+///
+/// The phylogenetic likelihoods depend on the observed bases at each site and
+/// the associated hidden naive bases as well. We map each MSA site position and
+/// possible hidden naive base to a xMSA site position and compute the
+/// phylogenetic log-likelihood at each xMSA site only once. The important
+/// takeaway is that even though many pairs of MSA site positions and hidden
+/// naive bases occur more than once, we never have to compute the corresponding
+/// phylogenetic log-likelihoods more than once. If the V/D/J germline sequences
+/// in the aforementioned example were `ATGAC`, `GGTAC`, and `ATGCG`,
+/// respectively, then the associated xMSA is displayed in the graphic below.
+///
+/// @image html xmsa.jpg
+///
+/// As a sanity check, the V-D "junction" states \f$(D, 0)\f$ and \f$(D, N_G)\f$
+/// at MSA site position 5 both map to the same xMSA site position (13).
+/// Hopefully, it is clear why we call this an "expanded" MSA.
 
 int main(int argc, char** argv) {
   try {
