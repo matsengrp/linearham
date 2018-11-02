@@ -168,6 +168,19 @@
 /// 2 rows and 15 columns. Some "junction" states do not occur at particular
 /// site positions (i.e. \f$(D_{01}, 0)\f$ at position 4) and these cases are
 /// assigned emission probabilities of 0.
+///
+/// @section scaling HMM scaling for numeric underflow
+///
+/// Given that there can be a potentially large number of sequences in a clonal
+/// family, we must account for possible numerical underflow in the forward
+/// algorithm. We define a large numeric constant `SCALE_FACTOR` and check that
+/// the computed forward probabilities are all above `1.0 / SCALE_FACTOR`. If
+/// not, we multiply the forward probabilities by `SCALE_FACTOR` enough times
+/// until no forward probability is less than `1.0 / SCALE_FACTOR` and record
+/// the number of times we multiplied by `SCALE_FACTOR`. We keep a running total
+/// of these scaler counts as the forward algorithm progresses along the site
+/// positions of the HMM and undo the scaling according to the final scaler
+/// count to compute the HMM log-likelihood.
 
 int main(int argc, char** argv) {
   try {
