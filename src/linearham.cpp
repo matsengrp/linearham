@@ -17,32 +17,7 @@
 /// In the following sections, we provide an overview of the abstractions used
 /// in the `linearham` codebase.
 ///
-/// @section vdj_section [VDJ]Germline classes
-///
-/// We construct three germline gene classes, one for each type of germline gene
-/// (i.e. V/D/J). These classes `VGermline`, `DGermline`, and `JGermline` are
-/// inherited from three classes that store `partis` HMM germline parameter
-/// information (i.e. `Germline`, `NTInsertion`, and `NPadding`). The
-/// corresponding inheritance diagram is shown below.
-///
-/// @dot
-/// digraph {
-///     rankdir=BT
-///     VGermline -> {Germline NPadding} [color=blue4]
-///     DGermline -> {Germline NTInsertion} [color=blue4]
-///     JGermline -> {Germline NTInsertion NPadding} [color=blue4]
-///     {VGermline DGermline JGermline} [rank=same]
-/// }
-/// @enddot
-///
-/// Looking at this diagram, it is clear we account for non-templated insertions
-/// to the left of germline genes. In the code, we parse the parameter files (in
-/// YAML format) and store these `[VDJ]Germline` objects in a common
-/// `GermlineGene` class, which is conceptually similar to a tagged union class.
-///
-/// @section hmm HMM abstract base class
-///
-/// @subsection sw_alignment Smith-Waterman alignment information
+/// @section sw_alignment Smith-Waterman alignment information
 ///
 /// To allow for more tractable inference on the HMM, we utilize Smith-Waterman
 /// alignment information between the clonal family sequences and the germline
@@ -70,7 +45,41 @@
 ///
 /// @image html sw_alignment.jpg
 ///
-/// @subsection state_space Hidden state space
+/// @section germline_padding Germline padding
+///
+/// In the diagram above, the germline genes are not properly aligned to the
+/// clonal family sequence as the V (J) gene should align to the start (end) of
+/// the sequence. To account for this, we pad germline genes with N bases until
+/// the V (J) gene aligns to the start (end) of the clonal sequence. These
+/// padding bases represent fully ambiguous (i.e. any possible) germline bases.
+/// The padding transition/emission probability information is stored in the
+/// `NPadding` class. Note that while germline padding is handled by
+/// `linearham`, sequence padding is performed in `partis`.
+///
+/// @section vdj_germline [VDJ]Germline classes
+///
+/// We construct three germline gene classes, one for each type of germline gene
+/// (i.e. V/D/J). These classes `VGermline`, `DGermline`, and `JGermline` are
+/// inherited from three classes that store `partis` HMM germline parameter
+/// information (i.e. `Germline`, `NTInsertion`, and `NPadding`). The
+/// corresponding inheritance diagram is shown below.
+///
+/// @dot
+/// digraph {
+///     rankdir=BT
+///     VGermline -> {Germline NPadding} [color=blue4]
+///     DGermline -> {Germline NTInsertion} [color=blue4]
+///     JGermline -> {Germline NTInsertion NPadding} [color=blue4]
+///     {VGermline DGermline JGermline} [rank=same]
+/// }
+/// @enddot
+///
+/// Looking at this diagram, it is clear we account for non-templated insertions
+/// to the left of germline genes. In the code, we parse the parameter files (in
+/// YAML format) and store these `[VDJ]Germline` objects in a common
+/// `GermlineGene` class, which is conceptually similar to a tagged union class.
+///
+/// @section state_space HMM hidden state space
 ///
 /// Our hidden state space is similar to that of `ham`
 /// (https://github.com/psathyrella/ham). `ham` uses states of the form \f$(V,
@@ -110,7 +119,7 @@
 /// approximately linearly in the number of `ham` hidden states (hence the name
 /// `linearham`).
 ///
-/// @subsection trans_prob Hidden state transition probability matrices
+/// @section transition_prob HMM hidden state transition probability matrices
 ///
 /// Because the `linearham` HMM has different hidden state spaces for the
 /// "germline" and "junction" regions, we need to specify
@@ -138,6 +147,27 @@
 /// filled using analogous logic. However, when computing the transition
 /// probabilities between the V-D "junction" region and D "germline" region, we
 /// must account for the transitions within the D "germline" region as well.
+///
+/// @section emission_prob HMM hidden state emission probability matrices
+///
+/// In each "germline" region, we have an emission probability row vector that
+/// stores an entry for every "germline" state in that region. The
+/// Smith-Waterman example alignment shown in @ref state_space has a V
+/// "germline" state space equal to \f$\{V_{01}, V_{99}\}\f$ and thus the
+/// corresponding emission probability row vector has 2 entries. Because a
+/// "germline" region spans at least one site position in the alignment, each
+/// "germline" emission probability is defined as the product over all site-wise
+/// emission probabilities in the region. In the aforementioned example, the
+/// "germline" emission probabilities for the \f$V_{01}\f$ and \f$V_{99}\f$
+/// states are products of the site-specific emission probabilities from
+/// position 0 to position 3.
+///
+/// In each "junction" region, we use an emission probability matrix with
+/// entries for each site position and "junction" state in that region. For the
+/// same example used above, the V-D "junction" emission probability matrix has
+/// 2 rows and 15 columns. Some "junction" states do not occur at particular
+/// site positions (i.e. \f$(D_{01}, 0)\f$ at position 4) and these cases are
+/// assigned emission probabilities of 0.
 
 int main(int argc, char** argv) {
   try {
