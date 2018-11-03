@@ -10,10 +10,21 @@
 '._.-'-._.-._.-''-..'
 ```
 
-## dependencies and building
+Developer documentation: http://matsengrp.github.io/linearham (or build locally by running `doxygen Doxyfile`)
 
-On Debian/Ubuntu, `apt-get install` all of the packages in the `packages` line of `wercker.yml`.
+## dependencies
 
-Build by executing `scons` in the top level directory, and build tests using `scons test`.
+On Debian/Ubuntu, execute all the `RUN` instructions in the `Dockerfile`.
 
-Execute tests via `_build/test/test`.
+## usage
+
+Running `scons --run-partis --fasta-path=data/liao_dataset.fasta --all-clonal-seqs` runs `partis` assuming all the sequences in the Liao (2013) dataset are clonal.
+Remove that flag if you want to run `partis` in `partition` mode.
+
+Running `scons --run-linearham --template-path=templates/revbayes_template.rev --mcmc-iter=25 --mcmc-thin=1 --tune-iter=0` runs the `linearham` phylogenetic inference pipeline.
+
+Running `_build/test/test` runs the `linearham` tests.
+
+Running `_build/linearham/linearham` runs the `linearham` binary built from the source files in `src/`.
+
+For more information on the `scons` arguments, run `scons --help`.
