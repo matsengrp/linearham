@@ -90,13 +90,13 @@
 /// alignment information to collapse the germline state space.
 ///
 /// Looking at the Smith-Waterman alignment diagram above, it is easy to see
-/// that site positions 2 and 3 represent the sites "guaranteed" to be in a
-/// hidden V germline state according to Smith-Waterman. In this "germline"
-/// region, we do not need to care about the different possibilities of hidden
-/// states beyond which V gene is entered because we know that the HMM must
-/// march along the gene until it exits that gene. Thus, the only possible
-/// hidden state in the V "germline" region is \f$V\f$. It is helpful to think
-/// about the V "germline" region as a single site position in the HMM.
+/// that positions 2 and 3 represent the sites "guaranteed" to be in a hidden V
+/// germline state according to Smith-Waterman. In this "germline" region, we do
+/// not need to care about the different possibilities of hidden states beyond
+/// which V gene is entered because we know that the HMM must march along the
+/// gene until it exits that gene. Thus, the only possible hidden state in the V
+/// "germline" region is \f$V\f$. It is helpful to think about the V "germline"
+/// region as a single site position in the HMM.
 ///
 /// We provide another Smith-Waterman alignment diagram below with more than one
 /// V/D/J germline gene. In this new example, the hidden V "germline" state can
