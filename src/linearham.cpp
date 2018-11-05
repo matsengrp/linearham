@@ -14,14 +14,21 @@
 /// @mainpage
 /// @tableofcontents
 ///
+/// `linearham` is a phylogenetic hidden Markov model (phylo-HMM), simultaneously modeling the VDJ recombination process(with an HMM) and sequence evolution (with a phylogenetic tree).
+///
+/// This is the reference for understanding how linearham works.
+/// For instructions on how to use linearham, please see the README.
+///
 /// In the following sections, we provide an overview of the abstractions used
 /// in the `linearham` codebase.
+/// See the links above for detailed information about classes and methods.
 ///
 /// @section sw_alignment Smith-Waterman alignment information
 ///
 /// To allow for more tractable inference on the HMM, we utilize Smith-Waterman
 /// alignment information between the clonal family sequences and the germline
-/// genes. Of course, the Smith-Waterman algorithm aligns two sequences at a
+/// genes. We fix the relative positions of the germline genes to their S-W positions and allow an level of uncertainty in the trimming amounts determined by the S-W algorithm.
+/// Of course, the Smith-Waterman algorithm aligns two sequences at a
 /// time, but we use heuristics to determine the final alignment between all the
 /// relevant germline genes and the equal-length clonal sequences. For more
 /// information on these heuristics, see the `add_linearham_info()` function in
@@ -75,7 +82,7 @@
 /// @enddot
 ///
 /// Looking at this diagram, it is clear we account for non-templated insertions
-/// to the left of germline genes. In the code, we parse the parameter files (in
+/// to the left of D and J germline genes. In the code, we parse the parameter files (in
 /// YAML format) and store these `[VDJ]Germline` objects in a common
 /// `GermlineGene` class, which is conceptually similar to a tagged union class.
 ///
@@ -130,7 +137,7 @@
 /// V "germline" region, V-D "junction" region, and D "germline" region; the
 /// other "germline" and "junction" regions can be treated analogously.
 ///
-/// The hidden state spaces for the V "germline" region, V-D "junction" region,
+/// The hidden state spaces in that first example for the V "germline" region, V-D "junction" region,
 /// and D "germline" region are \f$\{V\}\f$, \f$\{(V, 3)\f$, \f$(V, 4)\f$,
 /// \f$(D, N_A)\f$, \f$(D, N_C)\f$, \f$(D, N_G)\f$, \f$(D, N_T)\f$, \f$(D,
 /// 0)\f$, \f$(D, 1)\f$, \f$(D, 2)\}\f$, and \f$\{D\}\f$, respectively.
@@ -140,8 +147,8 @@
 /// probability going from position 2 to position 3 in germline gene "V", while
 /// the second entry \f$P(V \rightarrow (V, 4))\f$ is equal to 0 because it is
 /// impossible to skip over positions in any germline gene. Similarly, \f$P(V
-/// \rightarrow (D, 1))\f$ is equal to \f$P(V \rightarrow (V, end)) P(D) P((D,
-/// init) \rightarrow (D, 1))\f$. The other matrix entries, the (\f$9 \times
+/// \rightarrow (D, 1))\f$ is equal to \f$P(V \rightarrow (V, \text{end})) P(D) P((D,
+/// \text{init}) \rightarrow (D, 1))\f$. The other matrix entries, the (\f$9 \times
 /// 9\f$) V-D "junction" transition probability matrix, and the (\f$9 \times
 /// 1\f$) [V-D "junction"]-to-[D "germline"] transition probability matrix are
 /// filled using analogous logic. However, when computing the transition
@@ -184,11 +191,11 @@
 ///
 /// @section xmsa Phylo-HMM "expanded" multiple sequence alignment
 ///
-/// For large clonal families (and thus large trees), phylogenetic
-/// log-likelihood computations are expensive operations so we introduce the
-/// idea of an "expanded" multiple sequence alignment (xMSA) to minimize the
-/// number of redundant likelihood calculations. Suppose we have a
-/// Smith-Waterman alignment as shown in @ref sw_alignment, but instead we have
+/// For large clonal families (and thus large trees), tree traversal for phylogenetic
+/// log-likelihood computations is computationally expensive so we introduce the
+/// idea of an "expanded" multiple sequence alignment (xMSA) to calculate
+/// all of the likelihood computations we will need in one traversal. Suppose we have a
+/// Smith-Waterman alignment as shown in @ref sw_alignment, but instead of the single input sequence `ACAGTACCCTGTT` we have
 /// a clonal family with 3 sequences (see diagram below).
 ///
 /// @image html msa.jpg
@@ -201,7 +208,8 @@
 /// naive bases occur more than once, we never have to compute the corresponding
 /// phylogenetic log-likelihoods more than once. If the V/D/J germline sequences
 /// in the aforementioned example were `ATGAC`, `GGTAC`, and `ATGCG`,
-/// respectively, then the associated xMSA is displayed in the graphic below.
+/// respectively, then the associated xMSA is displayed in the graphic below, where the top row of the alignment cycles
+/// through all of the possible bases of the naive .
 ///
 /// @image html xmsa.jpg
 ///
