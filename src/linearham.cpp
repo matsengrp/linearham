@@ -14,22 +14,25 @@
 /// @mainpage
 /// @tableofcontents
 ///
-/// `linearham` is a phylogenetic hidden Markov model (phylo-HMM), simultaneously modeling the VDJ recombination process(with an HMM) and sequence evolution (with a phylogenetic tree).
+/// `linearham` is a phylogenetic hidden Markov model (phylo-HMM), which
+/// simultaneously models the VDJ recombination process (with a HMM) and
+/// sequence evolution (with a phylogenetic tree).
 ///
-/// This is the reference for understanding how linearham works.
-/// For instructions on how to use linearham, please see the README.
-///
+/// This is the reference for understanding how `linearham` works.
 /// In the following sections, we provide an overview of the abstractions used
-/// in the `linearham` codebase.
-/// See the links above for detailed information about classes and methods.
+/// in the `linearham` codebase. See the links above for detailed information
+/// about classes and methods. To fully understand how `linearham` works, please
+/// see the `linearham` tests. Whenever we use the terms "site positions" or
+/// "germline positions", we are referring to positions in the aligned sequences
+/// or a germline gene, respectively.
 ///
 /// @section sw_alignment Smith-Waterman alignment information
 ///
 /// To allow for more tractable inference on the HMM, we utilize Smith-Waterman
-/// alignment information between the clonal family sequences and the germline
-/// genes. We fix the relative positions of the germline genes to their S-W positions and allow an level of uncertainty in the trimming amounts determined by the S-W algorithm.
-/// Of course, the Smith-Waterman algorithm aligns two sequences at a
-/// time, but we use heuristics to determine the final alignment between all the
+/// (S-W) alignment information between the clonal family sequences and the
+/// germline genes. We fix the relative positions of the germline genes to their
+/// S-W positions. Of course, the S-W algorithm aligns two sequences at a time,
+/// but we use heuristics to determine the final alignment between all the
 /// relevant germline genes and the equal-length clonal sequences. For more
 /// information on these heuristics, see the `add_linearham_info()` function in
 /// `python/utils.py` of `partis`
@@ -37,18 +40,20 @@
 ///
 /// The diagram shown below provides an example alignment between a
 /// single-sequence clonal family and a V/D/J gene. In the code, we have two
-/// important Smith-Waterman information objects: `flexbounds_` and `relpos_`.
-/// `flexbounds_` is a map holding (`[vdj]_[lr]`, `int`) pairs, which represent
-/// the possible V/D/J starting/ending match positions; this is a contrived
-/// example so in reality, given single V/D/J gene matches, we would expect the
-/// flexbounds to be length 1. In this example, `flexbounds_ = {{"v_l", {0,`
-/// `2}}, {"v_r", {4, 6}}, {"d_l", {7, 8}}, {"d_r", {9, 10}}, {"j_l", {11,`
-/// `12}}, {"j_r", {15, 15}}}`. Note that the last V gene starting position is 2
-/// and the first V gene ending position is 4, which means only positions 2 and
-/// 3 are guaranteed to be in the V gene. This logic will be important when we
-/// describe how the HMM hidden state space is constructed. `relpos_` is a map
-/// specifying the starting positions of the germline genes. In this example,
-/// `relpos_ = {{"V", 1}, {"D", 5}, {"J", 10}}`.
+/// important S-W information objects: `flexbounds_` and `relpos_`.
+/// `flexbounds_` is a map holding (`[vdj]_[lr]`, `pair<int, int>`) pairs, which
+/// represent the possible V/D/J starting/ending match positions; this is a
+/// contrived example so in reality, given single V/D/J gene matches, we would
+/// expect the flexbounds to be length 1. Note that due to python range
+/// conventions, the bounds in `flexbounds_` are right-exclusive. In this
+/// example, `flexbounds_ = {{"v_l", {0, 2}}, {"v_r", {4, 6}}, {"d_l", {7, 8}},
+/// {"d_r", {9, 10}}, {"j_l", {11, 12}}, {"j_r", {15, 15}}}`. Note that the last
+/// V gene starting position is 2 and the first V gene ending position is 4,
+/// which means only positions 2 and 3 are guaranteed to be in the V gene. This
+/// logic will be important when we describe how the HMM hidden state space is
+/// constructed. `relpos_` is a map specifying the starting positions of the
+/// germline genes. In this example, `relpos_ = {{"V", 1}, {"D", 5}, {"J",
+/// 10}}`.
 ///
 /// @image html sw_alignment.jpg
 ///
@@ -82,8 +87,8 @@
 /// @enddot
 ///
 /// Looking at this diagram, it is clear we account for non-templated insertions
-/// to the left of D and J germline genes. In the code, we parse the parameter files (in
-/// YAML format) and store these `[VDJ]Germline` objects in a common
+/// to the left of D and J germline genes. In the code, we parse the parameter
+/// files (in YAML format) and store these `[VDJ]Germline` objects in a common
 /// `GermlineGene` class, which is conceptually similar to a tagged union class.
 ///
 /// @section state_space HMM hidden state space
@@ -93,22 +98,22 @@
 /// j)\f$, \f$(D, j)\f$, \f$(D, N)\f$, \f$(J, j)\f$, and \f$(J, N)\f$ for a V
 /// gene \f$V\f$, D gene \f$D\f$, J gene \f$J\f$, germline position \f$j\f$, and
 /// non-templated insertion base \f$N \in \{N_A, N_C, N_G, N_T\}\f$. The
-/// important difference for `linearham` is that we use the Smith-Waterman
-/// alignment information to collapse the germline state space.
+/// important difference for `linearham` is that we use the S-W alignment
+/// information to collapse the germline state space.
 ///
-/// Looking at the Smith-Waterman alignment diagram above, it is easy to see
-/// that positions 2 and 3 represent the sites "guaranteed" to be in a hidden V
-/// germline state according to Smith-Waterman. In this "germline" region, we do
-/// not need to care about the different possibilities of hidden states beyond
-/// which V gene is entered because we know that the HMM must march along the
-/// gene until it exits that gene. Thus, the only possible hidden state in the V
-/// "germline" region is \f$V\f$. It is helpful to think about the V "germline"
-/// region as a single site position in the HMM.
+/// Looking at the S-W alignment diagram above, it is easy to see that positions
+/// 2 and 3 represent the sites "guaranteed" to be in a hidden V germline state
+/// according to S-W. In this "germline" region, we do not need to care about
+/// the different possibilities of hidden states beyond which V gene is entered
+/// because we know that the HMM must march along the gene until it exits that
+/// gene. Thus, the only possible hidden state in the V "germline" region is
+/// \f$V\f$. It is helpful to think about the V "germline" region as a single
+/// site position in the HMM.
 ///
-/// We provide another Smith-Waterman alignment diagram below with more than one
-/// V/D/J germline gene. In this new example, the hidden V "germline" state can
-/// be either \f$V_{01}\f$ or \f$V_{99}\f$. The V-D "junction" region (i.e.
-/// sites 4 and 5) can have hidden states associated with V genes, non-templated
+/// We provide another S-W alignment diagram below with more than one V/D/J
+/// germline gene. In this new example, the hidden V "germline" state can be
+/// either \f$V_{01}\f$ or \f$V_{99}\f$. The V-D "junction" region (i.e. sites 4
+/// and 5) can have hidden states associated with V genes, non-templated
 /// insertions, and D genes. In particular, the hidden state space consists of
 /// \f$(V_{01}, 3)\f$, \f$(V_{01}, 4)\f$, \f$(V_{99}, 3)\f$, \f$(V_{99}, 4)\f$,
 /// \f$(D_{01}, N_A)\f$, \f$(D_{01}, N_C)\f$, \f$(D_{01}, N_G)\f$, \f$(D_{01},
@@ -122,9 +127,8 @@
 /// This "germline" and "junction" state space decomposition allows us to reduce
 /// the space-time complexity of the forward algorithm, which is quadratic in
 /// the number of hidden states. By collapsing the "germline" state space using
-/// Smith-Waterman alignment information, the forward algorithm scales
-/// approximately linearly in the number of `ham` hidden states (hence the name
-/// `linearham`).
+/// S-W alignment information, the forward algorithm scales approximately
+/// linearly in the number of `ham` hidden states (hence the name `linearham`).
 ///
 /// @section transition_prob HMM hidden state transition probability matrices
 ///
@@ -132,42 +136,42 @@
 /// "germline" and "junction" regions, we need to specify
 /// "germline"-to-"junction", "junction", and "junction"-to-"germline" hidden
 /// state transition probability matrices. To help illustrate how these matrices
-/// are structured, we revisit the Smith-Waterman example alignment first
-/// discussed in @ref sw_alignment. Specifically, we focus our attention on the
-/// V "germline" region, V-D "junction" region, and D "germline" region; the
-/// other "germline" and "junction" regions can be treated analogously.
+/// are structured, we revisit the S-W example alignment first discussed in @ref
+/// sw_alignment. Specifically, we focus our attention on the V "germline"
+/// region, V-D "junction" region, and D "germline" region; the other "germline"
+/// and "junction" regions can be treated analogously.
 ///
-/// The hidden state spaces in that first example for the V "germline" region, V-D "junction" region,
-/// and D "germline" region are \f$\{V\}\f$, \f$\{(V, 3)\f$, \f$(V, 4)\f$,
-/// \f$(D, N_A)\f$, \f$(D, N_C)\f$, \f$(D, N_G)\f$, \f$(D, N_T)\f$, \f$(D,
-/// 0)\f$, \f$(D, 1)\f$, \f$(D, 2)\}\f$, and \f$\{D\}\f$, respectively.
-/// Therefore, the transition probability matrix between the V "germline" region
-/// and V-D "junction" region has 1 row and 9 columns. The first matrix entry
-/// \f$P(V \rightarrow (V, 3))\f$ is equal to the `partis`-inferred transition
-/// probability going from position 2 to position 3 in germline gene "V", while
-/// the second entry \f$P(V \rightarrow (V, 4))\f$ is equal to 0 because it is
-/// impossible to skip over positions in any germline gene. Similarly, \f$P(V
-/// \rightarrow (D, 1))\f$ is equal to \f$P(V \rightarrow (V, \text{end})) P(D) P((D,
-/// \text{init}) \rightarrow (D, 1))\f$. The other matrix entries, the (\f$9 \times
-/// 9\f$) V-D "junction" transition probability matrix, and the (\f$9 \times
-/// 1\f$) [V-D "junction"]-to-[D "germline"] transition probability matrix are
-/// filled using analogous logic. However, when computing the transition
-/// probabilities between the V-D "junction" region and D "germline" region, we
-/// must account for the transitions within the D "germline" region as well.
+/// The hidden state spaces in that first example for the V "germline" region,
+/// V-D "junction" region, and D "germline" region are \f$\{V\}\f$, \f$\{(V,
+/// 3)\f$, \f$(V, 4)\f$, \f$(D, N_A)\f$, \f$(D, N_C)\f$, \f$(D, N_G)\f$, \f$(D,
+/// N_T)\f$, \f$(D, 0)\f$, \f$(D, 1)\f$, \f$(D, 2)\}\f$, and \f$\{D\}\f$,
+/// respectively. Therefore, the transition probability matrix between the V
+/// "germline" region and V-D "junction" region has 1 row and 9 columns. The
+/// first matrix entry \f$P(V \rightarrow (V, 3))\f$ is equal to the
+/// `partis`-inferred transition probability going from position 2 to position 3
+/// in germline gene \f$\{V\}\f$, while the second entry \f$P(V \rightarrow (V,
+/// 4))\f$ is equal to 0 because it is impossible to skip over positions in any
+/// germline gene. Similarly, \f$P(V \rightarrow (D, 1))\f$ is equal to \f$P(V
+/// \rightarrow (V, \text{end})) P(D) P((D, \text{init}) \rightarrow (D, 1))\f$.
+/// The other matrix entries, the (\f$9 \times 9\f$) V-D "junction" transition
+/// probability matrix, and the (\f$9 \times 1\f$) [V-D "junction"]-to-[D
+/// "germline"] transition probability matrix are filled using analogous logic.
+/// However, when computing the transition probabilities between the V-D
+/// "junction" region and D "germline" region, we must account for the
+/// transitions within the D "germline" region as well.
 ///
 /// @section emission_prob HMM hidden state emission probability matrices
 ///
 /// In each "germline" region, we have an emission probability row vector that
-/// stores an entry for every "germline" state in that region. The
-/// Smith-Waterman example alignment shown in @ref state_space has a V
-/// "germline" state space equal to \f$\{V_{01}, V_{99}\}\f$ and thus the
-/// corresponding emission probability row vector has 2 entries. Because a
-/// "germline" region spans at least one site position in the alignment, each
-/// "germline" emission probability is defined as the product over all site-wise
-/// emission probabilities in the region. In the aforementioned example, the
-/// "germline" emission probabilities for the \f$V_{01}\f$ and \f$V_{99}\f$
-/// states are products of the site-specific emission probabilities from
-/// position 0 to position 3.
+/// stores an entry for every "germline" state in that region. The S-W example
+/// alignment shown in @ref state_space has a V "germline" state space equal to
+/// \f$\{V_{01}, V_{99}\}\f$ and thus the corresponding emission probability row
+/// vector has 2 entries. Because a "germline" region spans at least one site
+/// position in the alignment, each "germline" emission probability is defined
+/// as the product over all site-wise emission probabilities in the region. In
+/// the aforementioned example, the "germline" emission probabilities for the
+/// \f$V_{01}\f$ and \f$V_{99}\f$ states are products of the site-specific
+/// emission probabilities from position 0 to position 3.
 ///
 /// In each "junction" region, we use an emission probability matrix with
 /// entries for each site position and "junction" state in that region. For the
@@ -191,12 +195,13 @@
 ///
 /// @section xmsa Phylo-HMM "expanded" multiple sequence alignment
 ///
-/// For large clonal families (and thus large trees), tree traversal for phylogenetic
-/// log-likelihood computations is computationally expensive so we introduce the
-/// idea of an "expanded" multiple sequence alignment (xMSA) to calculate
-/// all of the likelihood computations we will need in one traversal. Suppose we have a
-/// Smith-Waterman alignment as shown in @ref sw_alignment, but instead of the single input sequence `ACAGTACCCTGTT` we have
-/// a clonal family with 3 sequences (see diagram below).
+/// For large clonal families (and thus large trees), tree traversal for
+/// phylogenetic log-likelihood computations is computationally expensive so we
+/// introduce the idea of an "expanded" multiple sequence alignment (xMSA) to
+/// calculate all of the likelihood computations we will need in one traversal.
+/// Suppose we have a S-W alignment as shown in @ref sw_alignment, but instead
+/// of the single input sequence `ACAGTACCCTGTTNN`, we have a clonal family with
+/// 3 sequences (see diagram below).
 ///
 /// @image html msa.jpg
 ///
@@ -206,10 +211,10 @@
 /// phylogenetic log-likelihood at each xMSA site only once. The important
 /// takeaway is that even though many pairs of MSA site positions and hidden
 /// naive bases occur more than once, we never have to compute the corresponding
-/// phylogenetic log-likelihoods more than once. If the V/D/J germline sequences
-/// in the aforementioned example were `ATGAC`, `GGTAC`, and `ATGCG`,
-/// respectively, then the associated xMSA is displayed in the graphic below, where the top row of the alignment cycles
-/// through all of the possible bases of the naive .
+/// phylogenetic log-likelihoods more than once. The xMSA for the aforementioned
+/// example is displayed in the graphic below, where the top row of the
+/// alignment cycles through all of the possible bases of the "expanded" naive
+/// sequence.
 ///
 /// @image html xmsa.jpg
 ///

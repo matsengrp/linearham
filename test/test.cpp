@@ -249,7 +249,7 @@ TEST_CASE("SimpleHMM", "[simplehmm]") {
   SimpleHMMPtr simple_hmm_ptr = std::make_shared<SimpleHMM>(yaml_path, 0, hmm_param_dir, 0);
 
   // For a diagram of the S-W alignment, see
-  // https://github.com/matsengrp/linearham/issues/44#issue-336348821.
+  // http://matsengrp.github.io/linearham/sw_alignment.jpg.
 
   std::map<std::string, std::pair<int, int>> flexbounds = {
       {"v_l", {0, 2}},  {"v_r", {4, 6}},   {"d_l", {7, 8}},
@@ -417,7 +417,7 @@ TEST_CASE("SimpleHMM", "[simplehmm]") {
   simple_hmm_ptr.reset(new SimpleHMM(yaml_path, 0, hmm_param_dir, 0));
 
   // For a diagram of the S-W alignment, see
-  // https://github.com/matsengrp/linearham/issues/44#issuecomment-406625914.
+  // http://matsengrp.github.io/linearham/sw_alignment_extra.jpg.
 
   flexbounds = {{"v_l", {0, 2}},  {"v_r", {4, 6}},  {"d_l", {4, 6}},
                 {"d_r", {8, 10}}, {"j_l", {8, 10}}, {"j_r", {15, 15}}};
@@ -618,7 +618,7 @@ TEST_CASE("PhyloHMM", "[phylohmm]") {
   phylo_hmm_ptr->InitializePhyloEmission();
 
   // For a diagram of the S-W alignment, see
-  // https://github.com/matsengrp/linearham/issues/44#issue-336348821.
+  // http://matsengrp.github.io/linearham/sw_alignment.jpg.
 
   std::map<std::string, std::pair<int, int>> flexbounds = {
       {"v_l", {0, 2}},  {"v_r", {4, 6}},   {"d_l", {7, 8}},
@@ -848,7 +848,7 @@ TEST_CASE("PhyloHMM", "[phylohmm]") {
   phylo_hmm_ptr->InitializePhyloEmission();
 
   // For a diagram of the S-W alignment, see
-  // https://github.com/matsengrp/linearham/issues/44#issuecomment-406625914.
+  // http://matsengrp.github.io/linearham/sw_alignment_extra.jpg.
 
   flexbounds = {{"v_l", {0, 2}},  {"v_r", {4, 6}},  {"d_l", {4, 6}},
                 {"d_r", {8, 10}}, {"j_l", {8, 10}}, {"j_r", {15, 15}}};
