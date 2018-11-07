@@ -31,8 +31,8 @@
 /// To allow for more tractable inference on the HMM, we utilize Smith-Waterman
 /// (S-W) alignment information between the clonal family sequences and the
 /// germline genes. We fix the relative positions of the germline genes to their
-/// S-W positions. Of course, the S-W algorithm aligns two sequences at a time,
-/// but we use heuristics to determine the final alignment between all the
+/// S-W site positions. Of course, the S-W algorithm aligns two sequences at a
+/// time, but we use heuristics to determine the final alignment between all the
 /// relevant germline genes and the equal-length clonal sequences. For more
 /// information on these heuristics, see the `add_linearham_info()` function in
 /// `python/utils.py` of `partis`
@@ -42,18 +42,22 @@
 /// single-sequence clonal family and a V/D/J gene. In the code, we have two
 /// important S-W information objects: `flexbounds_` and `relpos_`.
 /// `flexbounds_` is a map holding (`[vdj]_[lr]`, `pair<int, int>`) pairs, which
-/// represent the possible V/D/J starting/ending match positions; this is a
-/// contrived example so in reality, given single V/D/J gene matches, we would
-/// expect the flexbounds to be length 1. Note that due to python range
-/// conventions, the bounds in `flexbounds_` are right-exclusive. In this
-/// example, `flexbounds_ = {{"v_l", {0, 2}}, {"v_r", {4, 6}}, {"d_l", {7, 8}},
-/// {"d_r", {9, 10}}, {"j_l", {11, 12}}, {"j_r", {15, 15}}}`. Note that the last
-/// V gene starting position is 2 and the first V gene ending position is 4,
-/// which means only positions 2 and 3 are guaranteed to be in the V gene. This
-/// logic will be important when we describe how the HMM hidden state space is
-/// constructed. `relpos_` is a map specifying the starting positions of the
-/// germline genes. In this example, `relpos_ = {{"V", 1}, {"D", 5}, {"J",
-/// 10}}`.
+/// represent the possible V/D/J starting/ending match positions. In general,
+/// these starting/ending match position ranges are found by computing the
+/// `min`/`max` of the corresponding S-W starting/ending positions for all
+/// germline gene matches in a given gene type (i.e. V/D/J). This alignment
+/// graphic is a contrived example so in reality, given single V/D/J gene
+/// matches, we would expect the bounds in `flexbounds_` to be length 1. Note
+/// that due to python right-exclusive range conventions, the `[vdj]_r` bounds
+/// in `flexbounds_` specify the site positions immediately after the last S-W
+/// match positions in a given gene type. In this example, `flexbounds_ =
+/// {{"v_l", {0, 2}}, {"v_r", {4, 6}}, {"d_l", {7, 8}}, {"d_r", {9, 10}},
+/// {"j_l", {11, 12}}, {"j_r", {15, 15}}}`. Note that the last V gene starting
+/// position is 2 and the first V gene ending position is 4, which means only
+/// positions 2 and 3 are guaranteed to be in the V gene. This logic will be
+/// important when we describe how the HMM hidden state space is constructed.
+/// `relpos_` is a map specifying the starting positions of the germline genes.
+/// In this example, `relpos_ = {{"V", 1}, {"D", 5}, {"J", 10}}`.
 ///
 /// @image html sw_alignment.jpg
 ///
@@ -114,13 +118,21 @@
 /// germline gene. In this new example, the hidden V "germline" state can be
 /// either \f$V_{01}\f$ or \f$V_{99}\f$. The V-D "junction" region (i.e. sites 4
 /// and 5) can have hidden states associated with V genes, non-templated
-/// insertions, and D genes. In particular, the hidden state space consists of
+/// insertions, and D genes. Specifically, the hidden state space consists of
 /// \f$(V_{01}, 3)\f$, \f$(V_{01}, 4)\f$, \f$(V_{99}, 3)\f$, \f$(V_{99}, 4)\f$,
 /// \f$(D_{01}, N_A)\f$, \f$(D_{01}, N_C)\f$, \f$(D_{01}, N_G)\f$, \f$(D_{01},
 /// N_T)\f$, \f$(D_{01}, 0)\f$, \f$(D_{99}, N_A)\f$, \f$(D_{99}, N_C)\f$,
 /// \f$(D_{99}, N_G)\f$, \f$(D_{99}, N_T)\f$, \f$(D_{99}, 1)\f$, \f$(D_{99},
-/// 2)\f$. Note that this discussion about the V "germline" and V-D "junction"
-/// states applies to the D/J "germline" and D-J "junction" states as well.
+/// 2)\f$. In general, the hidden state space in the V-D "junction" region
+/// comprise the matched V germline states, the non-templated insertion states
+/// associated with D gene matches, and the matched D germline states from site
+/// position `flexbounds_["v_r"].first` to site position
+/// `flexbounds_["d_l"].second - 1`; the site position
+/// `flexbounds_["d_l"].second` is the last D gene match starting position so it
+/// is considered part of the D "germline" region (and not part of the V-D
+/// "junction" region). Note that this discussion about the V "germline" and V-D
+/// "junction" states applies to the D/J "germline" and D-J "junction" states as
+/// well.
 ///
 /// @image html sw_alignment_extra.jpg
 ///

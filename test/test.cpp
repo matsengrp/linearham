@@ -251,6 +251,7 @@ TEST_CASE("SimpleHMM", "[simplehmm]") {
   // For a diagram of the S-W alignment, see
   // http://matsengrp.github.io/linearham/sw_alignment.jpg.
 
+  // We begin with HMM base class tests (members are tested in declaration order).
   std::map<std::string, std::pair<int, int>> flexbounds = {
       {"v_l", {0, 2}},  {"v_r", {4, 6}},   {"d_l", {7, 8}},
       {"d_r", {9, 10}}, {"j_l", {11, 12}}, {"j_r", {15, 15}}};
@@ -419,6 +420,7 @@ TEST_CASE("SimpleHMM", "[simplehmm]") {
   // For a diagram of the S-W alignment, see
   // http://matsengrp.github.io/linearham/sw_alignment_extra.jpg.
 
+  // We begin with HMM base class tests (members are tested in declaration order).
   flexbounds = {{"v_l", {0, 2}},  {"v_r", {4, 6}},  {"d_l", {4, 6}},
                 {"d_r", {8, 10}}, {"j_l", {8, 10}}, {"j_r", {15, 15}}};
   relpos = {{"IGHV_ex*01", 1}, {"IGHD_ex*01", 5}, {"IGHJ_ex*01", 10},
@@ -620,6 +622,7 @@ TEST_CASE("PhyloHMM", "[phylohmm]") {
   // For a diagram of the S-W alignment, see
   // http://matsengrp.github.io/linearham/sw_alignment.jpg.
 
+  // We begin with HMM base class tests (members are tested in declaration order).
   std::map<std::string, std::pair<int, int>> flexbounds = {
       {"v_l", {0, 2}},  {"v_r", {4, 6}},   {"d_l", {7, 8}},
       {"d_r", {9, 10}}, {"j_l", {11, 12}}, {"j_r", {15, 15}}};
@@ -770,6 +773,7 @@ TEST_CASE("PhyloHMM", "[phylohmm]") {
   REQUIRE(phylo_hmm_ptr->jpadding_transition().isApprox(jpadding_transition));
   REQUIRE(phylo_hmm_ptr->cache_forward() == cache_forward);
 
+  // We continue with PhyloHMM derived class tests (members are tested in declaration order).
   Eigen::MatrixXi xmsa(4, 36);
   xmsa <<
   4, 0, 3, 2, 0, 0, 0, 0, 1, 1, 1, 1, 2, 2, 2, 2, 3, 3, 3, 3, 0, 1, 0, 0, 0, 1, 1, 2, 2, 2, 3, 3, 3, 2, 1, 2,
@@ -850,6 +854,7 @@ TEST_CASE("PhyloHMM", "[phylohmm]") {
   // For a diagram of the S-W alignment, see
   // http://matsengrp.github.io/linearham/sw_alignment_extra.jpg.
 
+  // We begin with HMM base class tests (members are tested in declaration order).
   flexbounds = {{"v_l", {0, 2}},  {"v_r", {4, 6}},  {"d_l", {4, 6}},
                 {"d_r", {8, 10}}, {"j_l", {8, 10}}, {"j_r", {15, 15}}};
   relpos = {{"IGHV_ex*01", 1}, {"IGHD_ex*01", 5}, {"IGHJ_ex*01", 10},
@@ -1021,6 +1026,7 @@ TEST_CASE("PhyloHMM", "[phylohmm]") {
   REQUIRE(phylo_hmm_ptr->jpadding_transition().isApprox(jpadding_transition));
   REQUIRE(phylo_hmm_ptr->cache_forward() == cache_forward);
 
+  // We continue with PhyloHMM derived class tests (members are tested in declaration order).
   xmsa.resize(4, 34);
   xmsa <<
   4, 0, 3, 2, 1, 0, 0, 0, 1, 1, 2, 2, 3, 3, 2, 3, 1, 0, 0, 1, 0, 1, 2, 2, 3, 3, 0, 3, 2, 1, 2, 1, 0, 3,
