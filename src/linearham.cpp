@@ -45,19 +45,21 @@
 /// represent the possible V/D/J starting/ending match positions. In general,
 /// these starting/ending match position ranges are found by computing the
 /// `min`/`max` of the corresponding S-W starting/ending positions for all
-/// germline gene matches in a given gene type (i.e. V/D/J). This alignment
-/// graphic is a contrived example so in reality, given single V/D/J gene
-/// matches, we would expect the bounds in `flexbounds_` to be length 1. Note
-/// that due to python right-exclusive range conventions, the `[vdj]_r` bounds
-/// in `flexbounds_` specify the site positions immediately after the last S-W
-/// match positions in a given gene type. In this example, `flexbounds_ =`
-/// `{{"v_l", {0, 2}}, {"v_r", {4, 6}}, {"d_l", {7, 8}}, {"d_r", {9, 10}},`
-/// `{"j_l", {11, 12}}, {"j_r", {15, 15}}}`. Note that the last V gene starting
-/// position is 2 and the first V gene ending position is 4, which means only
-/// positions 2 and 3 are guaranteed to be in the V gene. This logic will be
-/// important when we describe how the HMM hidden state space is constructed.
-/// `relpos_` is a map specifying the starting positions of the germline genes.
-/// In this example, `relpos_ = {{"V", 1}, {"D", 5}, {"J", 10}}`.
+/// germline gene matches in a given gene type (i.e. V/D/J). In addition, the
+/// `[vd]_r` (`[dj]_l`) bounds are shifted to the left (right) by a certain
+/// amount to allow for more flexible naive sequence inference in the CDR3
+/// region. This alignment graphic is a simple example to demonstrate how these
+/// data structures work. Note that due to Python right-exclusive range
+/// conventions, the `[vdj]_r` bounds in `flexbounds_` specify the site
+/// positions immediately after the last S-W match positions in a given gene
+/// type. In this example, `flexbounds_ = {{"v_l", {0, 2}}, {"v_r", {4, 6}},
+/// {"d_l", {7, 8}}, {"d_r", {9, 10}}, {"j_l", {11, 12}}, {"j_r", {15, 15}}}`.
+/// Note that the last V gene starting position is 2 and the first V gene ending
+/// position is 4, which means only positions 2 and 3 are guaranteed to be in
+/// the V gene. This logic will be important when we describe how the HMM hidden
+/// state space is constructed. `relpos_` is a map specifying the starting
+/// positions of the germline genes. In this example, `relpos_ = {{"V", 1},
+/// {"D", 5}, {"J", 10}}`.
 ///
 /// @image html sw_alignment.jpg
 ///
