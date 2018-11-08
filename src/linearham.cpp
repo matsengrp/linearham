@@ -22,7 +22,9 @@
 /// In the following sections, we provide an overview of the abstractions used
 /// in the `linearham` codebase. See the links above for detailed information
 /// about classes and methods. To fully understand how `linearham` works, please
-/// see the `linearham` tests. Whenever we use the terms "site positions" or
+/// see the `linearham` tests.
+///
+/// Whenever we use the terms "site positions" or
 /// "germline positions", we are referring to positions in the aligned sequences
 /// or a germline gene, respectively.
 ///
@@ -42,18 +44,22 @@
 /// single-sequence clonal family and a V/D/J gene. In the code, we have two
 /// important S-W information objects: `flexbounds_` and `relpos_`.
 /// `flexbounds_` is a map holding (`[vdj]_[lr]`, `pair<int, int>`) pairs, which
-/// represent the possible V/D/J starting/ending match positions. In general,
+/// represent the possible V/D/J starting/ending match positions. During inference,
 /// these starting/ending match position ranges are found by computing the
 /// `min`/`max` of the corresponding S-W starting/ending positions for all
 /// germline gene matches in a given gene type (i.e. V/D/J). In addition, the
 /// `[vd]_r` (`[dj]_l`) bounds are shifted to the left (right) by a certain
 /// amount to allow for more flexible naive sequence inference in the CDR3
-/// region. This alignment graphic is a simple example to demonstrate how these
-/// data structures work. Note that due to Python right-exclusive range
-/// conventions, the `[vdj]_r` bounds in `flexbounds_` specify the site
-/// positions immediately after the last S-W match positions in a given gene
-/// type. In this example, `flexbounds_ = {{"v_l", {0, 2}}, {"v_r", {4, 6}},
-/// {"d_l", {7, 8}}, {"d_r", {9, 10}}, {"j_l", {11, 12}}, {"j_r", {15, 15}}}`.
+/// region.
+///
+/// This alignment graphic is a simple example to demonstrate how these
+/// data structures work. We use Python 0-based right-exclusive range conventions, such that the range 0:2 means 0 and 1.
+/// Using this convention, the `[vdj]_r` bounds in `flexbounds_` specify the range of site
+/// positions immediately _after_ the last possible S-W match positions in a given gene
+/// type. In this example,
+///
+///     flexbounds_ = {{"v_l", {0, 2}}, {"v_r", {4, 6}}, {"d_l", {7, 8}}, {"d_r", {9, 10}}, {"j_l", {11, 12}}, {"j_r", {15, 15}}}
+///
 /// Note that the last V gene starting position is 2 and the first V gene ending
 /// position is 4, which means only positions 2 and 3 are guaranteed to be in
 /// the V gene. This logic will be important when we describe how the HMM hidden
@@ -92,22 +98,23 @@
 /// }
 /// @enddot
 ///
-/// Looking at this diagram, it is clear we account for non-templated insertions
+/// Looking at this diagram, you can see that we account for non-templated insertions
 /// to the left of D and J germline genes. In the code, we parse the parameter
 /// files (in YAML format) and store these `[VDJ]Germline` objects in a common
 /// `GermlineGene` class, which is conceptually similar to a tagged union class.
 ///
 /// @section state_space HMM hidden state space
 ///
-/// Our hidden state space is similar to that of `ham`
-/// (https://github.com/psathyrella/ham). `ham` uses states of the form \f$(V,
+/// Our hidden state space is similar to that of
+/// [`ham`](https://github.com/psathyrella/ham). `ham` uses states of the form \f$(V,
 /// j)\f$, \f$(D, j)\f$, \f$(D, N)\f$, \f$(J, j)\f$, and \f$(J, N)\f$ for a V
 /// gene \f$V\f$, D gene \f$D\f$, J gene \f$J\f$, germline position \f$j\f$, and
-/// non-templated insertion base \f$N \in \{N_A, N_C, N_G, N_T\}\f$. The
-/// important difference for `linearham` is that we use the S-W alignment
+/// non-templated insertion base \f$N \in \{N_A, N_C, N_G, N_T\}\f$. Again,
+/// non-templated insertion bases appear to the left of a germline gene, and thus
+/// are associated with the gene to their right. In `linearham` (vs. `ham`) we use the S-W alignment
 /// information to collapse the germline state space.
 ///
-/// Looking at the S-W alignment diagram above, it is easy to see that positions
+/// As described in the above S-W alignment diagram, positions
 /// 2 and 3 represent the sites "guaranteed" to be in a hidden V germline state
 /// according to S-W. In this "germline" region, we do not need to care about
 /// the different possibilities of hidden states beyond which V gene is entered
@@ -116,7 +123,7 @@
 /// \f$V\f$. It is helpful to think about the V "germline" region as a single
 /// site position in the HMM.
 ///
-/// We provide another S-W alignment diagram below with more than one V/D/J
+/// To make this more concrete, we provide another S-W alignment diagram below with more than one V/D/J
 /// germline gene. In this new example, the hidden V "germline" state can be
 /// either \f$V_{01}\f$ or \f$V_{99}\f$. The V-D "junction" region (i.e. sites 4
 /// and 5) can have hidden states associated with V genes, non-templated
@@ -126,7 +133,7 @@
 /// N_T)\f$, \f$(D_{01}, 0)\f$, \f$(D_{99}, N_A)\f$, \f$(D_{99}, N_C)\f$,
 /// \f$(D_{99}, N_G)\f$, \f$(D_{99}, N_T)\f$, \f$(D_{99}, 1)\f$, \f$(D_{99},
 /// 2)\f$. In general, the hidden state space in the V-D "junction" region
-/// comprise the matched V germline states, the non-templated insertion states
+/// comprises the matched V germline states, the non-templated insertion states
 /// associated with D gene matches, and the matched D germline states from site
 /// position `flexbounds_["v_r"].first` to site position
 /// `flexbounds_["d_l"].second - 1`; the site position
@@ -148,7 +155,7 @@
 ///
 /// Because the `linearham` HMM has different hidden state spaces for the
 /// "germline" and "junction" regions, we need to specify
-/// "germline"-to-"junction", "junction", and "junction"-to-"germline" hidden
+/// "germline"-to-"junction", "junction"-to-"junction", and "junction"-to-"germline" hidden
 /// state transition probability matrices. To help illustrate how these matrices
 /// are structured, we revisit the S-W example alignment first discussed in @ref
 /// sw_alignment. Specifically, we focus our attention on the V "germline"
@@ -160,13 +167,15 @@
 /// 3)\f$, \f$(V, 4)\f$, \f$(D, N_A)\f$, \f$(D, N_C)\f$, \f$(D, N_G)\f$, \f$(D,
 /// N_T)\f$, \f$(D, 0)\f$, \f$(D, 1)\f$, \f$(D, 2)\}\f$, and \f$\{D\}\f$,
 /// respectively. Therefore, the transition probability matrix between the V
-/// "germline" region and V-D "junction" region has 1 row and 9 columns. The
-/// first matrix entry \f$P(V \rightarrow (V, 3))\f$ is equal to the
+/// "germline" region and V-D "junction" region has 1 row and 9 columns.
+///
+/// * The first matrix entry \f$P(V \rightarrow (V, 3))\f$ is equal to the
 /// `partis`-inferred transition probability going from position 2 to position 3
-/// in germline gene \f$\{V\}\f$, while the second entry \f$P(V \rightarrow (V,
-/// 4))\f$ is equal to 0 because it is impossible to skip over positions in any
-/// germline gene. Similarly, \f$P(V \rightarrow (D, 1))\f$ is equal to \f$P(V
-/// \rightarrow (V, \text{end})) P(D) P((D, \text{init}) \rightarrow (D, 1))\f$.
+/// in germline gene \f$\{V\}\f$.
+/// * The second entry \f$P(V \rightarrow (V, 4))\f$ is equal to 0 because it is impossible to skip over positions in any
+/// germline gene.
+/// * Similarly, \f$P(V \rightarrow (D, 1))\f$ is equal to \f$P(V \rightarrow (V, \text{end})) P(D) P((D, \text{init}) \rightarrow (D, 1))\f$.
+///
 /// The other matrix entries, the (\f$9 \times 9\f$) V-D "junction" transition
 /// probability matrix, and the (\f$9 \times 1\f$) [V-D "junction"]-to-[D
 /// "germline"] transition probability matrix are filled using analogous logic.
@@ -194,28 +203,14 @@
 /// site positions (i.e. \f$(D_{01}, 0)\f$ at position 4) and these cases are
 /// assigned emission probabilities of 0.
 ///
-/// @section scaling HMM scaling for numeric underflow
-///
-/// Given that there can be a potentially large number of sequences in a clonal
-/// family, we must account for possible numerical underflow in the forward
-/// algorithm. We define a large numeric constant `SCALE_FACTOR` and check that
-/// the computed forward probabilities are all above `1.0 / SCALE_FACTOR`. If
-/// not, we multiply the forward probabilities by `SCALE_FACTOR` enough times
-/// until no forward probability is less than `1.0 / SCALE_FACTOR` and record
-/// the number of times we multiplied by `SCALE_FACTOR`. We keep a running total
-/// of these scaler counts as the forward algorithm progresses along the site
-/// positions of the HMM and undo the scaling according to the final scaler
-/// count to compute the HMM log-likelihood.
-///
 /// @section xmsa Phylo-HMM "expanded" multiple sequence alignment
 ///
-/// For large clonal families (and thus large trees), tree traversal for
-/// phylogenetic log-likelihood computations is computationally expensive so we
-/// introduce the idea of an "expanded" multiple sequence alignment (xMSA) to
-/// calculate all of the likelihood computations we will need in one traversal.
+/// In phylo-HMM computation, per-column phylogenetic likelihoods take the place of emission probabilities in classical HMMs.
+/// Here we describe how a notion of "expanded" multiple sequence alignment makes such computation efficient.
 /// Suppose we have a S-W alignment as shown in @ref sw_alignment, but instead
 /// of the single input sequence `ACAGTACCCTGTTNN`, we have a clonal family with
 /// 3 sequences (see diagram below).
+///
 ///
 /// @image html msa.jpg
 ///
@@ -232,9 +227,30 @@
 ///
 /// @image html xmsa.jpg
 ///
-/// As a sanity check, the V-D "junction" states \f$(D, 0)\f$ and \f$(D, N_G)\f$
-/// at MSA site position 5 both map to the same xMSA site position (13).
-/// Hopefully, it is clear why we call this an "expanded" MSA.
+/// In this example,
+///
+/// * The first 4 columns of the MSA (`TCC`, `AAG`, `ACT`, `AAA`) are guaranteed to match with the first 4 bases of \f$V\f$
+/// (`NATG`) thus there is no MSA expansion.
+/// * The next 4 columns are in the V-J junction region, so we don't know the naive base with certainty.
+/// Thus we repeat these columns with all four possible naive bases to allow for those possibilities in the HMM
+/// computation.
+/// * This uncertainty ends with the `CCG` column, which must match with an `A` in the D gene.
+///
+/// Note the V-D "junction" states \f$(D, 0)\f$ and \f$(D, N_G)\f$
+/// at MSA site position 5 both map to the same xMSA site position (13) because they represent the same likelihood calculation.
+///
+/// @section scaling HMM scaling for numeric underflow
+///
+/// Given that there can be a potentially large number of sequences in a clonal
+/// family, we must account for possible numerical underflow in the forward
+/// algorithm. We define a large numeric constant `SCALE_FACTOR` and check that
+/// the computed forward probabilities are all above `1.0 / SCALE_FACTOR`. If
+/// not, we multiply the forward probabilities by `SCALE_FACTOR` enough times
+/// until no forward probability is less than `1.0 / SCALE_FACTOR` and record
+/// the number of times we multiplied by `SCALE_FACTOR`. We keep a running total
+/// of these scaler counts as the forward algorithm progresses along the site
+/// positions of the HMM and undo the scaling according to the final scaler
+/// count to compute the HMM log-likelihood.
 
 int main(int argc, char** argv) {
   try {
