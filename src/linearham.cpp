@@ -24,9 +24,9 @@
 /// about classes and methods. To fully understand how `linearham` works, please
 /// see the `linearham` tests.
 ///
-/// Whenever we use the terms "site positions" or
-/// "germline positions", we are referring to positions in the aligned sequences
-/// or a germline gene, respectively.
+/// Whenever we use the terms "site positions" or "germline positions", we are
+/// referring to positions in the aligned sequences or a germline gene,
+/// respectively.
 ///
 /// @section sw_alignment Smith-Waterman alignment information
 ///
@@ -44,24 +44,27 @@
 /// single-sequence clonal family and a V/D/J gene. In the code, we have two
 /// important S-W information objects: `flexbounds_` and `relpos_`.
 /// `flexbounds_` is a map holding (`[vdj]_[lr]`, `pair<int, int>`) pairs, which
-/// represent the possible V/D/J starting/ending match positions. During inference,
-/// these starting/ending match position ranges are found by computing the
-/// `min`/`max` of the corresponding S-W starting/ending positions for all
-/// germline gene matches in a given gene type (i.e. V/D/J). In addition, the
-/// `[vd]_r` (`[dj]_l`) bounds are shifted to the left (right) by a certain
-/// amount to allow for more flexible naive sequence inference in the CDR3
-/// region.
+/// represent the possible V/D/J starting/ending match positions. During
+/// inference, these starting/ending match position ranges are found by
+/// computing the `min`/`max` of the corresponding S-W starting/ending positions
+/// for all germline gene matches in a given gene type (i.e. V/D/J). In
+/// addition, the `[vd]_r` (`[dj]_l`) bounds are shifted to the left (right) by
+/// a certain amount to allow for more flexible naive sequence inference in the
+/// CDR3 region.
 ///
-/// This alignment graphic is a simple example to demonstrate how these
-/// data structures work. We use Python 0-based right-exclusive range conventions, such that the range `0:2` means sites `0` and `1`.
-/// Using this convention, the `[vdj]_r` bounds in `flexbounds_` specify the range of site
-/// positions immediately _after_ the last possible S-W match positions in a given gene
+/// This alignment graphic is a simple example to demonstrate how these data
+/// structures work. Because the S-W match positions for a given germline gene
+/// are specified using Python 0-based right-exclusive range conventions, the
+/// `[vdj]_r` bounds in `flexbounds_` denote the range of site positions
+/// immediately _after_ the last possible S-W match positions in a given gene
 /// type. In this example,
 ///
-///     flexbounds_ = {{"v_l", {0, 2}}, {"v_r", {4, 6}}, {"d_l", {7, 8}}, {"d_r", {9, 10}}, {"j_l", {11, 12}}, {"j_r", {15, 15}}}
+/// @code
+/// flexbounds_ = {{"v_l", {0, 2}} , {"v_r", {4, 6}}  , {"d_l", {7, 8}},
+///                {"d_r", {9, 10}}, {"j_l", {11, 12}}, {"j_r", {15, 15}}}
+/// @endcode
 ///
-/// These ranges are marked in the diagram with vertical dashed lines, with the left hand line being to the left of the
-/// first entry, and the right hand line being to the right of the second entry.
+/// These ranges are marked in the diagram between vertical dashed lines.
 /// Note that the last V gene starting position is 2 and the first V gene ending
 /// position is 4, which means only positions 2 and 3 are guaranteed to be in
 /// the V gene. This logic will be important when we describe how the HMM hidden
@@ -100,45 +103,46 @@
 /// }
 /// @enddot
 ///
-/// Looking at this diagram, you can see that we account for non-templated insertions
-/// to the left of D and J germline genes. In the code, we parse the parameter
-/// files (in YAML format) and store these `[VDJ]Germline` objects in a common
-/// `GermlineGene` class, which is conceptually similar to a tagged union class.
+/// Looking at this diagram, you can see that we account for non-templated
+/// insertions to the left of D and J germline genes. In the code, we parse the
+/// parameter files (in YAML format) and store these `[VDJ]Germline` objects in
+/// a common `GermlineGene` class, which is conceptually similar to a tagged
+/// union class.
 ///
 /// @section state_space HMM hidden state space
 ///
 /// Our hidden state space is similar to that of
-/// [`ham`](https://github.com/psathyrella/ham). `ham` uses states of the form \f$(V,
-/// j)\f$, \f$(D, j)\f$, \f$(D, N)\f$, \f$(J, j)\f$, and \f$(J, N)\f$ for a V
-/// gene \f$V\f$, D gene \f$D\f$, J gene \f$J\f$, germline position \f$j\f$, and
-/// non-templated insertion base \f$N \in \{N_A, N_C, N_G, N_T\}\f$. Again,
-/// non-templated insertion bases appear to the left of a germline gene, and thus
-/// are associated with the gene to their right. In `linearham` (vs. `ham`) we use the S-W alignment
-/// information to collapse the germline state space.
+/// [`ham`](https://github.com/psathyrella/ham). `ham` uses states of the form
+/// \f$(V, j)\f$, \f$(D, j)\f$, \f$(D, N)\f$, \f$(J, j)\f$, and \f$(J, N)\f$ for
+/// a V gene \f$V\f$, D gene \f$D\f$, J gene \f$J\f$, germline position \f$j\f$,
+/// and non-templated insertion base \f$N \in \{N_A, N_C, N_G, N_T\}\f$. Again,
+/// non-templated insertion bases appear to the left of a germline gene and thus
+/// are associated with the gene to their right. In `linearham` (versus `ham`),
+/// we use the S-W alignment information to collapse the germline state space.
 ///
-/// As described in the above S-W alignment diagram, positions
-/// 2 and 3 represent the sites "guaranteed" to be in a hidden V germline state
-/// according to S-W. In this "germline" region, we do not need to care about
-/// the different possibilities of hidden states beyond which V gene is entered
-/// because we know that the HMM must march along the gene until it exits that
-/// gene. Thus, the only possible hidden state in the V "germline" region is
-/// \f$V\f$. It is helpful to think about the V "germline" region as a single
-/// site position in the HMM.
+/// As described in the above S-W alignment diagram, positions 2 and 3 represent
+/// the sites "guaranteed" to be in a hidden V germline state according to S-W.
+/// In this "germline" region, we do not need to care about the different
+/// possibilities of hidden states beyond which V gene is entered because we
+/// know that the HMM must march along the gene until it exits that gene. Thus,
+/// the only possible hidden state in the V "germline" region is \f$V\f$. It is
+/// helpful to think about the V "germline" region as a single site position in
+/// the HMM.
 ///
-/// To make this more concrete, we provide another S-W alignment diagram below with more than one V/D/J
-/// germline gene. In this new example, the hidden V "germline" state can be
-/// either \f$V_{01}\f$ or \f$V_{99}\f$. The V-D "junction" region (i.e. sites 4
-/// and 5) can have hidden states associated with V genes, non-templated
-/// insertions, and D genes. Specifically, the hidden state space consists of
-/// \f$(V_{01}, 3)\f$, \f$(V_{01}, 4)\f$, \f$(V_{99}, 3)\f$, \f$(V_{99}, 4)\f$,
-/// \f$(D_{01}, N_A)\f$, \f$(D_{01}, N_C)\f$, \f$(D_{01}, N_G)\f$, \f$(D_{01},
-/// N_T)\f$, \f$(D_{01}, 0)\f$, \f$(D_{99}, N_A)\f$, \f$(D_{99}, N_C)\f$,
-/// \f$(D_{99}, N_G)\f$, \f$(D_{99}, N_T)\f$, \f$(D_{99}, 1)\f$, \f$(D_{99},
-/// 2)\f$. In general, the hidden state space in the V-D "junction" region
-/// comprises the matched V germline states, the non-templated insertion states
-/// associated with D gene matches, and the matched D germline states from site
-/// position `flexbounds_["v_r"].first` to site position
-/// `flexbounds_["d_l"].second - 1`; the site position
+/// To make this more concrete, we provide another S-W alignment diagram below
+/// with more than one V/D/J germline gene. In this new example, the hidden V
+/// "germline" state can be either \f$V_{01}\f$ or \f$V_{99}\f$. The V-D
+/// "junction" region (i.e. sites 4 and 5) can have hidden states associated
+/// with V genes, non-templated insertions, and D genes. Specifically, the
+/// hidden state space consists of \f$(V_{01}, 3)\f$, \f$(V_{01}, 4)\f$,
+/// \f$(V_{99}, 3)\f$, \f$(V_{99}, 4)\f$, \f$(D_{01}, N_A)\f$, \f$(D_{01},
+/// N_C)\f$, \f$(D_{01}, N_G)\f$, \f$(D_{01}, N_T)\f$, \f$(D_{01}, 0)\f$,
+/// \f$(D_{99}, N_A)\f$, \f$(D_{99}, N_C)\f$, \f$(D_{99}, N_G)\f$, \f$(D_{99},
+/// N_T)\f$, \f$(D_{99}, 1)\f$, \f$(D_{99}, 2)\f$. In general, the hidden state
+/// space in the V-D "junction" region comprises the matched V germline states,
+/// the non-templated insertion states associated with D gene matches, and the
+/// matched D germline states from site position `flexbounds_["v_r"].first` to
+/// site position `flexbounds_["d_l"].second - 1`; the site position
 /// `flexbounds_["d_l"].second` is the last D gene match starting position so it
 /// is considered part of the D "germline" region (and not part of the V-D
 /// "junction" region). Note that this discussion about the V "germline" and V-D
@@ -157,7 +161,7 @@
 ///
 /// Because the `linearham` HMM has different hidden state spaces for the
 /// "germline" and "junction" regions, we need to specify
-/// "germline"-to-"junction", "junction"-to-"junction", and "junction"-to-"germline" hidden
+/// "germline"-to-"junction", "junction", and "junction"-to-"germline" hidden
 /// state transition probability matrices. To help illustrate how these matrices
 /// are structured, we revisit the S-W example alignment first discussed in @ref
 /// sw_alignment. Specifically, we focus our attention on the V "germline"
@@ -174,16 +178,19 @@
 /// * The first matrix entry \f$P(V \rightarrow (V, 3))\f$ is equal to the
 /// `partis`-inferred transition probability going from position 2 to position 3
 /// in germline gene \f$\{V\}\f$.
-/// * The second entry \f$P(V \rightarrow (V, 4))\f$ is equal to 0 because it is impossible to skip over positions in any
-/// germline gene.
-/// * Similarly, \f$P(V \rightarrow (D, 1))\f$ is equal to \f$P(V \rightarrow (V, \text{end})) P(D) P((D, \text{init}) \rightarrow (D, 1))\f$.
+/// * The second entry \f$P(V \rightarrow (V, 4))\f$ is equal to 0 because it is
+/// impossible to skip over positions in any germline gene.
+/// * Similarly, \f$P(V \rightarrow (D, 1))\f$ is equal to \f$P(V \rightarrow
+/// (V, \text{end})) P(D) P((D, \text{init}) \rightarrow (D, 1))\f$.
 ///
-/// The other matrix entries, the (\f$9 \times 9\f$) V-D "junction" transition
-/// probability matrix, and the (\f$9 \times 1\f$) [V-D "junction"]-to-[D
-/// "germline"] transition probability matrix are filled using analogous logic.
-/// However, when computing the transition probabilities between the V-D
-/// "junction" region and D "germline" region, we must account for the
-/// transitions within the D "germline" region as well.
+/// Note that the \f$\text{init}\f$ and \f$\text{end}\f$ states in a germline
+/// gene represent the initial and ending states used in `partis` HMM germline
+/// parameter files. The other matrix entries, the (\f$9 \times 9\f$) V-D
+/// "junction" transition probability matrix, and the (\f$9 \times 1\f$) [V-D
+/// "junction"]-to-[D "germline"] transition probability matrix are filled using
+/// analogous logic. However, when computing the transition probabilities
+/// between the V-D "junction" region and D "germline" region, we must account
+/// for the transitions within the D "germline" region as well.
 ///
 /// @section emission_prob HMM hidden state emission probability matrices
 ///
@@ -207,12 +214,12 @@
 ///
 /// @section xmsa Phylo-HMM "expanded" multiple sequence alignment
 ///
-/// In phylo-HMM computation, per-column phylogenetic likelihoods take the place of emission probabilities in classical HMMs.
-/// Here we describe how a notion of "expanded" multiple sequence alignment makes such computation efficient.
-/// Suppose we have a S-W alignment as shown in @ref sw_alignment, but instead
-/// of the single input sequence `ACAGTACCCTGTTNN`, we have a clonal family with
-/// 3 sequences (see diagram below).
-///
+/// In phylo-HMMs, per-column phylogenetic likelihoods take the place of
+/// emission probabilities in classical HMMs. Here, we describe how the notion
+/// of an "expanded" multiple sequence alignment makes phylo-HMM computation
+/// efficient. Suppose we have a S-W alignment as shown in @ref sw_alignment,
+/// but instead of the single input sequence `ACAGTACCCTGTTNN`, we have a clonal
+/// family with 3 sequences (see diagram below).
 ///
 /// @image html msa.jpg
 ///
@@ -231,15 +238,19 @@
 ///
 /// In this example,
 ///
-/// * The first 4 columns of the MSA (`TCC`, `AAG`, `ACT`, `AAA`) are guaranteed to match with the first 4 bases of \f$V\f$
-/// (`NATG`) thus there is no MSA expansion.
-/// * The next 4 columns are in the V-J junction region, so we don't know the naive base with certainty.
-/// Thus we repeat these columns with all four possible naive bases to allow for those possibilities in the HMM
-/// computation.
-/// * This uncertainty ends with the `CCG` column, which must match with an `A` in the D gene.
+/// * The first 4 columns of the MSA (`TCC`, `AAG`, `ACT`, `AAA`) are guaranteed
+/// to match with the first 4 bases of \f$V\f$ (`NATG`) so there is no MSA
+/// expansion.
+/// * The next 4 columns are in the V-D "junction" region so we do not know the
+/// naive base with certainty. Thus, we repeat these columns with all possible
+/// naive bases as arbitrary non-templated insertions could fill the entire
+/// region.
+/// * The next MSA column (`CCG`) is in the D "germline" region and is
+/// guaranteed to match with the germline base `A`.
 ///
-/// Note the V-D "junction" states \f$(D, 0)\f$ and \f$(D, N_G)\f$
-/// at MSA site position 5 both map to the same xMSA site position (13) because they represent the same likelihood calculation.
+/// Note that the V-D "junction" states \f$(D, 0)\f$ and \f$(D, N_G)\f$ at MSA
+/// site position 5 both map to the same xMSA site position (13) because they
+/// represent the same likelihood calculation.
 ///
 /// @section scaling HMM scaling for numeric underflow
 ///
