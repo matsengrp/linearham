@@ -53,13 +53,15 @@
 /// region.
 ///
 /// This alignment graphic is a simple example to demonstrate how these
-/// data structures work. We use Python 0-based right-exclusive range conventions, such that the range 0:2 means 0 and 1.
+/// data structures work. We use Python 0-based right-exclusive range conventions, such that the range `0:2` means sites `0` and `1`.
 /// Using this convention, the `[vdj]_r` bounds in `flexbounds_` specify the range of site
 /// positions immediately _after_ the last possible S-W match positions in a given gene
 /// type. In this example,
 ///
 ///     flexbounds_ = {{"v_l", {0, 2}}, {"v_r", {4, 6}}, {"d_l", {7, 8}}, {"d_r", {9, 10}}, {"j_l", {11, 12}}, {"j_r", {15, 15}}}
 ///
+/// These ranges are marked in the diagram with vertical dashed lines, with the left hand line being to the left of the
+/// first entry, and the right hand line being to the right of the second entry.
 /// Note that the last V gene starting position is 2 and the first V gene ending
 /// position is 4, which means only positions 2 and 3 are guaranteed to be in
 /// the V gene. This logic will be important when we describe how the HMM hidden
