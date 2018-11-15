@@ -15,18 +15,18 @@
 /// @tableofcontents
 ///
 /// `linearham` is a phylogenetic hidden Markov model (phylo-HMM), which
-/// simultaneously models the VDJ recombination process (with a HMM) and
+/// simultaneously models the VDJ recombination process (with an HMM) and
 /// sequence evolution (with a phylogenetic tree).
 ///
-/// This is the reference for understanding how `linearham` works.
+/// This document is the reference for understanding how `linearham` works.
 /// In the following sections, we provide an overview of the abstractions used
 /// in the `linearham` codebase. See the links above for detailed information
 /// about classes and methods. To fully understand how `linearham` works, please
 /// see the `linearham` tests.
+/// DR how do the tests relate to the other information sources? Is it additional?
 ///
-/// Whenever we use the terms "site positions" or "germline positions", we are
-/// referring to positions in the aligned sequences or a germline gene,
-/// respectively.
+/// We use the term "site positions" to refer to positions in the aligned sequences,
+/// and "germline positions" to positions in the germline gene.
 ///
 /// @section sw_alignment Smith-Waterman alignment information
 ///
@@ -39,6 +39,7 @@
 /// information on these heuristics, see the `add_linearham_info()` function in
 /// `python/utils.py` of `partis`
 /// (https://github.com/psathyrella/partis/tree/dev).
+/// DR should probably link to master instead of dev eventually
 ///
 /// The diagram shown below provides an example alignment between a
 /// single-sequence clonal family and a V/D/J gene. In the code, we have two
@@ -114,6 +115,7 @@
 /// Our hidden state space is similar to that of
 /// [`ham`](https://github.com/psathyrella/ham). `ham` uses states of the form
 /// \f$(V, j)\f$, \f$(D, j)\f$, \f$(D, N)\f$, \f$(J, j)\f$, and \f$(J, N)\f$ for
+/// DR parenthesis/backslash formatting seems to be messed up here?
 /// a V gene \f$V\f$, D gene \f$D\f$, J gene \f$J\f$, germline position \f$j\f$,
 /// and non-templated insertion base \f$N \in \{N_A, N_C, N_G, N_T\}\f$. Again,
 /// non-templated insertion bases appear to the left of a germline gene and thus
@@ -212,20 +214,21 @@
 /// site positions (i.e. \f$(D_{01}, 0)\f$ at position 4) and these cases are
 /// assigned emission probabilities of 0.
 ///
-/// @section xmsa Phylo-HMM "expanded" multiple sequence alignment
+/// @section xmsa Phylo-HMM "expanded" multiple sequence alignment (xMSA)
 ///
 /// In phylo-HMMs, per-column phylogenetic likelihoods take the place of
 /// emission probabilities in classical HMMs. Here, we describe how the notion
-/// of an "expanded" multiple sequence alignment makes phylo-HMM computation
-/// efficient. Suppose we have a S-W alignment as shown in @ref sw_alignment,
+/// of an "expanded" multiple sequence alignment (xMSA) makes phylo-HMM computation
+/// efficient. Suppose we have an S-W alignment as shown in @ref sw_alignment,
 /// but instead of the single input sequence `ACAGTACCCTGTTNN`, we have a clonal
 /// family with 3 sequences (see diagram below).
+/// DR maybe I missed it, or I'm already supposed to know? But I don't think this tells me what an xMSA actually is?
 ///
 /// @image html msa.jpg
 ///
 /// The phylogenetic likelihoods depend on the observed bases at each site and
 /// the associated hidden naive bases as well. We map each MSA site position and
-/// possible hidden naive base to a xMSA site position and compute the
+/// possible hidden naive base to an xMSA site position and compute the
 /// phylogenetic log-likelihood at each xMSA site only once. The important
 /// takeaway is that even though many pairs of MSA site positions and hidden
 /// naive bases occur more than once, we never have to compute the corresponding
