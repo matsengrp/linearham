@@ -4,6 +4,7 @@
 #include <cmath>
 #include <map>
 #include <memory>
+#include <random>
 #include <string>
 #include <unordered_map>
 #include <utility>
@@ -20,10 +21,17 @@
 namespace linearham {
 
 
+/// @brief Abstract base class for SimpleHMM and PhyloHMM.
+///
+/// This class stores all the information that is shared between the SimpleHMM
+/// and PhyloHMM.  For example, it holds the observed sequence alignment, state
+/// space information, and transition/emission/forward probability matrices.
+/// There are also member functions that compute the HMM log-likelihood and
+/// sample HMM hidden state sequences.
 class HMM {
  protected:
-  // Partis YAML file root
-  YAML::Node yaml_root_;
+  // Partis cluster data
+  YAML::Node cluster_data_;
 
   // Smith-Waterman alignment information
   std::map<std::string, std::pair<int, int>> flexbounds_;
@@ -34,6 +42,13 @@ class HMM {
 
   // Nucleotide alphabet
   std::string alphabet_;
+
+  // Multiple sequence alignment
+  Eigen::MatrixXi msa_;
+
+  // Random sampling data structures
+  std::mt19937 rng_;
+  std::discrete_distribution<int> distr_;
 
   // State space information
   // V "padding" states
@@ -100,6 +115,9 @@ class HMM {
   Eigen::RowVectorXd jgerm_emission_;
   Eigen::RowVectorXd jpadding_emission_;
 
+  // Should we cache the forward probabilities?
+  bool cache_forward_;
+
   // Forward probability matrices
   Eigen::RowVectorXd vgerm_forward_;
   Eigen::MatrixXd vd_junction_forward_;
@@ -108,32 +126,47 @@ class HMM {
   Eigen::RowVectorXd jgerm_forward_;
 
   // Scaler counts
-  int vgerm_init_scaler_count_;
   int vgerm_scaler_count_;
   std::vector<int> vd_junction_scaler_counts_;
-  int dgerm_init_scaler_count_;
   int dgerm_scaler_count_;
   std::vector<int> dj_junction_scaler_counts_;
-  int jgerm_init_scaler_count_;
   int jgerm_scaler_count_;
 
+  // Naive sequence sample information
+  std::string naive_seq_samp_;
+  std::string vgerm_state_str_samp_;
+  int vgerm_state_ind_samp_;
+  std::vector<std::string> vd_junction_state_str_samps_;
+  std::vector<int> vd_junction_state_ind_samps_;
+  std::string dgerm_state_str_samp_;
+  int dgerm_state_ind_samp_;
+  std::vector<std::string> dj_junction_state_str_samps_;
+  std::vector<int> dj_junction_state_ind_samps_;
+  std::string jgerm_state_str_samp_;
+  int jgerm_state_ind_samp_;
+
   // Initialization functions
+  void InitializeMsa();
+
   void InitializeStateSpace();
 
   void InitializeTransition();
 
   // Auxiliary functions
-  void InitializeForwardProbabilities();
+  void RunForwardAlgorithm();
+
+  void ComputeInitialForwardProbabilities();
+
+  void SampleInitialState();
 
  private:
   virtual void InitializeEmission() = 0;
 
  public:
   HMM(const std::string& yaml_path, int cluster_ind,
-      const std::string& hmm_param_dir);
-  virtual ~HMM(){};
+      const std::string& hmm_param_dir, int seed);
 
-  const YAML::Node& yaml_root() const { return yaml_root_; };
+  const YAML::Node& cluster_data() const { return cluster_data_; };
   const std::map<std::string, std::pair<int, int>>& flexbounds() const {
     return flexbounds_;
   };
@@ -142,6 +175,9 @@ class HMM {
     return ggenes_;
   };
   const std::string& alphabet() const { return alphabet_; };
+  const Eigen::MatrixXi& msa() const { return msa_; };
+  const std::mt19937& rng() const { return rng_; };
+  const std::discrete_distribution<int>& distr() const { return distr_; };
   const std::map<std::string, std::pair<int, int>>& vpadding_ggene_ranges()
       const {
     return vpadding_ggene_ranges_;
@@ -266,6 +302,7 @@ class HMM {
   const Eigen::RowVectorXd& jpadding_emission() const {
     return jpadding_emission_;
   };
+  bool cache_forward() const { return cache_forward_; };
   const Eigen::RowVectorXd& vgerm_forward() const { return vgerm_forward_; };
   const Eigen::MatrixXd& vd_junction_forward() const {
     return vd_junction_forward_;
@@ -275,28 +312,47 @@ class HMM {
     return dj_junction_forward_;
   };
   const Eigen::RowVectorXd& jgerm_forward() const { return jgerm_forward_; };
-  int vgerm_init_scaler_count() const { return vgerm_init_scaler_count_; };
   int vgerm_scaler_count() const { return vgerm_scaler_count_; };
   const std::vector<int>& vd_junction_scaler_counts() const {
     return vd_junction_scaler_counts_;
   };
-  int dgerm_init_scaler_count() const { return dgerm_init_scaler_count_; };
   int dgerm_scaler_count() const { return dgerm_scaler_count_; };
   const std::vector<int>& dj_junction_scaler_counts() const {
     return dj_junction_scaler_counts_;
   };
-  int jgerm_init_scaler_count() const { return jgerm_init_scaler_count_; };
   int jgerm_scaler_count() const { return jgerm_scaler_count_; };
+  const std::string& naive_seq_samp() const { return naive_seq_samp_; };
+  const std::string& vgerm_state_str_samp() const {
+    return vgerm_state_str_samp_;
+  };
+  int vgerm_state_ind_samp() const { return vgerm_state_ind_samp_; };
+  const std::vector<std::string>& vd_junction_state_str_samps() const {
+    return vd_junction_state_str_samps_;
+  };
+  const std::vector<int>& vd_junction_state_ind_samps() const {
+    return vd_junction_state_ind_samps_;
+  };
+  const std::string& dgerm_state_str_samp() const {
+    return dgerm_state_str_samp_;
+  };
+  int dgerm_state_ind_samp() const { return dgerm_state_ind_samp_; };
+  const std::vector<std::string>& dj_junction_state_str_samps() const {
+    return dj_junction_state_str_samps_;
+  };
+  const std::vector<int>& dj_junction_state_ind_samps() const {
+    return dj_junction_state_ind_samps_;
+  };
+  const std::string& jgerm_state_str_samp() const {
+    return jgerm_state_str_samp_;
+  };
+  int jgerm_state_ind_samp() const { return jgerm_state_ind_samp_; };
 
-  // Forward/backward traversal functions
   double LogLikelihood();
+  std::string SampleNaiveSequence();
 };
 
 
 typedef std::shared_ptr<HMM> HMMPtr;
-
-const double SCALE_FACTOR = std::pow(2, 256);
-const double SCALE_THRESHOLD = 1.0 / SCALE_FACTOR;
 
 
 // Auxiliary functions
@@ -387,16 +443,32 @@ void ComputeGermlineForwardProbabilities(
     const Eigen::RowVectorXd& germ_emission_,
     const Eigen::RowVectorXd& padding_transition_,
     const Eigen::RowVectorXd& padding_emission_,
-    Eigen::RowVectorXd& germ_forward_, int& germ_init_scaler_count_,
-    int& germ_scaler_count_);
+    Eigen::RowVectorXd& germ_forward_, int& germ_scaler_count_);
 
-int ScaleMatrix(Eigen::Ref<Eigen::MatrixXd> m);
+void SampleJunctionStates(int germ_state_ind_samp_,
+                          const Eigen::MatrixXd& junction_germ_transition_,
+                          const std::vector<std::string>& junction_state_strs_,
+                          const std::vector<int>& junction_naive_bases_,
+                          const Eigen::MatrixXd& junction_transition_,
+                          const Eigen::MatrixXd& junction_forward_,
+                          std::pair<int, int> left_flexbounds,
+                          const std::string& alphabet, std::mt19937& rng_,
+                          std::discrete_distribution<int>& distr_,
+                          std::string& naive_seq_samp_,
+                          std::vector<std::string>& junction_state_str_samps_,
+                          std::vector<int>& junction_state_ind_samps_);
 
-Eigen::RowVectorXi ConvertSeqToInts(const std::string& seq_str,
-                                    const std::string& alphabet);
-
-std::string ConvertIntsToSeq(const Eigen::RowVectorXi& seq,
-                             const std::string& alphabet);
+void SampleGermlineState(
+    const std::vector<int>& junction_state_ind_samps_,
+    const Eigen::MatrixXd& germ_junction_transition_,
+    const std::vector<std::string>& germ_state_strs_,
+    const std::map<std::string, std::pair<int, int>>& germ_ggene_ranges_,
+    const std::vector<int>& germ_naive_bases_,
+    const std::vector<int>& germ_site_inds_,
+    const Eigen::RowVectorXd& germ_forward_, const std::string& alphabet,
+    std::mt19937& rng_, std::discrete_distribution<int>& distr_,
+    std::string& naive_seq_samp_, std::string& germ_state_str_samp_,
+    int& germ_state_ind_samp_);
 
 
 }  // namespace linearham

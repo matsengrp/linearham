@@ -1,7 +1,8 @@
 {
   "events" : [ {
-    "input_seqs" : ["ACAGTACCCTGTTNN"],
-    "has_shm_indels" : [false],
+    "input_seqs" : [ "TAAAAGATCAATTNN", "CACACGTTCGAGTNN", "CGTAGTAGGACTCNN" ],
+    "naive_seq" : "AGGACATACGTCTNN",
+    "has_shm_indels" : [ false, false, false ],
     "relpos" : {
       "IGHD_ex*01" : 5,
       "IGHJ_ex*01" : 10,
@@ -18,6 +19,6 @@
       "d_l" : [ 4, 6 ],
       "v_l" : [ 0, 2 ]
     },
-    "unique_ids" : ["read1"]
+    "unique_ids" : [ "0", "1", "2" ]
   } ]
 }

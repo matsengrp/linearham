@@ -16,12 +16,11 @@
 namespace linearham {
 
 
+/// @brief A star tree HMM implementation (similar to that found in `partis`).
+/// This derived class is used to compute the star tree emission probabilities
+/// from `partis` HMM germline parameter files.
 class SimpleHMM : public HMM {
  private:
-  // Input sequence
-  Eigen::RowVectorXi seq_;
-  std::string seq_str_;
-
   // Initialization functions
   void InitializeEmission() override;
 
@@ -29,25 +28,22 @@ class SimpleHMM : public HMM {
   void FillGermlineEmission(
       const std::map<std::string, std::pair<int, int>>& ggene_ranges_,
       const std::vector<int>& germ_inds_, const std::vector<int>& site_inds_,
-      Eigen::RowVectorXd& emission_, int& scaler_count_);
+      Eigen::RowVectorXd& emission_, int& scaler_count_) const;
 
   void FillJunctionEmission(
       const std::map<std::string, std::pair<int, int>>& ggene_ranges_,
       const std::vector<int>& naive_bases_, const std::vector<int>& germ_inds_,
       const std::vector<int>& site_inds_, std::pair<int, int> left_flexbounds,
-      std::pair<int, int> right_flexbounds, Eigen::MatrixXd& emission_);
+      std::pair<int, int> right_flexbounds, Eigen::MatrixXd& emission_) const;
 
   void FillPaddingEmission(
       const std::map<std::string, std::pair<int, int>>& ggene_ranges_,
       const std::vector<int>& site_inds_, Eigen::RowVectorXd& emission_,
-      int& scaler_count_);
+      int& scaler_count_) const;
 
  public:
-  SimpleHMM(const std::string& yaml_path, int cluster_ind, int seq_ind,
-            const std::string& hmm_param_dir);
-
-  const Eigen::RowVectorXi& seq() const { return seq_; };
-  const std::string& seq_str() const { return seq_str_; };
+  SimpleHMM(const std::string& yaml_path, int cluster_ind,
+            const std::string& hmm_param_dir, int seed);
 };
 
 

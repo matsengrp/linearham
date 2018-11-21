@@ -8,7 +8,6 @@
 #include <yaml-cpp/yaml.h>
 #include <Eigen/Dense>
 #include "catch.hpp"
-#include "linalg.hpp"
 #include "Germline.hpp"
 #include "NTInsertion.hpp"
 #include "NPadding.hpp"
@@ -21,44 +20,6 @@
 namespace test {
 
 using namespace linearham;
-
-
-// Linear algebra tests
-
-TEST_CASE("ColVecMatCwise", "[linalg]") {
-  Eigen::VectorXd b(3);
-  Eigen::MatrixXd A(3,4), B(3,4), correct_B(3,4);
-  A << 1, 2.9,  3,  4,
-       5,   6,  7,  8,
-       9,  10, 11, 12;
-  b << 0, 4, 1;
-  correct_B << 0,  0,  0,  0,
-              20, 24, 28, 32,
-               9, 10, 11, 12;
-
-  ColVecMatCwise(b, A, B);
-  REQUIRE(B == correct_B);
-
-  // Check that we can use matrices as lvalues and rvalues in the same expression.
-  ColVecMatCwise(b, A, A);
-  REQUIRE(A == correct_B);
-}
-
-
-TEST_CASE("RowVecMatCwise", "[linalg]") {
-  Eigen::RowVectorXd b(4);
-  Eigen::MatrixXd A(3,4), B(3,4), correct_B(3,4);
-  A << 1, 2.9,  3,  4,
-       5,   6,  7,  8,
-       9,  10, 11, 12;
-  b << 0, 4, 1, 10;
-  correct_B << 0, 11.6,  3,  40,
-               0,   24,  7,  80,
-               0,   40, 11, 120;
-
-  RowVecMatCwise(b, A, B);
-  REQUIRE(B == correct_B);
-}
 
 
 // Germline tests
@@ -283,19 +244,23 @@ TEST_CASE("CreateGermlineGeneMap", "[vdjgermline]") {
 
 TEST_CASE("SimpleHMM", "[simplehmm]") {
   // Test the SimpleHMM class using the example files.
-  std::string yaml_path = "data/hmm_input.yaml";
+  std::string yaml_path = "data/simple_hmm_input.yaml";
   std::string hmm_param_dir = "data/hmm_params";
-  SimpleHMMPtr simple_hmm_ptr = std::make_shared<SimpleHMM>(yaml_path, 0, 0, hmm_param_dir);
+  SimpleHMMPtr simple_hmm_ptr = std::make_shared<SimpleHMM>(yaml_path, 0, hmm_param_dir, 0);
 
   // For a diagram of the S-W alignment, see
-  // https://github.com/matsengrp/linearham/issues/44#issue-336348821.
+  // http://matsengrp.github.io/linearham/sw_alignment.jpg.
 
+  // We begin with HMM base class tests (members are tested in declaration order).
   std::map<std::string, std::pair<int, int>> flexbounds = {
       {"v_l", {0, 2}},  {"v_r", {4, 6}},   {"d_l", {7, 8}},
       {"d_r", {9, 10}}, {"j_l", {11, 12}}, {"j_r", {15, 15}}};
   std::map<std::string, int> relpos = {
       {"IGHV_ex*01", 1}, {"IGHD_ex*01", 5}, {"IGHJ_ex*01", 10}};
   std::string alphabet = "ACGTN";
+  Eigen::MatrixXi msa(1,15);
+  msa <<
+  0, 1, 0, 2, 3, 0, 1, 1, 1, 3, 2, 3, 3, 4, 4;
   std::map<std::string, std::pair<int, int>> vpadding_ggene_ranges =
       {{"IGHV_ex*01", {0, 1}}};
   std::vector<int> vpadding_naive_bases = {4};
@@ -388,18 +353,17 @@ TEST_CASE("SimpleHMM", "[simplehmm]") {
   1;
   Eigen::RowVectorXd jpadding_transition(1);
   jpadding_transition << 0.04;
-  int vgerm_init_scaler_count = 0;
+  bool cache_forward = true;
   int vgerm_scaler_count = 0;
   std::vector<int> vd_junction_scaler_counts = {0, 0, 0, 0};
-  int dgerm_init_scaler_count = 0;
   int dgerm_scaler_count = 0;
   std::vector<int> dj_junction_scaler_counts = {0, 0, 0};
-  int jgerm_init_scaler_count = 0;
   int jgerm_scaler_count = 0;
 
   REQUIRE(simple_hmm_ptr->flexbounds() == flexbounds);
   REQUIRE(simple_hmm_ptr->relpos() == relpos);
   REQUIRE(simple_hmm_ptr->alphabet() == alphabet);
+  REQUIRE(simple_hmm_ptr->msa() == msa);
   REQUIRE(simple_hmm_ptr->vpadding_ggene_ranges() == vpadding_ggene_ranges);
   REQUIRE(simple_hmm_ptr->vpadding_naive_bases() == vpadding_naive_bases);
   REQUIRE(simple_hmm_ptr->vpadding_site_inds() == vpadding_site_inds);
@@ -439,31 +403,24 @@ TEST_CASE("SimpleHMM", "[simplehmm]") {
   REQUIRE(simple_hmm_ptr->dj_junction_transition() == dj_junction_transition);
   REQUIRE(simple_hmm_ptr->dj_junction_jgerm_transition() == dj_junction_jgerm_transition);
   REQUIRE(simple_hmm_ptr->jpadding_transition().isApprox(jpadding_transition));
-
-  Eigen::RowVectorXi seq(15);
-  seq << 0, 1, 0, 2, 3, 0, 1, 1, 1, 3, 2, 3, 3, 4, 4;
-  std::string seq_str = "ACAGTACCCTGTTNN";
-
-  REQUIRE(simple_hmm_ptr->seq() == seq);
-  REQUIRE(simple_hmm_ptr->seq_str() == seq_str);
+  REQUIRE(simple_hmm_ptr->cache_forward() == cache_forward);
 
   REQUIRE(simple_hmm_ptr->LogLikelihood() == Approx(-42.8027747544));
-  REQUIRE(simple_hmm_ptr->vgerm_init_scaler_count() == vgerm_init_scaler_count);
   REQUIRE(simple_hmm_ptr->vgerm_scaler_count() == vgerm_scaler_count);
   REQUIRE(simple_hmm_ptr->vd_junction_scaler_counts() == vd_junction_scaler_counts);
-  REQUIRE(simple_hmm_ptr->dgerm_init_scaler_count() == dgerm_init_scaler_count);
   REQUIRE(simple_hmm_ptr->dgerm_scaler_count() == dgerm_scaler_count);
   REQUIRE(simple_hmm_ptr->dj_junction_scaler_counts() == dj_junction_scaler_counts);
-  REQUIRE(simple_hmm_ptr->jgerm_init_scaler_count() == jgerm_init_scaler_count);
   REQUIRE(simple_hmm_ptr->jgerm_scaler_count() == jgerm_scaler_count);
+  REQUIRE(simple_hmm_ptr->SampleNaiveSequence() == "NATGAGGTATATGCG");
 
   // For clarity, we run an additional SimpleHMM test.
-  yaml_path = "data/hmm_input_extra.yaml";
-  simple_hmm_ptr = std::make_shared<SimpleHMM>(yaml_path, 0, 0, hmm_param_dir);
+  yaml_path = "data/simple_hmm_input_extra.yaml";
+  simple_hmm_ptr.reset(new SimpleHMM(yaml_path, 0, hmm_param_dir, 0));
 
   // For a diagram of the S-W alignment, see
-  // https://github.com/matsengrp/linearham/issues/44#issuecomment-406625914.
+  // http://matsengrp.github.io/linearham/sw_alignment_extra.jpg.
 
+  // We begin with HMM base class tests (members are tested in declaration order).
   flexbounds = {{"v_l", {0, 2}},  {"v_r", {4, 6}},  {"d_l", {4, 6}},
                 {"d_r", {8, 10}}, {"j_l", {8, 10}}, {"j_r", {15, 15}}};
   relpos = {{"IGHV_ex*01", 1}, {"IGHD_ex*01", 5}, {"IGHJ_ex*01", 10},
@@ -588,18 +545,17 @@ TEST_CASE("SimpleHMM", "[simplehmm]") {
                  0, 1;
   jpadding_transition.resize(2);
   jpadding_transition << 0.04, 0.04;
-  vgerm_init_scaler_count = 0;
+  cache_forward = true;
   vgerm_scaler_count = 0;
   vd_junction_scaler_counts = {0, 0};
-  dgerm_init_scaler_count = 0;
   dgerm_scaler_count = 0;
   dj_junction_scaler_counts = {0, 0};
-  jgerm_init_scaler_count = 0;
   jgerm_scaler_count = 0;
 
   REQUIRE(simple_hmm_ptr->flexbounds() == flexbounds);
   REQUIRE(simple_hmm_ptr->relpos() == relpos);
   REQUIRE(simple_hmm_ptr->alphabet() == alphabet);
+  REQUIRE(simple_hmm_ptr->msa() == msa);
   REQUIRE(simple_hmm_ptr->vpadding_ggene_ranges() == vpadding_ggene_ranges);
   REQUIRE(simple_hmm_ptr->vpadding_naive_bases() == vpadding_naive_bases);
   REQUIRE(simple_hmm_ptr->vpadding_site_inds() == vpadding_site_inds);
@@ -639,19 +595,15 @@ TEST_CASE("SimpleHMM", "[simplehmm]") {
   REQUIRE(simple_hmm_ptr->dj_junction_transition() == dj_junction_transition);
   REQUIRE(simple_hmm_ptr->dj_junction_jgerm_transition() == dj_junction_jgerm_transition);
   REQUIRE(simple_hmm_ptr->jpadding_transition().isApprox(jpadding_transition));
-
-  REQUIRE(simple_hmm_ptr->seq() == seq);
-  REQUIRE(simple_hmm_ptr->seq_str() == seq_str);
+  REQUIRE(simple_hmm_ptr->cache_forward() == cache_forward);
 
   REQUIRE(simple_hmm_ptr->LogLikelihood() == Approx(-37.1354672701));
-  REQUIRE(simple_hmm_ptr->vgerm_init_scaler_count() == vgerm_init_scaler_count);
   REQUIRE(simple_hmm_ptr->vgerm_scaler_count() == vgerm_scaler_count);
   REQUIRE(simple_hmm_ptr->vd_junction_scaler_counts() == vd_junction_scaler_counts);
-  REQUIRE(simple_hmm_ptr->dgerm_init_scaler_count() == dgerm_init_scaler_count);
   REQUIRE(simple_hmm_ptr->dgerm_scaler_count() == dgerm_scaler_count);
   REQUIRE(simple_hmm_ptr->dj_junction_scaler_counts() == dj_junction_scaler_counts);
-  REQUIRE(simple_hmm_ptr->jgerm_init_scaler_count() == jgerm_init_scaler_count);
   REQUIRE(simple_hmm_ptr->jgerm_scaler_count() == jgerm_scaler_count);
+  REQUIRE(simple_hmm_ptr->SampleNaiveSequence() == "NCAGGACACTATGCG");
 }
 
 
@@ -659,23 +611,29 @@ TEST_CASE("SimpleHMM", "[simplehmm]") {
 
 TEST_CASE("PhyloHMM", "[phylohmm]") {
   // Test the PhyloHMM class using the example files.
-  std::string yaml_path = "data/hmm_input.yaml";
+  std::string yaml_path = "data/phylo_hmm_input.yaml";
   std::string hmm_param_dir = "data/hmm_params";
-  std::string trees_path = "data/newton.tre";
-  std::string fasta_path = "data/newton.fasta";
-  std::string ctmc_params_path = "data/RAxML_info.newton";
-  PhyloHMMPtr phylo_hmm_ptr = std::make_shared<PhyloHMM>(
-      yaml_path, 0, hmm_param_dir, trees_path, fasta_path, ctmc_params_path);
+  std::string newick_path = "data/newton.tree";
+  PhyloHMMPtr phylo_hmm_ptr = std::make_shared<PhyloHMM>(yaml_path, 0, hmm_param_dir, 0);
+  phylo_hmm_ptr->InitializePhyloParameters(
+      newick_path, {1.0, 1.0, 1.0, 1.0, 1.0, 1.0}, {0.17, 0.19, 0.25, 0.39}, 1.0, 4);
+  phylo_hmm_ptr->InitializePhyloEmission();
 
   // For a diagram of the S-W alignment, see
-  // https://github.com/matsengrp/linearham/issues/44#issue-336348821.
+  // http://matsengrp.github.io/linearham/sw_alignment.jpg.
 
+  // We begin with HMM base class tests (members are tested in declaration order).
   std::map<std::string, std::pair<int, int>> flexbounds = {
       {"v_l", {0, 2}},  {"v_r", {4, 6}},   {"d_l", {7, 8}},
       {"d_r", {9, 10}}, {"j_l", {11, 12}}, {"j_r", {15, 15}}};
   std::map<std::string, int> relpos = {
       {"IGHV_ex*01", 1}, {"IGHD_ex*01", 5}, {"IGHJ_ex*01", 10}};
   std::string alphabet = "ACGTN";
+  Eigen::MatrixXi msa(3,15);
+  msa <<
+  3, 0, 0, 0, 0, 2, 0, 3, 1, 0, 0, 3, 3, 4, 4,
+  1, 0, 1, 0, 1, 2, 3, 3, 1, 2, 0, 2, 3, 4, 4,
+  1, 2, 3, 0, 2, 3, 0, 2, 2, 0, 1, 3, 1, 4, 4;
   std::map<std::string, std::pair<int, int>> vpadding_ggene_ranges =
       {{"IGHV_ex*01", {0, 1}}};
   std::vector<int> vpadding_naive_bases = {4};
@@ -768,18 +726,12 @@ TEST_CASE("PhyloHMM", "[phylohmm]") {
   1;
   Eigen::RowVectorXd jpadding_transition(1);
   jpadding_transition << 0.04;
-  int vgerm_init_scaler_count = 0;
-  int vgerm_scaler_count = 0;
-  std::vector<int> vd_junction_scaler_counts = {0, 0, 0, 0};
-  int dgerm_init_scaler_count = 0;
-  int dgerm_scaler_count = 0;
-  std::vector<int> dj_junction_scaler_counts = {0, 0, 0};
-  int jgerm_init_scaler_count = 0;
-  int jgerm_scaler_count = 0;
+  bool cache_forward = true;
 
   REQUIRE(phylo_hmm_ptr->flexbounds() == flexbounds);
   REQUIRE(phylo_hmm_ptr->relpos() == relpos);
   REQUIRE(phylo_hmm_ptr->alphabet() == alphabet);
+  REQUIRE(phylo_hmm_ptr->msa() == msa);
   REQUIRE(phylo_hmm_ptr->vpadding_ggene_ranges() == vpadding_ggene_ranges);
   REQUIRE(phylo_hmm_ptr->vpadding_naive_bases() == vpadding_naive_bases);
   REQUIRE(phylo_hmm_ptr->vpadding_site_inds() == vpadding_site_inds);
@@ -819,25 +771,20 @@ TEST_CASE("PhyloHMM", "[phylohmm]") {
   REQUIRE(phylo_hmm_ptr->dj_junction_transition() == dj_junction_transition);
   REQUIRE(phylo_hmm_ptr->dj_junction_jgerm_transition() == dj_junction_jgerm_transition);
   REQUIRE(phylo_hmm_ptr->jpadding_transition().isApprox(jpadding_transition));
+  REQUIRE(phylo_hmm_ptr->cache_forward() == cache_forward);
 
-  Eigen::MatrixXi msa(3,15);
-  msa <<
-  3, 0, 0, 0, 0, 2, 0, 3, 1, 0, 0, 3, 3, 4, 4,
-  1, 0, 1, 0, 1, 2, 3, 3, 1, 2, 0, 2, 3, 4, 4,
-  1, 2, 3, 0, 2, 3, 0, 2, 2, 0, 1, 3, 1, 4, 4;
+  // We continue with PhyloHMM derived class tests (members are tested in declaration order).
   Eigen::MatrixXi xmsa(4, 36);
   xmsa <<
+  4, 0, 3, 2, 0, 0, 0, 0, 1, 1, 1, 1, 2, 2, 2, 2, 3, 3, 3, 3, 0, 1, 0, 0, 0, 1, 1, 2, 2, 2, 3, 3, 3, 2, 1, 2,
   3, 0, 0, 0, 0, 2, 0, 3, 0, 2, 0, 3, 0, 2, 0, 3, 0, 2, 0, 3, 1, 0, 0, 0, 3, 0, 3, 0, 0, 3, 0, 0, 3, 3, 4, 4,
   1, 0, 1, 0, 1, 2, 3, 3, 1, 2, 3, 3, 1, 2, 3, 3, 1, 2, 3, 3, 1, 2, 2, 0, 2, 0, 2, 2, 0, 2, 2, 0, 2, 3, 4, 4,
-  4, 0, 3, 2, 0, 0, 0, 0, 1, 1, 1, 1, 2, 2, 2, 2, 3, 3, 3, 3, 0, 1, 0, 0, 0, 1, 1, 2, 2, 2, 3, 3, 3, 2, 1, 2,
   1, 2, 3, 0, 2, 3, 0, 2, 2, 3, 0, 2, 2, 3, 0, 2, 2, 3, 0, 2, 2, 0, 0, 1, 3, 1, 3, 0, 1, 3, 0, 1, 3, 1, 4, 4;
-  std::vector<std::string> xmsa_labels = {"0", "1", "naive", "3"};
+  std::vector<std::string> xmsa_labels = {"naive", "0", "1", "2"};
   std::vector<std::string> xmsa_seqs = {
-      "TAAAAGATAGATAGATAGATCAAATATAATAATTNN", "CACACGTTCGTTCGTTCGTTCGGAGAGGAGGAGTNN",
-      "NATGAAAACCCCGGGGTTTTACAAACCGGGTTTGCG", "CGTAGTAGGTAGGTAGGTAGGAACTCTACTACTCNN"};
-  int xmsa_naive_ind = std::find(xmsa_labels.begin(),
-                                 xmsa_labels.end(), "naive")
-                       - xmsa_labels.begin();
+      "NATGAAAACCCCGGGGTTTTACAAACCGGGTTTGCG", "TAAAAGATAGATAGATAGATCAAATATAATAATTNN",
+      "CACACGTTCGTTCGTTCGTTCGGAGAGGAGGAGTNN", "CGTAGTAGGTAGGTAGGTAGGAACTCTACTACTCNN"};
+  int xmsa_naive_ind = 0;
   Eigen::VectorXd xmsa_emission(36);
   xmsa_emission << 0.00734474, 0.0233122, 0.00563729, 0.0107866, 0.00342739,
                    0.0177109, 0.0279823, 0.0215197, 0.00270654, 0.0177109,
@@ -866,8 +813,14 @@ TEST_CASE("PhyloHMM", "[phylohmm]") {
   Eigen::VectorXi jgerm_xmsa_inds(3);
   jgerm_xmsa_inds << 33, 34, 35;
   Eigen::VectorXi jpadding_xmsa_inds;
+  std::vector<double> er = {1.0, 1.0, 1.0, 1.0, 1.0, 1.0};
+  std::vector<double> pi = {0.17, 0.19, 0.25, 0.39};
+  int vgerm_scaler_count = 0;
+  std::vector<int> vd_junction_scaler_counts = {0, 0, 0, 0};
+  int dgerm_scaler_count = 0;
+  std::vector<int> dj_junction_scaler_counts = {0, 0, 0};
+  int jgerm_scaler_count = 0;
 
-  REQUIRE(phylo_hmm_ptr->msa() == msa);
   REQUIRE(phylo_hmm_ptr->xmsa() == xmsa);
   REQUIRE(phylo_hmm_ptr->xmsa_labels() == xmsa_labels);
   REQUIRE(phylo_hmm_ptr->xmsa_seqs() == xmsa_seqs);
@@ -880,25 +833,28 @@ TEST_CASE("PhyloHMM", "[phylohmm]") {
   REQUIRE(phylo_hmm_ptr->dj_junction_xmsa_inds() == dj_junction_xmsa_inds);
   REQUIRE(phylo_hmm_ptr->jgerm_xmsa_inds() == jgerm_xmsa_inds);
   REQUIRE(phylo_hmm_ptr->jpadding_xmsa_inds() == jpadding_xmsa_inds);
-
+  REQUIRE(phylo_hmm_ptr->alpha() == 1.0);
+  REQUIRE(phylo_hmm_ptr->er() == er);
+  REQUIRE(phylo_hmm_ptr->pi() == pi);
   REQUIRE(phylo_hmm_ptr->LogLikelihood() == Approx(-75.8136));
-  REQUIRE(phylo_hmm_ptr->vgerm_init_scaler_count() == vgerm_init_scaler_count);
+  REQUIRE(phylo_hmm_ptr->SampleNaiveSequence() == "NATGAGGTAGATGCG");
   REQUIRE(phylo_hmm_ptr->vgerm_scaler_count() == vgerm_scaler_count);
   REQUIRE(phylo_hmm_ptr->vd_junction_scaler_counts() == vd_junction_scaler_counts);
-  REQUIRE(phylo_hmm_ptr->dgerm_init_scaler_count() == dgerm_init_scaler_count);
   REQUIRE(phylo_hmm_ptr->dgerm_scaler_count() == dgerm_scaler_count);
   REQUIRE(phylo_hmm_ptr->dj_junction_scaler_counts() == dj_junction_scaler_counts);
-  REQUIRE(phylo_hmm_ptr->jgerm_init_scaler_count() == jgerm_init_scaler_count);
   REQUIRE(phylo_hmm_ptr->jgerm_scaler_count() == jgerm_scaler_count);
 
   // For clarity, we run an additional PhyloHMM test.
-  yaml_path = "data/hmm_input_extra.yaml";
-  phylo_hmm_ptr = std::make_shared<PhyloHMM>(
-      yaml_path, 0, hmm_param_dir, trees_path, fasta_path, ctmc_params_path);
+  yaml_path = "data/phylo_hmm_input_extra.yaml";
+  phylo_hmm_ptr.reset(new PhyloHMM(yaml_path, 0, hmm_param_dir, 0));
+  phylo_hmm_ptr->InitializePhyloParameters(
+      newick_path, {1.0, 1.0, 1.0, 1.0, 1.0, 1.0}, {0.17, 0.19, 0.25, 0.39}, 1.0, 4);
+  phylo_hmm_ptr->InitializePhyloEmission();
 
   // For a diagram of the S-W alignment, see
-  // https://github.com/matsengrp/linearham/issues/44#issuecomment-406625914.
+  // http://matsengrp.github.io/linearham/sw_alignment_extra.jpg.
 
+  // We begin with HMM base class tests (members are tested in declaration order).
   flexbounds = {{"v_l", {0, 2}},  {"v_r", {4, 6}},  {"d_l", {4, 6}},
                 {"d_r", {8, 10}}, {"j_l", {8, 10}}, {"j_r", {15, 15}}};
   relpos = {{"IGHV_ex*01", 1}, {"IGHD_ex*01", 5}, {"IGHJ_ex*01", 10},
@@ -1023,18 +979,12 @@ TEST_CASE("PhyloHMM", "[phylohmm]") {
                  0, 1;
   jpadding_transition.resize(2);
   jpadding_transition << 0.04, 0.04;
-  vgerm_init_scaler_count = 0;
-  vgerm_scaler_count = 0;
-  vd_junction_scaler_counts = {0, 0};
-  dgerm_init_scaler_count = 0;
-  dgerm_scaler_count = 0;
-  dj_junction_scaler_counts = {0, 0};
-  jgerm_init_scaler_count = 0;
-  jgerm_scaler_count = 0;
+  cache_forward = true;
 
   REQUIRE(phylo_hmm_ptr->flexbounds() == flexbounds);
   REQUIRE(phylo_hmm_ptr->relpos() == relpos);
   REQUIRE(phylo_hmm_ptr->alphabet() == alphabet);
+  REQUIRE(phylo_hmm_ptr->msa() == msa);
   REQUIRE(phylo_hmm_ptr->vpadding_ggene_ranges() == vpadding_ggene_ranges);
   REQUIRE(phylo_hmm_ptr->vpadding_naive_bases() == vpadding_naive_bases);
   REQUIRE(phylo_hmm_ptr->vpadding_site_inds() == vpadding_site_inds);
@@ -1074,15 +1024,17 @@ TEST_CASE("PhyloHMM", "[phylohmm]") {
   REQUIRE(phylo_hmm_ptr->dj_junction_transition() == dj_junction_transition);
   REQUIRE(phylo_hmm_ptr->dj_junction_jgerm_transition() == dj_junction_jgerm_transition);
   REQUIRE(phylo_hmm_ptr->jpadding_transition().isApprox(jpadding_transition));
+  REQUIRE(phylo_hmm_ptr->cache_forward() == cache_forward);
 
+  // We continue with PhyloHMM derived class tests (members are tested in declaration order).
   xmsa.resize(4, 34);
   xmsa <<
+  4, 0, 3, 2, 1, 0, 0, 0, 1, 1, 2, 2, 3, 3, 2, 3, 1, 0, 0, 1, 0, 1, 2, 2, 3, 3, 0, 3, 2, 1, 2, 1, 0, 3,
   3, 0, 0, 0, 0, 0, 0, 2, 0, 2, 0, 2, 0, 2, 0, 3, 0, 3, 1, 0, 0, 1, 1, 0, 1, 0, 0, 3, 3, 4, 4, 0, 3, 3,
   1, 0, 1, 0, 0, 1, 1, 2, 1, 2, 1, 2, 1, 2, 3, 3, 3, 3, 1, 2, 2, 1, 1, 2, 1, 2, 0, 2, 3, 4, 4, 0, 2, 3,
-  4, 0, 3, 2, 1, 0, 0, 0, 1, 1, 2, 2, 3, 3, 2, 3, 1, 0, 0, 1, 0, 1, 2, 2, 3, 3, 0, 3, 2, 1, 2, 1, 0, 3,
   1, 2, 3, 0, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 0, 2, 0, 2, 2, 0, 0, 2, 2, 0, 2, 0, 1, 3, 1, 4, 4, 1, 3, 1;
-  xmsa_seqs = {"TAAAAAAGAGAGAGATATCAACCACAATTNNATT", "CACAACCGCGCGCGTTTTCGGCCGCGAGTNNAGT",
-               "NATGCAAACCGGTTGTCAACACGGTTATGCGCAT", "CGTAGTGTGTGTGTAGAGGAAGGAGACTCNNCTC"};
+  xmsa_seqs = {"NATGCAAACCGGTTGTCAACACGGTTATGCGCAT", "TAAAAAAGAGAGAGATATCAACCACAATTNNATT",
+               "CACAACCGCGCGCGTTTTCGGCCGCGAGTNNAGT", "CGTAGTGTGTGTGTAGAGGAAGGAGACTCNNCTC"};
   xmsa_emission.resize(34);
   xmsa_emission << 0.00734474, 0.0233122, 0.00563729, 0.0107866, 0.0067714,
                    0.00534673, 0.00342739, 0.0177109, 0.00270654, 0.0177109,
@@ -1108,6 +1060,13 @@ TEST_CASE("PhyloHMM", "[phylohmm]") {
   jgerm_xmsa_inds.resize(10);
   jgerm_xmsa_inds << 26, 27, 28, 29, 30, 31, 32, 33, 29, 30;
   jpadding_xmsa_inds.resize(0);
+  er = {1.0, 1.0, 1.0, 1.0, 1.0, 1.0};
+  pi = {0.17, 0.19, 0.25, 0.39};
+  vgerm_scaler_count = 0;
+  vd_junction_scaler_counts = {0, 0};
+  dgerm_scaler_count = 0;
+  dj_junction_scaler_counts = {0, 0};
+  jgerm_scaler_count = 0;
 
   REQUIRE(phylo_hmm_ptr->xmsa() == xmsa);
   REQUIRE(phylo_hmm_ptr->xmsa_seqs() == xmsa_seqs);
@@ -1119,39 +1078,40 @@ TEST_CASE("PhyloHMM", "[phylohmm]") {
   REQUIRE(phylo_hmm_ptr->dj_junction_xmsa_inds() == dj_junction_xmsa_inds);
   REQUIRE(phylo_hmm_ptr->jgerm_xmsa_inds() == jgerm_xmsa_inds);
   REQUIRE(phylo_hmm_ptr->jpadding_xmsa_inds() == jpadding_xmsa_inds);
-
+  REQUIRE(phylo_hmm_ptr->alpha() == 1.0);
+  REQUIRE(phylo_hmm_ptr->er() == er);
+  REQUIRE(phylo_hmm_ptr->pi() == pi);
   REQUIRE(phylo_hmm_ptr->LogLikelihood() == Approx(-75.1122515055));
-  REQUIRE(phylo_hmm_ptr->vgerm_init_scaler_count() == vgerm_init_scaler_count);
+  REQUIRE(phylo_hmm_ptr->SampleNaiveSequence() == "NATGGTCAGGATGCG");
   REQUIRE(phylo_hmm_ptr->vgerm_scaler_count() == vgerm_scaler_count);
   REQUIRE(phylo_hmm_ptr->vd_junction_scaler_counts() == vd_junction_scaler_counts);
-  REQUIRE(phylo_hmm_ptr->dgerm_init_scaler_count() == dgerm_init_scaler_count);
   REQUIRE(phylo_hmm_ptr->dgerm_scaler_count() == dgerm_scaler_count);
   REQUIRE(phylo_hmm_ptr->dj_junction_scaler_counts() == dj_junction_scaler_counts);
-  REQUIRE(phylo_hmm_ptr->jgerm_init_scaler_count() == jgerm_init_scaler_count);
   REQUIRE(phylo_hmm_ptr->jgerm_scaler_count() == jgerm_scaler_count);
 
   // Test the phylogenetic likelihood calculation using the R package "phylomd".
   // For more details, see https://github.com/dunleavy005/phylomd.
-  yaml_path = "data/phylolikelihood_hmm_input.yaml";
-  hmm_param_dir = "data/phylolikelihood_hmm_params";
-  phylo_hmm_ptr = std::make_shared<PhyloHMM>(
-      yaml_path, 0, hmm_param_dir, trees_path, fasta_path, ctmc_params_path, 1);
+  yaml_path = "data/phylo_likelihood_hmm_input.yaml";
+  hmm_param_dir = "data/phylo_likelihood_hmm_params";
+  phylo_hmm_ptr.reset(new PhyloHMM(yaml_path, 0, hmm_param_dir, 0));
+  phylo_hmm_ptr->InitializePhyloParameters(
+      newick_path, {1.0, 1.0, 1.0, 1.0, 1.0, 1.0}, {0.17, 0.19, 0.25, 0.39}, 1.0, 1);
+  phylo_hmm_ptr->InitializePhyloEmission();
 
   // library(ape)
   // library(phylomd)
   //
-  // tree = read.tree("newton.tre")
+  // tree = read.tree("newton.tree")
   // tree = root(tree, outgroup=1, resolve.root=T)
-  // msa = toupper(read.dna("newton.fasta", format="fasta", as.character=T))
+  // msa = t(simplify2array(strsplit(c("AGGACATACGTCTNN", "TAAAAGATCAATTNN",
+  //                                   "CACACGTTCGAGTNN", "CGTAGTAGGACTCNN"), "")))
+  // rownames(msa) = c("naive", "0", "1", "2")
+  // msa = msa[tree$tip.label,]
   // xmsa.naive.seq = c("A", "T", "G", "A", "C", "G", "G", "T", "A", "C", "A", "T", "G", "C", "G")
   // msa["naive",] = xmsa.naive.seq
   // subst.mod = GTR(1, 1, 1, 1, 1, 1, c(0.17, 0.19, 0.25, 0.39), scale=T)
   //
-  // likelihoods = rep(NA, ncol(msa))
-  // for (i in 1:ncol(msa)) {
-  //   likelihoods[i] = phylo.t.derivatives(tree, subst.mod, 0, msa[,i])
-  // }
-  //
+  // likelihoods = sapply(1:ncol(msa), function(i) phylo.likelihood(tree, subst.mod, msa[,i]))
   // naive.probs = subst.mod$pi[match(msa["naive",], subst.mod$states)]
   //
   // log(prod(likelihoods / naive.probs))

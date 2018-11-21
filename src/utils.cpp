@@ -1,10 +1,13 @@
 #include "utils.hpp"
 
 #include <algorithm>
+#include <cassert>
 #include <cmath>
+#include <cstddef>
+#include <numeric>
 
 /// @file utils.cpp
-/// @brief Utility functions used in linearham.
+/// @brief Utility functions and constants used in linearham.
 
 namespace linearham {
 
@@ -27,7 +30,7 @@ std::pair<std::vector<std::string>, Eigen::VectorXd> ParseStringProbMap(
     i++;
   }
 
-  assert(std::fabs(probs.sum() - 1) <= EPS_PARSE);
+  assert(std::fabs(probs.sum() - 1) <= EPS);
   return {state_names, probs};
 };
 
@@ -107,6 +110,98 @@ std::pair<int, int> FindGermlineStartEnd(const YAML::Node& root,
   }
 
   return {gstart, gend};
+};
+
+
+/// @brief Scales a matrix by SCALE_FACTOR as many times as needed to bring all
+/// non-zero matrix entries above SCALE_THRESHOLD.
+/// @param[out] m
+/// Matrix.
+/// @return
+/// Number of times we multiplied by SCALE_FACTOR.
+int ScaleMatrix(Eigen::Ref<Eigen::MatrixXd> m) {
+  int n = 0;
+
+  while ((0 < m.array() && m.array() < SCALE_THRESHOLD).any()) {
+    m *= SCALE_FACTOR;
+    n += 1;
+  }
+
+  return n;
+};
+
+
+/// @brief Converts a string sequence to an integer sequence according to the
+/// alphabet.
+/// @param[in] seq_str
+/// The string sequence.
+/// @param[in] alphabet
+/// The nucleotide alphabet.
+/// @return
+/// The integer sequence.
+Eigen::RowVectorXi ConvertSeqToInts(const std::string& seq_str,
+                                    const std::string& alphabet) {
+  Eigen::RowVectorXi seq(seq_str.size());
+
+  for (std::size_t i = 0; i < seq_str.size(); i++) {
+    seq[i] = GetAlphabetIndex(alphabet, seq_str[i]);
+  }
+
+  return seq;
+};
+
+
+/// @brief Converts an integer sequence to a string sequence according to the
+/// alphabet.
+/// @param[in] seq
+/// The integer sequence.
+/// @param[in] alphabet
+/// The nucleotide alphabet.
+/// @return
+/// The string sequence.
+std::string ConvertIntsToSeq(const Eigen::RowVectorXi& seq,
+                             const std::string& alphabet) {
+  std::string seq_str(seq.size(), ' ');
+
+  for (std::size_t i = 0; i < seq.size(); i++) {
+    seq_str[i] = alphabet.at(seq[i]);
+  }
+
+  return seq_str;
+};
+
+
+/// @brief This function takes the coefficient-wise product of b and every
+/// column of A.
+/// @param[in] b Input vector.
+/// @param[in] A Input matrix.
+/// @param[out] B Output matrix.
+///  \f[
+///  B_{i,j} = b_i A_{i,j}
+///  \f]
+void ColVecMatCwise(const Eigen::Ref<const Eigen::VectorXd>& b,
+                    const Eigen::Ref<const Eigen::MatrixXd>& A,
+                    Eigen::Ref<Eigen::MatrixXd> B) {
+  for (int i = 0; i < B.cols(); i++) {
+    B.col(i) = b.cwiseProduct(A.col(i));
+  }
+};
+
+
+/// @brief This function takes the coefficient-wise product of b and every row
+/// of A.
+/// @param[in] b Input vector.
+/// @param[in] A Input matrix.
+/// @param[out] B Output matrix.
+///  \f[
+///  B_{i,j} = b_j A_{i,j}
+///  \f]
+void RowVecMatCwise(const Eigen::Ref<const Eigen::RowVectorXd>& b,
+                    const Eigen::Ref<const Eigen::MatrixXd>& A,
+                    Eigen::Ref<Eigen::MatrixXd> B) {
+  for (int i = 0; i < B.rows(); i++) {
+    B.row(i) = b.cwiseProduct(A.row(i));
+  }
 };
 
 

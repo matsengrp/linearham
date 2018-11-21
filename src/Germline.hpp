@@ -14,11 +14,11 @@ namespace linearham {
 
 
 /// @brief A class holding germline gene HMM information extracted from a partis
-/// YAML file.  This information is used to compute (phylo)HMM path
+/// YAML file.  This information is used to compute (Simple|Phylo)HMM path
 /// probabilities.
 class Germline {
  protected:
-  // Germline information for (Simple|Phylo)Data
+  // Germline information for (Simple|Phylo)HMM
   Eigen::VectorXd landing_in_;   // A vector of landing probabilities to begin a
                                  // germline match segment.
   Eigen::VectorXd landing_out_;  // A vector of landing probabilities to end a
@@ -30,13 +30,13 @@ class Germline {
   std::string alphabet_;  // The nucleotide alphabet.
   std::string name_;      // The germline gene name.
 
-  // Germline information for SimpleData
+  // Germline information for SimpleHMM
   Eigen::MatrixXd emission_;  // A matrix of HMM emission probabilities.
                               // The rows denote the different emitted bases and
                               // the columns denote the different germline
                               // positions.
 
-  // Germline information for PhyloData
+  // Germline information for PhyloHMM
   Eigen::VectorXi bases_;  // A vector of germline bases.
 
  public:

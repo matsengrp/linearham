@@ -14,10 +14,10 @@ namespace linearham {
 
 /// @brief A class holding non-templated insertion (NTI) HMM information
 /// extracted from a partis YAML file.  This information is used to compute
-/// (phylo)HMM path probabilities.
+/// (Simple|Phylo)HMM path probabilities.
 class NTInsertion {
  protected:
-  // NTInsertion information for (Simple|Phylo)Data
+  // NTInsertion information for (Simple|Phylo)HMM
   Eigen::VectorXd nti_landing_in_;   // A vector of landing probabilities to
                                      // begin a NTI segment.
   Eigen::MatrixXd nti_landing_out_;  // A matrix of landing probabilities to end
@@ -27,7 +27,7 @@ class NTInsertion {
                                      // different germline positions.
   Eigen::MatrixXd nti_transition_;   // The NTI transition probability matrix.
 
-  // NTInsertion information for SimpleData
+  // NTInsertion information for SimpleHMM
   Eigen::MatrixXd nti_emission_;  // The NTI emission probability matrix.
                                   // The rows denote the different emitted bases
                                   // and the columns denote the different NTI

@@ -1,7 +1,9 @@
 #include "NPadding.hpp"
 
+#include <cassert>
 #include <cmath>
 #include <cstddef>
+#include <map>
 #include <string>
 #include <tuple>
 #include <vector>
@@ -35,13 +37,13 @@ NPadding::NPadding(const YAML::Node& root) {
   n_emission_.setZero(alphabet.size());
 
   // Initialize local variables.
-  int n_index, n_check_ind;
+  int n_index, n_check_index;
   std::string n_name, next_name;
 
   // For "insert_[left|right]_N" states, the transition probabilities should
   // be identical to the transition probabilities at the "[init|last germline]"
   // state.
-  // The local variable `n_check_ind` is used to check the above statement.
+  // The local variable `n_check_index` is used to check the above statement.
 
   // Note that these NPadding probabilities are geometric probabilities, so it
   // seems unlikely that we can actually assert what the probabilities will be
@@ -50,46 +52,48 @@ NPadding::NPadding(const YAML::Node& root) {
   // Case 1: "insert_left_N" state
   if (gstart == 2) {
     n_index = gstart - 1;
-    n_check_ind = gstart - 2;
+    n_check_index = gstart - 2;
     n_name = "insert_left_N";
     next_name = gname + "_0";
   } else {
     // Case 2: "insert_right_N" state
     assert(gend == (root["states"].size() - 2));
     n_index = gend + 1;
-    n_check_ind = gend;
+    n_check_index = gend;
     n_name = "insert_right_N";
     next_name = "end";
   }
 
   // Parse the "insert_[left|right]_N" state.
   YAML::Node n_state = root["states"][n_index];
-  YAML::Node n_check_state = root["states"][n_check_ind];
+  YAML::Node n_check_state = root["states"][n_check_index];
   assert(n_state["name"].as<std::string>() == n_name);
 
   // Parse NPadding transition data.
-  std::vector<std::string> n_state_names, n_check_state_names;
-  Eigen::VectorXd n_probs, n_check_probs;
-  std::tie(n_state_names, n_probs) = ParseStringProbMap(n_state["transitions"]);
-  std::tie(n_check_state_names, n_check_probs) =
-      ParseStringProbMap(n_check_state["transitions"]);
-
-  assert(n_state_names == n_check_state_names);
-  for (std::size_t i = 0; i < n_state_names.size(); i++) {
-    assert(std::fabs(n_probs[i] - n_check_probs[i]) <= EPS_PARSE);
-  }
+  std::map<std::string, double> n_state_names_probs =
+      n_state["transitions"].as<std::map<std::string, double>>();
+  std::map<std::string, double> n_check_state_names_probs =
+      n_check_state["transitions"].as<std::map<std::string, double>>();
 
   // The "insert_[left|right]_N" state either transitions back to itself
   // or enters the [first germline|end] state.
-  for (std::size_t i = 0; i < n_state_names.size(); i++) {
-    if (n_state_names[i] == n_name) {
-      n_transition_ = n_probs[i];
+  assert(n_state_names_probs.size() == n_check_state_names_probs.size());
+  for (auto it = n_state_names_probs.begin(),
+            check_it = n_check_state_names_probs.begin();
+       it != n_state_names_probs.end(); ++it, ++check_it) {
+    assert(it->first == check_it->first);
+    assert(std::fabs(it->second - check_it->second) <= EPS);
+
+    if (it->first == n_name) {
+      n_transition_ = it->second;
     } else {
-      assert(n_state_names[i] == next_name);
+      assert(it->first == next_name);
     }
   }
 
   // Parse NPadding emission data.
+  std::vector<std::string> n_state_names;
+  Eigen::VectorXd n_probs;
   std::tie(n_state_names, n_probs) =
       ParseStringProbMap(n_state["emissions"]["probs"]);
   assert(n_state["emissions"]["track"].as<std::string>() == "nukes");

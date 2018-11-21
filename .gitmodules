@@ -1,6 +1,3 @@
-[submodule "yaml-cpp"]
-	path = lib/yaml-cpp
-	url = https://github.com/jbeder/yaml-cpp.git
 [submodule "lib/fast-cpp-csv-parser"]
 	path = lib/fast-cpp-csv-parser
 	url = https://github.com/ben-strasser/fast-cpp-csv-parser.git
@@ -10,3 +7,16 @@
 [submodule "lib/libptpll"]
 	path = lib/libptpll
 	url = https://github.com/matsengrp/libptpll.git
+[submodule "lib/tclap"]
+	path = lib/tclap
+	url = https://git.code.sf.net/p/tclap/code
+[submodule "lib/partis"]
+	path = lib/partis
+	url = https://github.com/psathyrella/partis.git
+	branch = dev
+[submodule "lib/revbayes"]
+	path = lib/revbayes
+	url = https://github.com/revbayes/revbayes.git
+[submodule "lib/phylomd"]
+	path = lib/phylomd
+	url = https://github.com/dunleavy005/phylomd.git
