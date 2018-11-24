@@ -8,23 +8,48 @@
 '._.-'-._.-._.-''-..'
 ```
 
-[![wercker status](https://app.wercker.com/status/284280f33f13e936de0d544a332121af/m/master "wercker status")](https://app.wercker.com/project/byKey/284280f33f13e936de0d544a332121af)
+[![wercker status](https://app.wercker.com/status/284280f33f13e936de0d544a332121af/s/master "wercker status")](https://app.wercker.com/project/byKey/284280f33f13e936de0d544a332121af)
 
-Developer documentation: http://matsengrp.github.io/linearham (or build locally by running `doxygen Doxyfile`)
+## Installation
 
-## dependencies
+The `linearham` installation dependencies are specified in the `Dockerfile` and `wercker.yml` files.
+Note that these files specify build instructions for computers running Debian operating systems.
+The installation steps have been successfully tested on Ubuntu 16.04 and we expect the installation process to work on other UNIX-based platforms as well.
 
-On Debian/Ubuntu, execute all the `RUN` instructions in the `Dockerfile`.
+## Example usage
 
-## usage
+The entire `linearham` pipeline can be executed using `scons`.
 
-Running `scons --run-partis --fasta-path=data/liao_dataset.fasta --all-clonal-seqs` runs `partis` assuming all the sequences in the Liao (2013) dataset are clonal.
-Remove that flag if you want to run `partis` in `partition` mode.
+To run `partis`:
+```bash
+scons --run-partis --fasta-path=<string> [--all-clonal-seqs]
+```
+The `partis`-related command line arguments are described in the following table:
 
-Running `scons --run-linearham --template-path=templates/revbayes_template.rev --mcmc-iter=25 --mcmc-thin=1 --tune-iter=0` runs the `linearham` phylogenetic inference pipeline.
+| Command | Description |
+| ---     | ---         |
+| `--fasta-path` | The repertoire FASTA file path. |
+| `--all-clonal-seqs` | Should the repertoire sequences be treated as clonal? |
 
-Running `_build/test/test` runs the `linearham` tests.
+To run `linearham`:
+```bash
+scons --run-linearham --cluster-ind=<int> --template-path=<string> --mcmc-iter=<int> --mcmc-thin=<int> --tune-iter=<int> --tune-thin=<int> --num-rates=<int> --burnin-frac=<double> --subsamp-frac=<double> --num-cores=<int> --seed=<int>
+```
+The `linearham`-related command line arguments are described in the following table:
 
-Running `_build/linearham/linearham` runs the `linearham` binary built from the source files in `src/`.
+| Command | Description |
+| ---     | ---         |
+| `--cluster-ind` | The `partis` clonal family index (defaults to 0). |
+| `--template-path` | The Rev template path. |
+| `--mcmc-iter` | How many RevBayes MCMC iterations should we use (defaults to 10000)? |
+| `--mcmc-thin` | What RevBayes MCMC thinning frequency should we use (defaults to 10)? |
+| `--tune-iter` | How many RevBayes tuning iterations should we use (defaults to 5000)? |
+| `--tune-thin` | What RevBayes tuning thinning frequency should we use (defaults to 100)? |
+| `--num-rates` | The number of gamma rate categories (defaults to 4). |
+| `--burnin-frac` | What fraction of MCMC burnin should we use (defaults to 0.1)? |
+| `--subsamp-frac` | What bootstrap sampling fraction should we use (defaults to 0.05)? |
+| `--num-cores` | The number of cores to use for ancestral sequence reconstruction (ASR) sampling (defaults to 1). |
+| `--seed` | The random number generator (RNG) seed. |
 
+All of the above command line arguments (except `--template-path` and `--num-cores`) accept comma-separated values as input.
 For more information on the `scons` arguments, run `scons --help`.
