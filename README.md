@@ -49,7 +49,7 @@ The `linearham`-related command line arguments are described in the following ta
 | `--burnin-frac` | What fraction of MCMC burnin should we use (defaults to 0.1)? |
 | `--subsamp-frac` | What bootstrap sampling fraction should we use (defaults to 0.05)? |
 | `--num-cores` | The number of cores to use for ancestral sequence reconstruction (ASR) sampling (defaults to 1). |
-| `--seed` | The random number generator (RNG) seed. |
+| `--seed` | The random number generator (RNG) seed (defaults to 0). |
 
 All of the above command line arguments (except `--template-path` and `--num-cores`) accept comma-separated values as input.
 For more information on the `scons` arguments, run `scons --help`.
