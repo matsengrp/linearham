@@ -30,6 +30,7 @@ The `partis`-related command line arguments are described in the following table
 | ---     | ---         |
 | `--fasta-path` | The repertoire FASTA file path. |
 | `--all-clonal-seqs` | Should the repertoire sequences be treated as clonal? |
+| `--outdir` | The output directory (defaults to `output`). |
 
 To run `linearham`:
 ```bash
@@ -50,6 +51,8 @@ The `linearham`-related command line arguments are described in the following ta
 | `--subsamp-frac` | What bootstrap sampling fraction should we use (defaults to 0.05)? |
 | `--num-cores` | The number of cores to use for ancestral sequence reconstruction (ASR) sampling (defaults to 1). |
 | `--seed` | The random number generator (RNG) seed (defaults to 0). |
+| `--outdir` | The output directory (defaults to `output`). |
 
 All of the above command line arguments (except `--template-path` and `--num-cores`) accept comma-separated values as input.
+Note that `scons --run-partis` and `scons --run-linearham` must specify the same output directory.
 For more information on the `scons` arguments, run `scons --help`.
