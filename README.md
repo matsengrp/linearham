@@ -22,7 +22,7 @@ The entire `linearham` pipeline can be executed using `scons`.
 
 To run `partis`:
 ```bash
-scons --run-partis --fasta-path=<string> [--all-clonal-seqs]
+scons --run-partis --fasta-path=<string> [--all-clonal-seqs] --hmm-param-dir=<string> --outdir=<string>
 ```
 The `partis`-related command line arguments are described in the following table:
 
@@ -30,11 +30,12 @@ The `partis`-related command line arguments are described in the following table
 | ---     | ---         |
 | `--fasta-path` | The repertoire FASTA file path. |
 | `--all-clonal-seqs` | Should the repertoire sequences be treated as clonal? |
+| `--hmm-param-dir` | An optional directory of partis HMM germline parameter files. |
 | `--outdir` | The output directory (defaults to `output`). |
 
 To run `linearham`:
 ```bash
-scons --run-linearham --cluster-ind=<int> --template-path=<string> --mcmc-iter=<int> --mcmc-thin=<int> --tune-iter=<int> --tune-thin=<int> --num-rates=<int> --burnin-frac=<double> --subsamp-frac=<double> --num-cores=<int> --seed=<int>
+scons --run-linearham --cluster-ind=<int> --template-path=<string> --mcmc-iter=<int> --mcmc-thin=<int> --tune-iter=<int> --tune-thin=<int> --num-rates=<int> --burnin-frac=<double> --subsamp-frac=<double> --num-cores=<int> --seed=<int> --hmm-param-dir=<string> --outdir=<string>
 ```
 The `linearham`-related command line arguments are described in the following table:
 
@@ -51,8 +52,9 @@ The `linearham`-related command line arguments are described in the following ta
 | `--subsamp-frac` | What bootstrap sampling fraction should we use (defaults to 0.05)? |
 | `--num-cores` | The number of cores to use for ancestral sequence reconstruction (ASR) sampling (defaults to 1). |
 | `--seed` | The random number generator (RNG) seed (defaults to 0). |
+| `--hmm-param-dir` | An optional directory of partis HMM germline parameter files. |
 | `--outdir` | The output directory (defaults to `output`). |
 
 All of the above command line arguments (except `--template-path` and `--num-cores`) accept comma-separated values as input.
-Note that `scons --run-partis` and `scons --run-linearham` must specify the same output directory.
+Note that `scons --run-partis` and `scons --run-linearham` must specify the same output directory and, if applicable, the same optional directory of partis HMM germline parameter files.
 For more information on the `scons` arguments, run `scons --help`.

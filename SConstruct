@@ -111,6 +111,12 @@ Script.AddOption("--build-partis-linearham",
         default=False,
         help="Should we build partis and linearham?")
 
+Script.AddOption("--hmm-param-dir",
+        dest="hmm_param_dir",
+        type="str",
+        default=None,
+        help="An external directory of partis HMM germline parameter files.")
+
 Script.AddOption("--outdir",
         dest="outdir",
         default="output",
@@ -145,6 +151,7 @@ def get_options(env):
 
         # partis/linearham arguments
         build_partis_linearham = env.GetOption("build_partis_linearham"),
+        hmm_param_dir = env.GetOption("hmm_param_dir"),
         outdir = env.GetOption("outdir")
     )
 
@@ -218,6 +225,7 @@ if options["run_partis"]:
     @nest.add_target()
     def partis_output(outdir, c):
         partis_mode = "annotate" if options["all_clonal_seqs"] else "partition"
+        partis_hmm_param_dir = options["hmm_param_dir"].rstrip("/") if options["hmm_param_dir"] is not None else os.path.join(outdir, "hmm_param_dir")
         partis_output = env.Command(
             [os.path.join(outdir, filename) for filename in
                 ["partis_run.yaml", "partis_run.stdout.log"]],
@@ -225,7 +233,7 @@ if options["run_partis"]:
             "lib/partis/bin/partis " + partis_mode + " --linearham" \
                 + (" --all-seqs-simultaneous" if options["all_clonal_seqs"] else "") \
                 +  " --infname $SOURCE" \
-                +  " --parameter-dir " + os.path.join(outdir, "hmm_param_dir/") \
+                +  " --parameter-dir " + partis_hmm_param_dir \
                 +  " --outfname ${TARGETS[0]}" \
                 +  " > ${TARGETS[1]}")
         env.Depends(partis_output, "lib/partis/packages/ham/bcrham")
@@ -242,7 +250,8 @@ if options["run_linearham"]:
 
     @nest.add_target()
     def hmm_param_dir(outdir, c):
-        return os.path.join(outdir, "hmm_param_dir/hmm/hmms/")
+        linearham_hmm_param_dir = options["hmm_param_dir"].rstrip("/") if options["hmm_param_dir"] is not None else os.path.join(outdir, "hmm_param_dir")
+        return linearham_hmm_param_dir + "/hmm/hmms"
 
     @nest.add_nest(label_func=default_label)
     def partition(c):
