@@ -115,7 +115,7 @@ Script.AddOption("--hmm-param-dir",
         dest="hmm_param_dir",
         type="str",
         default=None,
-        help="An external directory of partis HMM germline parameter files.")
+        help="An optional directory of partis HMM germline parameter files.")
 
 Script.AddOption("--outdir",
         dest="outdir",
