@@ -52,9 +52,11 @@ The `linearham`-related command line arguments are described in the following ta
 | `--subsamp-frac` | What bootstrap sampling fraction should we use (defaults to 0.05)? |
 | `--num-cores` | The number of cores to use for ancestral sequence reconstruction (ASR) sampling (defaults to 1). |
 | `--seed` | The random number generator (RNG) seed (defaults to 0). |
+| `--seed-seq` | The name of the seed sequence of interest. |
+| `--asr-pfilters` | The ancestral sequence posterior probability threshold (defaults to 0.1). |
 | `--hmm-param-dir` | An optional directory of partis HMM germline parameter files. |
 | `--outdir` | The output directory (defaults to `output`). |
 
-All of the above command line arguments (except `--template-path` and `--num-cores`) accept comma-separated values as input.
+All of the above command line arguments (except `--all-clonal-seqs`, `--hmm-param-dir`, `--template-path`, `--num-cores`, and `--outdir`) accept comma-separated values as input.
 Note that `scons --run-partis` and `scons --run-linearham` must specify the same output directory and, if applicable, the same optional directory of partis HMM germline parameter files.
 For more information on the `scons` arguments, run `scons --help`.
