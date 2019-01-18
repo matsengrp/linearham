@@ -137,10 +137,6 @@ if __name__ == '__main__':
     dot = graphviz.Digraph(comment=" ".join(sys.argv), format='png',
                            graph_attr=[('size','24,14'), ('ratio','fill'), ('fontsize','14')])
 
-    # Commented because it defeats our filtering mechanism below. Could re-add if
-    # we want to add extra information to nodes.
-    #    for k in out_seqs:
-    #        dot.node(k)
     for pfilter in args.pfilters:
         dot_copy = copy.deepcopy(dot)
 
