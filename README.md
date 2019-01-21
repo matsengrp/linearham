@@ -53,7 +53,7 @@ The `linearham`-related command line arguments are described in the following ta
 | `--num-cores` | The number of cores to use for ancestral sequence reconstruction (ASR) sampling (defaults to 1). |
 | `--seed` | The random number generator (RNG) seed (defaults to 0). |
 | `--seed-seq` | The name of the seed sequence of interest. |
-| `--asr-pfilters` | The ancestral sequence posterior probability threshold (defaults to 0.1). |
+| `--asr-pfilters` | The ancestral sequence posterior probability thresholds (defaults to 0.1). |
 | `--hmm-param-dir` | An optional directory of partis HMM germline parameter files. |
 | `--outdir` | The output directory (defaults to `output`). |
 
