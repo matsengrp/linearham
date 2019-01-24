@@ -106,7 +106,7 @@ Script.AddOption("--seed",
 Script.AddOption("--seed-seq",
         dest="seed_seq",
         type="str",
-        default="",
+        default=None,
         help="The name of the seed sequence.")
 
 Script.AddOption("--asr-pfilters",
@@ -160,7 +160,7 @@ def get_options(env):
         subsamp_frac = process_multiarg(env.GetOption("subsamp_frac"), float, ","),
         num_cores = env.GetOption("num_cores"),
         seed = process_multiarg(env.GetOption("seed"), int, ","),
-        seed_seq = process_multiarg(env.GetOption("seed_seq"), str, ","),
+        seed_seq = process_multiarg(env.GetOption("seed_seq"), str, ",") if env.GetOption("seed_seq") is not None else None,
         asr_pfilters = process_multiarg(env.GetOption("asr_pfilters"), float, ","),
 
         # partis/linearham arguments
@@ -354,20 +354,22 @@ if options["run_linearham"]:
         env.Depends(linearham_final_output, "scripts/run_bootstrap_asr.R")
         return linearham_final_output
 
-    @nest.add_nest(label_func=default_label)
-    def seed_seq(c):
-        return [{"id": "seed_seq" + seed_seq, "name": seed_seq}
-                for seed_seq in options["seed_seq"]]
+    if options["seed_seq"] is not None:
 
-    @nest.add_target()
-    def linearham_visualization(outdir, c):
-        outbase = os.path.join(outdir, c["seed_seq"]["name"])
-        linearham_visualization = env.Command(
-            [outbase + ".pfilter" + str(pfilter) + ".aa_lineage_graph.png" for pfilter in options["asr_pfilters"]],
-            c["linearham_final_output"],
-            "scripts/trees_to_counted_ancestors.py $SOURCE" \
-                + " --seed-seq " + c["seed_seq"]["name"] \
-                + " --pfilters " + " ".join(str(pfilter) for pfilter in options["asr_pfilters"]) \
-                + " --output-base " + outbase)
-        env.Depends(linearham_visualization, "scripts/trees_to_counted_ancestors.py")
-        return linearham_visualization
+        @nest.add_nest(label_func=default_label)
+        def seed_seq(c):
+            return [{"id": "seed_seq" + seed_seq, "name": seed_seq}
+                    for seed_seq in options["seed_seq"]]
+
+        @nest.add_target()
+        def linearham_visualization(outdir, c):
+            outbase = os.path.join(outdir, c["seed_seq"]["name"])
+            linearham_visualization = env.Command(
+                [outbase + ".pfilter" + str(pfilter) + ".aa_lineage_graph.png" for pfilter in options["asr_pfilters"]],
+                c["linearham_final_output"],
+                "scripts/trees_to_counted_ancestors.py $SOURCE" \
+                    + " --seed-seq " + c["seed_seq"]["name"] \
+                    + " --pfilters " + " ".join(str(pfilter) for pfilter in options["asr_pfilters"]) \
+                    + " --output-base " + outbase)
+            env.Depends(linearham_visualization, "scripts/trees_to_counted_ancestors.py")
+            return linearham_visualization
