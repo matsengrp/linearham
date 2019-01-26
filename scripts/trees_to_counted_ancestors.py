@@ -117,7 +117,7 @@ if __name__ == '__main__':
         if s in seed_s:
             out_seqs[args.seed_seq] = s
         else:
-            seq_prefix = "naive" if s in naive_s else "inferred"
+            seq_prefix = "naive" if s in naive_s else "intermediate"
             out_seqs['{}_{}_{}'.format(seq_prefix, i, count)] = s
             aa_dna_map['{}_{}_{}'.format(seq_prefix, i, count)] = [
                 str(cnt) + "," + dna_seq for (dna_seq, cnt) in node_dt[s].most_common(None)
@@ -132,7 +132,6 @@ if __name__ == '__main__':
         for k, v in aa_dna_map.iteritems():
             f.write('>{}\n'.format(k))
             f.write('{}\n'.format("\n".join(v)))
-        f.close()
 
     dot = graphviz.Digraph(comment=" ".join(sys.argv), format='png',
                            graph_attr=[('size','24,14'), ('ratio','fill'), ('fontsize','14')])
