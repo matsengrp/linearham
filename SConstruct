@@ -358,7 +358,7 @@ if options["run_linearham"]:
 
         @nest.add_nest(label_func=default_label)
         def seed_seq(c):
-            return [{"id": "seed_seq" + seed_seq, "name": seed_seq}
+            return [{"id": "seedseq" + seed_seq, "name": seed_seq}
                     for seed_seq in options["seed_seq"]]
 
         @nest.add_target()
