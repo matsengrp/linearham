@@ -35,7 +35,7 @@ The `partis`-related command line arguments are described in the following table
 
 To run `linearham`:
 ```bash
-scons --run-linearham --cluster-ind=<int> --template-path=<string> --mcmc-iter=<int> --mcmc-thin=<int> --tune-iter=<int> --tune-thin=<int> --num-rates=<int> --burnin-frac=<double> --subsamp-frac=<double> --num-cores=<int> --seed=<int> --hmm-param-dir=<string> --outdir=<string>
+scons --run-linearham --cluster-ind=<int> --template-path=<string> --mcmc-iter=<int> --mcmc-thin=<int> --tune-iter=<int> --tune-thin=<int> --num-rates=<int> --burnin-frac=<double> --subsamp-frac=<double> --num-cores=<int> --seed=<int> --seed-seq=<string> --asr-pfilters=<double> --hmm-param-dir=<string> --outdir=<string>
 ```
 The `linearham`-related command line arguments are described in the following table:
 
