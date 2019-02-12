@@ -8,6 +8,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
   build-essential \
   cmake \
   flex \
+  graphviz \
   libgsl0-dev \
   liblapack-dev \
   libncurses-dev \
