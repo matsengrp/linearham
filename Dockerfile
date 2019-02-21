@@ -8,6 +8,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
   build-essential \
   cmake \
   flex \
+  ghostscript \
   graphviz \
   libgsl0-dev \
   liblapack-dev \
@@ -23,7 +24,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
   libyaml-dev \
   libyaml-cpp-dev \
   libz-dev
-RUN pip install biopython colored-traceback dendropy graphviz jinja2 matplotlib nestly numpy psutil pysam pyyaml scipy
+RUN pip install biopython colored-traceback dendropy graphviz jinja2 matplotlib nestly numpy psutil pysam pyyaml scipy weblogo
 RUN Rscript --slave --vanilla -e 'install.packages(c("phylotate", "Rcpp", "RcppArmadillo"), repos = "https://cloud.r-project.org")'
 
 COPY . /linearham
