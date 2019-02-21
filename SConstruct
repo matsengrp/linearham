@@ -355,6 +355,15 @@ if options["run_linearham"]:
         env.Depends(linearham_final_output, "scripts/run_bootstrap_asr.R")
         return linearham_final_output
 
+    @nest.add_target()
+    def naive_visualization(outdir, c):
+        naive_visualization = env.Command(
+            os.path.join(outdir, "aa_naive_logo.png"),
+            c["linearham_final_output"],
+            "scripts/create_naive_logo.py $SOURCE --output-path $TARGET")
+        env.Depends(naive_visualization, "scripts/create_naive_logo.py")
+        return naive_visualization
+
     if options["seed_seq"] is not None:
 
         @nest.add_nest(label_func=default_label)
@@ -363,14 +372,14 @@ if options["run_linearham"]:
                     for seed_seq in options["seed_seq"]]
 
         @nest.add_target()
-        def linearham_visualization(outdir, c):
+        def lineage_visualization(outdir, c):
             outbase = os.path.join(outdir, c["seed_seq"]["name"])
-            linearham_visualization = env.Command(
+            lineage_visualization = env.Command(
                 [outbase + ".pfilter" + str(pfilter) + ".aa_lineage_graph.png" for pfilter in options["asr_pfilters"]],
                 c["linearham_final_output"],
                 "scripts/trees_to_counted_ancestors.py $SOURCE" \
                     + " --seed-seq " + c["seed_seq"]["name"] \
                     + " --pfilters " + " ".join(str(pfilter) for pfilter in options["asr_pfilters"]) \
                     + " --output-base " + outbase)
-            env.Depends(linearham_visualization, "scripts/trees_to_counted_ancestors.py")
-            return linearham_visualization
+            env.Depends(lineage_visualization, "scripts/trees_to_counted_ancestors.py")
+            return lineage_visualization

@@ -4,12 +4,12 @@ import argparse
 import copy
 from collections import Counter, OrderedDict
 import dendropy
-from Bio.Alphabet import Gapped, IUPAC
 import graphviz
 from itertools import groupby
 import numpy as np
-from Bio.Seq import Seq
 import sys
+
+from util_functions import translate
 
 
 def find_muts(orig, mutated):
@@ -41,13 +41,6 @@ def seqs_of_tree(t, seed):
     lineage.append(t.find_node_with_taxon_label("naive"))
 
     return [n.annotations.get_value('ancestral') for n in lineage]
-
-def translate(s):
-    '''
-    Assume we are in frame and translate DNA to amino acids.
-    '''
-    coding_dna = Seq(s[:(3*int(len(s)/3))], Gapped(IUPAC.ambiguous_dna))
-    return str(coding_dna.translate())
 
 def write_to_fasta(d, filename):
     '''
@@ -118,9 +111,9 @@ if __name__ == '__main__':
             out_seqs[args.seed_seq] = s
         else:
             seq_prefix = "naive" if s in naive_s else "intermediate"
-            out_seqs['{}_{}_{}'.format(seq_prefix, i, count)] = s
-            aa_dna_map['{}_{}_{}'.format(seq_prefix, i, count)] = [
-                str(cnt) + "," + dna_seq for (dna_seq, cnt) in node_dt[s].most_common(None)
+            out_seqs['{}_{}_{}'.format(seq_prefix, i, float(count) / num_trees)] = s
+            aa_dna_map['{}_{}_{}'.format(seq_prefix, i, float(count) / num_trees)] = [
+                str(float(cnt) / num_trees) + "," + dna_seq for (dna_seq, cnt) in node_dt[s].most_common(None)
             ]
 
     # Flip the dictionary.
