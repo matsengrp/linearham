@@ -1,4 +1,4 @@
-from Bio.Alphabet import Gapped, IUPAC
+from Bio.Alphabet import IUPAC
 from Bio.Seq import Seq
 
 
