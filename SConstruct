@@ -373,9 +373,9 @@ if options["run_linearham"]:
 
         @nest.add_target()
         def lineage_tabulation(outdir, c):
-            outbase = os.path.join(outdir, c["seed_seq"]["name"])
+            outbase = os.path.join(outdir, c["seed_seq"]["name"] + ".aa_lineage_seqs")
             lineage_tabulation = env.Command(
-                [outbase + ".pfilter" + str(pfilter) + ".aa_lineage_seqs.png" for pfilter in options["asr_pfilters"]],
+                [outbase + ".pfilter" + str(pfilter) + ".png" for pfilter in options["asr_pfilters"]],
                 c["linearham_final_output"],
                 "scripts/trees_to_counted_ancestors.py $SOURCE" \
                     + " --seed-seq " + c["seed_seq"]["name"] \

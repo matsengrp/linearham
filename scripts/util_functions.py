@@ -14,6 +14,6 @@ def write_to_fasta(d, filename):
     Write a FASTA dict to file.
     '''
     with open(filename, 'w') as f:
-        for k, v in d.items():
+        for k, v in d.iteritems():
             f.write('>{}\n'.format(k))
             f.write('{}\n'.format(v))

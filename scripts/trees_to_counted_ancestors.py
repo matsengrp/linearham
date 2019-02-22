@@ -102,19 +102,15 @@ if __name__ == '__main__':
         else:
             seq_prefix = "naive" if s in naive_s else "intermediate"
             out_seqs['{}_{}_{}'.format(seq_prefix, i, float(count) / num_trees)] = s
-            aa_dna_map['{}_{}_{}'.format(seq_prefix, i, float(count) / num_trees)] = [
+            aa_dna_map['{}_{}_{}'.format(seq_prefix, i, float(count) / num_trees)] = "\n".join(
                 str(float(cnt) / num_trees) + "," + dna_seq for (dna_seq, cnt) in node_dt[s].most_common(None)
-            ]
+            )
+
+    write_to_fasta(out_seqs, args.output_base + ".fasta")
+    write_to_fasta(aa_dna_map, args.output_base + ".dnamap")
 
     # Flip the dictionary.
     seqs_out = {v:k for k,v in out_seqs.iteritems()}
-
-    write_to_fasta(out_seqs, args.output_base + ".aa_lineage_seqs.fasta")
-
-    with open(args.output_base + '.aa_lineage_seqs.dnamap', 'w') as f:
-        for k, v in aa_dna_map.iteritems():
-            f.write('>{}\n'.format(k))
-            f.write('{}\n'.format("\n".join(v)))
 
     dot = graphviz.Digraph(comment=" ".join(sys.argv), format='png',
                            graph_attr=[('size','24,14'), ('ratio','fill'), ('fontsize','14')])
@@ -136,5 +132,5 @@ if __name__ == '__main__':
                         node_conf = int(10 + (100-10) * float(node_c[ab]) / num_trees)
                         dot_copy.node(seqs_out[ab], style="filled", fillcolor="#ff0000" + (str(node_conf) if node_conf < 100 else ""))
 
-        dot_copy.save(args.output_base + '.pfilter' + str(pfilter) + '.aa_lineage_seqs.dot')
-        dot_copy.render(args.output_base + '.pfilter' + str(pfilter) + '.aa_lineage_seqs', cleanup = True)
+        dot_copy.save(args.output_base + ".pfilter" + str(pfilter) + ".dot")
+        dot_copy.render(args.output_base + ".pfilter" + str(pfilter), cleanup = True)

@@ -3,6 +3,7 @@
 import argparse
 from collections import Counter
 import dendropy
+from itertools import groupby
 import subprocess
 import weblogolib as w
 
@@ -26,7 +27,8 @@ if __name__ == '__main__':
         preserve_underscores=True
     )
 
-    aa_naive_seqs = [translate(tree.find_node_with_taxon_label("naive").annotations.get_value("ancestral")) for tree in tree_yielder]
+    naive_seqs = [tree.find_node_with_taxon_label("naive").annotations.get_value("ancestral") for tree in tree_yielder]
+    aa_naive_seqs = [translate(seq) for seq in naive_seqs]
     aa_naive_seqs_d = {("naive" + str(i)): seq for i, seq in enumerate(aa_naive_seqs)}
     write_to_fasta(aa_naive_seqs_d, args.output_base + ".fasta")
 
@@ -52,3 +54,15 @@ if __name__ == '__main__':
     aa_naive_seqs_d = {("naive_" + str(i) + "_" + str(float(count) / num_trees)): seq
                        for i, (seq, count) in enumerate(aa_naive_seqs_c.most_common(None))}
     write_to_fasta(aa_naive_seqs_d, args.output_base + ".fasta")
+
+    aa_dna_naive_seqs_d = {}
+    for k, g in groupby(naive_seqs, lambda seq: translate(seq)):
+        if k in aa_dna_naive_seqs_d:
+            aa_dna_naive_seqs_d[k].update(g)
+        else:
+            aa_dna_naive_seqs_d[k] = Counter(g)
+
+    aa_dna_naive_seqs_map = {k: "\n".join(str(float(count) / num_trees) + "," + dna_seq
+                                          for dna_seq, count in aa_dna_naive_seqs_d[v].most_common(None))
+                             for k, v in aa_naive_seqs_d.iteritems()}
+    write_to_fasta(aa_dna_naive_seqs_map, args.output_base + ".dnamap")
