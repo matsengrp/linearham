@@ -9,7 +9,7 @@ from itertools import groupby
 import numpy as np
 import sys
 
-from util_functions import translate
+from util_functions import translate, write_to_fasta
 
 
 def find_muts(orig, mutated):
@@ -41,16 +41,6 @@ def seqs_of_tree(t, seed):
     lineage.append(t.find_node_with_taxon_label("naive"))
 
     return [n.annotations.get_value('ancestral') for n in lineage]
-
-def write_to_fasta(d, filename):
-    '''
-    Write a FASTA dict to file.
-    '''
-    with open(filename, 'w') as f:
-        for k, v in d.items():
-            f.write('>{}\n'.format(k))
-            f.write('{}\n'.format(v))
-        f.close()
 
 
 if __name__ == '__main__':
@@ -146,5 +136,5 @@ if __name__ == '__main__':
                         node_conf = int(10 + (100-10) * float(node_c[ab]) / num_trees)
                         dot_copy.node(seqs_out[ab], style="filled", fillcolor="#ff0000" + (str(node_conf) if node_conf < 100 else ""))
 
-        dot_copy.save(args.output_base + '.pfilter' + str(pfilter) + '.aa_lineage_graph.dot')
-        dot_copy.render(args.output_base + '.pfilter' + str(pfilter) + '.aa_lineage_graph')
+        dot_copy.save(args.output_base + '.pfilter' + str(pfilter) + '.aa_lineage_seqs.dot')
+        dot_copy.render(args.output_base + '.pfilter' + str(pfilter) + '.aa_lineage_seqs', cleanup = True)

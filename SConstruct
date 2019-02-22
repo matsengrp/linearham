@@ -356,13 +356,13 @@ if options["run_linearham"]:
         return linearham_final_output
 
     @nest.add_target()
-    def naive_visualization(outdir, c):
-        naive_visualization = env.Command(
-            os.path.join(outdir, "aa_naive_logo.png"),
-            c["linearham_final_output"],
-            "scripts/create_naive_logo.py $SOURCE --output-path $TARGET")
-        env.Depends(naive_visualization, "scripts/create_naive_logo.py")
-        return naive_visualization
+    def naive_tabulation(outdir, c):
+        outbase = os.path.join(outdir, "aa_naive_seqs")
+        naive_tabulation = env.Command(
+            outbase, c["linearham_final_output"],
+            "scripts/tabulate_naive_probs.py $SOURCE --output-base $TARGET")
+        env.Depends(naive_tabulation, "scripts/tabulate_naive_probs.py")
+        return naive_tabulation
 
     if options["seed_seq"] is not None:
 
@@ -372,14 +372,14 @@ if options["run_linearham"]:
                     for seed_seq in options["seed_seq"]]
 
         @nest.add_target()
-        def lineage_visualization(outdir, c):
+        def lineage_tabulation(outdir, c):
             outbase = os.path.join(outdir, c["seed_seq"]["name"])
-            lineage_visualization = env.Command(
-                [outbase + ".pfilter" + str(pfilter) + ".aa_lineage_graph.png" for pfilter in options["asr_pfilters"]],
+            lineage_tabulation = env.Command(
+                [outbase + ".pfilter" + str(pfilter) + ".aa_lineage_seqs.png" for pfilter in options["asr_pfilters"]],
                 c["linearham_final_output"],
                 "scripts/trees_to_counted_ancestors.py $SOURCE" \
                     + " --seed-seq " + c["seed_seq"]["name"] \
                     + " --pfilters " + " ".join(str(pfilter) for pfilter in options["asr_pfilters"]) \
                     + " --output-base " + outbase)
-            env.Depends(lineage_visualization, "scripts/trees_to_counted_ancestors.py")
-            return lineage_visualization
+            env.Depends(lineage_tabulation, "scripts/trees_to_counted_ancestors.py")
+            return lineage_tabulation
