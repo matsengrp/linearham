@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 import argparse
-from collections import Counter
+from collections import Counter, OrderedDict
 import dendropy
 from itertools import groupby
 import subprocess
@@ -51,8 +51,10 @@ if __name__ == '__main__':
 
     aa_naive_seqs_c = Counter(aa_naive_seqs)
     num_trees = len(aa_naive_seqs)
-    aa_naive_seqs_d = {("naive_" + str(i) + "_" + str(float(count) / num_trees)): seq
-                       for i, (seq, count) in enumerate(aa_naive_seqs_c.most_common(None))}
+    aa_naive_seqs_d = OrderedDict(
+        ("naive_" + str(i) + "_" + str(float(count) / num_trees), seq)
+        for i, (seq, count) in enumerate(aa_naive_seqs_c.most_common(None))
+    )
     write_to_fasta(aa_naive_seqs_d, args.output_base + ".fasta")
 
     aa_dna_naive_seqs_d = {}
@@ -62,7 +64,9 @@ if __name__ == '__main__':
         else:
             aa_dna_naive_seqs_d[k] = Counter(g)
 
-    aa_dna_naive_seqs_map = {k: "\n".join(str(float(count) / num_trees) + "," + dna_seq
-                                          for dna_seq, count in aa_dna_naive_seqs_d[v].most_common(None))
-                             for k, v in aa_naive_seqs_d.iteritems()}
+    aa_dna_naive_seqs_map = OrderedDict(
+        (k, "\n".join(str(float(count) / num_trees) + "," + dna_seq
+                      for dna_seq, count in aa_dna_naive_seqs_d[v].most_common(None)))
+        for k, v in aa_naive_seqs_d.iteritems()
+    )
     write_to_fasta(aa_dna_naive_seqs_map, args.output_base + ".dnamap")

@@ -1,6 +1,17 @@
 from Bio.Alphabet import IUPAC
+from collections import OrderedDict
 from Bio.Seq import Seq
+from Bio import SeqIO
 
+
+def read_from_fasta(path, invert = False):
+    '''
+    Read in a FASTA file and create a (id:seq) or (seq:id) ordered dict.
+    '''
+    return OrderedDict(
+        (str(r.seq), r.id) if invert else (r.id, str(r.seq))
+        for r in SeqIO.parse(path, "fasta")
+    )
 
 def translate(s):
     '''

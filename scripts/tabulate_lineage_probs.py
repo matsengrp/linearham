@@ -9,7 +9,7 @@ from itertools import groupby
 import numpy as np
 import sys
 
-from util_functions import translate, write_to_fasta
+from util_functions import read_from_fasta, translate, write_to_fasta
 
 
 def find_muts(orig, mutated):
@@ -33,7 +33,7 @@ def seqs_of_tree(t, seed):
     '''
     lineage = [t.find_node_with_taxon_label(seed)]
 
-    while(True):
+    while True:
         node = lineage[-1].parent_node
         if node is None:
             break  # We are done.
@@ -44,10 +44,13 @@ def seqs_of_tree(t, seed):
 
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description="Count occurrences of linearham-inferred ancestral sequences.")
+    parser = argparse.ArgumentParser(description="Tabulate the ancestral lineage posterior probabilities.")
     parser.add_argument(
         'trees_path', type=str,
         help="Path to linearham trees file.")
+    parser.add_argument(
+        'naive_seqs_path', type=str,
+        help="Path to naive sequence FASTA file.")
     parser.add_argument(
         '--seed-seq', type=str, required=True,
         help="The name of the seed sequence.")
@@ -93,18 +96,26 @@ if __name__ == '__main__':
     # Count the number of linearham trees.
     num_trees = node_c.most_common(1)[0][1]
 
+    # Parse the naive sequence FASTA file.
+    aa_naive_seqs = read_from_fasta(args.naive_seqs_path, invert = True)
+
     # Iterate through all, in order of frequency.
     out_seqs = OrderedDict()
     aa_dna_map = OrderedDict()
-    for i, (s, count) in enumerate(node_c.most_common(None)):
+    i = 0
+    for s, count in node_c.most_common(None):
         if s in seed_s:
-            out_seqs[args.seed_seq] = s
+            seq_name = args.seed_seq
+        elif s in aa_naive_seqs:
+            seq_name = aa_naive_seqs[s]
         else:
-            seq_prefix = "naive" if s in naive_s else "intermediate"
-            out_seqs['{}_{}_{}'.format(seq_prefix, i, float(count) / num_trees)] = s
-            aa_dna_map['{}_{}_{}'.format(seq_prefix, i, float(count) / num_trees)] = "\n".join(
-                str(float(cnt) / num_trees) + "," + dna_seq for (dna_seq, cnt) in node_dt[s].most_common(None)
-            )
+            seq_name = "intermediate_{}_{}".format(i, float(count) / num_trees)
+            i += 1
+
+        out_seqs[seq_name] = s
+        aa_dna_map[seq_name] = "\n".join(
+            str(float(cnt) / num_trees) + "," + dna_seq for dna_seq, cnt in node_dt[s].most_common(None)
+        )
 
     write_to_fasta(out_seqs, args.output_base + ".fasta")
     write_to_fasta(aa_dna_map, args.output_base + ".dnamap")

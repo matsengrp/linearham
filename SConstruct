@@ -359,8 +359,8 @@ if options["run_linearham"]:
     def naive_tabulation(outdir, c):
         outbase = os.path.join(outdir, "aa_naive_seqs")
         naive_tabulation = env.Command(
-            outbase, c["linearham_final_output"],
-            "scripts/tabulate_naive_probs.py $SOURCE --output-base $TARGET")
+            outbase + ".fasta", c["linearham_final_output"],
+            "scripts/tabulate_naive_probs.py $SOURCE --output-base " + outbase)
         env.Depends(naive_tabulation, "scripts/tabulate_naive_probs.py")
         return naive_tabulation
 
@@ -375,11 +375,10 @@ if options["run_linearham"]:
         def lineage_tabulation(outdir, c):
             outbase = os.path.join(outdir, c["seed_seq"]["name"] + ".aa_lineage_seqs")
             lineage_tabulation = env.Command(
-                [outbase + ".pfilter" + str(pfilter) + ".png" for pfilter in options["asr_pfilters"]],
-                c["linearham_final_output"],
-                "scripts/trees_to_counted_ancestors.py $SOURCE" \
+                outbase + ".fasta", [c["linearham_final_output"], c["naive_tabulation"]],
+                "scripts/tabulate_lineage_probs.py $SOURCES" \
                     + " --seed-seq " + c["seed_seq"]["name"] \
                     + " --pfilters " + " ".join(str(pfilter) for pfilter in options["asr_pfilters"]) \
                     + " --output-base " + outbase)
-            env.Depends(lineage_tabulation, "scripts/trees_to_counted_ancestors.py")
+            env.Depends(lineage_tabulation, "scripts/tabulate_lineage_probs.py")
             return lineage_tabulation
