@@ -269,11 +269,11 @@ if options["run_linearham"]:
         return linearham_hmm_param_dir + "/hmm/hmms"
 
     @nest.add_nest(label_func=default_label)
-    def partition(c):
-        return [{"id": "partition" + str(i), "index": i} for i in options["cluster_ind"]]
+    def cluster(c):
+        return [{"id": "cluster" + str(i), "index": i} for i in options["cluster_ind"]]
 
     @nest.add_target()
-    def partition_fasta_file(outdir, c):
+    def cluster_fasta_file(outdir, c):
         return os.path.join(outdir, "input_seqs.fasta")
 
     @nest.add_nest(label_func=default_label)
@@ -296,7 +296,7 @@ if options["run_linearham"]:
         revbayes_rev_file = env.Command(
             os.path.join(outdir, "revbayes_run.rev"), options["template_path"],
             "scripts/generate_revbayes_rev_file.py $SOURCE" \
-                + " --fasta-path " + c["partition_fasta_file"] \
+                + " --fasta-path " + c["cluster_fasta_file"] \
                 + " --mcmc-iter " + str(c["revbayes_setting"]["mcmc_iter"]) \
                 + " --mcmc-thin " + str(c["revbayes_setting"]["mcmc_thin"]) \
                 + " --tune-iter " + str(c["revbayes_setting"]["tune_iter"]) \
@@ -323,7 +323,7 @@ if options["run_linearham"]:
             os.path.join(outdir, "lh_revbayes_run.trees"), c["revbayes_output"][0],
             "_build/linearham/linearham --pipeline" \
                 + " --yaml-path " + c["partis_yaml_file"] \
-                + " --cluster-ind " + str(c["partition"]["index"]) \
+                + " --cluster-ind " + str(c["cluster"]["index"]) \
                 + " --hmm-param-dir " + c["hmm_param_dir"] \
                 + " --seed " + str(c["revbayes_setting"]["seed"]) \
                 + " --num-rates " + str(c["revbayes_setting"]["num_rates"]) \
@@ -346,7 +346,7 @@ if options["run_linearham"]:
             c["linearham_intermediate_output"],
             "Rscript --slave --vanilla scripts/run_bootstrap_asr.R" \
                 + " $SOURCE" \
-                + " " + c["partition_fasta_file"] \
+                + " " + c["cluster_fasta_file"] \
                 + " " + str(c["linearham_setting"]["burnin_frac"]) \
                 + " " + str(c["linearham_setting"]["subsamp_frac"]) \
                 + " " + str(options["num_cores"]) \
