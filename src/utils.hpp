@@ -31,7 +31,7 @@ std::string GetAlphabet(const YAML::Node& root);
 
 int GetAlphabetIndex(const std::string& alphabet, char base);
 
-std::regex GetGermlineStateRegex(const std::string& gname);
+std::regex GetGermlineStateRegex(std::string gname);
 
 std::regex GetNTIStateRegex(const std::string& alphabet);
 

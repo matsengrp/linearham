@@ -71,7 +71,10 @@ int GetAlphabetIndex(const std::string& alphabet, char base) {
 /// The germline name.
 /// @return
 /// The germline regex.
-std::regex GetGermlineStateRegex(const std::string& gname) {
+std::regex GetGermlineStateRegex(std::string gname) {
+  gname = std::regex_replace(gname, std::regex("\\+"), "\\+");
+  gname = std::regex_replace(gname, std::regex("\\."), "\\.");
+
   return std::regex("^" + gname + "_([0-9]+)$");
 };
 
