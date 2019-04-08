@@ -171,7 +171,7 @@ def get_options(env):
 
 env = Environment(ENV = os.environ)
 options = get_options(env)
-if options["build_partis_linearham"]:
+if not options["build_partis_linearham"]:
     env.SConsignFile(os.path.join(options["outdir"], ".sconsign"))
 
 
