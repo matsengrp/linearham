@@ -171,7 +171,8 @@ def get_options(env):
 
 env = Environment(ENV = os.environ)
 options = get_options(env)
-env.SConsignFile(os.path.join(options["outdir"], ".sconsign"))
+if options["build_partis_linearham"]:
+    env.SConsignFile(os.path.join(options["outdir"], ".sconsign"))
 
 
 #### Set up the nesting structure

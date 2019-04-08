@@ -1,4 +1,5 @@
 _build/
+.sconsign.dblite
 html/
 latex/
 *.pyc
