@@ -41,6 +41,7 @@ Germline::Germline(const YAML::Node& root) {
 
   // Fix germline gene name.
   name_ = std::regex_replace(name_, std::regex("_star_"), "*");
+  name_ = std::regex_replace(name_, std::regex("_slash_"), "/");
 
   // Initialize the Germline data structures.
   landing_in_.setZero(gcount);

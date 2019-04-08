@@ -52,7 +52,7 @@ std::unordered_map<std::string, GermlineGene> CreateGermlineGeneMap(
 
   // Initialize variables for directory parsing.
   struct dirent* dir_entry;
-  std::regex yaml_rgx("^(IGH([VDJ]).+_star_[0-9]{2}).yaml$");
+  std::regex yaml_rgx("^(IGH([VDJ]).*_star_.*)\\.yaml$");
   std::smatch match;
 
   // Initialize output map.
@@ -66,6 +66,7 @@ std::unordered_map<std::string, GermlineGene> CreateGermlineGeneMap(
     // Fix germline gene name.
     std::string gname =
         std::regex_replace(match.str(1), std::regex("_star_"), "*");
+    gname = std::regex_replace(gname, std::regex("_slash_"), "/");
 
     // Store YAML root.
     YAML::Node root = YAML::LoadFile(hmm_param_dir + file_name);
