@@ -5,7 +5,7 @@ build:
         - install-packages:
             packages: autoconf bison libblas-dev build-essential cmake curl doxygen flex ghostscript git graphviz
                 libgsl0-dev liblapack-dev libncurses-dev python-dev python-pip python-setuptools r-cran-ape
-                r-cran-data.table r-cran-littler scons libtool libyaml-dev libyaml-cpp-dev libz-dev
+                r-cran-coda r-cran-data.table r-cran-littler scons libtool libyaml-dev libyaml-cpp-dev libz-dev
         - pip-install:
             requirements_file: ""
             packages_list: "biopython colored-traceback dendropy graphviz jinja2 matplotlib nestly numpy psutil pysam pyyaml scipy weblogo"

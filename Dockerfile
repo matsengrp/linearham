@@ -17,6 +17,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
   python-pip \
   python-setuptools \
   r-cran-ape \
+  r-cran-coda \
   r-cran-data.table \
   r-cran-littler \
   scons \
