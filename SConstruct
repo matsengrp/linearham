@@ -319,17 +319,6 @@ if options["run_linearham"]:
         return revbayes_output
 
     @nest.add_target()
-    def revbayes_ess(outdir, c):
-        revbayes_ess = env.Command(
-            os.path.join(outdir, "revbayes_run.ess"), c["revbayes_output"][1],
-            "Rscript --slave --vanilla scripts/compute_revbayes_ess.R" \
-                + " $SOURCE" \
-                + " " + str(c["linearham_setting"]["burnin_frac"]) \
-                + " $TARGET")
-        env.Depends(revbayes_ess, "scripts/compute_revbayes_ess.R")
-        return revbayes_ess
-
-    @nest.add_target()
     def linearham_intermediate_output(outdir, c):
         linearham_intermediate_output = env.Command(
             os.path.join(outdir, "lh_revbayes_run.trees"), c["revbayes_output"][0],
@@ -350,6 +339,17 @@ if options["run_linearham"]:
                  "burnin_frac": burnin_frac, "subsamp_frac": subsamp_frac}
                 for burnin_frac in options["burnin_frac"]
                 for subsamp_frac in options["subsamp_frac"]]
+
+    @nest.add_target()
+    def revbayes_ess(outdir, c):
+        revbayes_ess = env.Command(
+            os.path.join(outdir, "revbayes_run.ess"), c["revbayes_output"][1],
+            "Rscript --slave --vanilla scripts/compute_revbayes_ess.R" \
+                + " $SOURCE" \
+                + " " + str(c["linearham_setting"]["burnin_frac"]) \
+                + " $TARGET")
+        env.Depends(revbayes_ess, "scripts/compute_revbayes_ess.R")
+        return revbayes_ess
 
     @nest.add_target()
     def linearham_final_output(outdir, c):
