@@ -15,7 +15,6 @@ tree.data = tail(tree.data, n = -(burnin.frac * nrow(tree.data)))
 # Compute the effective sample sizes for all parameters.
 ess = round(coda::effectiveSize(tree.data[, 2:ncol(tree.data)]))
 
-
 # Write the effective sample sizes to the output file.
 data.table::fwrite(as.data.frame(cbind("Parameter" = names(ess), "ESS" = ess)),
                    file = output.path, quote = FALSE, sep = "\t")
