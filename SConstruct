@@ -352,6 +352,17 @@ if options["run_linearham"]:
         return revbayes_ess
 
     @nest.add_target()
+    def linearham_ess(outdir, c):
+        linearham_ess = env.Command(
+            os.path.join(outdir, "linearham_run.ess"), c["linearham_intermediate_output"],
+            "Rscript --slave --vanilla scripts/compute_linearham_ess.R" \
+                + " $SOURCE" \
+                + " " + str(c["linearham_setting"]["burnin_frac"]) \
+                + " $TARGET")
+        env.Depends(linearham_ess, "scripts/compute_linearham_ess.R")
+        return linearham_ess
+
+    @nest.add_target()
     def linearham_final_output(outdir, c):
         linearham_final_output = env.Command(
             os.path.join(outdir, "linearham_run.trees"),
