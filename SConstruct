@@ -29,6 +29,12 @@ Script.AddOption("--all-clonal-seqs",
         default=False,
         help="Should we assume all the sequences in the FASTA file are clonal?")
 
+Script.AddOption("--locus",
+        dest="locus",
+        type="str",
+        default="igh",
+        help="Which immunoglobulin locus are we doing inference on?")
+
 # linearham arguments
 
 Script.AddOption("--run-linearham",
@@ -146,6 +152,7 @@ def get_options(env):
         run_partis = env.GetOption("run_partis"),
         fasta_path = env.GetOption("fasta_path"),
         all_clonal_seqs = env.GetOption("all_clonal_seqs"),
+        locus = env.GetOption("locus"),
 
         # linearham arguments
         run_linearham = env.GetOption("run_linearham"),
@@ -240,18 +247,17 @@ if options["run_partis"]:
 
     @nest.add_target()
     def partis_output(outdir, c):
-        partis_mode = "annotate" if options["all_clonal_seqs"] else "partition"
+        partis_mode = "annotate --all-seqs-simultaneous" if options["all_clonal_seqs"] else "partition"
         partis_hmm_param_dir = options["hmm_param_dir"].rstrip("/") if options["hmm_param_dir"] is not None else os.path.join(outdir, "hmm_param_dir")
         partis_output = env.Command(
             [os.path.join(outdir, filename) for filename in
                 ["partis_run.yaml", "partis_run.stdout.log"]],
             options["fasta_path"],
             "lib/partis/bin/partis " + partis_mode + " --linearham" \
-                + (" --all-seqs-simultaneous" if options["all_clonal_seqs"] else "") \
-                +  " --infname $SOURCE" \
-                +  " --parameter-dir " + partis_hmm_param_dir \
-                +  " --outfname ${TARGETS[0]}" \
-                +  " > ${TARGETS[1]}")
+                + " --infname $SOURCE" \
+                + " --parameter-dir " + partis_hmm_param_dir \
+                + " --locus " + options["locus"] \
+                + " --outfname ${TARGETS[0]} > ${TARGETS[1]}")
         env.Depends(partis_output, "lib/partis/packages/ham/bcrham")
         return partis_output
 

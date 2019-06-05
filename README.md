@@ -23,7 +23,7 @@ The entire `linearham` pipeline can be executed using `scons`.
 
 To run `partis`:
 ```bash
-scons --run-partis --fasta-path=<string> [--all-clonal-seqs] --hmm-param-dir=<string> --outdir=<string>
+scons --run-partis --fasta-path=<string> [--all-clonal-seqs] --locus={igh|igk|igl} --hmm-param-dir=<string> --outdir=<string>
 ```
 The `partis`-related command line arguments are described in the following table:
 
@@ -31,6 +31,7 @@ The `partis`-related command line arguments are described in the following table
 | ---     | ---         |
 | `--fasta-path` | The repertoire FASTA file path. |
 | `--all-clonal-seqs` | Should the repertoire sequences be treated as clonal? |
+| `--locus` | Which immunoglobulin locus are we doing inference on (defaults to `igh`)? |
 | `--hmm-param-dir` | An optional directory of partis HMM germline parameter files. |
 | `--outdir` | The output directory (defaults to `output`). |
 

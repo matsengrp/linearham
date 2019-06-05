@@ -30,6 +30,9 @@ namespace linearham {
 /// sample HMM hidden state sequences.
 class HMM {
  protected:
+  // Immunoglobulin locus
+  std::string locus_;
+
   // Partis cluster data
   YAML::Node cluster_data_;
 
@@ -166,6 +169,7 @@ class HMM {
   HMM(const std::string& yaml_path, int cluster_ind,
       const std::string& hmm_param_dir, int seed);
 
+  const std::string& locus() const { return locus_; };
   const YAML::Node& cluster_data() const { return cluster_data_; };
   const std::map<std::string, std::pair<int, int>>& flexbounds() const {
     return flexbounds_;

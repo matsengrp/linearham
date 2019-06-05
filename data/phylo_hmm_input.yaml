@@ -1,5 +1,5 @@
 {
-  "events" : [ {
+  "germline-info" : {"locus" : "igh"}, "events" : [ {
     "input_seqs" : [ "TAAAAGATCAATTNN", "CACACGTTCGAGTNN", "CGTAGTAGGACTCNN" ],
     "naive_seq" : "AGGACATACGTCTNN",
     "has_shm_indels" : [ false, false, false ],
