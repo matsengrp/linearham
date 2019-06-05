@@ -59,6 +59,6 @@ The `linearham`-related command line arguments are described in the following ta
 | `--hmm-param-dir` | An optional directory of partis HMM germline parameter files. |
 | `--outdir` | The output directory (defaults to `output`). |
 
-All of the above command line arguments (except `--all-clonal-seqs`, `--hmm-param-dir`, `--template-path`, `--num-cores`, and `--outdir`) accept comma-separated values as input.
+All of the above command line arguments (except `--all-clonal-seqs`, `--locus`, `--hmm-param-dir`, `--template-path`, `--num-cores`, and `--outdir`) accept comma-separated values as input.
 Note that `scons --run-partis` and `scons --run-linearham` must specify the same output directory and, if applicable, the same optional directory of partis HMM germline parameter files.
 For more information on the `scons` arguments, run `scons --help`.
