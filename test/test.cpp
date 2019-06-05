@@ -252,6 +252,7 @@ TEST_CASE("SimpleHMM", "[simplehmm]") {
   // http://matsengrp.github.io/linearham/sw_alignment.jpg.
 
   // We begin with HMM base class tests (members are tested in declaration order).
+  std::string locus = "igh";
   std::map<std::string, std::pair<int, int>> flexbounds = {
       {"v_l", {0, 2}},  {"v_r", {4, 6}},   {"d_l", {7, 8}},
       {"d_r", {9, 10}}, {"j_l", {11, 12}}, {"j_r", {15, 15}}};
@@ -360,6 +361,7 @@ TEST_CASE("SimpleHMM", "[simplehmm]") {
   std::vector<int> dj_junction_scaler_counts = {0, 0, 0};
   int jgerm_scaler_count = 0;
 
+  REQUIRE(simple_hmm_ptr->locus() == locus);
   REQUIRE(simple_hmm_ptr->flexbounds() == flexbounds);
   REQUIRE(simple_hmm_ptr->relpos() == relpos);
   REQUIRE(simple_hmm_ptr->alphabet() == alphabet);
@@ -421,6 +423,7 @@ TEST_CASE("SimpleHMM", "[simplehmm]") {
   // http://matsengrp.github.io/linearham/sw_alignment_extra.jpg.
 
   // We begin with HMM base class tests (members are tested in declaration order).
+  locus = "igh";
   flexbounds = {{"v_l", {0, 2}},  {"v_r", {4, 6}},  {"d_l", {4, 6}},
                 {"d_r", {8, 10}}, {"j_l", {8, 10}}, {"j_r", {15, 15}}};
   relpos = {{"IGHV_ex*01", 1}, {"IGHD_ex*01", 5}, {"IGHJ_ex*01", 10},
@@ -552,6 +555,7 @@ TEST_CASE("SimpleHMM", "[simplehmm]") {
   dj_junction_scaler_counts = {0, 0};
   jgerm_scaler_count = 0;
 
+  REQUIRE(simple_hmm_ptr->locus() == locus);
   REQUIRE(simple_hmm_ptr->flexbounds() == flexbounds);
   REQUIRE(simple_hmm_ptr->relpos() == relpos);
   REQUIRE(simple_hmm_ptr->alphabet() == alphabet);
@@ -623,6 +627,7 @@ TEST_CASE("PhyloHMM", "[phylohmm]") {
   // http://matsengrp.github.io/linearham/sw_alignment.jpg.
 
   // We begin with HMM base class tests (members are tested in declaration order).
+  std::string locus = "igh";
   std::map<std::string, std::pair<int, int>> flexbounds = {
       {"v_l", {0, 2}},  {"v_r", {4, 6}},   {"d_l", {7, 8}},
       {"d_r", {9, 10}}, {"j_l", {11, 12}}, {"j_r", {15, 15}}};
@@ -728,6 +733,7 @@ TEST_CASE("PhyloHMM", "[phylohmm]") {
   jpadding_transition << 0.04;
   bool cache_forward = true;
 
+  REQUIRE(phylo_hmm_ptr->locus() == locus);
   REQUIRE(phylo_hmm_ptr->flexbounds() == flexbounds);
   REQUIRE(phylo_hmm_ptr->relpos() == relpos);
   REQUIRE(phylo_hmm_ptr->alphabet() == alphabet);
@@ -855,6 +861,7 @@ TEST_CASE("PhyloHMM", "[phylohmm]") {
   // http://matsengrp.github.io/linearham/sw_alignment_extra.jpg.
 
   // We begin with HMM base class tests (members are tested in declaration order).
+  locus = "igh";
   flexbounds = {{"v_l", {0, 2}},  {"v_r", {4, 6}},  {"d_l", {4, 6}},
                 {"d_r", {8, 10}}, {"j_l", {8, 10}}, {"j_r", {15, 15}}};
   relpos = {{"IGHV_ex*01", 1}, {"IGHD_ex*01", 5}, {"IGHJ_ex*01", 10},
@@ -981,6 +988,7 @@ TEST_CASE("PhyloHMM", "[phylohmm]") {
   jpadding_transition << 0.04, 0.04;
   cache_forward = true;
 
+  REQUIRE(phylo_hmm_ptr->locus() == locus);
   REQUIRE(phylo_hmm_ptr->flexbounds() == flexbounds);
   REQUIRE(phylo_hmm_ptr->relpos() == relpos);
   REQUIRE(phylo_hmm_ptr->alphabet() == alphabet);

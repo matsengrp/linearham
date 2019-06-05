@@ -25,8 +25,10 @@ namespace linearham {
 /// The RNG seed.
 HMM::HMM(const std::string& yaml_path, int cluster_ind,
          const std::string& hmm_param_dir, int seed) {
-  // Parse the `flexbounds` and `relpos` YAML data.
-  cluster_data_ = YAML::LoadFile(yaml_path)["events"][cluster_ind];
+  // Parse the `locus`, `flexbounds`, and `relpos` YAML data.
+  YAML::Node root = YAML::LoadFile(yaml_path);
+  locus_ = root["germline-info"]["locus"].as<std::string>();
+  cluster_data_ = root["events"][cluster_ind];
   flexbounds_ = cluster_data_["flexbounds"]
                     .as<std::map<std::string, std::pair<int, int>>>();
   relpos_ = cluster_data_["relpos"].as<std::map<std::string, int>>();
