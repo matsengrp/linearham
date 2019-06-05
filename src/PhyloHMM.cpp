@@ -61,14 +61,23 @@ void PhyloHMM::InitializeXmsaStructs() {
                                   xmsa_ids, vpadding_xmsa_inds_);
   StoreGermlinePaddingXmsaIndices(vgerm_naive_bases_, vgerm_site_inds_,
                                   xmsa_ids, vgerm_xmsa_inds_);
-  StoreJunctionXmsaIndices(vd_junction_naive_bases_, vd_junction_site_inds_,
-                           flexbounds_.at("v_r"), flexbounds_.at("d_l"),
-                           xmsa_ids, vd_junction_xmsa_inds_);
-  StoreGermlinePaddingXmsaIndices(dgerm_naive_bases_, dgerm_site_inds_,
-                                  xmsa_ids, dgerm_xmsa_inds_);
-  StoreJunctionXmsaIndices(dj_junction_naive_bases_, dj_junction_site_inds_,
-                           flexbounds_.at("d_r"), flexbounds_.at("j_l"),
-                           xmsa_ids, dj_junction_xmsa_inds_);
+
+  if (locus_ == "igh") {
+    StoreJunctionXmsaIndices(vd_junction_naive_bases_, vd_junction_site_inds_,
+                             flexbounds_.at("v_r"), flexbounds_.at("d_l"),
+                             xmsa_ids, vd_junction_xmsa_inds_);
+    StoreGermlinePaddingXmsaIndices(dgerm_naive_bases_, dgerm_site_inds_,
+                                    xmsa_ids, dgerm_xmsa_inds_);
+    StoreJunctionXmsaIndices(dj_junction_naive_bases_, dj_junction_site_inds_,
+                             flexbounds_.at("d_r"), flexbounds_.at("j_l"),
+                             xmsa_ids, dj_junction_xmsa_inds_);
+  } else {
+    assert(locus_ == "igk" || locus_ == "igl");
+    StoreJunctionXmsaIndices(vd_junction_naive_bases_, vd_junction_site_inds_,
+                             flexbounds_.at("v_r"), flexbounds_.at("j_l"),
+                             xmsa_ids, vd_junction_xmsa_inds_);
+  }
+
   StoreGermlinePaddingXmsaIndices(jgerm_naive_bases_, jgerm_site_inds_,
                                   xmsa_ids, jgerm_xmsa_inds_);
   StoreGermlinePaddingXmsaIndices(jpadding_naive_bases_, jpadding_site_inds_,
@@ -86,10 +95,17 @@ void PhyloHMM::InitializeEmission() {
                               vpadding_emission_, vgerm_scaler_count_);
   FillGermlinePaddingEmission(vgerm_ggene_ranges_, vgerm_xmsa_inds_,
                               vgerm_emission_, vgerm_scaler_count_);
-  FillJunctionEmission(vd_junction_xmsa_inds_, vd_junction_emission_);
-  FillGermlinePaddingEmission(dgerm_ggene_ranges_, dgerm_xmsa_inds_,
-                              dgerm_emission_, dgerm_scaler_count_);
-  FillJunctionEmission(dj_junction_xmsa_inds_, dj_junction_emission_);
+
+  if (locus_ == "igh") {
+    FillJunctionEmission(vd_junction_xmsa_inds_, vd_junction_emission_);
+    FillGermlinePaddingEmission(dgerm_ggene_ranges_, dgerm_xmsa_inds_,
+                                dgerm_emission_, dgerm_scaler_count_);
+    FillJunctionEmission(dj_junction_xmsa_inds_, dj_junction_emission_);
+  } else {
+    assert(locus_ == "igk" || locus_ == "igl");
+    FillJunctionEmission(vd_junction_xmsa_inds_, vd_junction_emission_);
+  }
+
   FillGermlinePaddingEmission(jgerm_ggene_ranges_, jgerm_xmsa_inds_,
                               jgerm_emission_, jgerm_scaler_count_);
   FillGermlinePaddingEmission(jpadding_ggene_ranges_, jpadding_xmsa_inds_,
@@ -229,15 +245,15 @@ void PhyloHMM::WriteOutputHeaders(std::ofstream& outfile) const {
   outfile << "RBLogLikelihood\t";
   outfile << "Prior\t";
   outfile << "alpha\t";
-  for (int j = 1; j <= er_.size(); j++) {
-    outfile << ("er[" + std::to_string(j) + "]\t");
+  for (int i = 1; i <= er_.size(); i++) {
+    outfile << ("er[" + std::to_string(i) + "]\t");
   }
-  for (int j = 1; j <= pi_.size(); j++) {
-    outfile << ("pi[" + std::to_string(j) + "]\t");
+  for (int i = 1; i <= pi_.size(); i++) {
+    outfile << ("pi[" + std::to_string(i) + "]\t");
   }
   outfile << "tree\t";
-  for (int j = 1; j <= sr_.size(); j++) {
-    outfile << ("sr[" + std::to_string(j) + "]\t");
+  for (int i = 1; i <= sr_.size(); i++) {
+    outfile << ("sr[" + std::to_string(i) + "]\t");
   }
   outfile << "LHLogLikelihood\t";
   outfile << "LogWeight\t";
@@ -314,7 +330,7 @@ void PhyloHMM::InitializePhyloEmission() {
 
   // Initialize the "germline" scaler counts.
   vgerm_scaler_count_ = 0;
-  dgerm_scaler_count_ = 0;
+  if (locus_ == "igh") dgerm_scaler_count_ = 0;
   jgerm_scaler_count_ = 0;
 
   // Initialize the emission probability matrices.

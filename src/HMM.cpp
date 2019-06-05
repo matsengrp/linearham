@@ -75,10 +75,12 @@ void HMM::InitializeMsa() {
 
 /// @brief Initializes the HMM state space for this clonal family.
 ///
-/// There are 7 distinct regions of the HMM: V "padding", V "germline", V-D
-/// "junction", D "germline", D-J "junction", J "germline", and J "padding". The
-/// state space for each region is determined by the Smith-Waterman alignment
-/// information from partis.
+/// There are 7 distinct regions of the HMM for the IGH locus (i.e. V "padding",
+/// V "germline", V-D "junction", D "germline", D-J "junction", J "germline",
+/// and J "padding") and 5 distinct regions of the HMM for the IGK/IGL loci
+/// (i.e. V "padding", V "germline", V-J "junction", J "germline", and J
+/// "padding"). The state space for each region is determined by the
+/// Smith-Waterman alignment information from partis.
 void HMM::InitializeStateSpace() {
   // Iterate across the relpos map from left to right.
   for (auto it = relpos_.begin(); it != relpos_.end(); ++it) {
@@ -101,12 +103,21 @@ void HMM::InitializeStateSpace() {
           true, false, vgerm_state_strs_, vgerm_ggene_ranges_,
           vgerm_naive_bases_, vgerm_germ_inds_, vgerm_site_inds_);
 
-      // Cache the V-D "junction" states.
-      CacheJunctionStates(ggene.germ_ptr, flexbounds_.at("v_r"),
-                          flexbounds_.at("d_l"), relpos, false,
-                          vd_junction_state_strs_, vd_junction_ggene_ranges_,
-                          vd_junction_naive_bases_, vd_junction_germ_inds_,
-                          vd_junction_site_inds_);
+      // Cache the V-D or V-J "junction" states.
+      if (locus_ == "igh") {
+        CacheJunctionStates(ggene.germ_ptr, flexbounds_.at("v_r"),
+                            flexbounds_.at("d_l"), relpos, false,
+                            vd_junction_state_strs_, vd_junction_ggene_ranges_,
+                            vd_junction_naive_bases_, vd_junction_germ_inds_,
+                            vd_junction_site_inds_);
+      } else {
+        assert(locus_ == "igk" || locus_ == "igl");
+        CacheJunctionStates(ggene.germ_ptr, flexbounds_.at("v_r"),
+                            flexbounds_.at("j_l"), relpos, false,
+                            vd_junction_state_strs_, vd_junction_ggene_ranges_,
+                            vd_junction_naive_bases_, vd_junction_germ_inds_,
+                            vd_junction_site_inds_);
+      }
     } else if (ggene.type == GermlineType::D) {
       // Cache the V-D "junction" states.
       CacheJunctionStates(ggene.germ_ptr, flexbounds_.at("v_r"),
@@ -130,12 +141,21 @@ void HMM::InitializeStateSpace() {
     } else {
       assert(ggene.type == GermlineType::J);
 
-      // Cache the D-J "junction" states.
-      CacheJunctionStates(ggene.germ_ptr, flexbounds_.at("d_r"),
-                          flexbounds_.at("j_l"), relpos, true,
-                          dj_junction_state_strs_, dj_junction_ggene_ranges_,
-                          dj_junction_naive_bases_, dj_junction_germ_inds_,
-                          dj_junction_site_inds_);
+      // Cache the D-J or V-J "junction" states.
+      if (locus_ == "igh") {
+        CacheJunctionStates(ggene.germ_ptr, flexbounds_.at("d_r"),
+                            flexbounds_.at("j_l"), relpos, true,
+                            dj_junction_state_strs_, dj_junction_ggene_ranges_,
+                            dj_junction_naive_bases_, dj_junction_germ_inds_,
+                            dj_junction_site_inds_);
+      } else {
+        assert(locus_ == "igk" || locus_ == "igl");
+        CacheJunctionStates(ggene.germ_ptr, flexbounds_.at("v_r"),
+                            flexbounds_.at("j_l"), relpos, true,
+                            vd_junction_state_strs_, vd_junction_ggene_ranges_,
+                            vd_junction_naive_bases_, vd_junction_germ_inds_,
+                            vd_junction_site_inds_);
+      }
 
       // Cache the J "germline" state.
       CacheGermlineStates(
@@ -157,34 +177,57 @@ void HMM::InitializeStateSpace() {
 void HMM::InitializeTransition() {
   ComputePaddingTransition(vpadding_ggene_ranges_, ggenes_,
                            vpadding_transition_);
-  ComputeGermlineJunctionTransition(
-      vgerm_state_strs_, vgerm_ggene_ranges_, vgerm_germ_inds_,
-      vgerm_site_inds_, vd_junction_state_strs_, vd_junction_ggene_ranges_,
-      vd_junction_germ_inds_, vd_junction_site_inds_, GermlineType::V,
-      GermlineType::D, ggenes_, vgerm_vd_junction_transition_);
-  ComputeJunctionTransition(vd_junction_state_strs_, vd_junction_ggene_ranges_,
-                            vd_junction_germ_inds_, vd_junction_site_inds_,
-                            GermlineType::V, GermlineType::D, ggenes_,
-                            vd_junction_transition_);
-  ComputeJunctionGermlineTransition(
-      vd_junction_state_strs_, vd_junction_ggene_ranges_,
-      vd_junction_germ_inds_, vd_junction_site_inds_, dgerm_state_strs_,
-      dgerm_ggene_ranges_, dgerm_germ_inds_, dgerm_site_inds_, GermlineType::V,
-      GermlineType::D, ggenes_, vd_junction_dgerm_transition_);
-  ComputeGermlineJunctionTransition(
-      dgerm_state_strs_, dgerm_ggene_ranges_, dgerm_germ_inds_,
-      dgerm_site_inds_, dj_junction_state_strs_, dj_junction_ggene_ranges_,
-      dj_junction_germ_inds_, dj_junction_site_inds_, GermlineType::D,
-      GermlineType::J, ggenes_, dgerm_dj_junction_transition_);
-  ComputeJunctionTransition(dj_junction_state_strs_, dj_junction_ggene_ranges_,
-                            dj_junction_germ_inds_, dj_junction_site_inds_,
-                            GermlineType::D, GermlineType::J, ggenes_,
-                            dj_junction_transition_);
-  ComputeJunctionGermlineTransition(
-      dj_junction_state_strs_, dj_junction_ggene_ranges_,
-      dj_junction_germ_inds_, dj_junction_site_inds_, jgerm_state_strs_,
-      jgerm_ggene_ranges_, jgerm_germ_inds_, jgerm_site_inds_, GermlineType::D,
-      GermlineType::J, ggenes_, dj_junction_jgerm_transition_);
+
+  if (locus_ == "igh") {
+    ComputeGermlineJunctionTransition(
+        vgerm_state_strs_, vgerm_ggene_ranges_, vgerm_germ_inds_,
+        vgerm_site_inds_, vd_junction_state_strs_, vd_junction_ggene_ranges_,
+        vd_junction_germ_inds_, vd_junction_site_inds_, GermlineType::V,
+        GermlineType::D, ggenes_, vgerm_vd_junction_transition_);
+    ComputeJunctionTransition(
+        vd_junction_state_strs_, vd_junction_ggene_ranges_,
+        vd_junction_germ_inds_, vd_junction_site_inds_, GermlineType::V,
+        GermlineType::D, ggenes_, vd_junction_transition_);
+    ComputeJunctionGermlineTransition(
+        vd_junction_state_strs_, vd_junction_ggene_ranges_,
+        vd_junction_germ_inds_, vd_junction_site_inds_, dgerm_state_strs_,
+        dgerm_ggene_ranges_, dgerm_germ_inds_, dgerm_site_inds_,
+        GermlineType::V, GermlineType::D, ggenes_,
+        vd_junction_dgerm_transition_);
+    ComputeGermlineJunctionTransition(
+        dgerm_state_strs_, dgerm_ggene_ranges_, dgerm_germ_inds_,
+        dgerm_site_inds_, dj_junction_state_strs_, dj_junction_ggene_ranges_,
+        dj_junction_germ_inds_, dj_junction_site_inds_, GermlineType::D,
+        GermlineType::J, ggenes_, dgerm_dj_junction_transition_);
+    ComputeJunctionTransition(
+        dj_junction_state_strs_, dj_junction_ggene_ranges_,
+        dj_junction_germ_inds_, dj_junction_site_inds_, GermlineType::D,
+        GermlineType::J, ggenes_, dj_junction_transition_);
+    ComputeJunctionGermlineTransition(
+        dj_junction_state_strs_, dj_junction_ggene_ranges_,
+        dj_junction_germ_inds_, dj_junction_site_inds_, jgerm_state_strs_,
+        jgerm_ggene_ranges_, jgerm_germ_inds_, jgerm_site_inds_,
+        GermlineType::D, GermlineType::J, ggenes_,
+        dj_junction_jgerm_transition_);
+  } else {
+    assert(locus_ == "igk" || locus_ == "igl");
+    ComputeGermlineJunctionTransition(
+        vgerm_state_strs_, vgerm_ggene_ranges_, vgerm_germ_inds_,
+        vgerm_site_inds_, vd_junction_state_strs_, vd_junction_ggene_ranges_,
+        vd_junction_germ_inds_, vd_junction_site_inds_, GermlineType::V,
+        GermlineType::J, ggenes_, vgerm_vd_junction_transition_);
+    ComputeJunctionTransition(
+        vd_junction_state_strs_, vd_junction_ggene_ranges_,
+        vd_junction_germ_inds_, vd_junction_site_inds_, GermlineType::V,
+        GermlineType::J, ggenes_, vd_junction_transition_);
+    ComputeJunctionGermlineTransition(
+        vd_junction_state_strs_, vd_junction_ggene_ranges_,
+        vd_junction_germ_inds_, vd_junction_site_inds_, jgerm_state_strs_,
+        jgerm_ggene_ranges_, jgerm_germ_inds_, jgerm_site_inds_,
+        GermlineType::V, GermlineType::J, ggenes_,
+        vd_junction_dgerm_transition_);
+  }
+
   ComputePaddingTransition(jpadding_ggene_ranges_, ggenes_,
                            jpadding_transition_);
 };
@@ -197,24 +240,37 @@ void HMM::InitializeTransition() {
 /// needed for log-likelihood computation and hidden state sampling.
 void HMM::RunForwardAlgorithm() {
   ComputeInitialForwardProbabilities();
-  ComputeJunctionForwardProbabilities(
-      vgerm_forward_, vgerm_scaler_count_, vgerm_vd_junction_transition_,
-      vd_junction_transition_, vd_junction_emission_, vd_junction_forward_,
-      vd_junction_scaler_counts_);
-  ComputeGermlineForwardProbabilities(
-      vd_junction_forward_, vd_junction_scaler_counts_,
-      vd_junction_dgerm_transition_, dgerm_emission_,
-      Eigen::RowVectorXd::Ones(dgerm_state_strs_.size()),
-      Eigen::RowVectorXd::Ones(dgerm_state_strs_.size()), dgerm_forward_,
-      dgerm_scaler_count_);
-  ComputeJunctionForwardProbabilities(
-      dgerm_forward_, dgerm_scaler_count_, dgerm_dj_junction_transition_,
-      dj_junction_transition_, dj_junction_emission_, dj_junction_forward_,
-      dj_junction_scaler_counts_);
-  ComputeGermlineForwardProbabilities(
-      dj_junction_forward_, dj_junction_scaler_counts_,
-      dj_junction_jgerm_transition_, jgerm_emission_, jpadding_transition_,
-      jpadding_emission_, jgerm_forward_, jgerm_scaler_count_);
+
+  if (locus_ == "igh") {
+    ComputeJunctionForwardProbabilities(
+        vgerm_forward_, vgerm_scaler_count_, vgerm_vd_junction_transition_,
+        vd_junction_transition_, vd_junction_emission_, vd_junction_forward_,
+        vd_junction_scaler_counts_);
+    ComputeGermlineForwardProbabilities(
+        vd_junction_forward_, vd_junction_scaler_counts_,
+        vd_junction_dgerm_transition_, dgerm_emission_,
+        Eigen::RowVectorXd::Ones(dgerm_state_strs_.size()),
+        Eigen::RowVectorXd::Ones(dgerm_state_strs_.size()), dgerm_forward_,
+        dgerm_scaler_count_);
+    ComputeJunctionForwardProbabilities(
+        dgerm_forward_, dgerm_scaler_count_, dgerm_dj_junction_transition_,
+        dj_junction_transition_, dj_junction_emission_, dj_junction_forward_,
+        dj_junction_scaler_counts_);
+    ComputeGermlineForwardProbabilities(
+        dj_junction_forward_, dj_junction_scaler_counts_,
+        dj_junction_jgerm_transition_, jgerm_emission_, jpadding_transition_,
+        jpadding_emission_, jgerm_forward_, jgerm_scaler_count_);
+  } else {
+    assert(locus_ == "igk" || locus_ == "igl");
+    ComputeJunctionForwardProbabilities(
+        vgerm_forward_, vgerm_scaler_count_, vgerm_vd_junction_transition_,
+        vd_junction_transition_, vd_junction_emission_, vd_junction_forward_,
+        vd_junction_scaler_counts_);
+    ComputeGermlineForwardProbabilities(
+        vd_junction_forward_, vd_junction_scaler_counts_,
+        vd_junction_dgerm_transition_, jgerm_emission_, jpadding_transition_,
+        jpadding_emission_, jgerm_forward_, jgerm_scaler_count_);
+  }
 };
 
 
@@ -296,28 +352,44 @@ std::string HMM::SampleNaiveSequence() {
 
   // Sample the "germline" and "junction" states.
   SampleInitialState();
-  SampleJunctionStates(jgerm_state_ind_samp_, dj_junction_jgerm_transition_,
-                       dj_junction_state_strs_, dj_junction_naive_bases_,
-                       dj_junction_transition_, dj_junction_forward_,
-                       flexbounds_.at("d_r"), alphabet_, rng_, distr_,
-                       naive_seq_samp_, dj_junction_state_str_samps_,
-                       dj_junction_state_ind_samps_);
-  SampleGermlineState(dj_junction_state_ind_samps_,
-                      dgerm_dj_junction_transition_, dgerm_state_strs_,
-                      dgerm_ggene_ranges_, dgerm_naive_bases_, dgerm_site_inds_,
-                      dgerm_forward_, alphabet_, rng_, distr_, naive_seq_samp_,
-                      dgerm_state_str_samp_, dgerm_state_ind_samp_);
-  SampleJunctionStates(dgerm_state_ind_samp_, vd_junction_dgerm_transition_,
-                       vd_junction_state_strs_, vd_junction_naive_bases_,
-                       vd_junction_transition_, vd_junction_forward_,
-                       flexbounds_.at("v_r"), alphabet_, rng_, distr_,
-                       naive_seq_samp_, vd_junction_state_str_samps_,
-                       vd_junction_state_ind_samps_);
-  SampleGermlineState(vd_junction_state_ind_samps_,
-                      vgerm_vd_junction_transition_, vgerm_state_strs_,
-                      vgerm_ggene_ranges_, vgerm_naive_bases_, vgerm_site_inds_,
-                      vgerm_forward_, alphabet_, rng_, distr_, naive_seq_samp_,
-                      vgerm_state_str_samp_, vgerm_state_ind_samp_);
+
+  if (locus_ == "igh") {
+    SampleJunctionStates(jgerm_state_ind_samp_, dj_junction_jgerm_transition_,
+                         dj_junction_state_strs_, dj_junction_naive_bases_,
+                         dj_junction_transition_, dj_junction_forward_,
+                         flexbounds_.at("d_r"), alphabet_, rng_, distr_,
+                         naive_seq_samp_, dj_junction_state_str_samps_,
+                         dj_junction_state_ind_samps_);
+    SampleGermlineState(
+        dj_junction_state_ind_samps_, dgerm_dj_junction_transition_,
+        dgerm_state_strs_, dgerm_ggene_ranges_, dgerm_naive_bases_,
+        dgerm_site_inds_, dgerm_forward_, alphabet_, rng_, distr_,
+        naive_seq_samp_, dgerm_state_str_samp_, dgerm_state_ind_samp_);
+    SampleJunctionStates(dgerm_state_ind_samp_, vd_junction_dgerm_transition_,
+                         vd_junction_state_strs_, vd_junction_naive_bases_,
+                         vd_junction_transition_, vd_junction_forward_,
+                         flexbounds_.at("v_r"), alphabet_, rng_, distr_,
+                         naive_seq_samp_, vd_junction_state_str_samps_,
+                         vd_junction_state_ind_samps_);
+    SampleGermlineState(
+        vd_junction_state_ind_samps_, vgerm_vd_junction_transition_,
+        vgerm_state_strs_, vgerm_ggene_ranges_, vgerm_naive_bases_,
+        vgerm_site_inds_, vgerm_forward_, alphabet_, rng_, distr_,
+        naive_seq_samp_, vgerm_state_str_samp_, vgerm_state_ind_samp_);
+  } else {
+    assert(locus_ == "igk" || locus_ == "igl");
+    SampleJunctionStates(jgerm_state_ind_samp_, vd_junction_dgerm_transition_,
+                         vd_junction_state_strs_, vd_junction_naive_bases_,
+                         vd_junction_transition_, vd_junction_forward_,
+                         flexbounds_.at("v_r"), alphabet_, rng_, distr_,
+                         naive_seq_samp_, vd_junction_state_str_samps_,
+                         vd_junction_state_ind_samps_);
+    SampleGermlineState(
+        vd_junction_state_ind_samps_, vgerm_vd_junction_transition_,
+        vgerm_state_strs_, vgerm_ggene_ranges_, vgerm_naive_bases_,
+        vgerm_site_inds_, vgerm_forward_, alphabet_, rng_, distr_,
+        naive_seq_samp_, vgerm_state_str_samp_, vgerm_state_ind_samp_);
+  }
 
   return naive_seq_samp_;
 };
