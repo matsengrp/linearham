@@ -29,9 +29,10 @@ HMM::HMM(const std::string& yaml_path, int cluster_ind,
   YAML::Node root = YAML::LoadFile(yaml_path);
   locus_ = root["germline-info"]["locus"].as<std::string>();
   cluster_data_ = root["events"][cluster_ind];
-  flexbounds_ = cluster_data_["flexbounds"]
+  flexbounds_ = cluster_data_["linearham-info"]["flexbounds"]
                     .as<std::map<std::string, std::pair<int, int>>>();
-  relpos_ = cluster_data_["relpos"].as<std::map<std::string, int>>();
+  relpos_ = cluster_data_["linearham-info"]["relpos"]
+                .as<std::map<std::string, int>>();
 
   // Create the map holding (germline name, GermlineGene) pairs.
   ggenes_ = CreateGermlineGeneMap(hmm_param_dir);

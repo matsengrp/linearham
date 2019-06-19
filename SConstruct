@@ -121,6 +121,12 @@ Script.AddOption("--asr-pfilters",
         default="0.1",
         help="The ancestral sequence posterior probability threshold.")
 
+Script.AddOption("--partis-yaml-file",
+        dest="partis_yaml_file",
+        type="str",
+        default=None,
+        help="An optional partis output YAML file.")
+
 # partis/linearham arguments
 
 Script.AddOption("--build-partis-linearham",
@@ -129,11 +135,11 @@ Script.AddOption("--build-partis-linearham",
         default=False,
         help="Should we build partis and linearham?")
 
-Script.AddOption("--hmm-param-dir",
-        dest="hmm_param_dir",
+Script.AddOption("--parameter-dir",
+        dest="parameter_dir",
         type="str",
         default=None,
-        help="An optional directory of partis HMM germline parameter files.")
+        help="An optional directory of partis parameter files.")
 
 Script.AddOption("--outdir",
         dest="outdir",
@@ -169,10 +175,11 @@ def get_options(env):
         seed = process_multiarg(env.GetOption("seed"), int, ","),
         seed_seq = process_multiarg(env.GetOption("seed_seq"), str, ",") if env.GetOption("seed_seq") is not None else None,
         asr_pfilters = process_multiarg(env.GetOption("asr_pfilters"), float, ","),
+        partis_yaml_file = env.GetOption("partis_yaml_file"),
 
         # partis/linearham arguments
         build_partis_linearham = env.GetOption("build_partis_linearham"),
-        hmm_param_dir = env.GetOption("hmm_param_dir"),
+        parameter_dir = env.GetOption("parameter_dir"),
         outdir = env.GetOption("outdir")
     )
 
@@ -248,15 +255,16 @@ if options["run_partis"]:
     @nest.add_target()
     def partis_output(outdir, c):
         partis_mode = "annotate --all-seqs-simultaneous" if options["all_clonal_seqs"] else "partition"
-        partis_hmm_param_dir = options["hmm_param_dir"].rstrip("/") if options["hmm_param_dir"] is not None else os.path.join(outdir, "hmm_param_dir")
+        partis_parameter_dir = options["parameter_dir"].rstrip("/") if options["parameter_dir"] is not None else os.path.join(outdir, "parameter_dir")
         partis_output = env.Command(
             [os.path.join(outdir, filename) for filename in
                 ["partis_run.yaml", "partis_run.stdout.log"]],
             options["fasta_path"],
-            "lib/partis/bin/partis " + partis_mode + " --linearham" \
+            "lib/partis/bin/partis " + partis_mode \
                 + " --infname $SOURCE" \
-                + " --parameter-dir " + partis_hmm_param_dir \
+                + " --parameter-dir " + partis_parameter_dir \
                 + " --locus " + options["locus"] \
+                + " --extra-annotation-columns linearham-info" \
                 + " --outfname ${TARGETS[0]} > ${TARGETS[1]}")
         env.Depends(partis_output, "lib/partis/packages/ham/bcrham")
         return partis_output
@@ -268,12 +276,24 @@ if options["run_linearham"]:
 
     @nest.add_target()
     def partis_yaml_file(outdir, c):
-        return os.path.join(outdir, "partis_run.yaml")
+        if options["partis_yaml_file"] is not None:
+            assert options["parameter_dir"] is not None, "Specify both --partis-yaml-file and --parameter-dir."
+            partis_yaml_file = env.Command(
+                os.path.join(outdir, "partis_run.yaml"),
+                options["partis_yaml_file"],
+                "lib/partis/bin/partis get-linearham-info" \
+                    + " --outfname $SOURCE" \
+                    + " --parameter-dir " + options["parameter_dir"] \
+                    + " --linearham-info-fname $TARGET")
+            env.Depends(partis_yaml_file, "lib/partis/packages/ham/bcrham")
+        else:
+            partis_yaml_file = os.path.join(outdir, "partis_run.yaml")
+        return partis_yaml_file
 
     @nest.add_target()
     def hmm_param_dir(outdir, c):
-        linearham_hmm_param_dir = options["hmm_param_dir"].rstrip("/") if options["hmm_param_dir"] is not None else os.path.join(outdir, "hmm_param_dir")
-        return linearham_hmm_param_dir + "/hmm/hmms"
+        linearham_parameter_dir = options["parameter_dir"].rstrip("/") if options["parameter_dir"] is not None else os.path.join(outdir, "parameter_dir")
+        return linearham_parameter_dir + "/hmm/hmms"
 
     @nest.add_nest(label_func=default_label)
     def cluster(c):
@@ -281,7 +301,14 @@ if options["run_linearham"]:
 
     @nest.add_target()
     def cluster_fasta_file(outdir, c):
-        return os.path.join(outdir, "input_seqs.fasta")
+        cluster_fasta_file = env.Command(
+            os.path.join(outdir, "input_seqs.fasta"),
+            c["partis_yaml_file"],
+            "scripts/parse_cluster_seqs.py $SOURCE" \
+                + " --cluster-ind " + str(c["cluster"]["index"]) \
+                + " --output-path $TARGET")
+        env.Depends(cluster_fasta_file, "scripts/parse_cluster_seqs.py")
+        return cluster_fasta_file
 
     @nest.add_nest(label_func=default_label)
     def revbayes_setting(c):
@@ -301,9 +328,10 @@ if options["run_linearham"]:
     @nest.add_target()
     def revbayes_rev_file(outdir, c):
         revbayes_rev_file = env.Command(
-            os.path.join(outdir, "revbayes_run.rev"), options["template_path"],
-            "scripts/generate_revbayes_rev_file.py $SOURCE" \
-                + " --fasta-path " + c["cluster_fasta_file"] \
+            os.path.join(outdir, "revbayes_run.rev"),
+            [options["template_path"], c["cluster_fasta_file"]],
+            "scripts/generate_revbayes_rev_file.py ${SOURCES[0]}" \
+                + " --fasta-path ${SOURCES[1]}" \
                 + " --mcmc-iter " + str(c["revbayes_setting"]["mcmc_iter"]) \
                 + " --mcmc-thin " + str(c["revbayes_setting"]["mcmc_thin"]) \
                 + " --tune-iter " + str(c["revbayes_setting"]["tune_iter"]) \
@@ -327,14 +355,15 @@ if options["run_linearham"]:
     @nest.add_target()
     def linearham_intermediate_output(outdir, c):
         linearham_intermediate_output = env.Command(
-            os.path.join(outdir, "lh_revbayes_run.trees"), c["revbayes_output"][0],
+            os.path.join(outdir, "lh_revbayes_run.trees"),
+            [c["revbayes_output"][0], c["partis_yaml_file"]],
             "_build/linearham/linearham --pipeline" \
-                + " --yaml-path " + c["partis_yaml_file"] \
+                + " --yaml-path ${SOURCES[1]}" \
                 + " --cluster-ind " + str(c["cluster"]["index"]) \
                 + " --hmm-param-dir " + c["hmm_param_dir"] \
                 + " --seed " + str(c["revbayes_setting"]["seed"]) \
                 + " --num-rates " + str(c["revbayes_setting"]["num_rates"]) \
-                + " --input-path $SOURCE" \
+                + " --input-path ${SOURCES[0]}" \
                 + " --output-path $TARGET")
         env.Depends(linearham_intermediate_output, "_build/linearham/linearham")
         return linearham_intermediate_output
@@ -372,10 +401,9 @@ if options["run_linearham"]:
     def linearham_final_output(outdir, c):
         linearham_final_output = env.Command(
             os.path.join(outdir, "linearham_run.trees"),
-            c["linearham_intermediate_output"],
+            [c["linearham_intermediate_output"], c["cluster_fasta_file"]],
             "Rscript --slave --vanilla scripts/run_bootstrap_asr.R" \
-                + " $SOURCE" \
-                + " " + c["cluster_fasta_file"] \
+                + " $SOURCES" \
                 + " " + str(c["linearham_setting"]["burnin_frac"]) \
                 + " " + str(c["linearham_setting"]["subsamp_frac"]) \
                 + " " + str(options["num_cores"]) \

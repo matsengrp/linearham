@@ -23,7 +23,7 @@ The entire `linearham` pipeline can be executed using `scons`.
 
 To run `partis`:
 ```bash
-scons --run-partis --fasta-path=<string> [--all-clonal-seqs] --locus={igh|igk|igl} --hmm-param-dir=<string> --outdir=<string>
+scons --run-partis --fasta-path=<string> [--all-clonal-seqs] --locus={igh|igk|igl} --parameter-dir=<string> --outdir=<string>
 ```
 The `partis`-related command line arguments are described in the following table:
 
@@ -32,12 +32,12 @@ The `partis`-related command line arguments are described in the following table
 | `--fasta-path` | The repertoire FASTA file path. |
 | `--all-clonal-seqs` | Should the repertoire sequences be treated as clonal? |
 | `--locus` | Which immunoglobulin locus are we doing inference on (defaults to `igh`)? |
-| `--hmm-param-dir` | An optional directory of partis HMM germline parameter files. |
+| `--parameter-dir` | An optional directory of partis parameter files. |
 | `--outdir` | The output directory (defaults to `output`). |
 
 To run `linearham`:
 ```bash
-scons --run-linearham --cluster-ind=<int> --template-path=<string> --mcmc-iter=<int> --mcmc-thin=<int> --tune-iter=<int> --tune-thin=<int> --num-rates=<int> --burnin-frac=<double> --subsamp-frac=<double> --num-cores=<int> --seed=<int> --seed-seq=<string> --asr-pfilters=<double> --hmm-param-dir=<string> --outdir=<string>
+scons --run-linearham --cluster-ind=<int> --template-path=<string> --mcmc-iter=<int> --mcmc-thin=<int> --tune-iter=<int> --tune-thin=<int> --num-rates=<int> --burnin-frac=<double> --subsamp-frac=<double> --num-cores=<int> --seed=<int> --seed-seq=<string> --asr-pfilters=<double> --partis-yaml-file=<string> --parameter-dir=<string> --outdir=<string>
 ```
 The `linearham`-related command line arguments are described in the following table:
 
@@ -56,9 +56,10 @@ The `linearham`-related command line arguments are described in the following ta
 | `--seed` | The random number generator (RNG) seed (defaults to 0). |
 | `--seed-seq` | The name of the seed sequence of interest. |
 | `--asr-pfilters` | The ancestral sequence posterior probability thresholds (defaults to 0.1). |
-| `--hmm-param-dir` | An optional directory of partis HMM germline parameter files. |
+| `--partis-yaml-file` | An optional partis output YAML file. |
+| `--parameter-dir` | An optional directory of partis parameter files. |
 | `--outdir` | The output directory (defaults to `output`). |
 
-All of the above command line arguments (except `--all-clonal-seqs`, `--locus`, `--hmm-param-dir`, `--template-path`, `--num-cores`, and `--outdir`) accept comma-separated values as input.
-Note that `scons --run-partis` and `scons --run-linearham` must specify the same output directory and, if applicable, the same optional directory of partis HMM germline parameter files.
+All of the above command line arguments (except `--fasta-path`, `--all-clonal-seqs`, `--locus`, `--parameter-dir`, `--template-path`, `--num-cores`, `--partis-yaml-file`, and `--outdir`) accept comma-separated values as input.
+Note that `scons --run-partis` and `scons --run-linearham` must specify the same output directory and, if applicable, the same optional directory of partis parameter files.
 For more information on the `scons` arguments, run `scons --help`.

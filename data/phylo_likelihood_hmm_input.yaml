@@ -3,14 +3,16 @@
     "input_seqs" : [ "TAAAAGATCAATTNN", "CACACGTTCGAGTNN", "CGTAGTAGGACTCNN" ],
     "naive_seq" : "AGGACATACGTCTNN",
     "has_shm_indels" : [ false, false, false ],
-    "relpos" : {"IGHD_ex*01" : 5, "IGHJ_ex*01" : 10, "IGHV_ex*01" : 0},
-    "flexbounds" : {
-      "v_r" : [ 5, 5 ],
-      "d_r" : [ 10, 10 ],
-      "j_l" : [ 11, 11 ],
-      "j_r" : [ 15, 15 ],
-      "d_l" : [ 6, 6 ],
-      "v_l" : [ 0, 0 ]
+    "linearham-info" : {
+      "relpos" : {"IGHD_ex*01" : 5, "IGHJ_ex*01" : 10, "IGHV_ex*01" : 0},
+      "flexbounds" : {
+        "v_r" : [ 5, 5 ],
+        "d_r" : [ 10, 10 ],
+        "j_l" : [ 11, 11 ],
+        "j_r" : [ 15, 15 ],
+        "d_l" : [ 6, 6 ],
+        "v_l" : [ 0, 0 ]
+      }
     },
     "unique_ids" : [ "0", "1", "2" ]
   } ]
