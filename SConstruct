@@ -302,7 +302,7 @@ if options["run_linearham"]:
     @nest.add_target()
     def cluster_fasta_file(outdir, c):
         cluster_fasta_file = env.Command(
-            os.path.join(outdir, "input_seqs.fasta"),
+            os.path.join(outdir, "cluster_seqs.fasta"),
             c["partis_yaml_file"],
             "scripts/parse_cluster_seqs.py $SOURCE" \
                 + " --cluster-ind " + str(c["cluster"]["index"]) \
