@@ -376,40 +376,19 @@ if options["run_linearham"]:
                 for subsamp_frac in options["subsamp_frac"]]
 
     @nest.add_target()
-    def revbayes_ess(outdir, c):
-        revbayes_ess = env.Command(
-            os.path.join(outdir, "revbayes_run.ess"), c["revbayes_output"][1],
-            "Rscript --slave --vanilla scripts/compute_revbayes_ess.R" \
-                + " $SOURCE" \
-                + " " + str(c["linearham_setting"]["burnin_frac"]) \
-                + " $TARGET")
-        env.Depends(revbayes_ess, "scripts/compute_revbayes_ess.R")
-        return revbayes_ess
-
-    @nest.add_target()
-    def linearham_ess(outdir, c):
-        linearham_ess = env.Command(
-            os.path.join(outdir, "linearham_run.ess"), c["linearham_intermediate_output"],
-            "Rscript --slave --vanilla scripts/compute_linearham_ess.R" \
-                + " $SOURCE" \
-                + " " + str(c["linearham_setting"]["burnin_frac"]) \
-                + " $TARGET")
-        env.Depends(linearham_ess, "scripts/compute_linearham_ess.R")
-        return linearham_ess
-
-    @nest.add_target()
     def linearham_final_output(outdir, c):
         linearham_final_output = env.Command(
-            [os.path.join(outdir, filename) for filename in ["linearham_run.trees", "linearham_run.log"]],
+            [os.path.join(outdir, filename) for filename in
+                ["linearham_run.trees", "linearham_run.log", "linearham_run.ess"]],
             [c["linearham_intermediate_output"], c["cluster_fasta_file"]],
-            "Rscript --slave --vanilla scripts/run_bootstrap_asr.R" \
+            "Rscript --slave --vanilla scripts/run_bootstrap_asr_ess.R" \
                 + " $SOURCES" \
                 + " " + str(c["linearham_setting"]["burnin_frac"]) \
                 + " " + str(c["linearham_setting"]["subsamp_frac"]) \
                 + " " + str(options["num_cores"]) \
                 + " " + str(c["revbayes_setting"]["seed"]) \
                 + " $TARGETS")
-        env.Depends(linearham_final_output, "scripts/run_bootstrap_asr.R")
+        env.Depends(linearham_final_output, "scripts/run_bootstrap_asr_ess.R")
         return linearham_final_output
 
     @nest.add_target()

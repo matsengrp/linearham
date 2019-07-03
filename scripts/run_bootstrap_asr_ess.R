@@ -10,6 +10,7 @@ num.cores = as.numeric(args[5])
 seed = as.numeric(args[6])
 output.trees.path = as.character(args[7])
 output.log.path = as.character(args[8])
+output.ess.path = as.character(args[9])
 
 # Set the RNG seed.
 set.seed(seed)
@@ -21,12 +22,19 @@ msa = toupper(msa)
 
 # Remove the burnin tree samples.
 tree.data = tail(tree.data, n = -(burnin.frac * nrow(tree.data)))
+log.data = tree.data
+log.data$Iteration = log.data$tree = log.data$NaiveSequence = NULL
 
 # Perform weighted bootstrap on the RevBayes tree samples.
 log.sum.exp = function(v) max(v) + log1p(sum(exp(v - max(v))) - 1)
 boot.probs = exp(tree.data$LogWeight - log.sum.exp(tree.data$LogWeight))
 boot.ind.samps = sample(1:nrow(tree.data), size = (subsamp.frac * nrow(tree.data)), replace = FALSE, prob = boot.probs)
 tree.data = tree.data[boot.ind.samps, ]
+
+# Compute the effective sample sizes for all relevant parameters.
+ess.data = log.data[, sapply(log.data, is.numeric)]
+ess = round((coda::effectiveSize(ess.data) / nrow(ess.data)) * (1 / sum(boot.probs ^ 2)))
+log.data = log.data[boot.ind.samps, ]
 
 # Initialize the cluster.
 cl = parallel::makeCluster(num.cores)
@@ -98,5 +106,8 @@ parallel::stopCluster(cl)
 data.table::fwrite(list(annotated.trees), file = output.trees.path, quote = FALSE)
 
 # Write the other posterior variable samples to the output log file.
-tree.data$Iteration = tree.data$tree = tree.data$NaiveSequence = NULL
-data.table::fwrite(tree.data, file = output.log.path, sep = "\t")
+data.table::fwrite(log.data, file = output.log.path, quote = FALSE, sep = "\t")
+
+# Write the effective sample sizes to the output ESS file.
+data.table::fwrite(as.data.frame(cbind(Parameter = names(ess), ESS = ess)),
+                   file = output.ess.path, quote = FALSE, sep = "\t")
