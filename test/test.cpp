@@ -267,6 +267,8 @@ TEST_CASE("SimpleHMM", "[simplehmm]") {
   std::vector<int> vpadding_naive_bases = {4};
   std::vector<int> vpadding_site_inds = {0};
   std::vector<std::string> vgerm_state_strs = {"IGHV_ex*01"};
+  std::vector<int> vgerm_left_del = {0};
+  std::vector<int> vgerm_right_del = {2};
   std::map<std::string, std::pair<int, int>> vgerm_ggene_ranges =
       {{"IGHV_ex*01", {0, 3}}};
   std::vector<int> vgerm_naive_bases = {0, 3, 2};
@@ -275,12 +277,18 @@ TEST_CASE("SimpleHMM", "[simplehmm]") {
   std::vector<std::string> vd_junction_state_strs =
       {"IGHD_ex*01:N_A", "IGHD_ex*01:N_C", "IGHD_ex*01:N_G", "IGHD_ex*01:N_T",
        "IGHD_ex*01:0", "IGHD_ex*01:1", "IGHD_ex*01:2", "IGHV_ex*01:3", "IGHV_ex*01:4"};
+  std::vector<int> vd_junction_del = {-1, -1, -1, -1, 0, 1, 2, 1, 0};
+  std::vector<GermlineType> vd_junction_ggene_types =
+      {GermlineType::D, GermlineType::D, GermlineType::D, GermlineType::D, GermlineType::D,
+       GermlineType::D, GermlineType::D, GermlineType::V, GermlineType::V};
   std::map<std::string, std::pair<int, int>> vd_junction_ggene_ranges =
       {{"IGHD_ex*01", {0, 7}}, {"IGHV_ex*01", {7, 9}}};
   std::vector<int> vd_junction_naive_bases = {0, 1, 2, 3, 2, 2, 3, 0, 1};
   std::vector<int> vd_junction_germ_inds = {-1, -1, -1, -1, 0, 1, 2, 3, 4};
   std::vector<int> vd_junction_site_inds = {-1, -1, -1, -1, 5, 6, 7, 4, 5};
   std::vector<std::string> dgerm_state_strs = {"IGHD_ex*01"};
+  std::vector<int> dgerm_left_del = {3};
+  std::vector<int> dgerm_right_del = {1};
   std::map<std::string, std::pair<int, int>> dgerm_ggene_ranges =
       {{"IGHD_ex*01", {0, 1}}};
   std::vector<int> dgerm_naive_bases = {0};
@@ -289,12 +297,18 @@ TEST_CASE("SimpleHMM", "[simplehmm]") {
   std::vector<std::string> dj_junction_state_strs =
       {"IGHD_ex*01:4", "IGHJ_ex*01:N_A", "IGHJ_ex*01:N_C", "IGHJ_ex*01:N_G",
        "IGHJ_ex*01:N_T", "IGHJ_ex*01:0", "IGHJ_ex*01:1"};
+  std::vector<int> dj_junction_del = {0, -1, -1, -1, -1, 0, 1};
+  std::vector<GermlineType> dj_junction_ggene_types =
+      {GermlineType::D, GermlineType::J, GermlineType::J, GermlineType::J,
+       GermlineType::J, GermlineType::J, GermlineType::J};
   std::map<std::string, std::pair<int, int>> dj_junction_ggene_ranges =
       {{"IGHD_ex*01", {0, 1}}, {"IGHJ_ex*01", {1, 7}}};
   std::vector<int> dj_junction_naive_bases = {1, 0, 1, 2, 3, 0, 3};
   std::vector<int> dj_junction_germ_inds = {4, -1, -1, -1, -1, 0, 1};
   std::vector<int> dj_junction_site_inds = {9, -1, -1, -1, -1, 10, 11};
   std::vector<std::string> jgerm_state_strs = {"IGHJ_ex*01"};
+  std::vector<int> jgerm_left_del = {2};
+  std::vector<int> jgerm_right_del = {0};
   std::map<std::string, std::pair<int, int>> jgerm_ggene_ranges =
       {{"IGHJ_ex*01", {0, 3}}};
   std::vector<int> jgerm_naive_bases = {2, 1, 2};
@@ -360,6 +374,29 @@ TEST_CASE("SimpleHMM", "[simplehmm]") {
   int dgerm_scaler_count = 0;
   std::vector<int> dj_junction_scaler_counts = {0, 0, 0};
   int jgerm_scaler_count = 0;
+  std::string naive_seq_samp = "NATGAGGTATATGCG";
+  std::string vgerm_state_str_samp = "IGHV_ex*01";
+  int vgerm_state_ind_samp = 0;
+  int vgerm_left_del_samp = 0;
+  int vgerm_right_del_samp = 1;
+  std::string vgerm_left_insertion_samp = "N";
+  std::vector<std::string> vd_junction_state_str_samps =
+      {"IGHV_ex*01:3", "IGHD_ex*01:0", "IGHD_ex*01:1", "IGHD_ex*01:2"};
+  std::vector<int> vd_junction_state_ind_samps = {7, 4, 5, 6};
+  std::string vd_junction_insertion_samp = "";
+  std::string dgerm_state_str_samp = "IGHD_ex*01";
+  int dgerm_state_ind_samp = 0;
+  int dgerm_left_del_samp = 0;
+  int dgerm_right_del_samp = 1;
+  std::vector<std::string> dj_junction_state_str_samps =
+      {"IGHJ_ex*01:N_T", "IGHJ_ex*01:0", "IGHJ_ex*01:1"};
+  std::vector<int> dj_junction_state_ind_samps = {4, 5, 6};
+  std::string dj_junction_insertion_samp = "T";
+  std::string jgerm_state_str_samp = "IGHJ_ex*01";
+  int jgerm_state_ind_samp = 0;
+  int jgerm_left_del_samp = 0;
+  int jgerm_right_del_samp = 0;
+  std::string jgerm_right_insertion_samp = "";
 
   REQUIRE(simple_hmm_ptr->locus() == locus);
   REQUIRE(simple_hmm_ptr->flexbounds() == flexbounds);
@@ -370,26 +407,36 @@ TEST_CASE("SimpleHMM", "[simplehmm]") {
   REQUIRE(simple_hmm_ptr->vpadding_naive_bases() == vpadding_naive_bases);
   REQUIRE(simple_hmm_ptr->vpadding_site_inds() == vpadding_site_inds);
   REQUIRE(simple_hmm_ptr->vgerm_state_strs() == vgerm_state_strs);
+  REQUIRE(simple_hmm_ptr->vgerm_left_del() == vgerm_left_del);
+  REQUIRE(simple_hmm_ptr->vgerm_right_del() == vgerm_right_del);
   REQUIRE(simple_hmm_ptr->vgerm_ggene_ranges() == vgerm_ggene_ranges);
   REQUIRE(simple_hmm_ptr->vgerm_naive_bases() == vgerm_naive_bases);
   REQUIRE(simple_hmm_ptr->vgerm_germ_inds() == vgerm_germ_inds);
   REQUIRE(simple_hmm_ptr->vgerm_site_inds() == vgerm_site_inds);
   REQUIRE(simple_hmm_ptr->vd_junction_state_strs() == vd_junction_state_strs);
+  REQUIRE(simple_hmm_ptr->vd_junction_del() == vd_junction_del);
+  REQUIRE(simple_hmm_ptr->vd_junction_ggene_types() == vd_junction_ggene_types);
   REQUIRE(simple_hmm_ptr->vd_junction_ggene_ranges() == vd_junction_ggene_ranges);
   REQUIRE(simple_hmm_ptr->vd_junction_naive_bases() == vd_junction_naive_bases);
   REQUIRE(simple_hmm_ptr->vd_junction_germ_inds() == vd_junction_germ_inds);
   REQUIRE(simple_hmm_ptr->vd_junction_site_inds() == vd_junction_site_inds);
   REQUIRE(simple_hmm_ptr->dgerm_state_strs() == dgerm_state_strs);
+  REQUIRE(simple_hmm_ptr->dgerm_left_del() == dgerm_left_del);
+  REQUIRE(simple_hmm_ptr->dgerm_right_del() == dgerm_right_del);
   REQUIRE(simple_hmm_ptr->dgerm_ggene_ranges() == dgerm_ggene_ranges);
   REQUIRE(simple_hmm_ptr->dgerm_naive_bases() == dgerm_naive_bases);
   REQUIRE(simple_hmm_ptr->dgerm_germ_inds() == dgerm_germ_inds);
   REQUIRE(simple_hmm_ptr->dgerm_site_inds() == dgerm_site_inds);
   REQUIRE(simple_hmm_ptr->dj_junction_state_strs() == dj_junction_state_strs);
+  REQUIRE(simple_hmm_ptr->dj_junction_del() == dj_junction_del);
+  REQUIRE(simple_hmm_ptr->dj_junction_ggene_types() == dj_junction_ggene_types);
   REQUIRE(simple_hmm_ptr->dj_junction_ggene_ranges() == dj_junction_ggene_ranges);
   REQUIRE(simple_hmm_ptr->dj_junction_naive_bases() == dj_junction_naive_bases);
   REQUIRE(simple_hmm_ptr->dj_junction_germ_inds() == dj_junction_germ_inds);
   REQUIRE(simple_hmm_ptr->dj_junction_site_inds() == dj_junction_site_inds);
   REQUIRE(simple_hmm_ptr->jgerm_state_strs() == jgerm_state_strs);
+  REQUIRE(simple_hmm_ptr->jgerm_left_del() == jgerm_left_del);
+  REQUIRE(simple_hmm_ptr->jgerm_right_del() == jgerm_right_del);
   REQUIRE(simple_hmm_ptr->jgerm_ggene_ranges() == jgerm_ggene_ranges);
   REQUIRE(simple_hmm_ptr->jgerm_naive_bases() == jgerm_naive_bases);
   REQUIRE(simple_hmm_ptr->jgerm_germ_inds() == jgerm_germ_inds);
@@ -413,7 +460,27 @@ TEST_CASE("SimpleHMM", "[simplehmm]") {
   REQUIRE(simple_hmm_ptr->dgerm_scaler_count() == dgerm_scaler_count);
   REQUIRE(simple_hmm_ptr->dj_junction_scaler_counts() == dj_junction_scaler_counts);
   REQUIRE(simple_hmm_ptr->jgerm_scaler_count() == jgerm_scaler_count);
-  REQUIRE(simple_hmm_ptr->SampleNaiveSequence() == "NATGAGGTATATGCG");
+  REQUIRE(simple_hmm_ptr->SampleNaiveSequence() == naive_seq_samp);
+  REQUIRE(simple_hmm_ptr->vgerm_state_str_samp() == vgerm_state_str_samp);
+  REQUIRE(simple_hmm_ptr->vgerm_state_ind_samp() == vgerm_state_ind_samp);
+  REQUIRE(simple_hmm_ptr->vgerm_left_del_samp() == vgerm_left_del_samp);
+  REQUIRE(simple_hmm_ptr->vgerm_right_del_samp() == vgerm_right_del_samp);
+  REQUIRE(simple_hmm_ptr->vgerm_left_insertion_samp() == vgerm_left_insertion_samp);
+  REQUIRE(simple_hmm_ptr->vd_junction_state_str_samps() == vd_junction_state_str_samps);
+  REQUIRE(simple_hmm_ptr->vd_junction_state_ind_samps() == vd_junction_state_ind_samps);
+  REQUIRE(simple_hmm_ptr->vd_junction_insertion_samp() == vd_junction_insertion_samp);
+  REQUIRE(simple_hmm_ptr->dgerm_state_str_samp() == dgerm_state_str_samp);
+  REQUIRE(simple_hmm_ptr->dgerm_state_ind_samp() == dgerm_state_ind_samp);
+  REQUIRE(simple_hmm_ptr->dgerm_left_del_samp() == dgerm_left_del_samp);
+  REQUIRE(simple_hmm_ptr->dgerm_right_del_samp() == dgerm_right_del_samp);
+  REQUIRE(simple_hmm_ptr->dj_junction_state_str_samps() == dj_junction_state_str_samps);
+  REQUIRE(simple_hmm_ptr->dj_junction_state_ind_samps() == dj_junction_state_ind_samps);
+  REQUIRE(simple_hmm_ptr->dj_junction_insertion_samp() == dj_junction_insertion_samp);
+  REQUIRE(simple_hmm_ptr->jgerm_state_str_samp() == jgerm_state_str_samp);
+  REQUIRE(simple_hmm_ptr->jgerm_state_ind_samp() == jgerm_state_ind_samp);
+  REQUIRE(simple_hmm_ptr->jgerm_left_del_samp() == jgerm_left_del_samp);
+  REQUIRE(simple_hmm_ptr->jgerm_right_del_samp() == jgerm_right_del_samp);
+  REQUIRE(simple_hmm_ptr->jgerm_right_insertion_samp() == jgerm_right_insertion_samp);
 
   // For clarity, we run an additional SimpleHMM test.
   yaml_path = "data/simple_hmm_input_extra.yaml";
@@ -433,6 +500,8 @@ TEST_CASE("SimpleHMM", "[simplehmm]") {
   vpadding_naive_bases = {4, 4};
   vpadding_site_inds = {0, 0};
   vgerm_state_strs = {"IGHV_ex*01", "IGHV_ex*99"};
+  vgerm_left_del = {0, 0};
+  vgerm_right_del = {2, 5};
   vgerm_ggene_ranges = {{"IGHV_ex*01", {0, 3}}, {"IGHV_ex*99", {3, 6}}};
   vgerm_naive_bases = {0, 3, 2, 1, 0, 2};
   vgerm_germ_inds = {0, 1, 2, 0, 1, 2};
@@ -442,12 +511,19 @@ TEST_CASE("SimpleHMM", "[simplehmm]") {
        "IGHD_ex*01:0", "IGHD_ex*99:N_A", "IGHD_ex*99:N_C", "IGHD_ex*99:N_G",
        "IGHD_ex*99:N_T", "IGHD_ex*99:1", "IGHD_ex*99:2", "IGHV_ex*01:3",
        "IGHV_ex*01:4", "IGHV_ex*99:3", "IGHV_ex*99:4"};
+  vd_junction_del = {-1, -1, -1, -1, 0, -1, -1, -1, -1, 1, 2, 1, 0, 4, 3};
+  vd_junction_ggene_types =
+      {GermlineType::D, GermlineType::D, GermlineType::D, GermlineType::D, GermlineType::D,
+       GermlineType::D, GermlineType::D, GermlineType::D, GermlineType::D, GermlineType::D,
+       GermlineType::D, GermlineType::V, GermlineType::V, GermlineType::V, GermlineType::V};
   vd_junction_ggene_ranges = {{"IGHD_ex*01", {0, 5}}, {"IGHD_ex*99", {5, 11}},
                               {"IGHV_ex*01", {11, 13}}, {"IGHV_ex*99", {13, 15}}};
   vd_junction_naive_bases = {0, 1, 2, 3, 2, 0, 1, 2, 3, 2, 3, 0, 1, 2, 0};
   vd_junction_germ_inds = {-1, -1, -1, -1, 0, -1, -1, -1, -1, 1, 2, 3, 4, 3, 4};
   vd_junction_site_inds = {-1, -1, -1, -1, 5, -1, -1, -1, -1, 4, 5, 4, 5, 4, 5};
   dgerm_state_strs = {"IGHD_ex*01", "IGHD_ex*99"};
+  dgerm_left_del = {1, 3};
+  dgerm_right_del = {2, 2};
   dgerm_ggene_ranges = {{"IGHD_ex*01", {0, 2}}, {"IGHD_ex*99", {2, 4}}};
   dgerm_naive_bases = {2, 3, 1, 0};
   dgerm_germ_inds = {1, 2, 3, 4};
@@ -457,12 +533,19 @@ TEST_CASE("SimpleHMM", "[simplehmm]") {
        "IGHJ_ex*01:N_A", "IGHJ_ex*01:N_C", "IGHJ_ex*01:N_G", "IGHJ_ex*01:N_T",
        "IGHJ_ex*99:N_A", "IGHJ_ex*99:N_C", "IGHJ_ex*99:N_G", "IGHJ_ex*99:N_T",
        "IGHJ_ex*99:1", "IGHJ_ex*99:2"};
+  dj_junction_del = {1, 0, 1, 0, -1, -1, -1, -1, -1, -1, -1, -1, 1, 2};
+  dj_junction_ggene_types =
+      {GermlineType::D, GermlineType::D, GermlineType::D, GermlineType::D, GermlineType::J,
+       GermlineType::J, GermlineType::J, GermlineType::J, GermlineType::J, GermlineType::J,
+       GermlineType::J, GermlineType::J, GermlineType::J, GermlineType::J};
   dj_junction_ggene_ranges = {{"IGHD_ex*01", {0, 2}}, {"IGHD_ex*99", {2, 4}},
                               {"IGHJ_ex*01", {4, 8}}, {"IGHJ_ex*99", {8, 14}}};
   dj_junction_naive_bases = {0, 1, 0, 1, 0, 1, 2, 3, 0, 1, 2, 3, 3, 2};
   dj_junction_germ_inds = {3, 4, 5, 6, -1, -1, -1, -1, -1, -1, -1, -1, 1, 2};
   dj_junction_site_inds = {8, 9, 8, 9, -1, -1, -1, -1, -1, -1, -1, -1, 8, 9};
   jgerm_state_strs = {"IGHJ_ex*01", "IGHJ_ex*99"};
+  jgerm_left_del = {0, 3};
+  jgerm_right_del = {0, 0};
   jgerm_ggene_ranges = {{"IGHJ_ex*01", {0, 5}}, {"IGHJ_ex*99", {5, 10}}};
   jgerm_naive_bases = {0, 3, 2, 1, 2, 1, 0, 3, 1, 2};
   jgerm_germ_inds = {0, 1, 2, 3, 4, 3, 4, 5, 6, 7};
@@ -554,6 +637,27 @@ TEST_CASE("SimpleHMM", "[simplehmm]") {
   dgerm_scaler_count = 0;
   dj_junction_scaler_counts = {0, 0};
   jgerm_scaler_count = 0;
+  naive_seq_samp = "NCAGGACACTATGCG";
+  vgerm_state_str_samp = "IGHV_ex*99";
+  vgerm_state_ind_samp = 1;
+  vgerm_left_del_samp = 0;
+  vgerm_right_del_samp = 3;
+  vgerm_left_insertion_samp = "N";
+  vd_junction_state_str_samps = {"IGHV_ex*99:3", "IGHV_ex*99:4"};
+  vd_junction_state_ind_samps = {13, 14};
+  vd_junction_insertion_samp = "";
+  dgerm_state_str_samp = "IGHD_ex*99";
+  dgerm_state_ind_samp = 1;
+  dgerm_left_del_samp = 3;
+  dgerm_right_del_samp = 2;
+  dj_junction_state_str_samps = {"IGHJ_ex*01:N_C", "IGHJ_ex*01:N_T"};
+  dj_junction_state_ind_samps = {5, 7};
+  dj_junction_insertion_samp = "CT";
+  jgerm_state_str_samp = "IGHJ_ex*01";
+  jgerm_state_ind_samp = 0;
+  jgerm_left_del_samp = 0;
+  jgerm_right_del_samp = 0;
+  jgerm_right_insertion_samp = "";
 
   REQUIRE(simple_hmm_ptr->locus() == locus);
   REQUIRE(simple_hmm_ptr->flexbounds() == flexbounds);
@@ -564,26 +668,36 @@ TEST_CASE("SimpleHMM", "[simplehmm]") {
   REQUIRE(simple_hmm_ptr->vpadding_naive_bases() == vpadding_naive_bases);
   REQUIRE(simple_hmm_ptr->vpadding_site_inds() == vpadding_site_inds);
   REQUIRE(simple_hmm_ptr->vgerm_state_strs() == vgerm_state_strs);
+  REQUIRE(simple_hmm_ptr->vgerm_left_del() == vgerm_left_del);
+  REQUIRE(simple_hmm_ptr->vgerm_right_del() == vgerm_right_del);
   REQUIRE(simple_hmm_ptr->vgerm_ggene_ranges() == vgerm_ggene_ranges);
   REQUIRE(simple_hmm_ptr->vgerm_naive_bases() == vgerm_naive_bases);
   REQUIRE(simple_hmm_ptr->vgerm_germ_inds() == vgerm_germ_inds);
   REQUIRE(simple_hmm_ptr->vgerm_site_inds() == vgerm_site_inds);
   REQUIRE(simple_hmm_ptr->vd_junction_state_strs() == vd_junction_state_strs);
+  REQUIRE(simple_hmm_ptr->vd_junction_del() == vd_junction_del);
+  REQUIRE(simple_hmm_ptr->vd_junction_ggene_types() == vd_junction_ggene_types);
   REQUIRE(simple_hmm_ptr->vd_junction_ggene_ranges() == vd_junction_ggene_ranges);
   REQUIRE(simple_hmm_ptr->vd_junction_naive_bases() == vd_junction_naive_bases);
   REQUIRE(simple_hmm_ptr->vd_junction_germ_inds() == vd_junction_germ_inds);
   REQUIRE(simple_hmm_ptr->vd_junction_site_inds() == vd_junction_site_inds);
   REQUIRE(simple_hmm_ptr->dgerm_state_strs() == dgerm_state_strs);
+  REQUIRE(simple_hmm_ptr->dgerm_left_del() == dgerm_left_del);
+  REQUIRE(simple_hmm_ptr->dgerm_right_del() == dgerm_right_del);
   REQUIRE(simple_hmm_ptr->dgerm_ggene_ranges() == dgerm_ggene_ranges);
   REQUIRE(simple_hmm_ptr->dgerm_naive_bases() == dgerm_naive_bases);
   REQUIRE(simple_hmm_ptr->dgerm_germ_inds() == dgerm_germ_inds);
   REQUIRE(simple_hmm_ptr->dgerm_site_inds() == dgerm_site_inds);
   REQUIRE(simple_hmm_ptr->dj_junction_state_strs() == dj_junction_state_strs);
+  REQUIRE(simple_hmm_ptr->dj_junction_del() == dj_junction_del);
+  REQUIRE(simple_hmm_ptr->dj_junction_ggene_types() == dj_junction_ggene_types);
   REQUIRE(simple_hmm_ptr->dj_junction_ggene_ranges() == dj_junction_ggene_ranges);
   REQUIRE(simple_hmm_ptr->dj_junction_naive_bases() == dj_junction_naive_bases);
   REQUIRE(simple_hmm_ptr->dj_junction_germ_inds() == dj_junction_germ_inds);
   REQUIRE(simple_hmm_ptr->dj_junction_site_inds() == dj_junction_site_inds);
   REQUIRE(simple_hmm_ptr->jgerm_state_strs() == jgerm_state_strs);
+  REQUIRE(simple_hmm_ptr->jgerm_left_del() == jgerm_left_del);
+  REQUIRE(simple_hmm_ptr->jgerm_right_del() == jgerm_right_del);
   REQUIRE(simple_hmm_ptr->jgerm_ggene_ranges() == jgerm_ggene_ranges);
   REQUIRE(simple_hmm_ptr->jgerm_naive_bases() == jgerm_naive_bases);
   REQUIRE(simple_hmm_ptr->jgerm_germ_inds() == jgerm_germ_inds);
@@ -607,7 +721,27 @@ TEST_CASE("SimpleHMM", "[simplehmm]") {
   REQUIRE(simple_hmm_ptr->dgerm_scaler_count() == dgerm_scaler_count);
   REQUIRE(simple_hmm_ptr->dj_junction_scaler_counts() == dj_junction_scaler_counts);
   REQUIRE(simple_hmm_ptr->jgerm_scaler_count() == jgerm_scaler_count);
-  REQUIRE(simple_hmm_ptr->SampleNaiveSequence() == "NCAGGACACTATGCG");
+  REQUIRE(simple_hmm_ptr->SampleNaiveSequence() == naive_seq_samp);
+  REQUIRE(simple_hmm_ptr->vgerm_state_str_samp() == vgerm_state_str_samp);
+  REQUIRE(simple_hmm_ptr->vgerm_state_ind_samp() == vgerm_state_ind_samp);
+  REQUIRE(simple_hmm_ptr->vgerm_left_del_samp() == vgerm_left_del_samp);
+  REQUIRE(simple_hmm_ptr->vgerm_right_del_samp() == vgerm_right_del_samp);
+  REQUIRE(simple_hmm_ptr->vgerm_left_insertion_samp() == vgerm_left_insertion_samp);
+  REQUIRE(simple_hmm_ptr->vd_junction_state_str_samps() == vd_junction_state_str_samps);
+  REQUIRE(simple_hmm_ptr->vd_junction_state_ind_samps() == vd_junction_state_ind_samps);
+  REQUIRE(simple_hmm_ptr->vd_junction_insertion_samp() == vd_junction_insertion_samp);
+  REQUIRE(simple_hmm_ptr->dgerm_state_str_samp() == dgerm_state_str_samp);
+  REQUIRE(simple_hmm_ptr->dgerm_state_ind_samp() == dgerm_state_ind_samp);
+  REQUIRE(simple_hmm_ptr->dgerm_left_del_samp() == dgerm_left_del_samp);
+  REQUIRE(simple_hmm_ptr->dgerm_right_del_samp() == dgerm_right_del_samp);
+  REQUIRE(simple_hmm_ptr->dj_junction_state_str_samps() == dj_junction_state_str_samps);
+  REQUIRE(simple_hmm_ptr->dj_junction_state_ind_samps() == dj_junction_state_ind_samps);
+  REQUIRE(simple_hmm_ptr->dj_junction_insertion_samp() == dj_junction_insertion_samp);
+  REQUIRE(simple_hmm_ptr->jgerm_state_str_samp() == jgerm_state_str_samp);
+  REQUIRE(simple_hmm_ptr->jgerm_state_ind_samp() == jgerm_state_ind_samp);
+  REQUIRE(simple_hmm_ptr->jgerm_left_del_samp() == jgerm_left_del_samp);
+  REQUIRE(simple_hmm_ptr->jgerm_right_del_samp() == jgerm_right_del_samp);
+  REQUIRE(simple_hmm_ptr->jgerm_right_insertion_samp() == jgerm_right_insertion_samp);
 }
 
 
@@ -644,6 +778,8 @@ TEST_CASE("PhyloHMM", "[phylohmm]") {
   std::vector<int> vpadding_naive_bases = {4};
   std::vector<int> vpadding_site_inds = {0};
   std::vector<std::string> vgerm_state_strs = {"IGHV_ex*01"};
+  std::vector<int> vgerm_left_del = {0};
+  std::vector<int> vgerm_right_del = {2};
   std::map<std::string, std::pair<int, int>> vgerm_ggene_ranges =
       {{"IGHV_ex*01", {0, 3}}};
   std::vector<int> vgerm_naive_bases = {0, 3, 2};
@@ -652,12 +788,18 @@ TEST_CASE("PhyloHMM", "[phylohmm]") {
   std::vector<std::string> vd_junction_state_strs =
       {"IGHD_ex*01:N_A", "IGHD_ex*01:N_C", "IGHD_ex*01:N_G", "IGHD_ex*01:N_T",
        "IGHD_ex*01:0", "IGHD_ex*01:1", "IGHD_ex*01:2", "IGHV_ex*01:3", "IGHV_ex*01:4"};
+  std::vector<int> vd_junction_del = {-1, -1, -1, -1, 0, 1, 2, 1, 0};
+  std::vector<GermlineType> vd_junction_ggene_types =
+      {GermlineType::D, GermlineType::D, GermlineType::D, GermlineType::D, GermlineType::D,
+       GermlineType::D, GermlineType::D, GermlineType::V, GermlineType::V};
   std::map<std::string, std::pair<int, int>> vd_junction_ggene_ranges =
       {{"IGHD_ex*01", {0, 7}}, {"IGHV_ex*01", {7, 9}}};
   std::vector<int> vd_junction_naive_bases = {0, 1, 2, 3, 2, 2, 3, 0, 1};
   std::vector<int> vd_junction_germ_inds = {-1, -1, -1, -1, 0, 1, 2, 3, 4};
   std::vector<int> vd_junction_site_inds = {-1, -1, -1, -1, 5, 6, 7, 4, 5};
   std::vector<std::string> dgerm_state_strs = {"IGHD_ex*01"};
+  std::vector<int> dgerm_left_del = {3};
+  std::vector<int> dgerm_right_del = {1};
   std::map<std::string, std::pair<int, int>> dgerm_ggene_ranges =
       {{"IGHD_ex*01", {0, 1}}};
   std::vector<int> dgerm_naive_bases = {0};
@@ -666,12 +808,18 @@ TEST_CASE("PhyloHMM", "[phylohmm]") {
   std::vector<std::string> dj_junction_state_strs =
       {"IGHD_ex*01:4", "IGHJ_ex*01:N_A", "IGHJ_ex*01:N_C", "IGHJ_ex*01:N_G",
        "IGHJ_ex*01:N_T", "IGHJ_ex*01:0", "IGHJ_ex*01:1"};
+  std::vector<int> dj_junction_del = {0, -1, -1, -1, -1, 0, 1};
+  std::vector<GermlineType> dj_junction_ggene_types =
+      {GermlineType::D, GermlineType::J, GermlineType::J, GermlineType::J,
+       GermlineType::J, GermlineType::J, GermlineType::J};
   std::map<std::string, std::pair<int, int>> dj_junction_ggene_ranges =
       {{"IGHD_ex*01", {0, 1}}, {"IGHJ_ex*01", {1, 7}}};
   std::vector<int> dj_junction_naive_bases = {1, 0, 1, 2, 3, 0, 3};
   std::vector<int> dj_junction_germ_inds = {4, -1, -1, -1, -1, 0, 1};
   std::vector<int> dj_junction_site_inds = {9, -1, -1, -1, -1, 10, 11};
   std::vector<std::string> jgerm_state_strs = {"IGHJ_ex*01"};
+  std::vector<int> jgerm_left_del = {2};
+  std::vector<int> jgerm_right_del = {0};
   std::map<std::string, std::pair<int, int>> jgerm_ggene_ranges =
       {{"IGHJ_ex*01", {0, 3}}};
   std::vector<int> jgerm_naive_bases = {2, 1, 2};
@@ -732,6 +880,34 @@ TEST_CASE("PhyloHMM", "[phylohmm]") {
   Eigen::RowVectorXd jpadding_transition(1);
   jpadding_transition << 0.04;
   bool cache_forward = true;
+  int vgerm_scaler_count = 0;
+  std::vector<int> vd_junction_scaler_counts = {0, 0, 0, 0};
+  int dgerm_scaler_count = 0;
+  std::vector<int> dj_junction_scaler_counts = {0, 0, 0};
+  int jgerm_scaler_count = 0;
+  std::string naive_seq_samp = "NATGAGGTAGATGCG";
+  std::string vgerm_state_str_samp = "IGHV_ex*01";
+  int vgerm_state_ind_samp = 0;
+  int vgerm_left_del_samp = 0;
+  int vgerm_right_del_samp = 1;
+  std::string vgerm_left_insertion_samp = "N";
+  std::vector<std::string> vd_junction_state_str_samps =
+      {"IGHV_ex*01:3", "IGHD_ex*01:0", "IGHD_ex*01:1", "IGHD_ex*01:2"};
+  std::vector<int> vd_junction_state_ind_samps = {7, 4, 5, 6};
+  std::string vd_junction_insertion_samp = "";
+  std::string dgerm_state_str_samp = "IGHD_ex*01";
+  int dgerm_state_ind_samp = 0;
+  int dgerm_left_del_samp = 0;
+  int dgerm_right_del_samp = 1;
+  std::vector<std::string> dj_junction_state_str_samps =
+      {"IGHJ_ex*01:N_G", "IGHJ_ex*01:0", "IGHJ_ex*01:1"};
+  std::vector<int> dj_junction_state_ind_samps = {3, 5, 6};
+  std::string dj_junction_insertion_samp = "G";
+  std::string jgerm_state_str_samp = "IGHJ_ex*01";
+  int jgerm_state_ind_samp = 0;
+  int jgerm_left_del_samp = 0;
+  int jgerm_right_del_samp = 0;
+  std::string jgerm_right_insertion_samp = "";
 
   REQUIRE(phylo_hmm_ptr->locus() == locus);
   REQUIRE(phylo_hmm_ptr->flexbounds() == flexbounds);
@@ -742,26 +918,36 @@ TEST_CASE("PhyloHMM", "[phylohmm]") {
   REQUIRE(phylo_hmm_ptr->vpadding_naive_bases() == vpadding_naive_bases);
   REQUIRE(phylo_hmm_ptr->vpadding_site_inds() == vpadding_site_inds);
   REQUIRE(phylo_hmm_ptr->vgerm_state_strs() == vgerm_state_strs);
+  REQUIRE(phylo_hmm_ptr->vgerm_left_del() == vgerm_left_del);
+  REQUIRE(phylo_hmm_ptr->vgerm_right_del() == vgerm_right_del);
   REQUIRE(phylo_hmm_ptr->vgerm_ggene_ranges() == vgerm_ggene_ranges);
   REQUIRE(phylo_hmm_ptr->vgerm_naive_bases() == vgerm_naive_bases);
   REQUIRE(phylo_hmm_ptr->vgerm_germ_inds() == vgerm_germ_inds);
   REQUIRE(phylo_hmm_ptr->vgerm_site_inds() == vgerm_site_inds);
   REQUIRE(phylo_hmm_ptr->vd_junction_state_strs() == vd_junction_state_strs);
+  REQUIRE(phylo_hmm_ptr->vd_junction_del() == vd_junction_del);
+  REQUIRE(phylo_hmm_ptr->vd_junction_ggene_types() == vd_junction_ggene_types);
   REQUIRE(phylo_hmm_ptr->vd_junction_ggene_ranges() == vd_junction_ggene_ranges);
   REQUIRE(phylo_hmm_ptr->vd_junction_naive_bases() == vd_junction_naive_bases);
   REQUIRE(phylo_hmm_ptr->vd_junction_germ_inds() == vd_junction_germ_inds);
   REQUIRE(phylo_hmm_ptr->vd_junction_site_inds() == vd_junction_site_inds);
   REQUIRE(phylo_hmm_ptr->dgerm_state_strs() == dgerm_state_strs);
+  REQUIRE(phylo_hmm_ptr->dgerm_left_del() == dgerm_left_del);
+  REQUIRE(phylo_hmm_ptr->dgerm_right_del() == dgerm_right_del);
   REQUIRE(phylo_hmm_ptr->dgerm_ggene_ranges() == dgerm_ggene_ranges);
   REQUIRE(phylo_hmm_ptr->dgerm_naive_bases() == dgerm_naive_bases);
   REQUIRE(phylo_hmm_ptr->dgerm_germ_inds() == dgerm_germ_inds);
   REQUIRE(phylo_hmm_ptr->dgerm_site_inds() == dgerm_site_inds);
   REQUIRE(phylo_hmm_ptr->dj_junction_state_strs() == dj_junction_state_strs);
+  REQUIRE(phylo_hmm_ptr->dj_junction_del() == dj_junction_del);
+  REQUIRE(phylo_hmm_ptr->dj_junction_ggene_types() == dj_junction_ggene_types);
   REQUIRE(phylo_hmm_ptr->dj_junction_ggene_ranges() == dj_junction_ggene_ranges);
   REQUIRE(phylo_hmm_ptr->dj_junction_naive_bases() == dj_junction_naive_bases);
   REQUIRE(phylo_hmm_ptr->dj_junction_germ_inds() == dj_junction_germ_inds);
   REQUIRE(phylo_hmm_ptr->dj_junction_site_inds() == dj_junction_site_inds);
   REQUIRE(phylo_hmm_ptr->jgerm_state_strs() == jgerm_state_strs);
+  REQUIRE(phylo_hmm_ptr->jgerm_left_del() == jgerm_left_del);
+  REQUIRE(phylo_hmm_ptr->jgerm_right_del() == jgerm_right_del);
   REQUIRE(phylo_hmm_ptr->jgerm_ggene_ranges() == jgerm_ggene_ranges);
   REQUIRE(phylo_hmm_ptr->jgerm_naive_bases() == jgerm_naive_bases);
   REQUIRE(phylo_hmm_ptr->jgerm_germ_inds() == jgerm_germ_inds);
@@ -778,6 +964,34 @@ TEST_CASE("PhyloHMM", "[phylohmm]") {
   REQUIRE(phylo_hmm_ptr->dj_junction_jgerm_transition() == dj_junction_jgerm_transition);
   REQUIRE(phylo_hmm_ptr->jpadding_transition().isApprox(jpadding_transition));
   REQUIRE(phylo_hmm_ptr->cache_forward() == cache_forward);
+
+  REQUIRE(phylo_hmm_ptr->LogLikelihood() == Approx(-75.8136));
+  REQUIRE(phylo_hmm_ptr->vgerm_scaler_count() == vgerm_scaler_count);
+  REQUIRE(phylo_hmm_ptr->vd_junction_scaler_counts() == vd_junction_scaler_counts);
+  REQUIRE(phylo_hmm_ptr->dgerm_scaler_count() == dgerm_scaler_count);
+  REQUIRE(phylo_hmm_ptr->dj_junction_scaler_counts() == dj_junction_scaler_counts);
+  REQUIRE(phylo_hmm_ptr->jgerm_scaler_count() == jgerm_scaler_count);
+  REQUIRE(phylo_hmm_ptr->SampleNaiveSequence() == naive_seq_samp);
+  REQUIRE(phylo_hmm_ptr->vgerm_state_str_samp() == vgerm_state_str_samp);
+  REQUIRE(phylo_hmm_ptr->vgerm_state_ind_samp() == vgerm_state_ind_samp);
+  REQUIRE(phylo_hmm_ptr->vgerm_left_del_samp() == vgerm_left_del_samp);
+  REQUIRE(phylo_hmm_ptr->vgerm_right_del_samp() == vgerm_right_del_samp);
+  REQUIRE(phylo_hmm_ptr->vgerm_left_insertion_samp() == vgerm_left_insertion_samp);
+  REQUIRE(phylo_hmm_ptr->vd_junction_state_str_samps() == vd_junction_state_str_samps);
+  REQUIRE(phylo_hmm_ptr->vd_junction_state_ind_samps() == vd_junction_state_ind_samps);
+  REQUIRE(phylo_hmm_ptr->vd_junction_insertion_samp() == vd_junction_insertion_samp);
+  REQUIRE(phylo_hmm_ptr->dgerm_state_str_samp() == dgerm_state_str_samp);
+  REQUIRE(phylo_hmm_ptr->dgerm_state_ind_samp() == dgerm_state_ind_samp);
+  REQUIRE(phylo_hmm_ptr->dgerm_left_del_samp() == dgerm_left_del_samp);
+  REQUIRE(phylo_hmm_ptr->dgerm_right_del_samp() == dgerm_right_del_samp);
+  REQUIRE(phylo_hmm_ptr->dj_junction_state_str_samps() == dj_junction_state_str_samps);
+  REQUIRE(phylo_hmm_ptr->dj_junction_state_ind_samps() == dj_junction_state_ind_samps);
+  REQUIRE(phylo_hmm_ptr->dj_junction_insertion_samp() == dj_junction_insertion_samp);
+  REQUIRE(phylo_hmm_ptr->jgerm_state_str_samp() == jgerm_state_str_samp);
+  REQUIRE(phylo_hmm_ptr->jgerm_state_ind_samp() == jgerm_state_ind_samp);
+  REQUIRE(phylo_hmm_ptr->jgerm_left_del_samp() == jgerm_left_del_samp);
+  REQUIRE(phylo_hmm_ptr->jgerm_right_del_samp() == jgerm_right_del_samp);
+  REQUIRE(phylo_hmm_ptr->jgerm_right_insertion_samp() == jgerm_right_insertion_samp);
 
   // We continue with PhyloHMM derived class tests (members are tested in declaration order).
   Eigen::MatrixXi xmsa(4, 36);
@@ -821,11 +1035,6 @@ TEST_CASE("PhyloHMM", "[phylohmm]") {
   Eigen::VectorXi jpadding_xmsa_inds;
   std::vector<double> er = {1.0, 1.0, 1.0, 1.0, 1.0, 1.0};
   std::vector<double> pi = {0.17, 0.19, 0.25, 0.39};
-  int vgerm_scaler_count = 0;
-  std::vector<int> vd_junction_scaler_counts = {0, 0, 0, 0};
-  int dgerm_scaler_count = 0;
-  std::vector<int> dj_junction_scaler_counts = {0, 0, 0};
-  int jgerm_scaler_count = 0;
 
   REQUIRE(phylo_hmm_ptr->xmsa() == xmsa);
   REQUIRE(phylo_hmm_ptr->xmsa_labels() == xmsa_labels);
@@ -842,13 +1051,6 @@ TEST_CASE("PhyloHMM", "[phylohmm]") {
   REQUIRE(phylo_hmm_ptr->alpha() == 1.0);
   REQUIRE(phylo_hmm_ptr->er() == er);
   REQUIRE(phylo_hmm_ptr->pi() == pi);
-  REQUIRE(phylo_hmm_ptr->LogLikelihood() == Approx(-75.8136));
-  REQUIRE(phylo_hmm_ptr->SampleNaiveSequence() == "NATGAGGTAGATGCG");
-  REQUIRE(phylo_hmm_ptr->vgerm_scaler_count() == vgerm_scaler_count);
-  REQUIRE(phylo_hmm_ptr->vd_junction_scaler_counts() == vd_junction_scaler_counts);
-  REQUIRE(phylo_hmm_ptr->dgerm_scaler_count() == dgerm_scaler_count);
-  REQUIRE(phylo_hmm_ptr->dj_junction_scaler_counts() == dj_junction_scaler_counts);
-  REQUIRE(phylo_hmm_ptr->jgerm_scaler_count() == jgerm_scaler_count);
 
   // For clarity, we run an additional PhyloHMM test.
   yaml_path = "data/phylo_hmm_input_extra.yaml";
@@ -871,6 +1073,8 @@ TEST_CASE("PhyloHMM", "[phylohmm]") {
   vpadding_naive_bases = {4, 4};
   vpadding_site_inds = {0, 0};
   vgerm_state_strs = {"IGHV_ex*01", "IGHV_ex*99"};
+  vgerm_left_del = {0, 0};
+  vgerm_right_del = {2, 5};
   vgerm_ggene_ranges = {{"IGHV_ex*01", {0, 3}}, {"IGHV_ex*99", {3, 6}}};
   vgerm_naive_bases = {0, 3, 2, 1, 0, 2};
   vgerm_germ_inds = {0, 1, 2, 0, 1, 2};
@@ -880,12 +1084,19 @@ TEST_CASE("PhyloHMM", "[phylohmm]") {
        "IGHD_ex*01:0", "IGHD_ex*99:N_A", "IGHD_ex*99:N_C", "IGHD_ex*99:N_G",
        "IGHD_ex*99:N_T", "IGHD_ex*99:1", "IGHD_ex*99:2", "IGHV_ex*01:3",
        "IGHV_ex*01:4", "IGHV_ex*99:3", "IGHV_ex*99:4"};
+  vd_junction_del = {-1, -1, -1, -1, 0, -1, -1, -1, -1, 1, 2, 1, 0, 4, 3};
+  vd_junction_ggene_types =
+      {GermlineType::D, GermlineType::D, GermlineType::D, GermlineType::D, GermlineType::D,
+       GermlineType::D, GermlineType::D, GermlineType::D, GermlineType::D, GermlineType::D,
+       GermlineType::D, GermlineType::V, GermlineType::V, GermlineType::V, GermlineType::V};
   vd_junction_ggene_ranges = {{"IGHD_ex*01", {0, 5}}, {"IGHD_ex*99", {5, 11}},
                               {"IGHV_ex*01", {11, 13}}, {"IGHV_ex*99", {13, 15}}};
   vd_junction_naive_bases = {0, 1, 2, 3, 2, 0, 1, 2, 3, 2, 3, 0, 1, 2, 0};
   vd_junction_germ_inds = {-1, -1, -1, -1, 0, -1, -1, -1, -1, 1, 2, 3, 4, 3, 4};
   vd_junction_site_inds = {-1, -1, -1, -1, 5, -1, -1, -1, -1, 4, 5, 4, 5, 4, 5};
   dgerm_state_strs = {"IGHD_ex*01", "IGHD_ex*99"};
+  dgerm_left_del = {1, 3};
+  dgerm_right_del = {2, 2};
   dgerm_ggene_ranges = {{"IGHD_ex*01", {0, 2}}, {"IGHD_ex*99", {2, 4}}};
   dgerm_naive_bases = {2, 3, 1, 0};
   dgerm_germ_inds = {1, 2, 3, 4};
@@ -895,12 +1106,19 @@ TEST_CASE("PhyloHMM", "[phylohmm]") {
        "IGHJ_ex*01:N_A", "IGHJ_ex*01:N_C", "IGHJ_ex*01:N_G", "IGHJ_ex*01:N_T",
        "IGHJ_ex*99:N_A", "IGHJ_ex*99:N_C", "IGHJ_ex*99:N_G", "IGHJ_ex*99:N_T",
        "IGHJ_ex*99:1", "IGHJ_ex*99:2"};
+  dj_junction_del = {1, 0, 1, 0, -1, -1, -1, -1, -1, -1, -1, -1, 1, 2};
+  dj_junction_ggene_types =
+      {GermlineType::D, GermlineType::D, GermlineType::D, GermlineType::D, GermlineType::J,
+       GermlineType::J, GermlineType::J, GermlineType::J, GermlineType::J, GermlineType::J,
+       GermlineType::J, GermlineType::J, GermlineType::J, GermlineType::J};
   dj_junction_ggene_ranges = {{"IGHD_ex*01", {0, 2}}, {"IGHD_ex*99", {2, 4}},
                               {"IGHJ_ex*01", {4, 8}}, {"IGHJ_ex*99", {8, 14}}};
   dj_junction_naive_bases = {0, 1, 0, 1, 0, 1, 2, 3, 0, 1, 2, 3, 3, 2};
   dj_junction_germ_inds = {3, 4, 5, 6, -1, -1, -1, -1, -1, -1, -1, -1, 1, 2};
   dj_junction_site_inds = {8, 9, 8, 9, -1, -1, -1, -1, -1, -1, -1, -1, 8, 9};
   jgerm_state_strs = {"IGHJ_ex*01", "IGHJ_ex*99"};
+  jgerm_left_del = {0, 3};
+  jgerm_right_del = {0, 0};
   jgerm_ggene_ranges = {{"IGHJ_ex*01", {0, 5}}, {"IGHJ_ex*99", {5, 10}}};
   jgerm_naive_bases = {0, 3, 2, 1, 2, 1, 0, 3, 1, 2};
   jgerm_germ_inds = {0, 1, 2, 3, 4, 3, 4, 5, 6, 7};
@@ -987,6 +1205,32 @@ TEST_CASE("PhyloHMM", "[phylohmm]") {
   jpadding_transition.resize(2);
   jpadding_transition << 0.04, 0.04;
   cache_forward = true;
+  vgerm_scaler_count = 0;
+  vd_junction_scaler_counts = {0, 0};
+  dgerm_scaler_count = 0;
+  dj_junction_scaler_counts = {0, 0};
+  jgerm_scaler_count = 0;
+  naive_seq_samp = "NATGGTCAGGATGCG";
+  vgerm_state_str_samp = "IGHV_ex*01";
+  vgerm_state_ind_samp = 0;
+  vgerm_left_del_samp = 0;
+  vgerm_right_del_samp = 2;
+  vgerm_left_insertion_samp = "N";
+  vd_junction_state_str_samps = {"IGHD_ex*99:1", "IGHD_ex*99:2"};
+  vd_junction_state_ind_samps = {9, 10};
+  vd_junction_insertion_samp = "";
+  dgerm_state_str_samp = "IGHD_ex*99";
+  dgerm_state_ind_samp = 1;
+  dgerm_left_del_samp = 1;
+  dgerm_right_del_samp = 2;
+  dj_junction_state_str_samps = {"IGHJ_ex*01:N_G", "IGHJ_ex*01:N_G"};
+  dj_junction_state_ind_samps = {6, 6};
+  dj_junction_insertion_samp = "GG";
+  jgerm_state_str_samp = "IGHJ_ex*01";
+  jgerm_state_ind_samp = 0;
+  jgerm_left_del_samp = 0;
+  jgerm_right_del_samp = 0;
+  jgerm_right_insertion_samp = "";
 
   REQUIRE(phylo_hmm_ptr->locus() == locus);
   REQUIRE(phylo_hmm_ptr->flexbounds() == flexbounds);
@@ -997,26 +1241,36 @@ TEST_CASE("PhyloHMM", "[phylohmm]") {
   REQUIRE(phylo_hmm_ptr->vpadding_naive_bases() == vpadding_naive_bases);
   REQUIRE(phylo_hmm_ptr->vpadding_site_inds() == vpadding_site_inds);
   REQUIRE(phylo_hmm_ptr->vgerm_state_strs() == vgerm_state_strs);
+  REQUIRE(phylo_hmm_ptr->vgerm_left_del() == vgerm_left_del);
+  REQUIRE(phylo_hmm_ptr->vgerm_right_del() == vgerm_right_del);
   REQUIRE(phylo_hmm_ptr->vgerm_ggene_ranges() == vgerm_ggene_ranges);
   REQUIRE(phylo_hmm_ptr->vgerm_naive_bases() == vgerm_naive_bases);
   REQUIRE(phylo_hmm_ptr->vgerm_germ_inds() == vgerm_germ_inds);
   REQUIRE(phylo_hmm_ptr->vgerm_site_inds() == vgerm_site_inds);
   REQUIRE(phylo_hmm_ptr->vd_junction_state_strs() == vd_junction_state_strs);
+  REQUIRE(phylo_hmm_ptr->vd_junction_del() == vd_junction_del);
+  REQUIRE(phylo_hmm_ptr->vd_junction_ggene_types() == vd_junction_ggene_types);
   REQUIRE(phylo_hmm_ptr->vd_junction_ggene_ranges() == vd_junction_ggene_ranges);
   REQUIRE(phylo_hmm_ptr->vd_junction_naive_bases() == vd_junction_naive_bases);
   REQUIRE(phylo_hmm_ptr->vd_junction_germ_inds() == vd_junction_germ_inds);
   REQUIRE(phylo_hmm_ptr->vd_junction_site_inds() == vd_junction_site_inds);
   REQUIRE(phylo_hmm_ptr->dgerm_state_strs() == dgerm_state_strs);
+  REQUIRE(phylo_hmm_ptr->dgerm_left_del() == dgerm_left_del);
+  REQUIRE(phylo_hmm_ptr->dgerm_right_del() == dgerm_right_del);
   REQUIRE(phylo_hmm_ptr->dgerm_ggene_ranges() == dgerm_ggene_ranges);
   REQUIRE(phylo_hmm_ptr->dgerm_naive_bases() == dgerm_naive_bases);
   REQUIRE(phylo_hmm_ptr->dgerm_germ_inds() == dgerm_germ_inds);
   REQUIRE(phylo_hmm_ptr->dgerm_site_inds() == dgerm_site_inds);
   REQUIRE(phylo_hmm_ptr->dj_junction_state_strs() == dj_junction_state_strs);
+  REQUIRE(phylo_hmm_ptr->dj_junction_del() == dj_junction_del);
+  REQUIRE(phylo_hmm_ptr->dj_junction_ggene_types() == dj_junction_ggene_types);
   REQUIRE(phylo_hmm_ptr->dj_junction_ggene_ranges() == dj_junction_ggene_ranges);
   REQUIRE(phylo_hmm_ptr->dj_junction_naive_bases() == dj_junction_naive_bases);
   REQUIRE(phylo_hmm_ptr->dj_junction_germ_inds() == dj_junction_germ_inds);
   REQUIRE(phylo_hmm_ptr->dj_junction_site_inds() == dj_junction_site_inds);
   REQUIRE(phylo_hmm_ptr->jgerm_state_strs() == jgerm_state_strs);
+  REQUIRE(phylo_hmm_ptr->jgerm_left_del() == jgerm_left_del);
+  REQUIRE(phylo_hmm_ptr->jgerm_right_del() == jgerm_right_del);
   REQUIRE(phylo_hmm_ptr->jgerm_ggene_ranges() == jgerm_ggene_ranges);
   REQUIRE(phylo_hmm_ptr->jgerm_naive_bases() == jgerm_naive_bases);
   REQUIRE(phylo_hmm_ptr->jgerm_germ_inds() == jgerm_germ_inds);
@@ -1033,6 +1287,34 @@ TEST_CASE("PhyloHMM", "[phylohmm]") {
   REQUIRE(phylo_hmm_ptr->dj_junction_jgerm_transition() == dj_junction_jgerm_transition);
   REQUIRE(phylo_hmm_ptr->jpadding_transition().isApprox(jpadding_transition));
   REQUIRE(phylo_hmm_ptr->cache_forward() == cache_forward);
+
+  REQUIRE(phylo_hmm_ptr->LogLikelihood() == Approx(-75.1122515055));
+  REQUIRE(phylo_hmm_ptr->vgerm_scaler_count() == vgerm_scaler_count);
+  REQUIRE(phylo_hmm_ptr->vd_junction_scaler_counts() == vd_junction_scaler_counts);
+  REQUIRE(phylo_hmm_ptr->dgerm_scaler_count() == dgerm_scaler_count);
+  REQUIRE(phylo_hmm_ptr->dj_junction_scaler_counts() == dj_junction_scaler_counts);
+  REQUIRE(phylo_hmm_ptr->jgerm_scaler_count() == jgerm_scaler_count);
+  REQUIRE(phylo_hmm_ptr->SampleNaiveSequence() == naive_seq_samp);
+  REQUIRE(phylo_hmm_ptr->vgerm_state_str_samp() == vgerm_state_str_samp);
+  REQUIRE(phylo_hmm_ptr->vgerm_state_ind_samp() == vgerm_state_ind_samp);
+  REQUIRE(phylo_hmm_ptr->vgerm_left_del_samp() == vgerm_left_del_samp);
+  REQUIRE(phylo_hmm_ptr->vgerm_right_del_samp() == vgerm_right_del_samp);
+  REQUIRE(phylo_hmm_ptr->vgerm_left_insertion_samp() == vgerm_left_insertion_samp);
+  REQUIRE(phylo_hmm_ptr->vd_junction_state_str_samps() == vd_junction_state_str_samps);
+  REQUIRE(phylo_hmm_ptr->vd_junction_state_ind_samps() == vd_junction_state_ind_samps);
+  REQUIRE(phylo_hmm_ptr->vd_junction_insertion_samp() == vd_junction_insertion_samp);
+  REQUIRE(phylo_hmm_ptr->dgerm_state_str_samp() == dgerm_state_str_samp);
+  REQUIRE(phylo_hmm_ptr->dgerm_state_ind_samp() == dgerm_state_ind_samp);
+  REQUIRE(phylo_hmm_ptr->dgerm_left_del_samp() == dgerm_left_del_samp);
+  REQUIRE(phylo_hmm_ptr->dgerm_right_del_samp() == dgerm_right_del_samp);
+  REQUIRE(phylo_hmm_ptr->dj_junction_state_str_samps() == dj_junction_state_str_samps);
+  REQUIRE(phylo_hmm_ptr->dj_junction_state_ind_samps() == dj_junction_state_ind_samps);
+  REQUIRE(phylo_hmm_ptr->dj_junction_insertion_samp() == dj_junction_insertion_samp);
+  REQUIRE(phylo_hmm_ptr->jgerm_state_str_samp() == jgerm_state_str_samp);
+  REQUIRE(phylo_hmm_ptr->jgerm_state_ind_samp() == jgerm_state_ind_samp);
+  REQUIRE(phylo_hmm_ptr->jgerm_left_del_samp() == jgerm_left_del_samp);
+  REQUIRE(phylo_hmm_ptr->jgerm_right_del_samp() == jgerm_right_del_samp);
+  REQUIRE(phylo_hmm_ptr->jgerm_right_insertion_samp() == jgerm_right_insertion_samp);
 
   // We continue with PhyloHMM derived class tests (members are tested in declaration order).
   xmsa.resize(4, 34);
@@ -1070,11 +1352,6 @@ TEST_CASE("PhyloHMM", "[phylohmm]") {
   jpadding_xmsa_inds.resize(0);
   er = {1.0, 1.0, 1.0, 1.0, 1.0, 1.0};
   pi = {0.17, 0.19, 0.25, 0.39};
-  vgerm_scaler_count = 0;
-  vd_junction_scaler_counts = {0, 0};
-  dgerm_scaler_count = 0;
-  dj_junction_scaler_counts = {0, 0};
-  jgerm_scaler_count = 0;
 
   REQUIRE(phylo_hmm_ptr->xmsa() == xmsa);
   REQUIRE(phylo_hmm_ptr->xmsa_seqs() == xmsa_seqs);
@@ -1089,13 +1366,6 @@ TEST_CASE("PhyloHMM", "[phylohmm]") {
   REQUIRE(phylo_hmm_ptr->alpha() == 1.0);
   REQUIRE(phylo_hmm_ptr->er() == er);
   REQUIRE(phylo_hmm_ptr->pi() == pi);
-  REQUIRE(phylo_hmm_ptr->LogLikelihood() == Approx(-75.1122515055));
-  REQUIRE(phylo_hmm_ptr->SampleNaiveSequence() == "NATGGTCAGGATGCG");
-  REQUIRE(phylo_hmm_ptr->vgerm_scaler_count() == vgerm_scaler_count);
-  REQUIRE(phylo_hmm_ptr->vd_junction_scaler_counts() == vd_junction_scaler_counts);
-  REQUIRE(phylo_hmm_ptr->dgerm_scaler_count() == dgerm_scaler_count);
-  REQUIRE(phylo_hmm_ptr->dj_junction_scaler_counts() == dj_junction_scaler_counts);
-  REQUIRE(phylo_hmm_ptr->jgerm_scaler_count() == jgerm_scaler_count);
 
   // Test the phylogenetic likelihood calculation using the R package "phylomd".
   // For more details, see https://github.com/dunleavy005/phylomd.

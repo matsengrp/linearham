@@ -61,6 +61,8 @@ class HMM {
 
   // V "germline" states
   std::vector<std::string> vgerm_state_strs_;
+  std::vector<int> vgerm_left_del_;
+  std::vector<int> vgerm_right_del_;
   std::map<std::string, std::pair<int, int>> vgerm_ggene_ranges_;
   std::vector<int> vgerm_naive_bases_;
   std::vector<int> vgerm_germ_inds_;
@@ -68,6 +70,8 @@ class HMM {
 
   // V-D "junction" states
   std::vector<std::string> vd_junction_state_strs_;
+  std::vector<int> vd_junction_del_;
+  std::vector<GermlineType> vd_junction_ggene_types_;
   std::map<std::string, std::pair<int, int>> vd_junction_ggene_ranges_;
   std::vector<int> vd_junction_naive_bases_;
   std::vector<int> vd_junction_germ_inds_;
@@ -75,6 +79,8 @@ class HMM {
 
   // D "germline" states
   std::vector<std::string> dgerm_state_strs_;
+  std::vector<int> dgerm_left_del_;
+  std::vector<int> dgerm_right_del_;
   std::map<std::string, std::pair<int, int>> dgerm_ggene_ranges_;
   std::vector<int> dgerm_naive_bases_;
   std::vector<int> dgerm_germ_inds_;
@@ -82,6 +88,8 @@ class HMM {
 
   // D-J "junction" states
   std::vector<std::string> dj_junction_state_strs_;
+  std::vector<int> dj_junction_del_;
+  std::vector<GermlineType> dj_junction_ggene_types_;
   std::map<std::string, std::pair<int, int>> dj_junction_ggene_ranges_;
   std::vector<int> dj_junction_naive_bases_;
   std::vector<int> dj_junction_germ_inds_;
@@ -89,6 +97,8 @@ class HMM {
 
   // J "germline" states
   std::vector<std::string> jgerm_state_strs_;
+  std::vector<int> jgerm_left_del_;
+  std::vector<int> jgerm_right_del_;
   std::map<std::string, std::pair<int, int>> jgerm_ggene_ranges_;
   std::vector<int> jgerm_naive_bases_;
   std::vector<int> jgerm_germ_inds_;
@@ -137,16 +147,31 @@ class HMM {
 
   // Naive sequence sample information
   std::string naive_seq_samp_;
+
   std::string vgerm_state_str_samp_;
   int vgerm_state_ind_samp_;
+  int vgerm_left_del_samp_;
+  int vgerm_right_del_samp_;
+  std::string vgerm_left_insertion_samp_;
+
   std::vector<std::string> vd_junction_state_str_samps_;
   std::vector<int> vd_junction_state_ind_samps_;
+  std::string vd_junction_insertion_samp_;
+
   std::string dgerm_state_str_samp_;
   int dgerm_state_ind_samp_;
+  int dgerm_left_del_samp_;
+  int dgerm_right_del_samp_;
+
   std::vector<std::string> dj_junction_state_str_samps_;
   std::vector<int> dj_junction_state_ind_samps_;
+  std::string dj_junction_insertion_samp_;
+
   std::string jgerm_state_str_samp_;
   int jgerm_state_ind_samp_;
+  int jgerm_left_del_samp_;
+  int jgerm_right_del_samp_;
+  std::string jgerm_right_insertion_samp_;
 
   // Initialization functions
   void InitializeMsa();
@@ -195,6 +220,8 @@ class HMM {
   const std::vector<std::string>& vgerm_state_strs() const {
     return vgerm_state_strs_;
   };
+  const std::vector<int>& vgerm_left_del() const { return vgerm_left_del_; };
+  const std::vector<int>& vgerm_right_del() const { return vgerm_right_del_; };
   const std::map<std::string, std::pair<int, int>>& vgerm_ggene_ranges() const {
     return vgerm_ggene_ranges_;
   };
@@ -205,6 +232,10 @@ class HMM {
   const std::vector<int>& vgerm_site_inds() const { return vgerm_site_inds_; };
   const std::vector<std::string>& vd_junction_state_strs() const {
     return vd_junction_state_strs_;
+  };
+  const std::vector<int>& vd_junction_del() const { return vd_junction_del_; };
+  const std::vector<GermlineType>& vd_junction_ggene_types() const {
+    return vd_junction_ggene_types_;
   };
   const std::map<std::string, std::pair<int, int>>& vd_junction_ggene_ranges()
       const {
@@ -222,6 +253,8 @@ class HMM {
   const std::vector<std::string>& dgerm_state_strs() const {
     return dgerm_state_strs_;
   };
+  const std::vector<int>& dgerm_left_del() const { return dgerm_left_del_; };
+  const std::vector<int>& dgerm_right_del() const { return dgerm_right_del_; };
   const std::map<std::string, std::pair<int, int>>& dgerm_ggene_ranges() const {
     return dgerm_ggene_ranges_;
   };
@@ -232,6 +265,10 @@ class HMM {
   const std::vector<int>& dgerm_site_inds() const { return dgerm_site_inds_; };
   const std::vector<std::string>& dj_junction_state_strs() const {
     return dj_junction_state_strs_;
+  };
+  const std::vector<int>& dj_junction_del() const { return dj_junction_del_; };
+  const std::vector<GermlineType>& dj_junction_ggene_types() const {
+    return dj_junction_ggene_types_;
   };
   const std::map<std::string, std::pair<int, int>>& dj_junction_ggene_ranges()
       const {
@@ -249,6 +286,8 @@ class HMM {
   const std::vector<std::string>& jgerm_state_strs() const {
     return jgerm_state_strs_;
   };
+  const std::vector<int>& jgerm_left_del() const { return jgerm_left_del_; };
+  const std::vector<int>& jgerm_right_del() const { return jgerm_right_del_; };
   const std::map<std::string, std::pair<int, int>>& jgerm_ggene_ranges() const {
     return jgerm_ggene_ranges_;
   };
@@ -330,26 +369,44 @@ class HMM {
     return vgerm_state_str_samp_;
   };
   int vgerm_state_ind_samp() const { return vgerm_state_ind_samp_; };
+  int vgerm_left_del_samp() const { return vgerm_left_del_samp_; };
+  int vgerm_right_del_samp() const { return vgerm_right_del_samp_; };
+  const std::string& vgerm_left_insertion_samp() const {
+    return vgerm_left_insertion_samp_;
+  };
   const std::vector<std::string>& vd_junction_state_str_samps() const {
     return vd_junction_state_str_samps_;
   };
   const std::vector<int>& vd_junction_state_ind_samps() const {
     return vd_junction_state_ind_samps_;
   };
+  const std::string& vd_junction_insertion_samp() const {
+    return vd_junction_insertion_samp_;
+  };
   const std::string& dgerm_state_str_samp() const {
     return dgerm_state_str_samp_;
   };
   int dgerm_state_ind_samp() const { return dgerm_state_ind_samp_; };
+  int dgerm_left_del_samp() const { return dgerm_left_del_samp_; };
+  int dgerm_right_del_samp() const { return dgerm_right_del_samp_; };
   const std::vector<std::string>& dj_junction_state_str_samps() const {
     return dj_junction_state_str_samps_;
   };
   const std::vector<int>& dj_junction_state_ind_samps() const {
     return dj_junction_state_ind_samps_;
   };
+  const std::string& dj_junction_insertion_samp() const {
+    return dj_junction_insertion_samp_;
+  };
   const std::string& jgerm_state_str_samp() const {
     return jgerm_state_str_samp_;
   };
   int jgerm_state_ind_samp() const { return jgerm_state_ind_samp_; };
+  int jgerm_left_del_samp() const { return jgerm_left_del_samp_; };
+  int jgerm_right_del_samp() const { return jgerm_right_del_samp_; };
+  const std::string& jgerm_right_insertion_samp() const {
+    return jgerm_right_insertion_samp_;
+  };
 
   double LogLikelihood();
   std::string SampleNaiveSequence();
@@ -365,14 +422,16 @@ void CacheGermlineStates(
     GermlinePtr germ_ptr, std::pair<int, int> left_flexbounds,
     std::pair<int, int> right_flexbounds, int relpos, bool left_end,
     bool right_end, std::vector<std::string>& state_strs_,
+    std::vector<int>& left_del_, std::vector<int>& right_del_,
     std::map<std::string, std::pair<int, int>>& ggene_ranges_,
     std::vector<int>& naive_bases_, std::vector<int>& germ_inds_,
     std::vector<int>& site_inds_);
 
 void CacheJunctionStates(
-    GermlinePtr germ_ptr, std::pair<int, int> left_flexbounds,
+    const GermlineGene& ggene, std::pair<int, int> left_flexbounds,
     std::pair<int, int> right_flexbounds, int relpos, bool left_end,
-    std::vector<std::string>& state_strs_,
+    std::vector<std::string>& state_strs_, std::vector<int>& del_,
+    std::vector<GermlineType>& ggene_types_,
     std::map<std::string, std::pair<int, int>>& ggene_ranges_,
     std::vector<int>& naive_bases_, std::vector<int>& germ_inds_,
     std::vector<int>& site_inds_);
@@ -449,30 +508,36 @@ void ComputeGermlineForwardProbabilities(
     const Eigen::RowVectorXd& padding_emission_,
     Eigen::RowVectorXd& germ_forward_, int& germ_scaler_count_);
 
-void SampleJunctionStates(int germ_state_ind_samp_,
-                          const Eigen::MatrixXd& junction_germ_transition_,
-                          const std::vector<std::string>& junction_state_strs_,
-                          const std::vector<int>& junction_naive_bases_,
-                          const Eigen::MatrixXd& junction_transition_,
-                          const Eigen::MatrixXd& junction_forward_,
-                          std::pair<int, int> left_flexbounds,
-                          const std::string& alphabet, std::mt19937& rng_,
-                          std::discrete_distribution<int>& distr_,
-                          std::string& naive_seq_samp_,
-                          std::vector<std::string>& junction_state_str_samps_,
-                          std::vector<int>& junction_state_ind_samps_);
+void SampleJunctionStates(
+    int germ_state_ind_samp_, const Eigen::MatrixXd& junction_germ_transition_,
+    const std::vector<std::string>& junction_state_strs_,
+    const std::vector<int>& junction_del_,
+    const std::vector<GermlineType>& junction_ggene_types_,
+    const std::vector<int>& junction_naive_bases_,
+    const Eigen::MatrixXd& junction_transition_,
+    const Eigen::MatrixXd& junction_forward_, GermlineType left_gtype,
+    GermlineType right_gtype, std::pair<int, int> left_flexbounds,
+    const std::string& alphabet, std::mt19937& rng_,
+    std::discrete_distribution<int>& distr_, std::string& naive_seq_samp_,
+    int& germ_left_del_samp_,
+    std::vector<std::string>& junction_state_str_samps_,
+    std::vector<int>& junction_state_ind_samps_,
+    std::string& junction_insertion_samp_, int& germ_right_del_samp_);
 
 void SampleGermlineState(
     const std::vector<int>& junction_state_ind_samps_,
     const Eigen::MatrixXd& germ_junction_transition_,
     const std::vector<std::string>& germ_state_strs_,
+    const std::vector<int>& germ_left_del_,
+    const std::vector<int>& germ_right_del_,
     const std::map<std::string, std::pair<int, int>>& germ_ggene_ranges_,
     const std::vector<int>& germ_naive_bases_,
     const std::vector<int>& germ_site_inds_,
     const Eigen::RowVectorXd& germ_forward_, const std::string& alphabet,
     std::mt19937& rng_, std::discrete_distribution<int>& distr_,
     std::string& naive_seq_samp_, std::string& germ_state_str_samp_,
-    int& germ_state_ind_samp_);
+    int& germ_state_ind_samp_, int& germ_left_del_samp_,
+    int& germ_right_del_samp_);
 
 
 }  // namespace linearham

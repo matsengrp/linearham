@@ -35,6 +35,8 @@ std::regex GetGermlineStateRegex(std::string gname);
 
 std::regex GetNTIStateRegex(const std::string& alphabet);
 
+std::regex GetFrameworkInsertionRegex(const std::string& alphabet);
+
 std::pair<int, int> FindGermlineStartEnd(const YAML::Node& root,
                                          const std::string& gname);
 

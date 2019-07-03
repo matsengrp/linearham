@@ -89,6 +89,16 @@ std::regex GetNTIStateRegex(const std::string& alphabet) {
 };
 
 
+/// @brief Create the regex used to extract V/J framework insertions.
+/// @param[in] alphabet
+/// The nucleotide alphabet.
+/// @return
+/// The framework insertion regex.
+std::regex GetFrameworkInsertionRegex(const std::string& alphabet) {
+  return std::regex("^(N*)[" + alphabet + "]+(N*)$");
+};
+
+
 /// @brief Find the indices corresponding to the start and end of the germline
 /// gene.
 /// @param[in] root

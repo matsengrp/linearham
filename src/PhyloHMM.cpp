@@ -1,5 +1,6 @@
 #include "PhyloHMM.hpp"
 
+#include <cassert>
 #include <cmath>
 #include <cstddef>
 #include <regex>
@@ -257,7 +258,27 @@ void PhyloHMM::WriteOutputHeaders(std::ofstream& outfile) const {
   }
   outfile << "LHLogLikelihood\t";
   outfile << "LogWeight\t";
-  outfile << "NaiveSequence\n";
+  outfile << "NaiveSequence\t";
+  outfile << "VGene\t";
+  outfile << "V5pDel\t";
+  outfile << "V3pDel\t";
+  outfile << "VFwkInsertion\t";
+
+  if (locus_ == "igh") {
+    outfile << "VDInsertion\t";
+    outfile << "DGene\t";
+    outfile << "D5pDel\t";
+    outfile << "D3pDel\t";
+    outfile << "DJInsertion\t";
+  } else {
+    assert(locus_ == "igk" || locus_ == "igl");
+    outfile << "VJInsertion\t";
+  }
+
+  outfile << "JGene\t";
+  outfile << "J5pDel\t";
+  outfile << "J3pDel\t";
+  outfile << "JFwkInsertion\n";
 };
 
 
@@ -282,7 +303,27 @@ void PhyloHMM::WriteOutputLine(std::ofstream& outfile) const {
   }
   outfile << lh_loglikelihood_ << "\t";
   outfile << logweight_ << "\t";
-  outfile << naive_sequence_ << "\n";
+  outfile << naive_sequence_ << "\t";
+  outfile << vgerm_state_str_samp_ << "\t";
+  outfile << vgerm_left_del_samp_ << "\t";
+  outfile << vgerm_right_del_samp_ << "\t";
+  outfile << vgerm_left_insertion_samp_ << "\t";
+
+  if (locus_ == "igh") {
+    outfile << vd_junction_insertion_samp_ << "\t";
+    outfile << dgerm_state_str_samp_ << "\t";
+    outfile << dgerm_left_del_samp_ << "\t";
+    outfile << dgerm_right_del_samp_ << "\t";
+    outfile << dj_junction_insertion_samp_ << "\t";
+  } else {
+    assert(locus_ == "igk" || locus_ == "igl");
+    outfile << vd_junction_insertion_samp_ << "\t";
+  }
+
+  outfile << jgerm_state_str_samp_ << "\t";
+  outfile << jgerm_left_del_samp_ << "\t";
+  outfile << jgerm_right_del_samp_ << "\t";
+  outfile << jgerm_right_insertion_samp_ << "\n";
 };
 
 

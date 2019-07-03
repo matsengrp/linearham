@@ -8,7 +8,8 @@ burnin.frac = as.numeric(args[3])
 subsamp.frac = as.numeric(args[4])
 num.cores = as.numeric(args[5])
 seed = as.numeric(args[6])
-output.path = as.character(args[7])
+output.trees.path = as.character(args[7])
+output.log.path = as.character(args[8])
 
 # Set the RNG seed.
 set.seed(seed)
@@ -93,5 +94,9 @@ annotated.trees = unlist(parallel::clusterApplyLB(cl, 1:nrow(tree.data), functio
 # Close the cluster.
 parallel::stopCluster(cl)
 
-# Write the ASR-annotated tree samples to the output file.
-data.table::fwrite(list(annotated.trees), file = output.path, quote = FALSE)
+# Write the ASR-annotated tree samples to the output trees file.
+data.table::fwrite(list(annotated.trees), file = output.trees.path, quote = FALSE)
+
+# Write the other posterior variable samples to the output log file.
+tree.data$Iteration = tree.data$tree = tree.data$NaiveSequence = NULL
+data.table::fwrite(tree.data, file = output.log.path, sep = "\t")

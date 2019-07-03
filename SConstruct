@@ -400,7 +400,7 @@ if options["run_linearham"]:
     @nest.add_target()
     def linearham_final_output(outdir, c):
         linearham_final_output = env.Command(
-            os.path.join(outdir, "linearham_run.trees"),
+            [os.path.join(outdir, filename) for filename in ["linearham_run.trees", "linearham_run.log"]],
             [c["linearham_intermediate_output"], c["cluster_fasta_file"]],
             "Rscript --slave --vanilla scripts/run_bootstrap_asr.R" \
                 + " $SOURCES" \
@@ -408,7 +408,7 @@ if options["run_linearham"]:
                 + " " + str(c["linearham_setting"]["subsamp_frac"]) \
                 + " " + str(options["num_cores"]) \
                 + " " + str(c["revbayes_setting"]["seed"]) \
-                + " $TARGET")
+                + " $TARGETS")
         env.Depends(linearham_final_output, "scripts/run_bootstrap_asr.R")
         return linearham_final_output
 
@@ -416,7 +416,7 @@ if options["run_linearham"]:
     def naive_tabulation(outdir, c):
         outbase = os.path.join(outdir, "aa_naive_seqs")
         naive_tabulation = env.Command(
-            outbase + ".fasta", c["linearham_final_output"],
+            outbase + ".fasta", c["linearham_final_output"][0],
             "scripts/tabulate_naive_probs.py $SOURCE --output-base " + outbase)
         env.Depends(naive_tabulation, "scripts/tabulate_naive_probs.py")
         return naive_tabulation
@@ -432,7 +432,7 @@ if options["run_linearham"]:
         def lineage_tabulation(outdir, c):
             outbase = os.path.join(outdir, c["seed_seq"]["name"] + ".aa_lineage_seqs")
             lineage_tabulation = env.Command(
-                outbase + ".fasta", [c["linearham_final_output"], c["naive_tabulation"]],
+                outbase + ".fasta", [c["linearham_final_output"][0], c["naive_tabulation"]],
                 "scripts/tabulate_lineage_probs.py $SOURCES" \
                     + " --seed-seq " + c["seed_seq"]["name"] \
                     + " --pfilters " + " ".join(str(pfilter) for pfilter in options["asr_pfilters"]) \

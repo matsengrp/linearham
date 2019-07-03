@@ -3,6 +3,7 @@
 #include <algorithm>
 #include <cassert>
 #include <cstddef>
+#include <regex>
 #include <tuple>
 
 #include "utils.hpp"
@@ -99,70 +100,73 @@ void HMM::InitializeStateSpace() {
                          vpadding_site_inds_);
 
       // Cache the V "germline" state.
-      CacheGermlineStates(
-          ggene.germ_ptr, flexbounds_.at("v_l"), flexbounds_.at("v_r"), relpos,
-          true, false, vgerm_state_strs_, vgerm_ggene_ranges_,
-          vgerm_naive_bases_, vgerm_germ_inds_, vgerm_site_inds_);
+      CacheGermlineStates(ggene.germ_ptr, flexbounds_.at("v_l"),
+                          flexbounds_.at("v_r"), relpos, true, false,
+                          vgerm_state_strs_, vgerm_left_del_, vgerm_right_del_,
+                          vgerm_ggene_ranges_, vgerm_naive_bases_,
+                          vgerm_germ_inds_, vgerm_site_inds_);
 
       // Cache the V-D or V-J "junction" states.
       if (locus_ == "igh") {
-        CacheJunctionStates(ggene.germ_ptr, flexbounds_.at("v_r"),
-                            flexbounds_.at("d_l"), relpos, false,
-                            vd_junction_state_strs_, vd_junction_ggene_ranges_,
-                            vd_junction_naive_bases_, vd_junction_germ_inds_,
-                            vd_junction_site_inds_);
+        CacheJunctionStates(ggene, flexbounds_.at("v_r"), flexbounds_.at("d_l"),
+                            relpos, false, vd_junction_state_strs_,
+                            vd_junction_del_, vd_junction_ggene_types_,
+                            vd_junction_ggene_ranges_, vd_junction_naive_bases_,
+                            vd_junction_germ_inds_, vd_junction_site_inds_);
       } else {
         assert(locus_ == "igk" || locus_ == "igl");
-        CacheJunctionStates(ggene.germ_ptr, flexbounds_.at("v_r"),
-                            flexbounds_.at("j_l"), relpos, false,
-                            vd_junction_state_strs_, vd_junction_ggene_ranges_,
-                            vd_junction_naive_bases_, vd_junction_germ_inds_,
-                            vd_junction_site_inds_);
+        CacheJunctionStates(ggene, flexbounds_.at("v_r"), flexbounds_.at("j_l"),
+                            relpos, false, vd_junction_state_strs_,
+                            vd_junction_del_, vd_junction_ggene_types_,
+                            vd_junction_ggene_ranges_, vd_junction_naive_bases_,
+                            vd_junction_germ_inds_, vd_junction_site_inds_);
       }
     } else if (ggene.type == GermlineType::D) {
       // Cache the V-D "junction" states.
-      CacheJunctionStates(ggene.germ_ptr, flexbounds_.at("v_r"),
-                          flexbounds_.at("d_l"), relpos, true,
-                          vd_junction_state_strs_, vd_junction_ggene_ranges_,
-                          vd_junction_naive_bases_, vd_junction_germ_inds_,
-                          vd_junction_site_inds_);
+      CacheJunctionStates(ggene, flexbounds_.at("v_r"), flexbounds_.at("d_l"),
+                          relpos, true, vd_junction_state_strs_,
+                          vd_junction_del_, vd_junction_ggene_types_,
+                          vd_junction_ggene_ranges_, vd_junction_naive_bases_,
+                          vd_junction_germ_inds_, vd_junction_site_inds_);
 
       // Cache the D "germline" state.
-      CacheGermlineStates(
-          ggene.germ_ptr, flexbounds_.at("d_l"), flexbounds_.at("d_r"), relpos,
-          false, false, dgerm_state_strs_, dgerm_ggene_ranges_,
-          dgerm_naive_bases_, dgerm_germ_inds_, dgerm_site_inds_);
+      CacheGermlineStates(ggene.germ_ptr, flexbounds_.at("d_l"),
+                          flexbounds_.at("d_r"), relpos, false, false,
+                          dgerm_state_strs_, dgerm_left_del_, dgerm_right_del_,
+                          dgerm_ggene_ranges_, dgerm_naive_bases_,
+                          dgerm_germ_inds_, dgerm_site_inds_);
 
       // Cache the D-J "junction" states.
-      CacheJunctionStates(ggene.germ_ptr, flexbounds_.at("d_r"),
-                          flexbounds_.at("j_l"), relpos, false,
-                          dj_junction_state_strs_, dj_junction_ggene_ranges_,
-                          dj_junction_naive_bases_, dj_junction_germ_inds_,
-                          dj_junction_site_inds_);
+      CacheJunctionStates(ggene, flexbounds_.at("d_r"), flexbounds_.at("j_l"),
+                          relpos, false, dj_junction_state_strs_,
+                          dj_junction_del_, dj_junction_ggene_types_,
+                          dj_junction_ggene_ranges_, dj_junction_naive_bases_,
+                          dj_junction_germ_inds_, dj_junction_site_inds_);
     } else {
       assert(ggene.type == GermlineType::J);
 
       // Cache the D-J or V-J "junction" states.
       if (locus_ == "igh") {
-        CacheJunctionStates(ggene.germ_ptr, flexbounds_.at("d_r"),
-                            flexbounds_.at("j_l"), relpos, true,
-                            dj_junction_state_strs_, dj_junction_ggene_ranges_,
-                            dj_junction_naive_bases_, dj_junction_germ_inds_,
-                            dj_junction_site_inds_);
+        CacheJunctionStates(ggene, flexbounds_.at("d_r"), flexbounds_.at("j_l"),
+                            relpos, true, dj_junction_state_strs_,
+                            dj_junction_del_, dj_junction_ggene_types_,
+                            dj_junction_ggene_ranges_, dj_junction_naive_bases_,
+                            dj_junction_germ_inds_, dj_junction_site_inds_);
       } else {
         assert(locus_ == "igk" || locus_ == "igl");
-        CacheJunctionStates(ggene.germ_ptr, flexbounds_.at("v_r"),
-                            flexbounds_.at("j_l"), relpos, true,
-                            vd_junction_state_strs_, vd_junction_ggene_ranges_,
-                            vd_junction_naive_bases_, vd_junction_germ_inds_,
-                            vd_junction_site_inds_);
+        CacheJunctionStates(ggene, flexbounds_.at("v_r"), flexbounds_.at("j_l"),
+                            relpos, true, vd_junction_state_strs_,
+                            vd_junction_del_, vd_junction_ggene_types_,
+                            vd_junction_ggene_ranges_, vd_junction_naive_bases_,
+                            vd_junction_germ_inds_, vd_junction_site_inds_);
       }
 
       // Cache the J "germline" state.
-      CacheGermlineStates(
-          ggene.germ_ptr, flexbounds_.at("j_l"), flexbounds_.at("j_r"), relpos,
-          false, true, jgerm_state_strs_, jgerm_ggene_ranges_,
-          jgerm_naive_bases_, jgerm_germ_inds_, jgerm_site_inds_);
+      CacheGermlineStates(ggene.germ_ptr, flexbounds_.at("j_l"),
+                          flexbounds_.at("j_r"), relpos, false, true,
+                          jgerm_state_strs_, jgerm_left_del_, jgerm_right_del_,
+                          jgerm_ggene_ranges_, jgerm_naive_bases_,
+                          jgerm_germ_inds_, jgerm_site_inds_);
 
       // Cache the J "padding" state.
       CachePaddingStates(ggene.germ_ptr, flexbounds_.at("j_r"), relpos, false,
@@ -316,6 +320,8 @@ void HMM::SampleInitialState() {
   // Sample the "germline" state.
   jgerm_state_ind_samp_ = distr_(rng_);
   jgerm_state_str_samp_ = jgerm_state_strs_[jgerm_state_ind_samp_];
+  jgerm_left_del_samp_ = jgerm_left_del_[jgerm_state_ind_samp_];
+  jgerm_right_del_samp_ = jgerm_right_del_[jgerm_state_ind_samp_];
 
   int range_start, range_end;
   std::tie(range_start, range_end) =
@@ -355,42 +361,63 @@ std::string HMM::SampleNaiveSequence() {
   SampleInitialState();
 
   if (locus_ == "igh") {
-    SampleJunctionStates(jgerm_state_ind_samp_, dj_junction_jgerm_transition_,
-                         dj_junction_state_strs_, dj_junction_naive_bases_,
-                         dj_junction_transition_, dj_junction_forward_,
-                         flexbounds_.at("d_r"), alphabet_, rng_, distr_,
-                         naive_seq_samp_, dj_junction_state_str_samps_,
-                         dj_junction_state_ind_samps_);
-    SampleGermlineState(
-        dj_junction_state_ind_samps_, dgerm_dj_junction_transition_,
-        dgerm_state_strs_, dgerm_ggene_ranges_, dgerm_naive_bases_,
-        dgerm_site_inds_, dgerm_forward_, alphabet_, rng_, distr_,
-        naive_seq_samp_, dgerm_state_str_samp_, dgerm_state_ind_samp_);
-    SampleJunctionStates(dgerm_state_ind_samp_, vd_junction_dgerm_transition_,
-                         vd_junction_state_strs_, vd_junction_naive_bases_,
-                         vd_junction_transition_, vd_junction_forward_,
-                         flexbounds_.at("v_r"), alphabet_, rng_, distr_,
-                         naive_seq_samp_, vd_junction_state_str_samps_,
-                         vd_junction_state_ind_samps_);
-    SampleGermlineState(
-        vd_junction_state_ind_samps_, vgerm_vd_junction_transition_,
-        vgerm_state_strs_, vgerm_ggene_ranges_, vgerm_naive_bases_,
-        vgerm_site_inds_, vgerm_forward_, alphabet_, rng_, distr_,
-        naive_seq_samp_, vgerm_state_str_samp_, vgerm_state_ind_samp_);
+    SampleJunctionStates(
+        jgerm_state_ind_samp_, dj_junction_jgerm_transition_,
+        dj_junction_state_strs_, dj_junction_del_, dj_junction_ggene_types_,
+        dj_junction_naive_bases_, dj_junction_transition_, dj_junction_forward_,
+        GermlineType::D, GermlineType::J, flexbounds_.at("d_r"), alphabet_,
+        rng_, distr_, naive_seq_samp_, jgerm_left_del_samp_,
+        dj_junction_state_str_samps_, dj_junction_state_ind_samps_,
+        dj_junction_insertion_samp_, dgerm_right_del_samp_);
+    SampleGermlineState(dj_junction_state_ind_samps_,
+                        dgerm_dj_junction_transition_, dgerm_state_strs_,
+                        dgerm_left_del_, dgerm_right_del_, dgerm_ggene_ranges_,
+                        dgerm_naive_bases_, dgerm_site_inds_, dgerm_forward_,
+                        alphabet_, rng_, distr_, naive_seq_samp_,
+                        dgerm_state_str_samp_, dgerm_state_ind_samp_,
+                        dgerm_left_del_samp_, dgerm_right_del_samp_);
+    SampleJunctionStates(
+        dgerm_state_ind_samp_, vd_junction_dgerm_transition_,
+        vd_junction_state_strs_, vd_junction_del_, vd_junction_ggene_types_,
+        vd_junction_naive_bases_, vd_junction_transition_, vd_junction_forward_,
+        GermlineType::V, GermlineType::D, flexbounds_.at("v_r"), alphabet_,
+        rng_, distr_, naive_seq_samp_, dgerm_left_del_samp_,
+        vd_junction_state_str_samps_, vd_junction_state_ind_samps_,
+        vd_junction_insertion_samp_, vgerm_right_del_samp_);
+    SampleGermlineState(vd_junction_state_ind_samps_,
+                        vgerm_vd_junction_transition_, vgerm_state_strs_,
+                        vgerm_left_del_, vgerm_right_del_, vgerm_ggene_ranges_,
+                        vgerm_naive_bases_, vgerm_site_inds_, vgerm_forward_,
+                        alphabet_, rng_, distr_, naive_seq_samp_,
+                        vgerm_state_str_samp_, vgerm_state_ind_samp_,
+                        vgerm_left_del_samp_, vgerm_right_del_samp_);
   } else {
     assert(locus_ == "igk" || locus_ == "igl");
-    SampleJunctionStates(jgerm_state_ind_samp_, vd_junction_dgerm_transition_,
-                         vd_junction_state_strs_, vd_junction_naive_bases_,
-                         vd_junction_transition_, vd_junction_forward_,
-                         flexbounds_.at("v_r"), alphabet_, rng_, distr_,
-                         naive_seq_samp_, vd_junction_state_str_samps_,
-                         vd_junction_state_ind_samps_);
-    SampleGermlineState(
-        vd_junction_state_ind_samps_, vgerm_vd_junction_transition_,
-        vgerm_state_strs_, vgerm_ggene_ranges_, vgerm_naive_bases_,
-        vgerm_site_inds_, vgerm_forward_, alphabet_, rng_, distr_,
-        naive_seq_samp_, vgerm_state_str_samp_, vgerm_state_ind_samp_);
+    SampleJunctionStates(
+        jgerm_state_ind_samp_, vd_junction_dgerm_transition_,
+        vd_junction_state_strs_, vd_junction_del_, vd_junction_ggene_types_,
+        vd_junction_naive_bases_, vd_junction_transition_, vd_junction_forward_,
+        GermlineType::V, GermlineType::J, flexbounds_.at("v_r"), alphabet_,
+        rng_, distr_, naive_seq_samp_, jgerm_left_del_samp_,
+        vd_junction_state_str_samps_, vd_junction_state_ind_samps_,
+        vd_junction_insertion_samp_, vgerm_right_del_samp_);
+    SampleGermlineState(vd_junction_state_ind_samps_,
+                        vgerm_vd_junction_transition_, vgerm_state_strs_,
+                        vgerm_left_del_, vgerm_right_del_, vgerm_ggene_ranges_,
+                        vgerm_naive_bases_, vgerm_site_inds_, vgerm_forward_,
+                        alphabet_, rng_, distr_, naive_seq_samp_,
+                        vgerm_state_str_samp_, vgerm_state_ind_samp_,
+                        vgerm_left_del_samp_, vgerm_right_del_samp_);
   }
+
+  // Extract the V/J framework insertion strings.
+  std::regex fwk_insertion_rgx =
+      GetFrameworkInsertionRegex(ggenes_.begin()->second.germ_ptr->alphabet());
+  std::smatch match;
+
+  std::regex_match(naive_seq_samp_, match, fwk_insertion_rgx);
+  vgerm_left_insertion_samp_ = match.str(1);
+  jgerm_right_insertion_samp_ = match.str(2);
 
   return naive_seq_samp_;
 };
@@ -416,6 +443,10 @@ std::string HMM::SampleNaiveSequence() {
 /// Is a "padding" region to the right of the germline gene?
 /// @param[out] state_strs_
 /// A vector of "germline" state names.
+/// @param[out] left_del_
+/// A vector of "germline" 5' deletion lengths.
+/// @param[out] right_del_
+/// A vector of "germline" 3' deletion lengths.
 /// @param[out] ggene_ranges_
 /// A map that holds start/end indices for the "germline" data structures.
 /// @param[out] naive_bases_
@@ -428,6 +459,7 @@ void CacheGermlineStates(
     GermlinePtr germ_ptr, std::pair<int, int> left_flexbounds,
     std::pair<int, int> right_flexbounds, int relpos, bool left_end,
     bool right_end, std::vector<std::string>& state_strs_,
+    std::vector<int>& left_del_, std::vector<int>& right_del_,
     std::map<std::string, std::pair<int, int>>& ggene_ranges_,
     std::vector<int>& naive_bases_, std::vector<int>& germ_inds_,
     std::vector<int>& site_inds_) {
@@ -447,6 +479,8 @@ void CacheGermlineStates(
 
   // Store the germline-related state information.
   state_strs_.push_back(germ_ptr->name());
+  left_del_.push_back(site_start - relpos);
+  right_del_.push_back(relpos + germ_ptr->length() - site_end);
 
   for (int i = site_start; i < site_end; i++) {
     naive_bases_.push_back(germ_ptr->bases()[i - relpos]);
@@ -457,8 +491,8 @@ void CacheGermlineStates(
 
 
 /// @brief Caches the "junction" state information for a given germline gene.
-/// @param[in] germ_ptr
-/// A pointer to an object of class Germline.
+/// @param[in] ggene
+/// An object of class GermlineGene.
 /// @param[in] left_flexbounds
 /// A 2-tuple of MSA positions describing the possible "junction" entry
 /// locations.
@@ -471,6 +505,10 @@ void CacheGermlineStates(
 /// Is the left end of the germline gene in the "junction" region?
 /// @param[out] state_strs_
 /// A vector of "junction" state names.
+/// @param[out] del_
+/// A vector of "junction" 5' and 3' deletion lengths.
+/// @param[out] ggene_types_
+/// A vector of "junction" germline gene types.
 /// @param[out] ggene_ranges_
 /// A map that holds start/end indices for the "junction" data structures.
 /// @param[out] naive_bases_
@@ -480,9 +518,10 @@ void CacheGermlineStates(
 /// @param[out] site_inds_
 /// A vector of "junction" site indices.
 void CacheJunctionStates(
-    GermlinePtr germ_ptr, std::pair<int, int> left_flexbounds,
+    const GermlineGene& ggene, std::pair<int, int> left_flexbounds,
     std::pair<int, int> right_flexbounds, int relpos, bool left_end,
-    std::vector<std::string>& state_strs_,
+    std::vector<std::string>& state_strs_, std::vector<int>& del_,
+    std::vector<GermlineType>& ggene_types_,
     std::map<std::string, std::pair<int, int>>& ggene_ranges_,
     std::vector<int>& naive_bases_, std::vector<int>& germ_inds_,
     std::vector<int>& site_inds_) {
@@ -490,22 +529,25 @@ void CacheJunctionStates(
   // gene in the "junction" region.
   int site_start = left_end ? std::max(relpos, left_flexbounds.first)
                             : left_flexbounds.first;
-  int site_end =
-      left_end ? right_flexbounds.second
-               : std::min(relpos + germ_ptr->length(), right_flexbounds.second);
+  int site_end = left_end ? right_flexbounds.second
+                          : std::min(relpos + ggene.germ_ptr->length(),
+                                     right_flexbounds.second);
 
   // Calculate the start/end indices that map to the "junction" states
   // associated with the current germline gene.
   int range_start = naive_bases_.size();
   int range_end = naive_bases_.size() + (site_end - site_start);
-  if (left_end) range_end += germ_ptr->alphabet().size();
-  ggene_ranges_.emplace(germ_ptr->name(),
+  if (left_end) range_end += ggene.germ_ptr->alphabet().size();
+  ggene_ranges_.emplace(ggene.germ_ptr->name(),
                         std::pair<int, int>({range_start, range_end}));
 
   // If necessary, cache the NTI-related state information.
   if (left_end) {
-    for (std::size_t i = 0; i < germ_ptr->alphabet().size(); i++) {
-      state_strs_.push_back(germ_ptr->name() + ":N_" + germ_ptr->alphabet()[i]);
+    for (std::size_t i = 0; i < ggene.germ_ptr->alphabet().size(); i++) {
+      state_strs_.push_back(ggene.germ_ptr->name() + ":N_" +
+                            ggene.germ_ptr->alphabet()[i]);
+      del_.push_back(-1);
+      ggene_types_.push_back(ggene.type);
       naive_bases_.push_back(i);
       germ_inds_.push_back(-1);
       site_inds_.push_back(-1);
@@ -514,8 +556,12 @@ void CacheJunctionStates(
 
   // Store the germline-related state information.
   for (int i = site_start; i < site_end; i++) {
-    state_strs_.push_back(germ_ptr->name() + ":" + std::to_string(i - relpos));
-    naive_bases_.push_back(germ_ptr->bases()[i - relpos]);
+    state_strs_.push_back(ggene.germ_ptr->name() + ":" +
+                          std::to_string(i - relpos));
+    del_.push_back(left_end ? i - relpos
+                            : relpos + ggene.germ_ptr->length() - i - 1);
+    ggene_types_.push_back(ggene.type);
+    naive_bases_.push_back(ggene.germ_ptr->bases()[i - relpos]);
     germ_inds_.push_back(i - relpos);
     site_inds_.push_back(i);
   }
@@ -1130,12 +1176,20 @@ void ComputeGermlineForwardProbabilities(
 /// The "junction"-to-"germline" transition probability matrix.
 /// @param[in] junction_state_strs_
 /// A vector of "junction" state names.
+/// @param[in] junction_del_
+/// A vector of "junction" 5' and 3' deletion lengths.
+/// @param[in] junction_ggene_types_
+/// A vector of "junction" germline gene types.
 /// @param[in] junction_naive_bases_
 /// A vector of "junction" naive base indices.
 /// @param[in] junction_transition_
 /// The "junction" transition probability matrix.
 /// @param[in] junction_forward_
 /// The "junction" forward probability matrix.
+/// @param[in] left_gtype
+/// The germline gene type of the "junction" 3' end.
+/// @param[in] right_gtype
+/// The germline gene type of the "junction" 5' end.
 /// @param[in] left_flexbounds
 /// A 2-tuple of MSA positions describing the possible "junction" entry
 /// locations.
@@ -1147,25 +1201,36 @@ void ComputeGermlineForwardProbabilities(
 /// A discrete distribution object.
 /// @param[out] naive_seq_samp_
 /// A reference to the naive sequence sample.
+/// @param[out] germ_left_del_samp_
+/// A reference to the "junction" 5' deletion length sample.
 /// @param[out] junction_state_str_samps_
 /// A reference to the "junction" state samples.
 /// @param[out] junction_state_ind_samps_
 /// A reference to the "junction" state index samples.
-void SampleJunctionStates(int germ_state_ind_samp_,
-                          const Eigen::MatrixXd& junction_germ_transition_,
-                          const std::vector<std::string>& junction_state_strs_,
-                          const std::vector<int>& junction_naive_bases_,
-                          const Eigen::MatrixXd& junction_transition_,
-                          const Eigen::MatrixXd& junction_forward_,
-                          std::pair<int, int> left_flexbounds,
-                          const std::string& alphabet, std::mt19937& rng_,
-                          std::discrete_distribution<int>& distr_,
-                          std::string& naive_seq_samp_,
-                          std::vector<std::string>& junction_state_str_samps_,
-                          std::vector<int>& junction_state_ind_samps_) {
+/// @param[out] junction_insertion_samp_
+/// A reference to the "junction" NTI sample.
+/// @param[out] germ_right_del_samp_
+/// A reference to the "junction" 3' deletion length sample.
+void SampleJunctionStates(
+    int germ_state_ind_samp_, const Eigen::MatrixXd& junction_germ_transition_,
+    const std::vector<std::string>& junction_state_strs_,
+    const std::vector<int>& junction_del_,
+    const std::vector<GermlineType>& junction_ggene_types_,
+    const std::vector<int>& junction_naive_bases_,
+    const Eigen::MatrixXd& junction_transition_,
+    const Eigen::MatrixXd& junction_forward_, GermlineType left_gtype,
+    GermlineType right_gtype, std::pair<int, int> left_flexbounds,
+    const std::string& alphabet, std::mt19937& rng_,
+    std::discrete_distribution<int>& distr_, std::string& naive_seq_samp_,
+    int& germ_left_del_samp_,
+    std::vector<std::string>& junction_state_str_samps_,
+    std::vector<int>& junction_state_ind_samps_,
+    std::string& junction_insertion_samp_, int& germ_right_del_samp_) {
   int site_start = left_flexbounds.first;
   junction_state_str_samps_.assign(junction_forward_.rows(), "");
   junction_state_ind_samps_.assign(junction_forward_.rows(), -1);
+  junction_insertion_samp_ = "";
+  germ_right_del_samp_ = -1;
 
   for (int i = junction_forward_.rows() - 1; i >= 0; i--) {
     // Create the sampling distribution.
@@ -1186,6 +1251,21 @@ void SampleJunctionStates(int germ_state_ind_samp_,
         junction_state_strs_[junction_state_ind_samps_[i]];
     naive_seq_samp_[site_start + i] =
         alphabet[junction_naive_bases_[junction_state_ind_samps_[i]]];
+
+    // Store the "junction" annotation information.
+    if (junction_ggene_types_[junction_state_ind_samps_[i]] == right_gtype) {
+      if (junction_del_[junction_state_ind_samps_[i]] != -1) {
+        germ_left_del_samp_ = junction_del_[junction_state_ind_samps_[i]];
+      } else {
+        junction_insertion_samp_ =
+            alphabet[junction_naive_bases_[junction_state_ind_samps_[i]]] +
+            junction_insertion_samp_;
+      }
+    } else if (junction_ggene_types_[junction_state_ind_samps_[i]] ==
+                   left_gtype &&
+               germ_right_del_samp_ == -1) {
+      germ_right_del_samp_ = junction_del_[junction_state_ind_samps_[i]];
+    }
   }
 };
 
@@ -1197,6 +1277,10 @@ void SampleJunctionStates(int germ_state_ind_samp_,
 /// The "germline"-to-"junction" transition probability matrix.
 /// @param[in] germ_state_strs_
 /// A vector of "germline" state names.
+/// @param[in] germ_left_del_
+/// A vector of "germline" 5' deletion lengths.
+/// @param[in] germ_right_del_
+/// A vector of "germline" 3' deletion lengths.
 /// @param[in] germ_ggene_ranges_
 /// A map that holds start/end indices for the "germline" data structures.
 /// @param[in] germ_naive_bases_
@@ -1217,17 +1301,24 @@ void SampleJunctionStates(int germ_state_ind_samp_,
 /// A reference to the "germline" state sample.
 /// @param[out] germ_state_ind_samp_
 /// A reference to the "germline" state index sample.
+/// @param[out] germ_left_del_samp_
+/// A reference to the "germline" 5' deletion length sample.
+/// @param[out] germ_right_del_samp_
+/// A reference to the "germline" 3' deletion length sample.
 void SampleGermlineState(
     const std::vector<int>& junction_state_ind_samps_,
     const Eigen::MatrixXd& germ_junction_transition_,
     const std::vector<std::string>& germ_state_strs_,
+    const std::vector<int>& germ_left_del_,
+    const std::vector<int>& germ_right_del_,
     const std::map<std::string, std::pair<int, int>>& germ_ggene_ranges_,
     const std::vector<int>& germ_naive_bases_,
     const std::vector<int>& germ_site_inds_,
     const Eigen::RowVectorXd& germ_forward_, const std::string& alphabet,
     std::mt19937& rng_, std::discrete_distribution<int>& distr_,
     std::string& naive_seq_samp_, std::string& germ_state_str_samp_,
-    int& germ_state_ind_samp_) {
+    int& germ_state_ind_samp_, int& germ_left_del_samp_,
+    int& germ_right_del_samp_) {
   // Create the sampling distribution.
   Eigen::VectorXd germ_state_probs =
       germ_junction_transition_.col(junction_state_ind_samps_.front());
@@ -1240,6 +1331,9 @@ void SampleGermlineState(
   // Sample the "germline" state.
   germ_state_ind_samp_ = distr_(rng_);
   germ_state_str_samp_ = germ_state_strs_[germ_state_ind_samp_];
+  germ_left_del_samp_ = germ_left_del_[germ_state_ind_samp_];
+  if (germ_right_del_samp_ == -1)
+    germ_right_del_samp_ = germ_right_del_[germ_state_ind_samp_];
 
   int range_start, range_end;
   std::tie(range_start, range_end) =

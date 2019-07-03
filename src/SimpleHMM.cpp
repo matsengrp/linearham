@@ -1,5 +1,6 @@
 #include "SimpleHMM.hpp"
 
+#include <cassert>
 #include <cmath>
 #include <cstddef>
 #include <tuple>
