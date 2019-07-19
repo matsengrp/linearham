@@ -255,7 +255,7 @@ if options["run_partis"]:
     @nest.add_target()
     def partis_output(outdir, c):
         partis_mode = "annotate --all-seqs-simultaneous" if options["all_clonal_seqs"] else "partition"
-        partis_parameter_dir = options["parameter_dir"].rstrip("/") if options["parameter_dir"] is not None else os.path.join(outdir, "parameter_dir")
+        partis_parameter_dir = options["parameter_dir"].rstrip("/") + " --refuse-to-cache-parameters" if options["parameter_dir"] is not None else os.path.join(outdir, "parameter_dir")
         partis_output = env.Command(
             [os.path.join(outdir, filename) for filename in
                 ["partis_run.yaml", "partis_run.stdout.log"]],
