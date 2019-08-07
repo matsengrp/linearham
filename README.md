@@ -75,9 +75,9 @@ Within this directory, the `linearham_run.log` file (TSV format) holds the poste
 Note that the `linearham_run.trees` Newick tree annotations are written to be compatible with the Python package [DendroPy](https://dendropy.org/).
 We also output a FASTA file (`aa_naive_seqs.fasta`) that contains each sampled amino acid naive sequence and its associated posterior probability, create a FASTA-like file (`aa_naive_seqs.dnamap`) that maps each sampled amino acid naive sequence to its corresponding set of DNA naive sequences and posterior probabilities, and generate an amino acid naive sequence posterior probability logo (`aa_naive_seqs.png`) using [WebLogo](http://weblogo.threeplusone.com/) to visualize the per-site uncertainties.
 
-If `--seed-seq` is specified, the additional output files are stored in the `output/cluster0/mcmciter10000_mcmcthin10_tuneiter5000_tunethin100_numrates4_seed0/burninfrac0.1_subsampfrac0.05/seedseqX` directory, where `X` signifies the name of the seed sequence.
+If `--seed-seq` is specified, the additional output files, by default, are stored in the `output/cluster0/mcmciter10000_mcmcthin10_tuneiter5000_tunethin100_numrates4_seed0/burninfrac0.1_subsampfrac0.05/seedseqX` directory, where `X` signifies the name of the seed sequence.
 We provide output files (`aa_lineage_seqs.fasta` and `aa_lineage_seqs.dnamap`) that are similar to the files described above (i.e. `aa_naive_seqs.fasta` and `aa_naive_seqs.dnamap`) by tabulating the posterior probabilities of sampled naive sequences and intermediate ancestral sequences on the lineage.
-Furthermore, we construct a posterior probability lineage graphic (`aa_lineage_seqs.pfilterX.png`) using [Graphviz](https://www.graphviz.org/), where `X` denotes the posterior probability cutoff.
+Furthermore, we construct a posterior probability lineage graphic (`aa_lineage_seqs.pfilterX.png`) using [Graphviz](https://www.graphviz.org/), where `X` denotes the posterior probability cutoff for the sampled sequences.
 
 ## References
 
