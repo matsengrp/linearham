@@ -63,3 +63,22 @@ The `linearham`-related command line arguments are described in the following ta
 All of the above command line arguments (except `--fasta-path`, `--all-clonal-seqs`, `--locus`, `--parameter-dir`, `--template-path`, `--num-cores`, `--partis-yaml-file`, and `--outdir`) accept comma-separated values as input.
 Note that `scons --run-partis` and `scons --run-linearham` must specify the same output directory and, if applicable, the same optional directory of partis parameter files.
 For more information on the `scons` arguments, run `scons --help`.
+
+## Output files
+
+The `partis` output file can be found at `output/partis_run.yaml` and contains the `partis`-inferred clonal family information, including the corresponding naive sequence estimates, and the repertoire-wide germline gene set.
+It is important to note that this germline gene set is the gene collection used in the `linearham` inference procedure as well.
+A FASTA file containing the clonal family naive sequence and input sequences with insertions/deletions reversed and V/J framework insertions removed is located at `output/clusterX/cluster_seqs.fasta`, where `X` is any clonal family index of interest.
+
+The `linearham` output files, by default, are contained in the `output/cluster0/mcmciter10000_mcmcthin10_tuneiter5000_tunethin100_numrates4_seed0/burninfrac0.1_subsampfrac0.05` folder.
+Within this directory, the `linearham_run.log` file (TSV format) holds the posterior samples of the naive sequence annotation and of the phylogenetic substitution model and rate variation parameters, the `linearham_run.trees` file (Newick format) consists of the posterior tree samples with ancestral sequence annotations, and `linearham_run.ess` (TSV format) contains the approximate effective sample sizes for each field in `linearham_run.log`.
+Note that the `linearham_run.trees` Newick tree annotations are written to be compatible with the Python package [DendroPy](https://dendropy.org/).
+We also output a FASTA file (`aa_naive_seqs.fasta`) that contains each sampled amino acid naive sequence and its associated posterior probability, create a FASTA-like file (`aa_naive_seqs.dnamap`) that maps each sampled amino acid naive sequence to its corresponding set of DNA naive sequences and posterior probabilities, and generate an amino acid naive sequence posterior probability logo (`aa_naive_seqs.png`) using [WebLogo](http://weblogo.threeplusone.com/) to visualize the per-site uncertainties.
+
+If `--seed-seq` is specified, the additional output files are stored in the `output/cluster0/mcmciter10000_mcmcthin10_tuneiter5000_tunethin100_numrates4_seed0/burninfrac0.1_subsampfrac0.05/seedseqX` directory, where `X` signifies the name of the seed sequence.
+We provide output files (`aa_lineage_seqs.fasta` and `aa_lineage_seqs.dnamap`) that are similar to the files described above (i.e. `aa_naive_seqs.fasta` and `aa_naive_seqs.dnamap`) by tabulating the posterior probabilities of sampled naive sequences and intermediate ancestral sequences on the lineage.
+Furthermore, we construct a posterior probability lineage graphic (`aa_lineage_seqs.pfilterX.png`) using [Graphviz](https://www.graphviz.org/), where `X` denotes the posterior probability cutoff.
+
+## References
+
+1. Dhar A, Ralph DK, Minin VN, Matsen IV, FA (2019) "A Bayesian Phylogenetic Hidden Markov Model for B Cell Receptor Sequence Analysis", arXiv preprint arXiv:1906.11982 (https://arxiv.org/abs/1906.11982).

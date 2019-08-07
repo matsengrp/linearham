@@ -409,7 +409,7 @@ if options["run_linearham"]:
 
         @nest.add_target()
         def lineage_tabulation(outdir, c):
-            outbase = os.path.join(outdir, c["seed_seq"]["name"] + ".aa_lineage_seqs")
+            outbase = os.path.join(outdir, "aa_lineage_seqs")
             lineage_tabulation = env.Command(
                 outbase + ".fasta", [c["linearham_final_output"][0], c["naive_tabulation"]],
                 "scripts/tabulate_lineage_probs.py $SOURCES" \
