@@ -393,10 +393,11 @@ if options["run_linearham"]:
     
     @nest.add_target()
     def linearham_annotations(outdir, c):
+        outbase = os.path.join(outdir, "linearham_annotations")
         linearham_annotations = env.Command(
-                os.path.join(outdir, "linearham_annotations.yaml"),
+                [outbase + sfx for sfx in ("_best.yaml", "_all.yaml")],
                 [c["partis_yaml_file"], c["linearham_final_output"][1]],
-                "scripts/write_lh_annotations.py $SOURCES --output-path $TARGET")
+                "scripts/write_lh_annotations.py $SOURCES --output-base " + outbase)
         env.Depends(linearham_annotations, "scripts/write_lh_annotations.py")
         return linearham_annotations
 

@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-
+import copy
 import argparse
 import csv
 import os
@@ -17,20 +17,25 @@ if __name__ == "__main__":
         "linearham_log_file", type=str,
         help="Path to linearham_run.log TSV file.")
     parser.add_argument(
-        "--output-path", type=str, required=True,
-        help="The output linearham annotations file path.")
+        "--output-base", type=str, required=True,
+        help="The base  output path for linearham annotations.")
 
-    # TODO we actually want to output:
-    # 1. a file with the most probable annotation (confirm with Amrit that this is the way to do that)
-    # 2. a file with all annotations and their associated probabilities
-    def read_linearham_line(lh_annotation_tsv):
+    def read_linearham_lines(lh_annotation_tsv):
         with open(lh_annotation_tsv) as tsvfile:
-            lines = csv.DictReader(tsvfile, dialect='excel-tab')
-            return max(lines, key=lambda l: float(l['LHLogLikelihood']))
+            return [l for l in csv.DictReader(tsvfile, dialect='excel-tab')]
             
     args = parser.parse_args()
 
     glfo, annotation_list, _ = utils.read_output(args.partis_yaml_file)
-    lh_line = read_linearham_line(args.linearham_log_file)
-    full_lh_line = utils.add_linearham_annotations_to_line(annotation_list[0], lh_line, glfo, debug=True)
-    utils.write_annotations(args.output_path, glfo, [full_lh_line], set(full_lh_line))
+    lh_lines = read_linearham_lines(args.linearham_log_file)
+
+    # 1. write best annotation
+    # TODO confirm with Amrit that this is the way to do that (seems like probably not)
+    best_line = max(lh_lines, key=lambda l: float(l['LHLogLikelihood']))
+    partis_format_best_line = utils.add_linearham_annotations_to_line(copy.deepcopy(annotation_list[0]), copy.deepcopy(best_line), glfo, logprob=float(best_line['LHLogLikelihood']), debug=True)
+    utils.write_annotations(args.output_base + '_best.yaml', glfo, [partis_format_best_line], set(partis_format_best_line))
+
+    # 2. write all annotations
+    # TODO make sure that logprobs are visible in view-output and that it doesn't collapse annotations of the same cluster (and that getting logprobs for different annotations works like this - again, probably not)
+    all_partis_format_lh_lines = [utils.add_linearham_annotations_to_line(copy.deepcopy(annotation_list[0]), copy.deepcopy(lh_line), glfo, logprob=float(lh_line['LHLogLikelihood']), debug=True) for lh_line in lh_lines]
+    utils.write_annotations(args.output_base + '_all.yaml', glfo, sorted(all_partis_format_lh_lines, key=lambda line: line['logprob']), set(partis_format_best_line))
