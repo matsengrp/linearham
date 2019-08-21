@@ -390,6 +390,15 @@ if options["run_linearham"]:
                 + " $TARGETS")
         env.Depends(linearham_final_output, "scripts/run_bootstrap_asr_ess.R")
         return linearham_final_output
+    
+    @nest.add_target()
+    def linearham_annotations(outdir, c):
+        linearham_annotations = env.Command(
+                os.path.join(outdir, "linearham_annotations.yaml"),
+                [c["partis_yaml_file"], c["linearham_final_output"][1]],
+                "scripts/write_lh_annotations.py $SOURCES --output-path $TARGET")
+        env.Depends(linearham_annotations, "scripts/write_lh_annotations.py")
+        return linearham_annotations
 
     @nest.add_target()
     def naive_tabulation(outdir, c):
