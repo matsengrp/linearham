@@ -24,18 +24,53 @@ if __name__ == "__main__":
         with open(lh_annotation_tsv) as tsvfile:
             return [l for l in csv.DictReader(tsvfile, dialect='excel-tab')]
             
+    def dict_in_list(d, l):
+        for entry in l:
+            if cmp(d, entry) == 0:
+                return True
+        return False 
+   
+    def match(d1, d2, keys_to_match):
+        for key in keys_to_match:
+            if d1[key] != d2[key]:
+                return False
+        return True
+
+    def tally_dict(query, uniq_dicts, keys_to_match):
+        for entry in uniq_dicts:
+            if match(entry, query, keys_to_match): #compare line and entry 
+                entry['count'] += 1
+                return
+        query['count'] = 1
+        uniq_dicts.append(query) # is adding the same reference here going to create issues?
+
+    def tabulate_linearham_annotations(lh_lines):
+        non_implicit_keys = set(lh_lines[0].keys()) - set(utils.implicit_linekeys)
+        uniq_lh_lines = []
+        for line in lh_lines:
+            tally_dict(line, uniq_lh_lines, non_implicit_keys)
+        for line in uniq_lh_lines:
+            line['logprob'] = line['count']/float(len(lh_lines))
+            del line['count']
+        return uniq_lh_lines
+
     args = parser.parse_args()
 
     glfo, annotation_list, _ = utils.read_output(args.partis_yaml_file)
+    partis_line = annotation_list[0]
     lh_lines = read_linearham_lines(args.linearham_log_file)
+    
+    for lh_line in lh_lines:
+        lh_line = utils.process_input_linearham_line(lh_line)
+
+    uniq_lh_lines = tabulate_linearham_annotations(lh_lines)
+    for lh_line in uniq_lh_lines:
+        lh_line = utils.update_line(copy.deepcopy(partis_line), lh_line, glfo)
+    sorted_partis_style_lh_lines = sorted(uniq_lh_lines, key=lambda line: line['logprob'], reverse=True)
 
     # 1. write best annotation
-    # TODO confirm with Amrit that this is the way to do that (seems like probably not)
-    best_line = max(lh_lines, key=lambda l: float(l['LHLogLikelihood']))
-    partis_format_best_line = utils.add_linearham_annotations_to_line(copy.deepcopy(annotation_list[0]), copy.deepcopy(best_line), glfo, logprob=float(best_line['LHLogLikelihood']), debug=True)
-    utils.write_annotations(args.output_base + '_best.yaml', glfo, [partis_format_best_line], set(partis_format_best_line))
+    utils.write_annotations(args.output_base + '_best.yaml', glfo, sorted_partis_style_lh_lines[:1], set(partis_line))
 
     # 2. write all annotations
-    # TODO make sure that logprobs are visible in view-output and that it doesn't collapse annotations of the same cluster (and that getting logprobs for different annotations works like this - again, probably not)
-    all_partis_format_lh_lines = [utils.add_linearham_annotations_to_line(copy.deepcopy(annotation_list[0]), copy.deepcopy(lh_line), glfo, logprob=float(lh_line['LHLogLikelihood']), debug=True) for lh_line in lh_lines]
-    utils.write_annotations(args.output_base + '_all.yaml', glfo, sorted(all_partis_format_lh_lines, key=lambda line: line['logprob']), set(partis_format_best_line))
+    # TODO make sure that logprobs are visible in view-output and that it doesn't collapse annotations of the same cluster 
+    utils.write_annotations(args.output_base + '_all.yaml', glfo, sorted_partis_style_lh_lines, set(partis_line))
