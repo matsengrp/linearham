@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+import math
 import copy
 import argparse
 import csv
@@ -48,7 +49,7 @@ if __name__ == "__main__":
         for line in lh_lines:
             tally_dict(line, uniq_lh_lines, keys_to_match)
         for i, line in enumerate(uniq_lh_lines):
-            line['logprob'] = line['count']/float(len(lh_lines))
+            line['logprob'] = math.log(line['count']/float(len(lh_lines)))
             del line['count']
         return uniq_lh_lines
 
