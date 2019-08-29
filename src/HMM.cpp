@@ -28,12 +28,20 @@ HMM::HMM(const std::string& yaml_path, int cluster_ind,
          const std::string& hmm_param_dir, int seed) {
   // Parse the `locus`, `flexbounds`, and `relpos` YAML data.
   YAML::Node root = YAML::LoadFile(yaml_path);
-  locus_ = root["germline-info"]["locus"].as<std::string>();
-  cluster_data_ = root["events"][cluster_ind];
-  flexbounds_ = cluster_data_["linearham-info"]["flexbounds"]
+  try {
+    locus_ = root["germline-info"]["locus"].as<std::string>();
+    cluster_data_ = root["events"][cluster_ind];
+  } catch (const std::runtime_error &e) {
+    throw std::runtime_error("Can't read one of \"locus\" (under \"germline-info\"), \"events\" from  " + yaml_path + " . Check that yaml file contains these keys.");
+  }
+  try {
+    flexbounds_ = cluster_data_["linearham-info"]["flexbounds"]
                     .as<std::map<std::string, std::pair<int, int>>>();
-  relpos_ = cluster_data_["linearham-info"]["relpos"]
+    relpos_ = cluster_data_["linearham-info"]["relpos"]
                 .as<std::map<std::string, int>>();
+  } catch (const std::runtime_error &e) {
+    throw std::runtime_error("Can't read one of \"flexbounds\", \"relpos\" from  " + yaml_path + " . Check that \"linearham-info\" was written to the yaml file and is not null.");
+  }
 
   // Create the map holding (germline name, GermlineGene) pairs.
   ggenes_ = CreateGermlineGeneMap(hmm_param_dir);
