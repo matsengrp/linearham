@@ -53,6 +53,11 @@ if __name__ == "__main__":
             del line['count']
         return uniq_lh_lines
 
+    def update_partis_line_with_lh_annotation(partis_line, lh_line, glfo, debug=False):
+        utils.remove_all_implicit_info(partis_line)
+        partis_line.update(lh_line)
+        utils.add_implicit_info(glfo, partis_line, check_line_keys=debug)
+
     args = parser.parse_args()
 
     # read partis annotation of linearham input cluster
@@ -61,12 +66,16 @@ if __name__ == "__main__":
     
     # read linearham annotationS of linearham input cluster
     lh_lines = read_linearham_lines(args.linearham_log_file)
-    # convert annotation keys to partis style
-    converted_lh_lines = [utils.process_input_linearham_line(lh_line) for lh_line in lh_lines]
-    # create full partis annotations from the linearham annotations by updating copies of the partis annotation to reflect linearham annotations
-    full_partis_lh_lines = [utils.update_line(copy.deepcopy(partis_line), lh_line, glfo) for lh_line in converted_lh_lines]
+    full_lh_lines = []
+    for lh_line in lh_lines:
+        # convert annotation keys to partis style
+        utils.process_input_linearham_line(lh_line)
+        # create full partis annotations from the linearham annotations by updating copies of the partis annotation to reflect linearham annotations
+        partis_annotation_copy = copy.deepcopy(partis_line)
+        update_partis_line_with_lh_annotation(partis_annotation_copy, lh_line, glfo)
+        full_lh_lines.append(partis_annotation_copy)
     # tabulate annotations (collapse duplicate annotations and assign probabilities according to number of occurrences)
-    uniq_lh_lines = tabulate_linearham_annotations(full_partis_lh_lines)
+    uniq_lh_lines = tabulate_linearham_annotations(full_lh_lines)
     # sort by probability
     sorted_partis_style_lh_lines = sorted(uniq_lh_lines, key=lambda line: line['logprob'], reverse=True)
     best = sorted_partis_style_lh_lines[0]
