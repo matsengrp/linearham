@@ -29,10 +29,7 @@ if __name__ == "__main__":
             return [l for l in csv.DictReader(tsvfile, dialect='excel-tab')]
             
     def match(d1, d2, keys_to_match):
-        for key in keys_to_match:
-            if d1[key] != d2[key]:
-                return False
-        return True
+        return all(d1[k] == d2[k] for k in keys_to_match)
 
     def tally_dict(query, uniq_dicts, keys_to_match):
         for entry in uniq_dicts:
@@ -48,7 +45,7 @@ if __name__ == "__main__":
         uniq_lh_lines = []
         for line in lh_lines:
             tally_dict(line, uniq_lh_lines, keys_to_match)
-        for i, line in enumerate(uniq_lh_lines):
+        for line in uniq_lh_lines:
             line['logprob'] = math.log(line['count']/float(len(lh_lines)))
             del line['count']
         return uniq_lh_lines
