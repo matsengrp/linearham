@@ -8,6 +8,7 @@
 '._.-'-._.-._.-''-..'
 ```
 
+[![Docker Cloud Build Status](https://img.shields.io/docker/cloud/build/matsengrp/linearham.svg)](https://cloud.docker.com/u/matsengrp/repository/docker/matsengrp/linearham/general) &nbsp;
 [![wercker status](https://app.wercker.com/status/284280f33f13e936de0d544a332121af/s/master "wercker status")](https://app.wercker.com/project/byKey/284280f33f13e936de0d544a332121af)
 
 ## Installation
