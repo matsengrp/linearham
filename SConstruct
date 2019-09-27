@@ -184,6 +184,7 @@ def get_options(env):
         partis_yaml_file = env.GetOption("partis_yaml_file"),
 
         # partis/linearham arguments
+        dont_update_submodules = env.GetOption("dont_update_submodules"),
         build_partis_linearham = env.GetOption("build_partis_linearham"),
         parameter_dir = env.GetOption("parameter_dir"),
         outdir = env.GetOption("outdir")
@@ -207,6 +208,7 @@ def default_label(d):
 if options["build_partis_linearham"]:
     if not options["dont_update_submodules"]:
         @nest.add_target()
+        def submodule_update(outdir, c):
             update = env.Command("_build/.submodule_update.log", None, "git submodule update --init --recursive")
             env.AlwaysBuild(update)
             return update
