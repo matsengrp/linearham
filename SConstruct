@@ -129,6 +129,12 @@ Script.AddOption("--partis-yaml-file",
 
 # partis/linearham arguments
 
+Script.AddOption("--dont-update-submodules",
+        dest="dont_update_submodules",
+        action="store_true",
+        default=False,
+        help="Does not run \"git submodule update --init --recursive\" if set in combination with --build-partis-linearham. That git submodule command will otherwise run whenever --build-partis-linearham is set.")
+
 Script.AddOption("--build-partis-linearham",
         dest="build_partis_linearham",
         action="store_true",
@@ -178,6 +184,7 @@ def get_options(env):
         partis_yaml_file = env.GetOption("partis_yaml_file"),
 
         # partis/linearham arguments
+        dont_update_submodules = env.GetOption("dont_update_submodules"),
         build_partis_linearham = env.GetOption("build_partis_linearham"),
         parameter_dir = env.GetOption("parameter_dir"),
         outdir = env.GetOption("outdir")
@@ -196,15 +203,22 @@ nest = nestly_scons.SConsWrap(nestly.Nest(), dest_dir=options["outdir"], alias_e
 def default_label(d):
     return d.get("id")
 
-
 #### Install partis and linearham (if necessary)
 
 if options["build_partis_linearham"]:
+    if not options["dont_update_submodules"]:
+        @nest.add_target()
+        def submodule_update(outdir, c):
+            update = env.Command("_build/.submodule_update.log", None, "git submodule update --init --recursive")
+            env.AlwaysBuild(update)
+            return update
 
     @nest.add_target()
     def partis_build(outdir, c):
-        return env.Command("lib/partis/packages/ham/bcrham", "",
+        partisbuild = env.Command("lib/partis/packages/ham/bcrham", "",
                            "cd lib/partis && ./bin/build.sh")
+        env.AlwaysBuild(partisbuild)
+        return partisbuild
 
     @nest.add_target()
     def linearham_build(outdir, c):

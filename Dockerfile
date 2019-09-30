@@ -27,7 +27,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
   libz-dev \
   libbz2-dev \
   liblzma-dev \
-  less
+  less \
+  git
 RUN pip install biopython colored-traceback dendropy graphviz jinja2 matplotlib nestly numpy psutil pysam pyyaml scipy weblogo
 RUN Rscript --slave --vanilla -e 'install.packages(c("phylotate", "Rcpp", "RcppArmadillo"), repos = "https://cloud.r-project.org")'
 
