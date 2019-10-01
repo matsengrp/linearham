@@ -34,6 +34,7 @@ RUN Rscript --slave --vanilla -e 'install.packages(c("phylotate", "Rcpp", "RcppA
 
 COPY . /linearham
 WORKDIR /linearham
+RUN git submodule update --init --recursive
 
 RUN Rscript --slave --vanilla -e 'install.packages("lib/phylomd", repos = NULL, type = "source")'
 RUN cd lib/revbayes/projects/cmake && ./build.sh
