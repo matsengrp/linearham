@@ -27,14 +27,12 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
   libz-dev \
   libbz2-dev \
   liblzma-dev \
-  less \
-  git
+  less
 RUN pip install biopython colored-traceback dendropy graphviz jinja2 matplotlib nestly numpy psutil pysam pyyaml scipy weblogo
 RUN Rscript --slave --vanilla -e 'install.packages(c("phylotate", "Rcpp", "RcppArmadillo"), repos = "https://cloud.r-project.org")'
 
 COPY . /linearham
 WORKDIR /linearham
-RUN git submodule update --init --recursive
 
 RUN Rscript --slave --vanilla -e 'install.packages("lib/phylomd", repos = NULL, type = "source")'
 RUN cd lib/revbayes/projects/cmake && ./build.sh
