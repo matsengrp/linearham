@@ -27,7 +27,9 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
   libz-dev \
   libbz2-dev \
   liblzma-dev \
-  less
+  less \
+  wget
+RUN wget https://mafft.cbrc.jp/alignment/software/mafft_7.450-1_amd64.deb && dpkg -i mafft_7.450-1_amd64.deb
 RUN pip install biopython colored-traceback dendropy graphviz jinja2 matplotlib nestly numpy psutil pysam pyyaml scipy weblogo
 RUN Rscript --slave --vanilla -e 'install.packages(c("phylotate", "Rcpp", "RcppArmadillo"), repos = "https://cloud.r-project.org")'
 
