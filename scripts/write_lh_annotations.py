@@ -9,6 +9,9 @@ default_partis_path = os.path.join(os.getcwd(), 'lib/partis')
 sys.path.append(os.path.join(default_partis_path, 'python'))
 import utils
 
+#Hardcoding this because we should only ever have one annotation in the yaml file passed to this script. If used outside of this context, this will need to happen using proper cluster indexing as in scripts/parse_cluster.py or in partis.
+CLUSTER_INDEX = 0
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Combine original partis_run.yaml and linearham_run.log to update reflect linearham annotations")
     parser.add_argument(
@@ -59,7 +62,7 @@ if __name__ == "__main__":
 
     # read partis annotation of linearham input cluster
     glfo, annotation_list, _ = utils.read_output(args.partis_yaml_file)
-    partis_line = annotation_list[0]
+    partis_line = annotation_list[CLUSTER_INDEX]
     
     # read linearham annotationS of linearham input cluster
     lh_lines = read_linearham_lines(args.linearham_log_file)

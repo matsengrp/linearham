@@ -61,7 +61,7 @@ The `linearham`-related command line arguments are described in the following ta
 | `--parameter-dir` | An optional directory of partis parameter files. |
 | `--outdir` | The output directory (defaults to `output`). |
 
-All of the above command line arguments (except `--fasta-path`, `--all-clonal-seqs`, `--locus`, `--parameter-dir`, `--template-path`, `--num-cores`, `--partis-yaml-file`, and `--outdir`) accept comma-separated values as input.
+All of the above command line arguments (except `--partis-seed-cluster`, `--cluster-ind`, `--partition-ind`, `--fasta-path`, `--all-clonal-seqs`, `--locus`, `--parameter-dir`, `--template-path`, `--num-cores`, `--partis-yaml-file`, and `--outdir`) accept comma-separated values as input.
 Note that `scons --run-partis` and `scons --run-linearham` must specify the same output directory and, if applicable, the same optional directory of partis parameter files.
 For more information on the `scons` arguments, run `scons --help`.
 

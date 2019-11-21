@@ -43,11 +43,24 @@ Script.AddOption("--run-linearham",
         default=False,
         help="Should we run linearham?")
 
+Script.AddOption("--partition-ind",
+        dest="partition_ind",
+        type="str",
+        default=None,
+        help="An index specifying the partition step to use from the partis yaml file. Defaults to the \"best\" (highest logprob) partition step. Anything passed will be interpreted as the index of the partition step to be used as in scripts/parse_cluter.py.")
+
 Script.AddOption("--cluster-ind",
         dest="cluster_ind",
         type="str",
-        default="0",
-        help="An index specifying the clonal family of interest.")
+        default=None,
+        help="An index specifying the cluster to use from the partition specified by --partition-ind for the partis yaml file. Defaults to the seed cluster if one exists otherwise, an index MUST be passed. Anything passed will be interpreted as the index of the cluster to be used as in scripts/parse_cluter.py.")
+
+Script.AddOption("--partis-seed-cluster",
+        dest="partis_seed_cluster",
+        type="str",
+        default=None,
+         when it is done. The user can use that script to verify that their arguments passed to linearham will yield the cluster they want
+        help="A string specifying the partis seed sequence uid in order to parse the seed cluster containing this sequence from the partis yaml file. The uid passed will be used to parse the seed cluster(s) as in scripts/parse_cluter.py.")
 
 Script.AddOption("--template-path",
         dest="template_path",
@@ -162,7 +175,9 @@ def get_options(env):
 
         # linearham arguments
         run_linearham = env.GetOption("run_linearham"),
-        cluster_ind = process_multiarg(env.GetOption("cluster_ind"), int, ","),
+        partis_seed_cluster = str(env.GetOption("partis_seed_cluster")) if env.GetOption("partis_seed_cluster") is not None else None,
+        cluster_ind = int(env.GetOption("cluster_ind")) if env.GetOption("cluster_ind") is not None else None,
+        partition_ind = int(env.GetOption("partition_ind")) if env.GetOption("partition_ind") is not None else None,
         template_path = env.GetOption("template_path"),
         mcmc_iter = process_multiarg(env.GetOption("mcmc_iter"), int, ","),
         mcmc_thin = process_multiarg(env.GetOption("mcmc_thin"), int, ","),
@@ -298,18 +313,39 @@ if options["run_linearham"]:
 
     @nest.add_nest(label_func=default_label)
     def cluster(c):
-        return [{"id": "cluster" + str(i), "index": i} for i in options["cluster_ind"]]
+        cluster_info = {"cluster_index": options["cluster_ind"], "partition_index": options["partition_ind"], "partis_seed_cluster": options["partis_seed_cluster"]}
+        if options["partis_seed_cluster"] is not None:
+            cluster_info["id"] = "cluster-" + str(options["partis_seed_cluster"])
+        elif options["cluster_ind"] is not None:
+            cluster_info["id"] = "cluster-" + str(options["cluster_ind"])
+        else:
+            cluster_info["id"] = "cluster-0"
+        return [cluster_info]
+
+    @nest.add_target()
+    def _parse_cluster(outdir, c):
+        cluster_fasta_file, cluster_yaml_file = env.Command(
+            [os.path.join(outdir, outfile) for outfile in ["cluster_seqs.fasta", "cluster.yaml"]],
+            c["partis_yaml_file"],
+            "scripts/parse_cluster.py $SOURCE" \
+                + " --indel-reversed-seqs" \
+                + ((" --seed-unique-id " + str(c["cluster"]["partis_seed_cluster"])) if c["cluster"]["partis_seed_cluster"] is not None else "") \
+                + ((" --cluster-index " + str(c["cluster"]["cluster_index"])) if c["cluster"]["cluster_index"] is not None else "") \
+                + ((" --partition-index " + str(c["cluster"]["partition_index"])) if c["cluster"]["partition_index"] is not None else "") \
+                + ((" --glfo-dir " + os.path.join(options["parameter_dir"], "/hmm/germline-sets")) if os.path.splitext(c["partis_yaml_file"])[1] == '.csv' else "") \
+                + ((" --locus " + options["locus"]) if os.path.splitext(c["partis_yaml_file"])[1] == '.csv' else "") \
+                + " --fasta-output-file ${TARGETS[0]}" \
+                + " --yaml-output-file ${TARGETS[1]}")
+        env.Depends(cluster_fasta_file, "scripts/parse_cluster.py")
+        return cluster_fasta_file, cluster_yaml_file
 
     @nest.add_target()
     def cluster_fasta_file(outdir, c):
-        cluster_fasta_file = env.Command(
-            os.path.join(outdir, "cluster_seqs.fasta"),
-            c["partis_yaml_file"],
-            "scripts/parse_cluster_seqs.py $SOURCE" \
-                + " --cluster-ind " + str(c["cluster"]["index"]) \
-                + " --output-path $TARGET")
-        env.Depends(cluster_fasta_file, "scripts/parse_cluster_seqs.py")
-        return cluster_fasta_file
+        return c['_parse_cluster'][0]
+
+    @nest.add_target()
+    def cluster_yaml_file(outdir, c):
+        return c['_parse_cluster'][1]
 
     @nest.add_nest(label_func=default_label)
     def revbayes_setting(c):
@@ -357,10 +393,11 @@ if options["run_linearham"]:
     def linearham_intermediate_output(outdir, c):
         linearham_intermediate_output = env.Command(
             os.path.join(outdir, "lh_revbayes_run.trees"),
-            [c["revbayes_output"][0], c["partis_yaml_file"]],
+            [c["revbayes_output"][0], c["cluster_yaml_file"]],
             "_build/linearham/linearham --pipeline" \
                 + " --yaml-path ${SOURCES[1]}" \
-                + " --cluster-ind " + str(c["cluster"]["index"]) \
+                # always use 0 here since we have created a partis yaml with only one cluster
+                + " --cluster-ind 0" \
                 + " --hmm-param-dir " + c["hmm_param_dir"] \
                 + " --seed " + str(c["revbayes_setting"]["seed"]) \
                 + " --num-rates " + str(c["revbayes_setting"]["num_rates"]) \
@@ -397,7 +434,7 @@ if options["run_linearham"]:
         outbase = os.path.join(outdir, "linearham_annotations")
         linearham_annotations = env.Command(
                 [outbase + sfx for sfx in ("_best.yaml", "_all.yaml")],
-                [c["partis_yaml_file"], c["linearham_final_output"][1]],
+                [c["cluster_yaml_file"], c["linearham_final_output"][1]],
                 "scripts/write_lh_annotations.py $SOURCES --output-base " + outbase)
         env.Depends(linearham_annotations, "scripts/write_lh_annotations.py")
         return linearham_annotations
