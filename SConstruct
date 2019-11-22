@@ -59,7 +59,6 @@ Script.AddOption("--partis-seed-cluster",
         dest="partis_seed_cluster",
         type="str",
         default=None,
-         when it is done. The user can use that script to verify that their arguments passed to linearham will yield the cluster they want
         help="A string specifying the partis seed sequence uid in order to parse the seed cluster containing this sequence from the partis yaml file. The uid passed will be used to parse the seed cluster(s) as in scripts/parse_cluter.py.")
 
 Script.AddOption("--template-path",
