@@ -53,13 +53,13 @@ Script.AddOption("--cluster-ind",
         dest="cluster_ind",
         type="str",
         default=None,
-        help="An index specifying the cluster to use from the partition specified by --partition-ind for the partis yaml file. Defaults to the seed cluster if one exists otherwise, an index MUST be passed. Anything passed will be interpreted as the index of the cluster to be used as in scripts/parse_cluter.py.")
+        help="An index specifying the cluster to use from the partition specified by --partition-ind for the partis yaml file. Anything passed will be interpreted as the index of the cluster to be used as in scripts/parse_cluter.py.")
 
 Script.AddOption("--partis-seed-cluster",
         dest="partis_seed_cluster",
         type="str",
         default=None,
-        help="A string specifying the partis seed sequence uid in order to parse the seed cluster containing this sequence from the partis yaml file. The uid passed will be used to parse the seed cluster(s) as in scripts/parse_cluter.py.")
+        help="A string specifying unique id of the partis seed sequence (see partis --seed-unique-id https://github.com/psathyrella/partis/blob/master/docs/subcommands.md#--seed-unique-id-id). The uid passed will be used to parse the cluster(s) containing this sequence from the partis yaml file as in scripts/parse_cluter.py.")
 
 Script.AddOption("--template-path",
         dest="template_path",

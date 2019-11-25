@@ -44,7 +44,9 @@ The `linearham`-related command line arguments are described in the following ta
 
 | Command | Description |
 | ---     | ---         |
-| `--cluster-ind` | The `partis` clonal family index (defaults to 0). |
+| `--cluster-ind` | The `partis` clonal family index. |
+| `--partition-ind` | The `partis` clonal family index (defaults to the partition with the highest log probability according to partis). |
+| `--partis-seed-cluster` | A string specifying unique id of the partis seed sequence (see partis [--seed-unique-id](https://github.com/psathyrella/partis/blob/master/docs/subcommands.md#--seed-unique-id-id)). |
 | `--template-path` | The Rev template path. |
 | `--mcmc-iter` | How many RevBayes MCMC iterations should we use (defaults to 10000)? |
 | `--mcmc-thin` | What RevBayes MCMC thinning frequency should we use (defaults to 10)? |
@@ -55,7 +57,7 @@ The `linearham`-related command line arguments are described in the following ta
 | `--subsamp-frac` | What bootstrap sampling fraction should we use (defaults to 0.05)? |
 | `--num-cores` | The number of cores to use for ancestral sequence reconstruction (ASR) sampling (defaults to 1). |
 | `--seed` | The random number generator (RNG) seed (defaults to 0). |
-| `--seed-seq` | The name of the seed sequence of interest. |
+| `--seed-seq` | The name of the seed sequence of interest for analyzing lineages. |
 | `--asr-pfilters` | The ancestral sequence posterior probability thresholds (defaults to 0.1). |
 | `--partis-yaml-file` | An optional partis output YAML file. |
 | `--parameter-dir` | An optional directory of partis parameter files. |
