@@ -65,15 +65,16 @@ def parse_cluster_annotation(
                 len(clusters_to_use),
             )
             if len(clusters_to_use) > 1:
+                show_available_clusters(cpath, ipartition)
                 raise Exception(
-                    "Multiple clusters with partis seed sequence with uid '%s'. Partis output file may contain intermediate annotations from seed partitioning. Try using --cluster-index to choose one."
+                    "Multiple clusters with partis seed sequence with uid '%s'. Partis output file may contain intermediate annotations from seed partitioning. Try using --cluster-index to choose one from the list printed above (best viewed without line wrapping)."
                     % seed_unique_id
                 )
 
     if len(clusters_to_use) != 1:
         show_available_clusters(cpath, ipartition)
         raise Exception(
-            "Options passed must uniquely identify 1 cluster in the partis output file but instead resulted in %d clusters."
+            "Options passed must uniquely identify 1 cluster in the partis output file but instead resulted in %d clusters. Try using --cluster-index to choose one from the list printed above (best viewed without line wrapping)."
             % len(clusters_to_use)
         )
 
@@ -171,7 +172,7 @@ if __name__ == "__main__":
 
     glfo = None
     if utils.getsuffix(args.partis_yaml_file) == ".csv":
-        default_glfo_dir = partis_dir + "/data/germlines/human"
+        default_glfo_dir = default_partis_path + "/data/germlines/human"
         if args.glfo_dir is None:
             print "  note: reading deprecated csv format, so need to get germline info from a separate directory; --glfo-dir was not set, so using default %s. If it doesn't crash, it's probably ok." % default_glfo_dir
             args.glfo_dir = default_glfo_dir
