@@ -79,7 +79,7 @@ If your partis output contains more than one cluster (does not apply if `--all-c
 | `--cluster-index` | Zero-based index of cluster to use in the partition specified by --partition-index (default: 0). |
 | `--cluster-seed-unique-id` | A string specifying unique id of the partis seed sequence (see partis [--seed-unique-id](https://github.com/psathyrella/partis/blob/master/docs/subcommands.md#--seed-unique-id-id)). Linearham will use the cluster containing this sequence in the partition specified by --partition-index. |
 
-If you do not have a cluster of interest or are not sure how to indentify it using those options, you can run [scripts/parse_cluster.py](https://github.com/matsengrp/linearham/blob/cluster-parsing/scripts/parse_cluster.py) to determine the information you need to specify to run Linearham on your desired cluster.
+If you do not have a cluster of interest or are not sure how to indentify it using those options, you can run [scripts/parse_cluster.py](https://github.com/matsengrp/linearham/blob/master/scripts/parse_cluster.py) to determine the information you need to specify to run Linearham on your desired cluster.
 
 For example, running:
 
