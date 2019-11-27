@@ -42,10 +42,10 @@ scons --run-linearham --partition-index=<int> --cluster-index=<int> --cluster-se
 ```
 The `linearham`-related command line arguments are described in the following table:
 
+<!-- change the 'See partis cluster specification in Linearham' links to master. Worth maybe writing a doc on the usage of that script / how to choose a cluster? --> 
 | Command | Description |
 | ---     | ---         |
-<!-- change the 'See partis cluster specification in Linearham' links to master. Worth maybe writing a doc on the usage of that script / how to choose a cluster? --> 
-| `--partition-index` | Zero-based index of partition from which to choose a cluster in the partis list of most likely partitions (default: index of most likely partition). See [partis cluster specification in Linearham](https://github.com/matsengrp/linearham/blob/cluster-parsing/scripts/parse_cluster.py). |
+| `--partition-index`| Zero-based index of partition from which to choose a cluster in the partis list of most likely partitions (default: index of most likely partition). See [partis cluster specification in Linearham](https://github.com/matsengrp/linearham/blob/cluster-parsing/scripts/parse_cluster.py). |
 | `--cluster-index` | Zero-based index of cluster to use in the partition specified by --partition-index (default: 0). See [partis cluster specification in Linearham](https://github.com/matsengrp/linearham/blob/cluster-parsing/scripts/parse_cluster.py). |
 | `--cluster-seed-unique-id` | A string specifying unique id of the partis seed sequence (see partis [--seed-unique-id](https://github.com/psathyrella/partis/blob/master/docs/subcommands.md#--seed-unique-id-id)). Linearham will use the cluster containing this sequence in the partition specified by --partition-index. See [partis cluster specification in Linearham](https://github.com/matsengrp/linearham/blob/cluster-parsing/scripts/parse_cluster.py). |
 | `--template-path` | The Rev template path. |
