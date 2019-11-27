@@ -43,23 +43,23 @@ Script.AddOption("--run-linearham",
         default=False,
         help="Should we run linearham?")
 
-Script.AddOption("--partition-ind",
-        dest="partition_ind",
+Script.AddOption("--partition-index",
+        dest="partition_index",
         type="str",
         default=None,
-        help="An index specifying the partition step to use from the partis yaml file. Defaults to the \"best\" (highest logprob) partition step. Anything passed will be interpreted as the index of the partition step to be used as in scripts/parse_cluter.py.")
+        help="Zero-based index of partition from which to choose a cluster in the partis list of most likely partitions (default: index of most likely partition). Anything passed will be interpreted as the index of the partition step to be used as in scripts/parse_cluter.py.")
 
-Script.AddOption("--cluster-ind",
-        dest="cluster_ind",
+Script.AddOption("--cluster-index",
+        dest="cluster_index",
         type="str",
         default=None,
-        help="An index specifying the cluster to use from the partition specified by --partition-ind for the partis yaml file. Anything passed will be interpreted as the index of the cluster to be used as in scripts/parse_cluter.py.")
+        help="Zero-based index of cluster to use in the partition specified by --partition-index (default: 0). Anything passed will be interpreted as the index of the cluster to be used as in scripts/parse_cluter.py.")
 
-Script.AddOption("--partis-seed-cluster",
-        dest="partis_seed_cluster",
+Script.AddOption("--cluster-seed-unique-id",
+        dest="cluster_seed_unique_id",
         type="str",
         default=None,
-        help="A string specifying unique id of the partis seed sequence (see partis --seed-unique-id https://github.com/psathyrella/partis/blob/master/docs/subcommands.md#--seed-unique-id-id). The uid passed will be used to parse the cluster(s) containing this sequence from the partis yaml file as in scripts/parse_cluter.py.")
+        help="A string specifying unique id of the partis seed sequence (see partis --seed-unique-id https://github.com/psathyrella/partis/blob/master/docs/subcommands.md#--seed-unique-id-id). The uid passed will be used to parse the cluster(s) containing this sequence in the partition specified by --partition-index as in scripts/parse_cluter.py.")
 
 Script.AddOption("--template-path",
         dest="template_path",
@@ -115,17 +115,17 @@ Script.AddOption("--num-cores",
         default=1,
         help="The number of cores to use for ASR sampling.")
 
-Script.AddOption("--seed",
-        dest="seed",
+Script.AddOption("--rng-seed",
+        dest="rng_seed",
         type="str",
         default="0",
         help="The RNG seed.")
 
-Script.AddOption("--seed-seq",
-        dest="seed_seq",
+Script.AddOption("--lineage-unique-id",
+        dest="lineage_unique_id",
         type="str",
         default=None,
-        help="The name of the seed sequence.")
+        help="The name of the sequence(s) of interest for analyzing lineages. ")
 
 Script.AddOption("--asr-pfilters",
         dest="asr_pfilters",
@@ -174,9 +174,9 @@ def get_options(env):
 
         # linearham arguments
         run_linearham = env.GetOption("run_linearham"),
-        partis_seed_cluster = str(env.GetOption("partis_seed_cluster")) if env.GetOption("partis_seed_cluster") is not None else None,
-        cluster_ind = int(env.GetOption("cluster_ind")) if env.GetOption("cluster_ind") is not None else None,
-        partition_ind = int(env.GetOption("partition_ind")) if env.GetOption("partition_ind") is not None else None,
+        cluster_seed_unique_id = str(env.GetOption("cluster_seed_unique_id")) if env.GetOption("cluster_seed_unique_id") is not None else None,
+        cluster_index = int(env.GetOption("cluster_index")) if env.GetOption("cluster_index") is not None else None,
+        partition_index = int(env.GetOption("partition_index")) if env.GetOption("partition_index") is not None else None,
         template_path = env.GetOption("template_path"),
         mcmc_iter = process_multiarg(env.GetOption("mcmc_iter"), int, ","),
         mcmc_thin = process_multiarg(env.GetOption("mcmc_thin"), int, ","),
@@ -186,8 +186,8 @@ def get_options(env):
         burnin_frac = process_multiarg(env.GetOption("burnin_frac"), float, ","),
         subsamp_frac = process_multiarg(env.GetOption("subsamp_frac"), float, ","),
         num_cores = env.GetOption("num_cores"),
-        seed = process_multiarg(env.GetOption("seed"), int, ","),
-        seed_seq = process_multiarg(env.GetOption("seed_seq"), str, ",") if env.GetOption("seed_seq") is not None else None,
+        rng_seed = process_multiarg(env.GetOption("rng_seed"), int, ","),
+        lineage_unique_id = process_multiarg(env.GetOption("lineage_unique_id"), str, ",") if env.GetOption("lineage_unique_id") is not None else None,
         asr_pfilters = process_multiarg(env.GetOption("asr_pfilters"), float, ","),
         partis_yaml_file = env.GetOption("partis_yaml_file"),
 
@@ -312,11 +312,11 @@ if options["run_linearham"]:
 
     @nest.add_nest(label_func=default_label)
     def cluster(c):
-        cluster_info = {"cluster_index": options["cluster_ind"], "partition_index": options["partition_ind"], "partis_seed_cluster": options["partis_seed_cluster"]}
-        if options["partis_seed_cluster"] is not None:
-            cluster_info["id"] = "cluster-" + str(options["partis_seed_cluster"])
-        elif options["cluster_ind"] is not None:
-            cluster_info["id"] = "cluster-" + str(options["cluster_ind"])
+        cluster_info = {"cluster_index": options["cluster_index"], "partition_index": options["partition_index"], "cluster_seed_unique_id": options["cluster_seed_unique_id"]}
+        if options["cluster_seed_unique_id"] is not None:
+            cluster_info["id"] = "cluster-" + str(options["cluster_seed_unique_id"])
+        elif options["cluster_index"] is not None:
+            cluster_info["id"] = "cluster-" + str(options["cluster_index"])
         else:
             cluster_info["id"] = "cluster-0"
         return [cluster_info]
@@ -328,7 +328,7 @@ if options["run_linearham"]:
             c["partis_yaml_file"],
             "scripts/parse_cluster.py $SOURCE" \
                 + " --indel-reversed-seqs" \
-                + ((" --seed-unique-id " + str(c["cluster"]["partis_seed_cluster"])) if c["cluster"]["partis_seed_cluster"] is not None else "") \
+                + ((" --seed-unique-id " + str(c["cluster"]["cluster_seed_unique_id"])) if c["cluster"]["cluster_seed_unique_id"] is not None else "") \
                 + ((" --cluster-index " + str(c["cluster"]["cluster_index"])) if c["cluster"]["cluster_index"] is not None else "") \
                 + ((" --partition-index " + str(c["cluster"]["partition_index"])) if c["cluster"]["partition_index"] is not None else "") \
                 + ((" --glfo-dir " + os.path.join(options["parameter_dir"], "/hmm/germline-sets")) if os.path.splitext(c["partis_yaml_file"])[1] == '.csv' else "") \
@@ -350,16 +350,16 @@ if options["run_linearham"]:
     def revbayes_setting(c):
         return [{"id": "mcmciter" + str(mcmc_iter) + "_mcmcthin" + str(mcmc_thin) + \
                        "_tuneiter" + str(tune_iter) + "_tunethin" + str(tune_thin) + \
-                       "_numrates" + str(num_rates) + "_seed" + str(seed),
+                       "_numrates" + str(num_rates) + "_rngseed" + str(rng_seed),
                  "mcmc_iter": mcmc_iter, "mcmc_thin": mcmc_thin,
                  "tune_iter": tune_iter, "tune_thin": tune_thin,
-                 "num_rates": num_rates, "seed": seed}
+                 "num_rates": num_rates, "rng_seed": rng_seed}
                 for mcmc_iter in options["mcmc_iter"]
                 for mcmc_thin in options["mcmc_thin"]
                 for tune_iter in options["tune_iter"]
                 for tune_thin in options["tune_thin"]
                 for num_rates in options["num_rates"]
-                for seed in options["seed"]]
+                for rng_seed in options["rng_seed"]]
 
     @nest.add_target()
     def revbayes_rev_file(outdir, c):
@@ -373,7 +373,7 @@ if options["run_linearham"]:
                 + " --tune-iter " + str(c["revbayes_setting"]["tune_iter"]) \
                 + " --tune-thin " + str(c["revbayes_setting"]["tune_thin"]) \
                 + " --num-rates " + str(c["revbayes_setting"]["num_rates"]) \
-                + " --seed " + str(c["revbayes_setting"]["seed"]) \
+                + " --seed " + str(c["revbayes_setting"]["rng_seed"]) \
                 + " --output-path $TARGET")
         env.Depends(revbayes_rev_file, "scripts/generate_revbayes_rev_file.py")
         return revbayes_rev_file
@@ -398,7 +398,7 @@ if options["run_linearham"]:
                 # always use 0 here since we have created a partis yaml with only one cluster
                 + " --cluster-ind 0" \
                 + " --hmm-param-dir " + c["hmm_param_dir"] \
-                + " --seed " + str(c["revbayes_setting"]["seed"]) \
+                + " --seed " + str(c["revbayes_setting"]["rng_seed"]) \
                 + " --num-rates " + str(c["revbayes_setting"]["num_rates"]) \
                 + " --input-path ${SOURCES[0]}" \
                 + " --output-path $TARGET")
@@ -423,7 +423,7 @@ if options["run_linearham"]:
                 + " " + str(c["linearham_setting"]["burnin_frac"]) \
                 + " " + str(c["linearham_setting"]["subsamp_frac"]) \
                 + " " + str(options["num_cores"]) \
-                + " " + str(c["revbayes_setting"]["seed"]) \
+                + " " + str(c["revbayes_setting"]["rng_seed"]) \
                 + " $TARGETS")
         env.Depends(linearham_final_output, "scripts/run_bootstrap_asr_ess.R")
         return linearham_final_output
@@ -447,12 +447,12 @@ if options["run_linearham"]:
         env.Depends(naive_tabulation, "scripts/tabulate_naive_probs.py")
         return naive_tabulation
 
-    if options["seed_seq"] is not None:
+    if options["lineage_unique_id"] is not None:
 
         @nest.add_nest(label_func=default_label)
-        def seed_seq(c):
-            return [{"id": "seedseq" + seed_seq, "name": seed_seq}
-                    for seed_seq in options["seed_seq"]]
+        def lineage(c):
+            return [{"id": "lineage_" + lineage_unique_id, "lineage_seq_unique_id": lineage_unique_id}
+                    for lineage_unique_id in options["lineage_unique_id"]]
 
         @nest.add_target()
         def lineage_tabulation(outdir, c):
@@ -460,7 +460,7 @@ if options["run_linearham"]:
             lineage_tabulation = env.Command(
                 outbase + ".fasta", [c["linearham_final_output"][0], c["naive_tabulation"]],
                 "scripts/tabulate_lineage_probs.py $SOURCES" \
-                    + " --seed-seq " + c["seed_seq"]["name"] \
+                    + " --seed-seq " + c["lineage"]["lineage_seq_unique_id"] \
                     + " --pfilters " + " ".join(str(pfilter) for pfilter in options["asr_pfilters"]) \
                     + " --output-base " + outbase)
             env.Depends(lineage_tabulation, "scripts/tabulate_lineage_probs.py")

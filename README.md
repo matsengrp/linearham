@@ -38,15 +38,16 @@ The `partis`-related command line arguments are described in the following table
 
 To run `linearham`:
 ```bash
-scons --run-linearham --cluster-ind=<int> --template-path=<string> --mcmc-iter=<int> --mcmc-thin=<int> --tune-iter=<int> --tune-thin=<int> --num-rates=<int> --burnin-frac=<double> --subsamp-frac=<double> --num-cores=<int> --seed=<int> --seed-seq=<string> --asr-pfilters=<double> --partis-yaml-file=<string> --parameter-dir=<string> --outdir=<string>
+scons --run-linearham --partition-index=<int> --cluster-index=<int> --cluster-seed-unique-id=<str> --template-path=<string> --mcmc-iter=<int> --mcmc-thin=<int> --tune-iter=<int> --tune-thin=<int> --num-rates=<int> --burnin-frac=<double> --subsamp-frac=<double> --num-cores=<int> --rng-seed=<int> --lineage-unique-id=<string> --asr-pfilters=<double> --partis-yaml-file=<string> --parameter-dir=<string> --outdir=<string>
 ```
 The `linearham`-related command line arguments are described in the following table:
 
 | Command | Description |
 | ---     | ---         |
-| `--cluster-ind` | The `partis` clonal family index. |
-| `--partition-ind` | The `partis` clonal family index (defaults to the partition with the highest log probability according to partis). |
-| `--partis-seed-cluster` | A string specifying unique id of the partis seed sequence (see partis [--seed-unique-id](https://github.com/psathyrella/partis/blob/master/docs/subcommands.md#--seed-unique-id-id)). |
+<!-- change the 'See partis cluster specification in Linearham' links to master. Worth maybe writing a doc on the usage of that script / how to choose a cluster? --> 
+| `--partition-index` | Zero-based index of partition from which to choose a cluster in the partis list of most likely partitions (default: index of most likely partition). See [partis cluster specification in Linearham](https://github.com/matsengrp/linearham/blob/cluster-parsing/scripts/parse_cluster.py). |
+| `--cluster-index` | Zero-based index of cluster to use in the partition specified by --partition-index (default: 0). See [partis cluster specification in Linearham](https://github.com/matsengrp/linearham/blob/cluster-parsing/scripts/parse_cluster.py). |
+| `--cluster-seed-unique-id` | A string specifying unique id of the partis seed sequence (see partis [--seed-unique-id](https://github.com/psathyrella/partis/blob/master/docs/subcommands.md#--seed-unique-id-id)). Linearham will use the cluster containing this sequence in the partition specified by --partition-index. See [partis cluster specification in Linearham](https://github.com/matsengrp/linearham/blob/cluster-parsing/scripts/parse_cluster.py). |
 | `--template-path` | The Rev template path. |
 | `--mcmc-iter` | How many RevBayes MCMC iterations should we use (defaults to 10000)? |
 | `--mcmc-thin` | What RevBayes MCMC thinning frequency should we use (defaults to 10)? |
@@ -56,14 +57,14 @@ The `linearham`-related command line arguments are described in the following ta
 | `--burnin-frac` | What fraction of MCMC burnin should we use (defaults to 0.1)? |
 | `--subsamp-frac` | What bootstrap sampling fraction should we use (defaults to 0.05)? |
 | `--num-cores` | The number of cores to use for ancestral sequence reconstruction (ASR) sampling (defaults to 1). |
-| `--seed` | The random number generator (RNG) seed (defaults to 0). |
-| `--seed-seq` | The name of the seed sequence of interest for analyzing lineages. |
+| `--rng-seed` | The random number generator (RNG) seed (defaults to 0). |
+| `--lineage-unique-id` | The name of the sequence(s) of interest for analyzing lineages. |
 | `--asr-pfilters` | The ancestral sequence posterior probability thresholds (defaults to 0.1). |
 | `--partis-yaml-file` | An optional partis output YAML file. |
 | `--parameter-dir` | An optional directory of partis parameter files. |
 | `--outdir` | The output directory (defaults to `output`). |
 
-All of the above command line arguments (except `--partis-seed-cluster`, `--cluster-ind`, `--partition-ind`, `--fasta-path`, `--all-clonal-seqs`, `--locus`, `--parameter-dir`, `--template-path`, `--num-cores`, `--partis-yaml-file`, and `--outdir`) accept comma-separated values as input.
+All of the above command line arguments (except `--cluster-seed-unique-id`, `--cluster-index`, `--partition-index`, `--fasta-path`, `--all-clonal-seqs`, `--locus`, `--parameter-dir`, `--template-path`, `--num-cores`, `--partis-yaml-file`, and `--outdir`) accept comma-separated values as input.
 Note that `scons --run-partis` and `scons --run-linearham` must specify the same output directory and, if applicable, the same optional directory of partis parameter files.
 For more information on the `scons` arguments, run `scons --help`.
 
@@ -73,12 +74,12 @@ The `partis` output file can be found at `output/partis_run.yaml` and contains t
 It is important to note that this germline gene set is the gene collection used in the `linearham` inference procedure as well.
 A FASTA file containing the clonal family naive sequence and input sequences with insertions/deletions reversed and V/J framework insertions removed is located at `output/clusterX/cluster_seqs.fasta`, where `X` is any clonal family index of interest.
 
-The `linearham` output files, by default, are contained in the `output/cluster0/mcmciter10000_mcmcthin10_tuneiter5000_tunethin100_numrates4_seed0/burninfrac0.1_subsampfrac0.05` folder.
+The `linearham` output files, by default, are contained in the `output/cluster0/mcmciter10000_mcmcthin10_tuneiter5000_tunethin100_numrates4_rngseed0/burninfrac0.1_subsampfrac0.05` folder.
 Within this directory, the `linearham_run.log` file (TSV format) holds the posterior samples of the naive sequence annotation and of the phylogenetic substitution model and rate variation parameters, the `linearham_run.trees` file (Newick format) consists of the posterior tree samples with ancestral sequence annotations, and `linearham_run.ess` (TSV format) contains the approximate effective sample sizes for each field in `linearham_run.log`.
 Note that the `linearham_run.trees` Newick tree annotations are written to be compatible with the Python package [DendroPy](https://dendropy.org/).
 We also output a FASTA file (`aa_naive_seqs.fasta`) that contains each sampled amino acid naive sequence and its associated posterior probability, create a FASTA-like file (`aa_naive_seqs.dnamap`) that maps each sampled amino acid naive sequence to its corresponding set of DNA naive sequences and posterior probabilities, and generate an amino acid naive sequence posterior probability logo (`aa_naive_seqs.png`) using [WebLogo](http://weblogo.threeplusone.com/) to visualize the per-site uncertainties.
 
-If `--seed-seq` is specified, the additional output files, by default, are stored in the `output/cluster0/mcmciter10000_mcmcthin10_tuneiter5000_tunethin100_numrates4_seed0/burninfrac0.1_subsampfrac0.05/seedseqX` directory, where `X` signifies the name of the seed sequence.
+If `--lineage-unique-id` is specified, the additional output files, by default, are stored in the `output/cluster0/mcmciter10000_mcmcthin10_tuneiter5000_tunethin100_numrates4_rngseed0/burninfrac0.1_subsampfrac0.05/lineage_X` directory, where `X` signifies the unique id of the lineage sequence.
 We provide output files (`aa_lineage_seqs.fasta` and `aa_lineage_seqs.dnamap`) that are similar to the files described above (i.e. `aa_naive_seqs.fasta` and `aa_naive_seqs.dnamap`) by tabulating the posterior probabilities of sampled naive sequences and intermediate ancestral sequences on the lineage.
 Furthermore, we construct a posterior probability lineage graphic (`aa_lineage_seqs.pfilterX.png`) using [Graphviz](https://www.graphviz.org/), where `X` denotes the posterior probability cutoff for the sampled sequences.
 
