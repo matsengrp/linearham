@@ -15,7 +15,7 @@
 The `linearham` installation dependencies are specified in the `Dockerfile` and `wercker.yml` files.
 Note that these files specify build instructions for computers running Debian operating systems.
 The installation steps have been successfully tested on Ubuntu 16.04 and we expect the installation process to work on other UNIX-based platforms as well.
-A Docker image for `linearham` can be found on [Docker Hub](https://hub.docker.com/r/matsengrp/linearham).
+A Docker image for `linearham` can be found on [quay.io](https://quay.io/repository/matsengrp/linearham).
 
 ## Example usage
 
