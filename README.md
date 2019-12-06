@@ -7,7 +7,7 @@
 /__.--._.--._.'``-.__/
 '._.-'-._.-._.-''-..'
 ```
-
+[![Docker Repository on Quay](https://quay.io/repository/matsengrp/linearham/status "Docker Repository on Quay")](https://quay.io/repository/matsengrp/linearham) &nbsp;
 [![Docker Cloud Build Status](https://img.shields.io/docker/cloud/build/matsengrp/linearham.svg)](https://cloud.docker.com/u/matsengrp/repository/docker/matsengrp/linearham/general) &nbsp;
 [![wercker status](https://app.wercker.com/status/284280f33f13e936de0d544a332121af/s/master "wercker status")](https://app.wercker.com/project/byKey/284280f33f13e936de0d544a332121af)
 
