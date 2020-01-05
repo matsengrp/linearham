@@ -6,10 +6,10 @@ jobs:
     steps:
     - uses: actions/checkout@master
     - name: Build the Docker image
-      run: docker build . -t quay.io/matsengrp/linearham
+      run: docker build . -t quay.io/matsengrp/linearham:test
     - name: Run test in the Docker image
-      run: docker run quay.io/matsengrp/linearham echo "testing 123"
+      run: docker run -v $(pwd):/lhtest quay.io/matsengrp/linearham:test /lhtest/test.sh
     - name: Login to Registry
       run: docker login quay.io -u ${{ secrets.QUAY_USERNAME }} --password ${{ secrets.QUAY_PASSWORD }}
     - name: publish to Registry
-      run: docker push quay.io/matsengrp/linearham
+      run: docker push quay.io/matsengrp/linearham:test
