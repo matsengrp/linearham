@@ -210,6 +210,14 @@ nest = nestly_scons.SConsWrap(nestly.Nest(), dest_dir=options["outdir"], alias_e
 def default_label(d):
     return d.get("id")
 
+#### Record git commit and tag
+
+@nest.add_target()
+def commit_and_tag(outdir, c):
+    log = env.Command(os.path.join(outdir, "git.log"), "", "git rev-parse --verify HEAD >> $TARGET && git describe --dirty >> $TARGET")
+    env.AlwaysBuild(log)
+    return log
+
 #### Install partis and linearham (if necessary)
 
 if options["build_partis_linearham"]:
