@@ -11,11 +11,13 @@ jobs:
         auth_header="$(git config --local --get http.https://github.com/.extraheader)"
         git submodule sync --recursive
         git -c "http.extraheader=$auth_header" -c protocol.version=2 submodule update --init --force --recursive --depth=1
+    - name: Set git tag variable
+      run: echo ::set-env name=TAG::$(git describe --abbrev=0 --tags)
     - name: Build the Docker image
-      run: docker build . -t quay.io/matsengrp/linearham:test
+      run: docker build . -t quay.io/matsengrp/linearham:$TAG
     - name: Run test in the Docker image
-      run: docker run -v $(pwd):/lhtest quay.io/matsengrp/linearham:test /lhtest/test.sh
+      run: docker run -v $(pwd):/lhtest quay.io/matsengrp/linearham:$TAG /lhtest/test.sh
     - name: Login to Registry
       run: docker login quay.io -u ${{ secrets.QUAY_USERNAME }} --password ${{ secrets.QUAY_PASSWORD }}
     - name: publish to Registry
-      run: docker push quay.io/matsengrp/linearham:test
+      run: docker push quay.io/matsengrp/linearham:$TAG
