@@ -1,0 +1,4 @@
+<map id="linearham::ComputeGermlineJunctionTransition" name="linearham::ComputeGermlineJunctionTransition">
+<area shape="rect" id="node2" href="$classlinearham_1_1HMM.html#aa74087c48070ad17afdefa2053298f5c" title="Initializes the transition probability matrices between adjacent HMM regions. " alt="" coords="244,5,419,47"/>
+<area shape="rect" id="node3" href="$classlinearham_1_1HMM.html#ab858d691af8a9cc7fea4f84e8e4a0f13" title="Constructor for HMM that is called from the (Simple|Phylo)HMM constructor. " alt="" coords="467,13,625,39"/>
+</map>

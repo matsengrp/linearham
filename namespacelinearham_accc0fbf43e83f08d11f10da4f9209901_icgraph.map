@@ -1,0 +1,7 @@
+<map id="linearham::FillTransition" name="linearham::FillTransition">
+<area shape="rect" id="node2" href="$namespacelinearham.html#afbe1dc288e9458bbd30705446bc4c744" title="Computes the &quot;germline&quot;&#45;to&#45;&quot;junction&quot; transition probability matrix. " alt="" coords="213,5,404,47"/>
+<area shape="rect" id="node5" href="$namespacelinearham.html#aae399f884d59e67e2aed0aa2a8af5006" title="Computes the &quot;junction&quot;&#45;to&#45;&quot;germline&quot; transition probability matrix. " alt="" coords="215,71,403,112"/>
+<area shape="rect" id="node6" href="$namespacelinearham.html#a247725f68653d3560a790223f1309407" title="Computes the &quot;junction&quot; transition probability matrix. " alt="" coords="215,136,403,177"/>
+<area shape="rect" id="node3" href="$classlinearham_1_1HMM.html#aa74087c48070ad17afdefa2053298f5c" title="Initializes the transition probability matrices between adjacent HMM regions. " alt="" coords="452,71,627,112"/>
+<area shape="rect" id="node4" href="$classlinearham_1_1HMM.html#ab858d691af8a9cc7fea4f84e8e4a0f13" title="Constructor for HMM that is called from the (Simple|Phylo)HMM constructor. " alt="" coords="675,78,833,105"/>
+</map>

@@ -1,0 +1,5 @@
+<map id="linearham::JGermline" name="linearham::JGermline">
+<area shape="rect" id="node2" href="$classlinearham_1_1Germline.html" title="A class holding germline gene HMM information extracted from a partis YAML file. This information is ..." alt="" coords="5,5,144,32"/>
+<area shape="rect" id="node3" href="$classlinearham_1_1NTInsertion.html" title="A class holding non&#45;templated insertion (NTI) HMM information extracted from a partis YAML file..." alt="" coords="168,5,323,32"/>
+<area shape="rect" id="node4" href="$classlinearham_1_1NPadding.html" title="An abstraction used to represent the padded germline states on the left (right) of V (J) genes..." alt="" coords="347,5,490,32"/>
+</map>

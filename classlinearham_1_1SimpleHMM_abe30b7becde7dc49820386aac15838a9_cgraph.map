@@ -1,0 +1,4 @@
+<map id="linearham::SimpleHMM::FillJunctionEmission" name="linearham::SimpleHMM::FillJunctionEmission">
+<area shape="rect" id="node2" href="$classlinearham_1_1GermlineGene.html#a4bb529daa727d91f6e0c1d4a04c67fb1" title="Casts the internal Germline pointer to a DGermline pointer. " alt="" coords="212,5,381,47"/>
+<area shape="rect" id="node3" href="$classlinearham_1_1GermlineGene.html#a7de66a1e91f0a78d438d2f89be1d5443" title="Casts the internal Germline pointer to a JGermline pointer. " alt="" coords="212,71,381,112"/>
+</map>

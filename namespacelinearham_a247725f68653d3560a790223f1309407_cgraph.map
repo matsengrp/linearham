@@ -1,0 +1,7 @@
+<map id="linearham::ComputeJunctionTransition" name="linearham::ComputeJunctionTransition">
+<area shape="rect" id="node2" href="$namespacelinearham.html#accc0fbf43e83f08d11f10da4f9209901" title="Fills a block of the transition probability matrix with transition probabilities between two germline..." alt="" coords="241,107,401,134"/>
+<area shape="rect" id="node3" href="$classlinearham_1_1GermlineGene.html#a4bb529daa727d91f6e0c1d4a04c67fb1" title="Casts the internal Germline pointer to a DGermline pointer. " alt="" coords="462,5,631,47"/>
+<area shape="rect" id="node4" href="$classlinearham_1_1GermlineGene.html#a7de66a1e91f0a78d438d2f89be1d5443" title="Casts the internal Germline pointer to a JGermline pointer. " alt="" coords="462,71,631,112"/>
+<area shape="rect" id="node5" href="$namespacelinearham.html#a6e16bc80240580a9eb7190baaf384427" title="This function takes the coefficient&#45;wise product of b and every column of A. " alt="" coords="453,137,641,163"/>
+<area shape="rect" id="node6" href="$namespacelinearham.html#a37d0ddb7c5498902f53fc09dc01b6881" title="This function takes the coefficient&#45;wise product of b and every row of A. " alt="" coords="449,187,644,214"/>
+</map>

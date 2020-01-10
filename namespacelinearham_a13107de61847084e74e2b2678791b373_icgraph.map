@@ -1,0 +1,6 @@
+<map id="linearham::StoreXmsaIndex" name="linearham::StoreXmsaIndex">
+<area shape="rect" id="node2" href="$namespacelinearham.html#ac61ba41c6f9cbe2181d869bd21693c36" title="Stores the xMSA site indices in the [&quot;germline&quot;|&quot;padding&quot;] region. " alt="" coords="236,5,405,47"/>
+<area shape="rect" id="node5" href="$namespacelinearham.html#a48979fa402231d9e378e112b56cc02da" title="Stores the xMSA site indices in the &quot;junction&quot; region. " alt="" coords="237,71,404,112"/>
+<area shape="rect" id="node3" href="$classlinearham_1_1PhyloHMM.html#a5ae40749e7653ebf59c1d0f7dff1d1e3" title="Initializes the xMSA data structures. " alt="" coords="453,39,608,80"/>
+<area shape="rect" id="node4" href="$classlinearham_1_1PhyloHMM.html#ac4b9fe8413efebfd467b320375bfa4c8" title="PhyloHMM constructor. " alt="" coords="656,39,807,80"/>
+</map>

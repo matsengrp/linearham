@@ -1,0 +1,12 @@
+<map id="linearham::HMM::InitializeTransition" name="linearham::HMM::InitializeTransition">
+<area shape="rect" id="node2" href="$namespacelinearham.html#afbe1dc288e9458bbd30705446bc4c744" title="Computes the &quot;germline&quot;&#45;to&#45;&quot;junction&quot; transition probability matrix. " alt="" coords="228,14,419,55"/>
+<area shape="rect" id="node8" href="$namespacelinearham.html#aae399f884d59e67e2aed0aa2a8af5006" title="Computes the &quot;junction&quot;&#45;to&#45;&quot;germline&quot; transition probability matrix. " alt="" coords="229,79,417,121"/>
+<area shape="rect" id="node9" href="$namespacelinearham.html#a247725f68653d3560a790223f1309407" title="Computes the &quot;junction&quot; transition probability matrix. " alt="" coords="229,145,417,186"/>
+<area shape="rect" id="node10" href="$namespacelinearham.html#a688ccbcaa45a0ae50f9a0bb76f3e8312" title="Computes the &quot;padding&quot; transition probabilities for the different &quot;germline&quot; states. " alt="" coords="230,210,417,251"/>
+<area shape="rect" id="node3" href="$namespacelinearham.html#accc0fbf43e83f08d11f10da4f9209901" title="Fills a block of the transition probability matrix with transition probabilities between two germline..." alt="" coords="471,87,631,113"/>
+<area shape="rect" id="node4" href="$namespacelinearham.html#a6e16bc80240580a9eb7190baaf384427" title="This function takes the coefficient&#45;wise product of b and every column of A. " alt="" coords="687,5,875,32"/>
+<area shape="rect" id="node5" href="$classlinearham_1_1GermlineGene.html#a4bb529daa727d91f6e0c1d4a04c67fb1" title="Casts the internal Germline pointer to a DGermline pointer. " alt="" coords="697,57,866,98"/>
+<area shape="rect" id="node6" href="$classlinearham_1_1GermlineGene.html#a7de66a1e91f0a78d438d2f89be1d5443" title="Casts the internal Germline pointer to a JGermline pointer. " alt="" coords="697,174,866,215"/>
+<area shape="rect" id="node7" href="$namespacelinearham.html#a37d0ddb7c5498902f53fc09dc01b6881" title="This function takes the coefficient&#45;wise product of b and every row of A. " alt="" coords="684,123,879,149"/>
+<area shape="rect" id="node11" href="$classlinearham_1_1GermlineGene.html#ad7304c66dcfdef0332e2ef536f0620d2" title="Casts the internal Germline pointer to a VGermline pointer. " alt="" coords="467,233,636,274"/>
+</map>

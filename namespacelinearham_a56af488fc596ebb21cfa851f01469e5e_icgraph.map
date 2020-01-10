@@ -1,0 +1,18 @@
+<map id="linearham::ScaleMatrix" name="linearham::ScaleMatrix">
+<area shape="rect" id="node2" href="$namespacelinearham.html#ac79c7f5732a7431aa515e895f66c5231" title="Computes the forward probabilities in the &quot;germline&quot; region. " alt="" coords="218,5,409,47"/>
+<area shape="rect" id="node9" href="$classlinearham_1_1HMM.html#a5e4e1aae04f62fe2b21c43a3e477a197" title="Computes the forward probabilities in the V &quot;germline&quot; region. " alt="" coords="208,71,419,112"/>
+<area shape="rect" id="node10" href="$namespacelinearham.html#a2623aeec56750f16cc8ff0550fd9ab8b" title="Computes the forward probabilities in the &quot;junction&quot; region. " alt="" coords="219,136,407,177"/>
+<area shape="rect" id="node11" href="$classlinearham_1_1SimpleHMM.html#aed1c0bd9ed4ad782a32b467211578d35" title="Fills the &quot;germline&quot; emission probability row vector under the star tree assumption. " alt="" coords="234,267,393,308"/>
+<area shape="rect" id="node14" href="$classlinearham_1_1PhyloHMM.html#a12a3ff01c56cc1b497afbb5629f7be41" title="Fills the [&quot;germline&quot;|&quot;padding&quot;] emission probability row vector under the phylogenetic tree assumpti..." alt="" coords="213,201,413,243"/>
+<area shape="rect" id="node17" href="$classlinearham_1_1SimpleHMM.html#a4b6dc34db93da5dd3a9b63f890713d49" title="Fills the &quot;padding&quot; emission probability row vector associated with the adjacent &quot;germline&quot; region un..." alt="" coords="234,332,393,373"/>
+<area shape="rect" id="node3" href="$classlinearham_1_1HMM.html#a54934813b16e03bad12d6d3e50df20d8" title="Runs the forward algorithm and caches the forward probabilities needed for log&#45;likelihood computation..." alt="" coords="467,73,664,115"/>
+<area shape="rect" id="node4" href="$classlinearham_1_1HMM.html#a3f5bf0eb4227fb46e99c06c09e9a6d4b" title="Computes the HMM log&#45;likelihood. " alt="" coords="712,81,917,107"/>
+<area shape="rect" id="node8" href="$classlinearham_1_1HMM.html#abb7df37e4efcb07c1ec2d5beeb402a16" title="Samples a HMM hidden state path (i.e. a naive sequence). " alt="" coords="713,132,917,173"/>
+<area shape="rect" id="node5" href="$classlinearham_1_1HMM.html#ae74c5566e9cf943f4bdf5111324a36ed" title="linearham::HMM::jgerm\l_right_insertion_samp" alt="" coords="965,73,1124,115"/>
+<area shape="rect" id="node6" href="$classlinearham_1_1PhyloHMM.html#af964762234539af6fee0ce966ee0a6b8" title="Runs the linearham pipeline. " alt="" coords="969,139,1120,180"/>
+<area shape="rect" id="node7" href="$classlinearham_1_1PhyloHMM.html#a7cdab1771fbc82831828c18acb992280" title="linearham::PhyloHMM\l::naive_sequence" alt="" coords="1172,168,1323,209"/>
+<area shape="rect" id="node12" href="$classlinearham_1_1SimpleHMM.html#a671049293521484eed66a18ad133088c" title="Initializes the emission probability matrices under the star tree assumption. " alt="" coords="486,299,645,340"/>
+<area shape="rect" id="node13" href="$classlinearham_1_1SimpleHMM.html#a3e4f9e35224fe432cd439798b96e0cf4" title="SimpleHMM constructor. " alt="" coords="735,299,894,340"/>
+<area shape="rect" id="node15" href="$classlinearham_1_1PhyloHMM.html#a4fb92e690ce89a921fba30394bbc066c" title="Initializes the emission probability matrices under the phylogenetic tree assumption. " alt="" coords="490,200,641,241"/>
+<area shape="rect" id="node16" href="$classlinearham_1_1PhyloHMM.html#a469dabd10d306985aa54af18577cb91f" title="Initializes the phylogeny&#45;related emission probability data structures. " alt="" coords="732,197,897,239"/>
+</map>

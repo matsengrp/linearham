@@ -1,0 +1,9 @@
+<map id="linearham::SimpleHMM::InitializeEmission" name="linearham::SimpleHMM::InitializeEmission">
+<area shape="rect" id="node2" href="$classlinearham_1_1SimpleHMM.html#aed1c0bd9ed4ad782a32b467211578d35" title="Fills the &quot;germline&quot; emission probability row vector under the star tree assumption. " alt="" coords="212,199,371,240"/>
+<area shape="rect" id="node4" href="$classlinearham_1_1SimpleHMM.html#abe30b7becde7dc49820386aac15838a9" title="Fills the &quot;junction&quot; emission probability matrix under the star tree assumption. " alt="" coords="212,68,371,109"/>
+<area shape="rect" id="node7" href="$classlinearham_1_1SimpleHMM.html#a4b6dc34db93da5dd3a9b63f890713d49" title="Fills the &quot;padding&quot; emission probability row vector associated with the adjacent &quot;germline&quot; region un..." alt="" coords="212,133,371,175"/>
+<area shape="rect" id="node3" href="$namespacelinearham.html#a56af488fc596ebb21cfa851f01469e5e" title="Scales a matrix by SCALE_FACTOR as many times as needed to bring all non&#45;zero matrix entries above SC..." alt="" coords="426,205,581,231"/>
+<area shape="rect" id="node5" href="$classlinearham_1_1GermlineGene.html#a4bb529daa727d91f6e0c1d4a04c67fb1" title="Casts the internal Germline pointer to a DGermline pointer. " alt="" coords="419,5,588,47"/>
+<area shape="rect" id="node6" href="$classlinearham_1_1GermlineGene.html#a7de66a1e91f0a78d438d2f89be1d5443" title="Casts the internal Germline pointer to a JGermline pointer. " alt="" coords="419,71,588,112"/>
+<area shape="rect" id="node8" href="$classlinearham_1_1GermlineGene.html#ad7304c66dcfdef0332e2ef536f0620d2" title="Casts the internal Germline pointer to a VGermline pointer. " alt="" coords="419,136,588,177"/>
+</map>

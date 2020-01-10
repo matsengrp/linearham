@@ -1,0 +1,4 @@
+<map id="linearham::HMM" name="linearham::HMM">
+<area shape="rect" id="node2" href="$classlinearham_1_1PhyloHMM.html" title="This Phylo&#45;HMM class computes emission probabilities using a phylogenetic tree. " alt="" coords="5,80,156,107"/>
+<area shape="rect" id="node3" href="$classlinearham_1_1SimpleHMM.html" title="A star tree HMM implementation (similar to that found in partis). This derived class is used to compu..." alt="" coords="180,80,339,107"/>
+</map>

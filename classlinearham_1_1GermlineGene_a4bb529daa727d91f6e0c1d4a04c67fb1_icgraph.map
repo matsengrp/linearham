@@ -1,0 +1,11 @@
+<map id="linearham::GermlineGene::DGermlinePtrCast" name="linearham::GermlineGene::DGermlinePtrCast">
+<area shape="rect" id="node2" href="$classlinearham_1_1SimpleHMM.html#abe30b7becde7dc49820386aac15838a9" title="Fills the &quot;junction&quot; emission probability matrix under the star tree assumption. " alt="" coords="223,24,382,65"/>
+<area shape="rect" id="node5" href="$namespacelinearham.html#accc0fbf43e83f08d11f10da4f9209901" title="Fills a block of the transition probability matrix with transition probabilities between two germline..." alt="" coords="223,126,383,153"/>
+<area shape="rect" id="node3" href="$classlinearham_1_1SimpleHMM.html#a671049293521484eed66a18ad133088c" title="Initializes the emission probability matrices under the star tree assumption. " alt="" coords="447,5,605,47"/>
+<area shape="rect" id="node4" href="$classlinearham_1_1SimpleHMM.html#a3e4f9e35224fe432cd439798b96e0cf4" title="SimpleHMM constructor. " alt="" coords="677,5,836,47"/>
+<area shape="rect" id="node6" href="$namespacelinearham.html#afbe1dc288e9458bbd30705446bc4c744" title="Computes the &quot;germline&quot;&#45;to&#45;&quot;junction&quot; transition probability matrix. " alt="" coords="431,71,621,112"/>
+<area shape="rect" id="node9" href="$namespacelinearham.html#aae399f884d59e67e2aed0aa2a8af5006" title="Computes the &quot;junction&quot;&#45;to&#45;&quot;germline&quot; transition probability matrix. " alt="" coords="432,136,620,177"/>
+<area shape="rect" id="node10" href="$namespacelinearham.html#a247725f68653d3560a790223f1309407" title="Computes the &quot;junction&quot; transition probability matrix. " alt="" coords="432,201,620,243"/>
+<area shape="rect" id="node7" href="$classlinearham_1_1HMM.html#aa74087c48070ad17afdefa2053298f5c" title="Initializes the transition probability matrices between adjacent HMM regions. " alt="" coords="669,136,844,177"/>
+<area shape="rect" id="node8" href="$classlinearham_1_1HMM.html#ab858d691af8a9cc7fea4f84e8e4a0f13" title="Constructor for HMM that is called from the (Simple|Phylo)HMM constructor. " alt="" coords="892,143,1051,170"/>
+</map>
