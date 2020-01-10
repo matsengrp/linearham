@@ -5,16 +5,16 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
+    - name: Checkout tags
+      run: git fetch --unshallow origin +refs/tags/*:refs/tags/*
+    - name: Set git tag variable
+      run: echo ::set-env name=TAG::$(git describe --tags)
     - name: Checkout submodules
       shell: bash
       run: |
         auth_header="$(git config --local --get http.https://github.com/.extraheader)"
         git submodule sync --recursive
         git -c "http.extraheader=$auth_header" -c protocol.version=2 submodule update --init --force --recursive --depth=1
-    - name: Checkout tags
-      run: git fetch --unshallow origin +refs/tags/*:refs/tags/*
-    - name: Set git tag variable
-      run: echo ::set-env name=TAG::$(git describe --tags)
     - name: Build the Docker image
       run: docker build . -t quay.io/matsengrp/linearham:$TAG
     - name: Run test in the Docker image
