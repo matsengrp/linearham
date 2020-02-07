@@ -39,6 +39,6 @@ WORKDIR /linearham
 RUN pip install -r requirements.txt
 RUN Rscript --slave --vanilla -e 'install.packages("lib/phylomd", repos = NULL, type = "source")'
 RUN cd lib/revbayes/projects/cmake && ./build.sh
-RUN scons --build-partis-linearham
+RUN scons --build-partis-linearham && ./clean.sh
 
-CMD ./test.sh
+CMD ./test.sh && ./clean.sh
