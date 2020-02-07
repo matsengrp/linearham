@@ -1,2 +1,2 @@
 #!/bin/bash
-rm -r output && rm .sconsign.dblite
+rm -rf output && rm -f .sconsign.dblite
