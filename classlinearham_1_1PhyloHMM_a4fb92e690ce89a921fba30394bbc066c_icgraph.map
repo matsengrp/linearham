@@ -1,5 +1,5 @@
 <map id="linearham::PhyloHMM::InitializeEmission" name="linearham::PhyloHMM::InitializeEmission">
-<area shape="rect" id="node2" href="$classlinearham_1_1PhyloHMM.html#a469dabd10d306985aa54af18577cb91f" title="Initializes the phylogeny&#45;related emission probability data structures. " alt="" coords="204,35,369,76"/>
-<area shape="rect" id="node3" href="$classlinearham_1_1PhyloHMM.html#af964762234539af6fee0ce966ee0a6b8" title="Runs the linearham pipeline. " alt="" coords="417,5,568,47"/>
-<area shape="rect" id="node4" href="$classlinearham_1_1PhyloHMM.html#a7cdab1771fbc82831828c18acb992280" title="linearham::PhyloHMM\l::naive_sequence" alt="" coords="616,35,767,76"/>
+<area shape="rect" id="node1" title="Initializes the emission probability matrices under the phylogenetic tree assumption." alt="" coords="499,5,681,47"/>
+<area shape="rect" id="node2" href="$classlinearham_1_1PhyloHMM.html#a469dabd10d306985aa54af18577cb91f" title="Initializes the phylogeny&#45;related emission probability data structures." alt="" coords="228,5,451,47"/>
+<area shape="rect" id="node3" href="$classlinearham_1_1PhyloHMM.html#af964762234539af6fee0ce966ee0a6b8" title="Runs the linearham pipeline." alt="" coords="5,5,180,47"/>
 </map>

@@ -1,7 +1,8 @@
 <map id="linearham::PhyloHMM::InitializeXmsaStructs" name="linearham::PhyloHMM::InitializeXmsaStructs">
-<area shape="rect" id="node2" href="$classlinearham_1_1PhyloHMM.html#afb8772aa451ca534718900c9dd9e903d" title="Builds the xMSA and the vector of xMSA sequence strings. " alt="" coords="217,5,368,47"/>
-<area shape="rect" id="node4" href="$namespacelinearham.html#ac61ba41c6f9cbe2181d869bd21693c36" title="Stores the xMSA site indices in the [&quot;germline&quot;|&quot;padding&quot;] region. " alt="" coords="208,71,377,112"/>
-<area shape="rect" id="node6" href="$namespacelinearham.html#a48979fa402231d9e378e112b56cc02da" title="Stores the xMSA site indices in the &quot;junction&quot; region. " alt="" coords="209,136,376,177"/>
-<area shape="rect" id="node3" href="$namespacelinearham.html#a17b0b2ee5c53aaa4f311208ee3f64785" title="Converts an integer sequence to a string sequence according to the alphabet. " alt="" coords="425,13,617,39"/>
-<area shape="rect" id="node5" href="$namespacelinearham.html#a13107de61847084e74e2b2678791b373" title="Stores a xMSA site index. " alt="" coords="430,110,613,137"/>
+<area shape="rect" id="node1" title="Initializes the xMSA data structures." alt="" coords="5,71,212,112"/>
+<area shape="rect" id="node2" href="$classlinearham_1_1PhyloHMM.html#afb8772aa451ca534718900c9dd9e903d" title="Builds the xMSA and the vector of xMSA sequence strings." alt="" coords="280,5,455,47"/>
+<area shape="rect" id="node4" href="$namespacelinearham.html#ac61ba41c6f9cbe2181d869bd21693c36" title="Stores the xMSA site indices in the [&quot;germline&quot;|&quot;padding&quot;] region." alt="" coords="260,71,475,112"/>
+<area shape="rect" id="node6" href="$namespacelinearham.html#a48979fa402231d9e378e112b56cc02da" title="Stores the xMSA site indices in the &quot;junction&quot; region." alt="" coords="260,136,475,177"/>
+<area shape="rect" id="node3" href="$namespacelinearham.html#a17b0b2ee5c53aaa4f311208ee3f64785" title="Converts an integer sequence to a string sequence according to the alphabet." alt="" coords="523,13,761,39"/>
+<area shape="rect" id="node5" href="$namespacelinearham.html#a13107de61847084e74e2b2678791b373" title="Stores a xMSA site index." alt="" coords="531,110,753,137"/>
 </map>

@@ -1,3 +1,4 @@
 <map id="linearham::PhyloHMM::FillGermlinePaddingEmission" name="linearham::PhyloHMM::FillGermlinePaddingEmission">
-<area shape="rect" id="node2" href="$namespacelinearham.html#a56af488fc596ebb21cfa851f01469e5e" title="Scales a matrix by SCALE_FACTOR as many times as needed to bring all non&#45;zero matrix entries above SC..." alt="" coords="253,13,408,39"/>
+<area shape="rect" id="node1" title="Fills the [&quot;germline&quot;|&quot;padding&quot;] emission probability row vector under the phylogenetic tree assumpti..." alt="" coords="5,5,260,47"/>
+<area shape="rect" id="node2" href="$namespacelinearham.html#a56af488fc596ebb21cfa851f01469e5e" title="Scales a matrix by SCALE_FACTOR as many times as needed to bring all non&#45;zero matrix entries above SC..." alt="" coords="308,13,507,39"/>
 </map>

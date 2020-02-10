@@ -1,8 +1,9 @@
 <map id="linearham::GetAlphabetIndex" name="linearham::GetAlphabetIndex">
-<area shape="rect" id="node2" href="$namespacelinearham.html#acb475a6b1def12b74cc30de368b6f921" title="Converts a string sequence to an integer sequence according to the alphabet. " alt="" coords="244,5,436,32"/>
-<area shape="rect" id="node5" href="$classlinearham_1_1Germline.html#a1cfc99f0f2f7f391b3d7f975f7107a7e" title="Constructor for Germline starting from a partis YAML file. " alt="" coords="271,57,409,98"/>
-<area shape="rect" id="node6" href="$classlinearham_1_1NPadding.html#a12ce8452d08079edf361031190f0dd2f" title="Constructor for NPadding starting from a partis YAML file. " alt="" coords="269,122,411,163"/>
-<area shape="rect" id="node7" href="$classlinearham_1_1NTInsertion.html#aa3175eee956825a70be73318b50254f4" title="Constructor for NTInsertion starting from a partis YAML file. " alt="" coords="263,187,417,229"/>
-<area shape="rect" id="node3" href="$classlinearham_1_1HMM.html#a265dacc524f095e5fd345f7c2ef4c490" title="Initializes the clonal family sequence alignment from the partis output YAML file. " alt="" coords="484,5,683,32"/>
-<area shape="rect" id="node4" href="$classlinearham_1_1HMM.html#ab858d691af8a9cc7fea4f84e8e4a0f13" title="Constructor for HMM that is called from the (Simple|Phylo)HMM constructor. " alt="" coords="731,5,889,32"/>
+<area shape="rect" id="node1" title="Find the alphabet index of the input nucleotide base." alt="" coords="817,97,1056,124"/>
+<area shape="rect" id="node2" href="$namespacelinearham.html#acb475a6b1def12b74cc30de368b6f921" title="Converts a string sequence to an integer sequence according to the alphabet." alt="" coords="531,5,769,32"/>
+<area shape="rect" id="node5" href="$classlinearham_1_1Germline.html#a1cfc99f0f2f7f391b3d7f975f7107a7e" title="Constructor for Germline starting from a partis YAML file." alt="" coords="563,57,737,98"/>
+<area shape="rect" id="node6" href="$classlinearham_1_1NPadding.html#a12ce8452d08079edf361031190f0dd2f" title="Constructor for NPadding starting from a partis YAML file." alt="" coords="563,122,737,163"/>
+<area shape="rect" id="node7" href="$classlinearham_1_1NTInsertion.html#aa3175eee956825a70be73318b50254f4" title="Constructor for NTInsertion starting from a partis YAML file." alt="" coords="551,187,749,229"/>
+<area shape="rect" id="node3" href="$classlinearham_1_1HMM.html#a265dacc524f095e5fd345f7c2ef4c490" title="Initializes the clonal family sequence alignment from the partis output YAML file." alt="" coords="228,5,483,32"/>
+<area shape="rect" id="node4" href="$classlinearham_1_1HMM.html#ab858d691af8a9cc7fea4f84e8e4a0f13" title="Constructor for HMM that is called from the (Simple|Phylo)HMM constructor." alt="" coords="5,5,180,32"/>
 </map>

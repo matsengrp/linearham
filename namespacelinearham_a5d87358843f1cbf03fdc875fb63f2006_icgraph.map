@@ -1,5 +1,6 @@
 <map id="linearham::FindGermlineStartEnd" name="linearham::FindGermlineStartEnd">
-<area shape="rect" id="node2" href="$classlinearham_1_1Germline.html#a1cfc99f0f2f7f391b3d7f975f7107a7e" title="Constructor for Germline starting from a partis YAML file. " alt="" coords="276,5,415,47"/>
-<area shape="rect" id="node3" href="$classlinearham_1_1NPadding.html#a12ce8452d08079edf361031190f0dd2f" title="Constructor for NPadding starting from a partis YAML file. " alt="" coords="274,71,417,112"/>
-<area shape="rect" id="node4" href="$classlinearham_1_1NTInsertion.html#aa3175eee956825a70be73318b50254f4" title="Constructor for NTInsertion starting from a partis YAML file. " alt="" coords="268,136,423,177"/>
+<area shape="rect" id="node1" title="Find the indices corresponding to the start and end of the germline gene." alt="" coords="252,78,523,105"/>
+<area shape="rect" id="node2" href="$classlinearham_1_1Germline.html#a1cfc99f0f2f7f391b3d7f975f7107a7e" title="Constructor for Germline starting from a partis YAML file." alt="" coords="17,5,192,47"/>
+<area shape="rect" id="node3" href="$classlinearham_1_1NPadding.html#a12ce8452d08079edf361031190f0dd2f" title="Constructor for NPadding starting from a partis YAML file." alt="" coords="17,71,192,112"/>
+<area shape="rect" id="node4" href="$classlinearham_1_1NTInsertion.html#aa3175eee956825a70be73318b50254f4" title="Constructor for NTInsertion starting from a partis YAML file." alt="" coords="5,136,204,177"/>
 </map>

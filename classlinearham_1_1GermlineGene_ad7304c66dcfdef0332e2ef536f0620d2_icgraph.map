@@ -1,8 +1,9 @@
 <map id="linearham::GermlineGene::VGermlinePtrCast" name="linearham::GermlineGene::VGermlinePtrCast">
-<area shape="rect" id="node2" href="$namespacelinearham.html#a688ccbcaa45a0ae50f9a0bb76f3e8312" title="Computes the &quot;padding&quot; transition probabilities for the different &quot;germline&quot; states. " alt="" coords="223,5,409,47"/>
-<area shape="rect" id="node5" href="$classlinearham_1_1SimpleHMM.html#a4b6dc34db93da5dd3a9b63f890713d49" title="Fills the &quot;padding&quot; emission probability row vector associated with the adjacent &quot;germline&quot; region un..." alt="" coords="237,71,395,112"/>
-<area shape="rect" id="node3" href="$classlinearham_1_1HMM.html#aa74087c48070ad17afdefa2053298f5c" title="Initializes the transition probability matrices between adjacent HMM regions. " alt="" coords="457,5,632,47"/>
-<area shape="rect" id="node4" href="$classlinearham_1_1HMM.html#ab858d691af8a9cc7fea4f84e8e4a0f13" title="Constructor for HMM that is called from the (Simple|Phylo)HMM constructor. " alt="" coords="680,13,839,39"/>
-<area shape="rect" id="node6" href="$classlinearham_1_1SimpleHMM.html#a671049293521484eed66a18ad133088c" title="Initializes the emission probability matrices under the star tree assumption. " alt="" coords="465,71,624,112"/>
-<area shape="rect" id="node7" href="$classlinearham_1_1SimpleHMM.html#a3e4f9e35224fe432cd439798b96e0cf4" title="SimpleHMM constructor. " alt="" coords="680,71,839,112"/>
+<area shape="rect" id="node1" title="Casts the internal Germline pointer to a VGermline pointer." alt="" coords="785,39,992,80"/>
+<area shape="rect" id="node2" href="$namespacelinearham.html#a688ccbcaa45a0ae50f9a0bb76f3e8312" title="Computes the &quot;padding&quot; transition probabilities for the different &quot;germline&quot; states." alt="" coords="515,5,737,47"/>
+<area shape="rect" id="node5" href="$classlinearham_1_1SimpleHMM.html#a4b6dc34db93da5dd3a9b63f890713d49" title="Fills the &quot;padding&quot; emission probability row vector associated with the adjacent &quot;germline&quot; region un..." alt="" coords="531,71,721,112"/>
+<area shape="rect" id="node3" href="$classlinearham_1_1HMM.html#aa74087c48070ad17afdefa2053298f5c" title="Initializes the transition probability matrices between adjacent HMM regions." alt="" coords="236,5,467,47"/>
+<area shape="rect" id="node4" href="$classlinearham_1_1HMM.html#ab858d691af8a9cc7fea4f84e8e4a0f13" title="Constructor for HMM that is called from the (Simple|Phylo)HMM constructor." alt="" coords="9,13,184,39"/>
+<area shape="rect" id="node6" href="$classlinearham_1_1SimpleHMM.html#a671049293521484eed66a18ad133088c" title="Initializes the emission probability matrices under the star tree assumption." alt="" coords="260,71,443,112"/>
+<area shape="rect" id="node7" href="$classlinearham_1_1SimpleHMM.html#a3e4f9e35224fe432cd439798b96e0cf4" title="SimpleHMM constructor." alt="" coords="5,71,188,112"/>
 </map>

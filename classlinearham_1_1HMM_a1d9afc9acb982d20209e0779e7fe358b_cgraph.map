@@ -1,6 +1,7 @@
 <map id="linearham::HMM::InitializeStateSpace" name="linearham::HMM::InitializeStateSpace">
-<area shape="rect" id="node2" href="$namespacelinearham.html#a7c4642c824149d1ed99aaad48e6522a6" title="Caches the &quot;germline&quot; state information for a given germline gene. " alt="" coords="245,5,421,47"/>
-<area shape="rect" id="node3" href="$classlinearham_1_1HMM.html#a94297c3a2c7e58687c5afe10071e5742" title="linearham::HMM::relpos" alt="" coords="485,71,647,98"/>
-<area shape="rect" id="node4" href="$namespacelinearham.html#ada151614dee7feff28744ab73186bd95" title="Caches the &quot;junction&quot; state information for a given germline gene. " alt="" coords="246,123,419,164"/>
-<area shape="rect" id="node5" href="$namespacelinearham.html#a1d78b0998e3bee7036fc8ff20f2a836e" title="Caches the &quot;padding&quot; state information for a given germline gene. " alt="" coords="228,189,437,215"/>
+<area shape="rect" id="node1" title="Initializes the HMM state space for this clonal family." alt="" coords="5,100,236,141"/>
+<area shape="rect" id="node2" href="$namespacelinearham.html#a7c4642c824149d1ed99aaad48e6522a6" title="Caches the &quot;germline&quot; state information for a given germline gene." alt="" coords="304,5,519,47"/>
+<area shape="rect" id="node3" href="$namespacelinearham.html#ada151614dee7feff28744ab73186bd95" title="Caches the &quot;junction&quot; state information for a given germline gene." alt="" coords="304,71,519,112"/>
+<area shape="rect" id="node4" href="$namespacelinearham.html#a1d78b0998e3bee7036fc8ff20f2a836e" title="Caches the &quot;padding&quot; state information for a given germline gene." alt="" coords="284,137,539,163"/>
+<area shape="rect" id="node5" href="$classlinearham_1_1HMM.html#a94297c3a2c7e58687c5afe10071e5742" title=" " alt="" coords="312,187,511,214"/>
 </map>

@@ -1,6 +1,6 @@
 <map id="linearham::PhyloHMM::er" name="linearham::PhyloHMM::er">
-<area shape="rect" id="node2" href="$classlinearham_1_1PhyloHMM.html#a65342862c673cb286ce6dd9b5f81bc9a" title="Initializes the phylogeny&#45;related parameters. " alt="" coords="423,5,601,47"/>
-<area shape="rect" id="node3" href="$classlinearham_1_1PhyloHMM.html#a7cdab1771fbc82831828c18acb992280" title="linearham::PhyloHMM\l::naive_sequence" alt="" coords="649,64,800,105"/>
-<area shape="rect" id="node4" href="$classlinearham_1_1PhyloHMM.html#ab1a39fa82ba4a920dbda240f4af962ce" title="Writes a tree sample to the output file stream. " alt="" coords="224,123,375,164"/>
-<area shape="rect" id="node5" href="$classlinearham_1_1PhyloHMM.html#af964762234539af6fee0ce966ee0a6b8" title="Runs the linearham pipeline. " alt="" coords="437,123,587,164"/>
+<area shape="rect" id="node1" title=" " alt="" coords="515,46,721,73"/>
+<area shape="rect" id="node2" href="$classlinearham_1_1PhyloHMM.html#a65342862c673cb286ce6dd9b5f81bc9a" title="Initializes the phylogeny&#45;related parameters." alt="" coords="228,5,467,47"/>
+<area shape="rect" id="node3" href="$classlinearham_1_1PhyloHMM.html#ab1a39fa82ba4a920dbda240f4af962ce" title="Writes a tree sample to the output file stream." alt="" coords="260,71,435,112"/>
+<area shape="rect" id="node4" href="$classlinearham_1_1PhyloHMM.html#af964762234539af6fee0ce966ee0a6b8" title="Runs the linearham pipeline." alt="" coords="5,71,180,112"/>
 </map>

@@ -1,3 +1,4 @@
 <map id="linearham::SimpleHMM::FillGermlineEmission" name="linearham::SimpleHMM::FillGermlineEmission">
-<area shape="rect" id="node2" href="$namespacelinearham.html#a56af488fc596ebb21cfa851f01469e5e" title="Scales a matrix by SCALE_FACTOR as many times as needed to bring all non&#45;zero matrix entries above SC..." alt="" coords="212,13,367,39"/>
+<area shape="rect" id="node1" title="Fills the &quot;germline&quot; emission probability row vector under the star tree assumption." alt="" coords="5,5,204,47"/>
+<area shape="rect" id="node2" href="$namespacelinearham.html#a56af488fc596ebb21cfa851f01469e5e" title="Scales a matrix by SCALE_FACTOR as many times as needed to bring all non&#45;zero matrix entries above SC..." alt="" coords="252,13,451,39"/>
 </map>

@@ -1,3 +1,4 @@
 <map id="linearham::HMM::InitializeMsa" name="linearham::HMM::InitializeMsa">
-<area shape="rect" id="node2" href="$classlinearham_1_1HMM.html#ab858d691af8a9cc7fea4f84e8e4a0f13" title="Constructor for HMM that is called from the (Simple|Phylo)HMM constructor. " alt="" coords="252,5,411,32"/>
+<area shape="rect" id="node1" title="Initializes the clonal family sequence alignment from the partis output YAML file." alt="" coords="228,5,483,32"/>
+<area shape="rect" id="node2" href="$classlinearham_1_1HMM.html#ab858d691af8a9cc7fea4f84e8e4a0f13" title="Constructor for HMM that is called from the (Simple|Phylo)HMM constructor." alt="" coords="5,5,180,32"/>
 </map>

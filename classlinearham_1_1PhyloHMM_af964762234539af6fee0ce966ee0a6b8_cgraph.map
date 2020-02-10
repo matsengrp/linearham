@@ -1,24 +1,25 @@
 <map id="linearham::PhyloHMM::RunPipeline" name="linearham::PhyloHMM::RunPipeline">
-<area shape="rect" id="node2" href="$classlinearham_1_1PhyloHMM.html#ab020cf74cb0154752cd4625719e2c428" title="Destroys the dynamically allocated tree structure. " alt="" coords="231,11,382,52"/>
-<area shape="rect" id="node3" href="$classlinearham_1_1PhyloHMM.html#a469dabd10d306985aa54af18577cb91f" title="Initializes the phylogeny&#45;related emission probability data structures. " alt="" coords="224,76,389,117"/>
-<area shape="rect" id="node9" href="$classlinearham_1_1HMM.html#a3f5bf0eb4227fb46e99c06c09e9a6d4b" title="Computes the HMM log&#45;likelihood. " alt="" coords="204,147,409,174"/>
-<area shape="rect" id="node14" href="$classlinearham_1_1HMM.html#abb7df37e4efcb07c1ec2d5beeb402a16" title="Samples a HMM hidden state path (i.e. a naive sequence). " alt="" coords="205,201,409,243"/>
-<area shape="rect" id="node19" href="$classlinearham_1_1PhyloHMM.html#a5aa3974f14bfe6face4b3d595d23e561" title="Writes the headers to the output file stream. " alt="" coords="231,267,382,308"/>
-<area shape="rect" id="node20" href="$classlinearham_1_1PhyloHMM.html#ab1a39fa82ba4a920dbda240f4af962ce" title="Writes a tree sample to the output file stream. " alt="" coords="231,481,382,523"/>
-<area shape="rect" id="node4" href="$classlinearham_1_1PhyloHMM.html#a8a1a5bbca2b0d5763f648e4020d39c50" title="Fills the xMSA emission probability vector with naive&#45;conditional phylogenetic likelihoods. " alt="" coords="493,5,644,47"/>
-<area shape="rect" id="node5" href="$classlinearham_1_1PhyloHMM.html#a4fb92e690ce89a921fba30394bbc066c" title="Initializes the emission probability matrices under the phylogenetic tree assumption. " alt="" coords="493,71,644,112"/>
-<area shape="rect" id="node6" href="$classlinearham_1_1PhyloHMM.html#a12a3ff01c56cc1b497afbb5629f7be41" title="Fills the [&quot;germline&quot;|&quot;padding&quot;] emission probability row vector under the phylogenetic tree assumpti..." alt="" coords="733,5,933,47"/>
-<area shape="rect" id="node8" href="$classlinearham_1_1PhyloHMM.html#a5ba461b5f607ee72bfb3120d212533f8" title="Fills the &quot;junction&quot; emission probability matrix under the phylogenetic tree assumption. " alt="" coords="758,71,909,112"/>
-<area shape="rect" id="node7" href="$namespacelinearham.html#a56af488fc596ebb21cfa851f01469e5e" title="Scales a matrix by SCALE_FACTOR as many times as needed to bring all non&#45;zero matrix entries above SC..." alt="" coords="987,177,1141,203"/>
-<area shape="rect" id="node10" href="$classlinearham_1_1HMM.html#a54934813b16e03bad12d6d3e50df20d8" title="Runs the forward algorithm and caches the forward probabilities needed for log&#45;likelihood computation..." alt="" coords="470,136,667,177"/>
-<area shape="rect" id="node11" href="$namespacelinearham.html#ac79c7f5732a7431aa515e895f66c5231" title="Computes the forward probabilities in the &quot;germline&quot; region. " alt="" coords="738,136,929,177"/>
-<area shape="rect" id="node12" href="$classlinearham_1_1HMM.html#a5e4e1aae04f62fe2b21c43a3e477a197" title="Computes the forward probabilities in the V &quot;germline&quot; region. " alt="" coords="728,201,939,243"/>
-<area shape="rect" id="node13" href="$namespacelinearham.html#a2623aeec56750f16cc8ff0550fd9ab8b" title="Computes the forward probabilities in the &quot;junction&quot; region. " alt="" coords="739,267,927,308"/>
-<area shape="rect" id="node15" href="$namespacelinearham.html#a9b866998541b060ff96f66215649766e" title="Create the regex used to extract V/J framework insertions. " alt="" coords="457,201,680,243"/>
-<area shape="rect" id="node16" href="$namespacelinearham.html#a22f995a066c28e0c1af1fd172fdf41fc" title="Samples a &quot;germline&quot; state. " alt="" coords="477,267,660,308"/>
-<area shape="rect" id="node17" href="$classlinearham_1_1HMM.html#a1608f1a6ccc47f8fed77df294b763829" title="Samples a J &quot;germline&quot; state. " alt="" coords="468,332,669,373"/>
-<area shape="rect" id="node18" href="$namespacelinearham.html#a9d0a3b63649c949e8251cf017b22f6bb" title="Samples a &quot;junction&quot; state. " alt="" coords="479,397,658,439"/>
-<area shape="rect" id="node21" href="$classlinearham_1_1PhyloHMM.html#a86fd926972d85c45a75c930257155151" title="linearham::PhyloHMM::er" alt="" coords="483,463,654,490"/>
-<area shape="rect" id="node22" href="$classlinearham_1_1PhyloHMM.html#a33f3057e5681c357dcc5c5f08dda8959" title="linearham::PhyloHMM::pi" alt="" coords="484,514,653,541"/>
-<area shape="rect" id="node23" href="$classlinearham_1_1PhyloHMM.html#a5ef2a1e4638a7402ee6e5bf27ae0809b" title="linearham::PhyloHMM::sr" alt="" coords="483,565,654,591"/>
+<area shape="rect" id="node1" title="Runs the linearham pipeline." alt="" coords="5,172,180,213"/>
+<area shape="rect" id="node2" href="$classlinearham_1_1PhyloHMM.html#ab020cf74cb0154752cd4625719e2c428" title="Destroys the dynamically allocated tree structure." alt="" coords="268,11,443,52"/>
+<area shape="rect" id="node3" href="$classlinearham_1_1PhyloHMM.html#a469dabd10d306985aa54af18577cb91f" title="Initializes the phylogeny&#45;related emission probability data structures." alt="" coords="244,76,467,117"/>
+<area shape="rect" id="node9" href="$classlinearham_1_1HMM.html#a3f5bf0eb4227fb46e99c06c09e9a6d4b" title="Computes the HMM log&#45;likelihood." alt="" coords="228,147,483,174"/>
+<area shape="rect" id="node14" href="$classlinearham_1_1HMM.html#abb7df37e4efcb07c1ec2d5beeb402a16" title="Samples a HMM hidden state path (i.e. a naive sequence)." alt="" coords="236,201,475,243"/>
+<area shape="rect" id="node19" href="$classlinearham_1_1PhyloHMM.html#a5aa3974f14bfe6face4b3d595d23e561" title="Writes the headers to the output file stream." alt="" coords="264,267,447,308"/>
+<area shape="rect" id="node20" href="$classlinearham_1_1PhyloHMM.html#ab1a39fa82ba4a920dbda240f4af962ce" title="Writes a tree sample to the output file stream." alt="" coords="268,481,443,523"/>
+<area shape="rect" id="node4" href="$classlinearham_1_1PhyloHMM.html#a8a1a5bbca2b0d5763f648e4020d39c50" title="Fills the xMSA emission probability vector with naive&#45;conditional phylogenetic likelihoods." alt="" coords="583,5,757,47"/>
+<area shape="rect" id="node5" href="$classlinearham_1_1PhyloHMM.html#a4fb92e690ce89a921fba30394bbc066c" title="Initializes the emission probability matrices under the phylogenetic tree assumption." alt="" coords="579,71,761,112"/>
+<area shape="rect" id="node6" href="$classlinearham_1_1PhyloHMM.html#a12a3ff01c56cc1b497afbb5629f7be41" title="Fills the [&quot;germline&quot;|&quot;padding&quot;] emission probability row vector under the phylogenetic tree assumpti..." alt="" coords="861,5,1116,47"/>
+<area shape="rect" id="node8" href="$classlinearham_1_1PhyloHMM.html#a5ba461b5f607ee72bfb3120d212533f8" title="Fills the &quot;junction&quot; emission probability matrix under the phylogenetic tree assumption." alt="" coords="889,71,1088,112"/>
+<area shape="rect" id="node7" href="$namespacelinearham.html#a56af488fc596ebb21cfa851f01469e5e" title="Scales a matrix by SCALE_FACTOR as many times as needed to bring all non&#45;zero matrix entries above SC..." alt="" coords="1168,177,1367,203"/>
+<area shape="rect" id="node10" href="$classlinearham_1_1HMM.html#a54934813b16e03bad12d6d3e50df20d8" title="Runs the forward algorithm and caches the forward probabilities needed for log&#45;likelihood computation..." alt="" coords="555,136,785,177"/>
+<area shape="rect" id="node11" href="$namespacelinearham.html#ac79c7f5732a7431aa515e895f66c5231" title="Computes the forward probabilities in the &quot;germline&quot; region." alt="" coords="873,136,1104,177"/>
+<area shape="rect" id="node12" href="$classlinearham_1_1HMM.html#a5e4e1aae04f62fe2b21c43a3e477a197" title="Computes the forward probabilities in the V &quot;germline&quot; region." alt="" coords="857,201,1120,243"/>
+<area shape="rect" id="node13" href="$namespacelinearham.html#a2623aeec56750f16cc8ff0550fd9ab8b" title="Computes the forward probabilities in the &quot;junction&quot; region." alt="" coords="873,267,1104,308"/>
+<area shape="rect" id="node15" href="$namespacelinearham.html#a9b866998541b060ff96f66215649766e" title="Create the regex used to extract V/J framework insertions." alt="" coords="531,201,809,243"/>
+<area shape="rect" id="node16" href="$namespacelinearham.html#a22f995a066c28e0c1af1fd172fdf41fc" title="Samples a &quot;germline&quot; state." alt="" coords="559,267,781,308"/>
+<area shape="rect" id="node17" href="$classlinearham_1_1HMM.html#a1608f1a6ccc47f8fed77df294b763829" title="Samples a J &quot;germline&quot; state." alt="" coords="543,332,797,373"/>
+<area shape="rect" id="node18" href="$namespacelinearham.html#a9d0a3b63649c949e8251cf017b22f6bb" title="Samples a &quot;junction&quot; state." alt="" coords="559,397,781,439"/>
+<area shape="rect" id="node21" href="$classlinearham_1_1PhyloHMM.html#a86fd926972d85c45a75c930257155151" title=" " alt="" coords="567,463,773,490"/>
+<area shape="rect" id="node22" href="$classlinearham_1_1PhyloHMM.html#a33f3057e5681c357dcc5c5f08dda8959" title=" " alt="" coords="567,514,773,541"/>
+<area shape="rect" id="node23" href="$classlinearham_1_1PhyloHMM.html#a5ef2a1e4638a7402ee6e5bf27ae0809b" title=" " alt="" coords="567,565,773,591"/>
 </map>

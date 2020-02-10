@@ -1,7 +1,8 @@
 <map id="linearham::PhyloHMM::InitializePhyloEmission" name="linearham::PhyloHMM::InitializePhyloEmission">
-<area shape="rect" id="node2" href="$classlinearham_1_1PhyloHMM.html#a8a1a5bbca2b0d5763f648e4020d39c50" title="Fills the xMSA emission probability vector with naive&#45;conditional phylogenetic likelihoods. " alt="" coords="219,5,369,47"/>
-<area shape="rect" id="node3" href="$classlinearham_1_1PhyloHMM.html#a4fb92e690ce89a921fba30394bbc066c" title="Initializes the emission probability matrices under the phylogenetic tree assumption. " alt="" coords="219,71,369,112"/>
-<area shape="rect" id="node4" href="$classlinearham_1_1PhyloHMM.html#a12a3ff01c56cc1b497afbb5629f7be41" title="Fills the [&quot;germline&quot;|&quot;padding&quot;] emission probability row vector under the phylogenetic tree assumpti..." alt="" coords="417,37,617,79"/>
-<area shape="rect" id="node6" href="$classlinearham_1_1PhyloHMM.html#a5ba461b5f607ee72bfb3120d212533f8" title="Fills the &quot;junction&quot; emission probability matrix under the phylogenetic tree assumption. " alt="" coords="442,103,593,144"/>
-<area shape="rect" id="node5" href="$namespacelinearham.html#a56af488fc596ebb21cfa851f01469e5e" title="Scales a matrix by SCALE_FACTOR as many times as needed to bring all non&#45;zero matrix entries above SC..." alt="" coords="665,45,820,71"/>
+<area shape="rect" id="node1" title="Initializes the phylogeny&#45;related emission probability data structures." alt="" coords="5,39,228,80"/>
+<area shape="rect" id="node2" href="$classlinearham_1_1PhyloHMM.html#a8a1a5bbca2b0d5763f648e4020d39c50" title="Fills the xMSA emission probability vector with naive&#45;conditional phylogenetic likelihoods." alt="" coords="280,5,455,47"/>
+<area shape="rect" id="node3" href="$classlinearham_1_1PhyloHMM.html#a4fb92e690ce89a921fba30394bbc066c" title="Initializes the emission probability matrices under the phylogenetic tree assumption." alt="" coords="276,71,459,112"/>
+<area shape="rect" id="node4" href="$classlinearham_1_1PhyloHMM.html#a12a3ff01c56cc1b497afbb5629f7be41" title="Fills the [&quot;germline&quot;|&quot;padding&quot;] emission probability row vector under the phylogenetic tree assumpti..." alt="" coords="507,37,761,79"/>
+<area shape="rect" id="node6" href="$classlinearham_1_1PhyloHMM.html#a5ba461b5f607ee72bfb3120d212533f8" title="Fills the &quot;junction&quot; emission probability matrix under the phylogenetic tree assumption." alt="" coords="535,103,733,144"/>
+<area shape="rect" id="node5" href="$namespacelinearham.html#a56af488fc596ebb21cfa851f01469e5e" title="Scales a matrix by SCALE_FACTOR as many times as needed to bring all non&#45;zero matrix entries above SC..." alt="" coords="809,45,1008,71"/>
 </map>

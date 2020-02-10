@@ -1,4 +1,5 @@
 <map id="linearham::NPadding" name="linearham::NPadding">
-<area shape="rect" id="node2" href="$classlinearham_1_1JGermline.html" title="An abstraction used to represent a J germline gene. " alt="" coords="5,80,151,107"/>
-<area shape="rect" id="node3" href="$classlinearham_1_1VGermline.html" title="An abstraction used to represent a V germline gene. " alt="" coords="175,80,322,107"/>
+<area shape="rect" id="node1" title="An abstraction used to represent the padded germline states on the left (right) of V (J) genes." alt="" coords="112,5,287,32"/>
+<area shape="rect" id="node2" href="$classlinearham_1_1JGermline.html" title="An abstraction used to represent a J germline gene." alt="" coords="5,80,188,107"/>
+<area shape="rect" id="node3" href="$classlinearham_1_1VGermline.html" title="An abstraction used to represent a V germline gene." alt="" coords="212,80,395,107"/>
 </map>

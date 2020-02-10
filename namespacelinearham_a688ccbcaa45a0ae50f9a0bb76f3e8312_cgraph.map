@@ -1,4 +1,5 @@
 <map id="linearham::ComputePaddingTransition" name="linearham::ComputePaddingTransition">
-<area shape="rect" id="node2" href="$classlinearham_1_1GermlineGene.html#a7de66a1e91f0a78d438d2f89be1d5443" title="Casts the internal Germline pointer to a JGermline pointer. " alt="" coords="240,5,409,47"/>
-<area shape="rect" id="node3" href="$classlinearham_1_1GermlineGene.html#ad7304c66dcfdef0332e2ef536f0620d2" title="Casts the internal Germline pointer to a VGermline pointer. " alt="" coords="240,71,409,112"/>
+<area shape="rect" id="node1" title="Computes the &quot;padding&quot; transition probabilities for the different &quot;germline&quot; states." alt="" coords="5,39,228,80"/>
+<area shape="rect" id="node2" href="$classlinearham_1_1GermlineGene.html#a7de66a1e91f0a78d438d2f89be1d5443" title="Casts the internal Germline pointer to a JGermline pointer." alt="" coords="276,5,483,47"/>
+<area shape="rect" id="node3" href="$classlinearham_1_1GermlineGene.html#ad7304c66dcfdef0332e2ef536f0620d2" title="Casts the internal Germline pointer to a VGermline pointer." alt="" coords="276,71,483,112"/>
 </map>

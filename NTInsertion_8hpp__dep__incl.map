@@ -1,12 +1,13 @@
 <map id="src/NTInsertion.hpp" name="src/NTInsertion.hpp">
-<area shape="rect" id="node2" href="$VDJGermline_8hpp.html" title="Header for the V, D, and J germline classes. " alt="" coords="396,80,543,107"/>
-<area shape="rect" id="node11" href="$NTInsertion_8cpp.html" title="Implementation of the NTInsertion class. " alt="" coords="567,80,705,107"/>
-<area shape="rect" id="node3" href="$HMM_8hpp.html" title="Header for the HMM class. " alt="" coords="229,155,331,181"/>
-<area shape="rect" id="node9" href="$SimpleHMM_8cpp.html" title="Implementation of the SimpleHMM class. " alt="" coords="345,304,487,331"/>
-<area shape="rect" id="node10" href="$VDJGermline_8cpp.html" title="Implementation of the V, D, and J germline classes. " alt="" coords="507,155,653,181"/>
-<area shape="rect" id="node4" href="$HMM_8cpp.html" title="Implementation of the HMM class. " alt="" coords="5,229,107,256"/>
-<area shape="rect" id="node5" href="$PhyloHMM_8hpp.html" title="Header for the PhyloHMM class. " alt="" coords="131,229,266,256"/>
-<area shape="rect" id="node8" href="$SimpleHMM_8hpp.html" title="Header for the SimpleHMM class. " alt="" coords="291,229,432,256"/>
-<area shape="rect" id="node6" href="$linearham_8cpp.html" title="The command line interface of linearham. " alt="" coords="9,304,135,331"/>
-<area shape="rect" id="node7" href="$PhyloHMM_8cpp.html" title="Implementation of the PhyloHMM class. " alt="" coords="159,304,294,331"/>
+<area shape="rect" id="node1" title="Header for the NTInsertion class." alt="" coords="541,5,716,32"/>
+<area shape="rect" id="node2" href="$VDJGermline_8hpp.html" title="Header for the V, D, and J germline classes." alt="" coords="443,80,617,107"/>
+<area shape="rect" id="node11" href="$NTInsertion_8cpp.html" title="Implementation of the NTInsertion class." alt="" coords="641,80,816,107"/>
+<area shape="rect" id="node3" href="$HMM_8hpp.html" title="Header for the HMM class." alt="" coords="268,155,379,181"/>
+<area shape="rect" id="node9" href="$SimpleHMM_8cpp.html" title="Implementation of the SimpleHMM class." alt="" coords="421,304,580,331"/>
+<area shape="rect" id="node10" href="$VDJGermline_8cpp.html" title="Implementation of the V, D, and J germline classes." alt="" coords="568,155,743,181"/>
+<area shape="rect" id="node4" href="$HMM_8cpp.html" title="Implementation of the HMM class." alt="" coords="24,229,135,256"/>
+<area shape="rect" id="node5" href="$PhyloHMM_8hpp.html" title="Header for the PhyloHMM class." alt="" coords="159,229,309,256"/>
+<area shape="rect" id="node8" href="$SimpleHMM_8hpp.html" title="Header for the SimpleHMM class." alt="" coords="333,229,492,256"/>
+<area shape="rect" id="node6" href="$linearham_8cpp.html" title="The command line interface of linearham." alt="" coords="5,304,164,331"/>
+<area shape="rect" id="node7" href="$PhyloHMM_8cpp.html" title="Implementation of the PhyloHMM class." alt="" coords="188,304,339,331"/>
 </map>

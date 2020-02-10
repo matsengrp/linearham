@@ -1,4 +1,5 @@
 <map id="linearham::SimpleHMM::FillPaddingEmission" name="linearham::SimpleHMM::FillPaddingEmission">
-<area shape="rect" id="node2" href="$classlinearham_1_1SimpleHMM.html#a671049293521484eed66a18ad133088c" title="Initializes the emission probability matrices under the star tree assumption. " alt="" coords="212,5,371,47"/>
-<area shape="rect" id="node3" href="$classlinearham_1_1SimpleHMM.html#a3e4f9e35224fe432cd439798b96e0cf4" title="SimpleHMM constructor. " alt="" coords="419,5,577,47"/>
+<area shape="rect" id="node1" title="Fills the &quot;padding&quot; emission probability row vector associated with the adjacent &quot;germline&quot; region un..." alt="" coords="467,5,657,47"/>
+<area shape="rect" id="node2" href="$classlinearham_1_1SimpleHMM.html#a671049293521484eed66a18ad133088c" title="Initializes the emission probability matrices under the star tree assumption." alt="" coords="236,5,419,47"/>
+<area shape="rect" id="node3" href="$classlinearham_1_1SimpleHMM.html#a3e4f9e35224fe432cd439798b96e0cf4" title="SimpleHMM constructor." alt="" coords="5,5,188,47"/>
 </map>

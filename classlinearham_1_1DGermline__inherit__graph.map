@@ -1,4 +1,5 @@
 <map id="linearham::DGermline" name="linearham::DGermline">
-<area shape="rect" id="node2" href="$classlinearham_1_1Germline.html" title="A class holding germline gene HMM information extracted from a partis YAML file. This information is ..." alt="" coords="5,5,144,32"/>
-<area shape="rect" id="node3" href="$classlinearham_1_1NTInsertion.html" title="A class holding non&#45;templated insertion (NTI) HMM information extracted from a partis YAML file..." alt="" coords="168,5,323,32"/>
+<area shape="rect" id="node1" title="An abstraction used to represent a D germline gene." alt="" coords="107,80,289,107"/>
+<area shape="rect" id="node2" href="$classlinearham_1_1Germline.html" title="A class holding germline gene HMM information extracted from a partis YAML file. This information is ..." alt="" coords="5,5,180,32"/>
+<area shape="rect" id="node3" href="$classlinearham_1_1NTInsertion.html" title="A class holding non&#45;templated insertion (NTI) HMM information extracted from a partis YAML file...." alt="" coords="204,5,403,32"/>
 </map>

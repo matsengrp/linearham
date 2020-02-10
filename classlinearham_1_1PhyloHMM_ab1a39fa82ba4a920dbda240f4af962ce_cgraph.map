@@ -1,5 +1,6 @@
 <map id="linearham::PhyloHMM::WriteOutputLine" name="linearham::PhyloHMM::WriteOutputLine">
-<area shape="rect" id="node2" href="$classlinearham_1_1PhyloHMM.html#a86fd926972d85c45a75c930257155151" title="linearham::PhyloHMM::er" alt="" coords="204,5,375,32"/>
-<area shape="rect" id="node3" href="$classlinearham_1_1PhyloHMM.html#a33f3057e5681c357dcc5c5f08dda8959" title="linearham::PhyloHMM::pi" alt="" coords="205,56,374,83"/>
-<area shape="rect" id="node4" href="$classlinearham_1_1PhyloHMM.html#a5ef2a1e4638a7402ee6e5bf27ae0809b" title="linearham::PhyloHMM::sr" alt="" coords="204,107,375,133"/>
+<area shape="rect" id="node1" title="Writes a tree sample to the output file stream." alt="" coords="5,49,180,90"/>
+<area shape="rect" id="node2" href="$classlinearham_1_1PhyloHMM.html#a86fd926972d85c45a75c930257155151" title=" " alt="" coords="228,5,435,32"/>
+<area shape="rect" id="node3" href="$classlinearham_1_1PhyloHMM.html#a33f3057e5681c357dcc5c5f08dda8959" title=" " alt="" coords="228,56,435,83"/>
+<area shape="rect" id="node4" href="$classlinearham_1_1PhyloHMM.html#a5ef2a1e4638a7402ee6e5bf27ae0809b" title=" " alt="" coords="228,107,435,133"/>
 </map>

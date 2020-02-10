@@ -1,8 +1,9 @@
 <map id="linearham::NTInsertion::NTInsertion" name="linearham::NTInsertion::NTInsertion">
-<area shape="rect" id="node2" href="$namespacelinearham.html#a5d87358843f1cbf03fdc875fb63f2006" title="Find the indices corresponding to the start and end of the germline gene. " alt="" coords="208,5,423,32"/>
-<area shape="rect" id="node3" href="$namespacelinearham.html#a1ee3a88805026b1581274f905aeab21a" title="Extract the nucleotide alphabet from a YAML file. " alt="" coords="236,56,395,83"/>
-<area shape="rect" id="node4" href="$namespacelinearham.html#a908d926edee3e91a8e8cb3c6e0799581" title="Find the alphabet index of the input nucleotide base. " alt="" coords="220,107,411,133"/>
-<area shape="rect" id="node5" href="$namespacelinearham.html#af3c96bf90f7b4e2a921447a05e964ed5" title="Create the regex used to extract germline state labels. " alt="" coords="220,158,411,199"/>
-<area shape="rect" id="node6" href="$namespacelinearham.html#a574475a1961601bb26e1f039c1c85dd2" title="Create the regex used to extract NTI state labels. " alt="" coords="216,224,415,251"/>
-<area shape="rect" id="node7" href="$namespacelinearham.html#a3273da747e6396c9aad18020ae8f5dc8" title="Parse a YAML map from strings to probabilities. " alt="" coords="212,275,419,301"/>
+<area shape="rect" id="node1" title="Constructor for NTInsertion starting from a partis YAML file." alt="" coords="5,129,204,170"/>
+<area shape="rect" id="node2" href="$namespacelinearham.html#a5d87358843f1cbf03fdc875fb63f2006" title="Find the indices corresponding to the start and end of the germline gene." alt="" coords="252,5,523,32"/>
+<area shape="rect" id="node3" href="$namespacelinearham.html#a1ee3a88805026b1581274f905aeab21a" title="Extract the nucleotide alphabet from a YAML file." alt="" coords="288,56,487,83"/>
+<area shape="rect" id="node4" href="$namespacelinearham.html#a908d926edee3e91a8e8cb3c6e0799581" title="Find the alphabet index of the input nucleotide base." alt="" coords="268,107,507,133"/>
+<area shape="rect" id="node5" href="$namespacelinearham.html#af3c96bf90f7b4e2a921447a05e964ed5" title="Create the regex used to extract germline state labels." alt="" coords="268,158,507,199"/>
+<area shape="rect" id="node6" href="$namespacelinearham.html#a574475a1961601bb26e1f039c1c85dd2" title="Create the regex used to extract NTI state labels." alt="" coords="268,224,507,251"/>
+<area shape="rect" id="node7" href="$namespacelinearham.html#a3273da747e6396c9aad18020ae8f5dc8" title="Parse a YAML map from strings to probabilities." alt="" coords="260,275,515,301"/>
 </map>

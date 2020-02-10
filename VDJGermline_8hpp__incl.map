@@ -1,5 +1,11 @@
 <map id="src/VDJGermline.hpp" name="src/VDJGermline.hpp">
-<area shape="rect" id="node6" href="$Germline_8hpp.html" title="Header for the Germline class. " alt="" coords="95,80,194,107"/>
-<area shape="rect" id="node8" href="$NPadding_8hpp.html" title="Header for the NPadding class. " alt="" coords="357,80,461,107"/>
-<area shape="rect" id="node9" href="$NTInsertion_8hpp.html" title="Header for the NTInsertion class. " alt="" coords="218,80,333,107"/>
+<area shape="rect" id="node1" title="Header for the V, D, and J germline classes." alt="" coords="229,5,404,32"/>
+<area shape="rect" id="node2" title=" " alt="" coords="127,155,197,181"/>
+<area shape="rect" id="node3" title=" " alt="" coords="5,155,76,181"/>
+<area shape="rect" id="node4" title=" " alt="" coords="607,80,733,107"/>
+<area shape="rect" id="node5" title=" " alt="" coords="397,155,540,181"/>
+<area shape="rect" id="node6" href="$Germline_8hpp.html" title="Header for the Germline class." alt="" coords="103,80,221,107"/>
+<area shape="rect" id="node8" href="$NPadding_8hpp.html" title="Header for the NPadding class." alt="" coords="412,80,531,107"/>
+<area shape="rect" id="node9" href="$NTInsertion_8hpp.html" title="Header for the NTInsertion class." alt="" coords="245,80,388,107"/>
+<area shape="rect" id="node7" title=" " alt="" coords="261,155,372,181"/>
 </map>

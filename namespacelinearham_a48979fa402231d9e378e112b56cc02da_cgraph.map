@@ -1,3 +1,4 @@
 <map id="linearham::StoreJunctionXmsaIndices" name="linearham::StoreJunctionXmsaIndices">
-<area shape="rect" id="node2" href="$namespacelinearham.html#a13107de61847084e74e2b2678791b373" title="Stores a xMSA site index. " alt="" coords="220,13,403,39"/>
+<area shape="rect" id="node1" title="Stores the xMSA site indices in the &quot;junction&quot; region." alt="" coords="5,5,220,47"/>
+<area shape="rect" id="node2" href="$namespacelinearham.html#a13107de61847084e74e2b2678791b373" title="Stores a xMSA site index." alt="" coords="268,13,491,39"/>
 </map>

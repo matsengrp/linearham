@@ -1,8 +1,7 @@
 <map id="linearham::ComputeGermlineForwardProbabilities" name="linearham::ComputeGermlineForwardProbabilities">
-<area shape="rect" id="node2" href="$classlinearham_1_1HMM.html#a54934813b16e03bad12d6d3e50df20d8" title="Runs the forward algorithm and caches the forward probabilities needed for log&#45;likelihood computation..." alt="" coords="244,39,441,80"/>
-<area shape="rect" id="node3" href="$classlinearham_1_1HMM.html#a3f5bf0eb4227fb46e99c06c09e9a6d4b" title="Computes the HMM log&#45;likelihood. " alt="" coords="489,17,695,43"/>
-<area shape="rect" id="node7" href="$classlinearham_1_1HMM.html#abb7df37e4efcb07c1ec2d5beeb402a16" title="Samples a HMM hidden state path (i.e. a naive sequence). " alt="" coords="490,68,694,109"/>
-<area shape="rect" id="node4" href="$classlinearham_1_1HMM.html#ae74c5566e9cf943f4bdf5111324a36ed" title="linearham::HMM::jgerm\l_right_insertion_samp" alt="" coords="743,5,901,47"/>
-<area shape="rect" id="node5" href="$classlinearham_1_1PhyloHMM.html#af964762234539af6fee0ce966ee0a6b8" title="Runs the linearham pipeline. " alt="" coords="747,71,897,112"/>
-<area shape="rect" id="node6" href="$classlinearham_1_1PhyloHMM.html#a7cdab1771fbc82831828c18acb992280" title="linearham::PhyloHMM\l::naive_sequence" alt="" coords="949,71,1100,112"/>
+<area shape="rect" id="node1" title="Computes the forward probabilities in the &quot;germline&quot; region." alt="" coords="809,27,1040,69"/>
+<area shape="rect" id="node2" href="$classlinearham_1_1HMM.html#a54934813b16e03bad12d6d3e50df20d8" title="Runs the forward algorithm and caches the forward probabilities needed for log&#45;likelihood computation..." alt="" coords="531,27,761,69"/>
+<area shape="rect" id="node3" href="$classlinearham_1_1HMM.html#a3f5bf0eb4227fb46e99c06c09e9a6d4b" title="Computes the HMM log&#45;likelihood." alt="" coords="228,5,483,32"/>
+<area shape="rect" id="node5" href="$classlinearham_1_1HMM.html#abb7df37e4efcb07c1ec2d5beeb402a16" title="Samples a HMM hidden state path (i.e. a naive sequence)." alt="" coords="236,57,475,98"/>
+<area shape="rect" id="node4" href="$classlinearham_1_1PhyloHMM.html#af964762234539af6fee0ce966ee0a6b8" title="Runs the linearham pipeline." alt="" coords="5,27,180,69"/>
 </map>

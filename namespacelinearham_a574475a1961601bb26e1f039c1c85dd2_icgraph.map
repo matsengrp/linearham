@@ -1,3 +1,4 @@
 <map id="linearham::GetNTIStateRegex" name="linearham::GetNTIStateRegex">
-<area shape="rect" id="node2" href="$classlinearham_1_1NTInsertion.html#aa3175eee956825a70be73318b50254f4" title="Constructor for NTInsertion starting from a partis YAML file. " alt="" coords="252,5,407,47"/>
+<area shape="rect" id="node1" title="Create the regex used to extract NTI state labels." alt="" coords="252,13,491,39"/>
+<area shape="rect" id="node2" href="$classlinearham_1_1NTInsertion.html#aa3175eee956825a70be73318b50254f4" title="Constructor for NTInsertion starting from a partis YAML file." alt="" coords="5,5,204,47"/>
 </map>

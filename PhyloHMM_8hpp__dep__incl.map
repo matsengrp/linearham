@@ -1,4 +1,5 @@
 <map id="src/PhyloHMM.hpp" name="src/PhyloHMM.hpp">
-<area shape="rect" id="node2" href="$linearham_8cpp.html" title="The command line interface of linearham. " alt="" coords="5,80,131,107"/>
-<area shape="rect" id="node3" href="$PhyloHMM_8cpp.html" title="Implementation of the PhyloHMM class. " alt="" coords="155,80,290,107"/>
+<area shape="rect" id="node1" title="Header for the PhyloHMM class." alt="" coords="99,5,249,32"/>
+<area shape="rect" id="node2" href="$linearham_8cpp.html" title="The command line interface of linearham." alt="" coords="5,80,164,107"/>
+<area shape="rect" id="node3" href="$PhyloHMM_8cpp.html" title="Implementation of the PhyloHMM class." alt="" coords="188,80,339,107"/>
 </map>

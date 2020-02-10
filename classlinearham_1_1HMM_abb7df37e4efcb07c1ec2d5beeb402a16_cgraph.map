@@ -1,11 +1,12 @@
 <map id="linearham::HMM::SampleNaiveSequence" name="linearham::HMM::SampleNaiveSequence">
-<area shape="rect" id="node2" href="$namespacelinearham.html#a9b866998541b060ff96f66215649766e" title="Create the regex used to extract V/J framework insertions. " alt="" coords="257,5,480,47"/>
-<area shape="rect" id="node3" href="$classlinearham_1_1HMM.html#a54934813b16e03bad12d6d3e50df20d8" title="Runs the forward algorithm and caches the forward probabilities needed for log&#45;likelihood computation..." alt="" coords="270,71,467,112"/>
-<area shape="rect" id="node8" href="$namespacelinearham.html#a22f995a066c28e0c1af1fd172fdf41fc" title="Samples a &quot;germline&quot; state. " alt="" coords="277,136,460,177"/>
-<area shape="rect" id="node9" href="$classlinearham_1_1HMM.html#a1608f1a6ccc47f8fed77df294b763829" title="Samples a J &quot;germline&quot; state. " alt="" coords="268,201,469,243"/>
-<area shape="rect" id="node10" href="$namespacelinearham.html#a9d0a3b63649c949e8251cf017b22f6bb" title="Samples a &quot;junction&quot; state. " alt="" coords="279,267,458,308"/>
-<area shape="rect" id="node4" href="$namespacelinearham.html#ac79c7f5732a7431aa515e895f66c5231" title="Computes the forward probabilities in the &quot;germline&quot; region. " alt="" coords="538,5,729,47"/>
-<area shape="rect" id="node6" href="$classlinearham_1_1HMM.html#a5e4e1aae04f62fe2b21c43a3e477a197" title="Computes the forward probabilities in the V &quot;germline&quot; region. " alt="" coords="528,71,739,112"/>
-<area shape="rect" id="node7" href="$namespacelinearham.html#a2623aeec56750f16cc8ff0550fd9ab8b" title="Computes the forward probabilities in the &quot;junction&quot; region. " alt="" coords="539,136,727,177"/>
-<area shape="rect" id="node5" href="$namespacelinearham.html#a56af488fc596ebb21cfa851f01469e5e" title="Scales a matrix by SCALE_FACTOR as many times as needed to bring all non&#45;zero matrix entries above SC..." alt="" coords="787,78,941,105"/>
+<area shape="rect" id="node1" title="Samples a HMM hidden state path (i.e. a naive sequence)." alt="" coords="5,136,244,177"/>
+<area shape="rect" id="node2" href="$namespacelinearham.html#a9b866998541b060ff96f66215649766e" title="Create the regex used to extract V/J framework insertions." alt="" coords="292,5,571,47"/>
+<area shape="rect" id="node3" href="$classlinearham_1_1HMM.html#a54934813b16e03bad12d6d3e50df20d8" title="Runs the forward algorithm and caches the forward probabilities needed for log&#45;likelihood computation..." alt="" coords="316,71,547,112"/>
+<area shape="rect" id="node8" href="$namespacelinearham.html#a22f995a066c28e0c1af1fd172fdf41fc" title="Samples a &quot;germline&quot; state." alt="" coords="320,136,543,177"/>
+<area shape="rect" id="node9" href="$classlinearham_1_1HMM.html#a1608f1a6ccc47f8fed77df294b763829" title="Samples a J &quot;germline&quot; state." alt="" coords="304,201,559,243"/>
+<area shape="rect" id="node10" href="$namespacelinearham.html#a9d0a3b63649c949e8251cf017b22f6bb" title="Samples a &quot;junction&quot; state." alt="" coords="320,267,543,308"/>
+<area shape="rect" id="node4" href="$namespacelinearham.html#ac79c7f5732a7431aa515e895f66c5231" title="Computes the forward probabilities in the &quot;germline&quot; region." alt="" coords="635,5,865,47"/>
+<area shape="rect" id="node6" href="$classlinearham_1_1HMM.html#a5e4e1aae04f62fe2b21c43a3e477a197" title="Computes the forward probabilities in the V &quot;germline&quot; region." alt="" coords="619,71,881,112"/>
+<area shape="rect" id="node7" href="$namespacelinearham.html#a2623aeec56750f16cc8ff0550fd9ab8b" title="Computes the forward probabilities in the &quot;junction&quot; region." alt="" coords="635,136,865,177"/>
+<area shape="rect" id="node5" href="$namespacelinearham.html#a56af488fc596ebb21cfa851f01469e5e" title="Scales a matrix by SCALE_FACTOR as many times as needed to bring all non&#45;zero matrix entries above SC..." alt="" coords="929,78,1128,105"/>
 </map>

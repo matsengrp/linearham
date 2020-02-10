@@ -1,4 +1,5 @@
 <map id="linearham::GetGermlineStateRegex" name="linearham::GetGermlineStateRegex">
-<area shape="rect" id="node2" href="$classlinearham_1_1Germline.html#a1cfc99f0f2f7f391b3d7f975f7107a7e" title="Constructor for Germline starting from a partis YAML file. " alt="" coords="252,5,391,47"/>
-<area shape="rect" id="node3" href="$classlinearham_1_1NTInsertion.html#aa3175eee956825a70be73318b50254f4" title="Constructor for NTInsertion starting from a partis YAML file. " alt="" coords="244,71,399,112"/>
+<area shape="rect" id="node1" title="Create the regex used to extract germline state labels." alt="" coords="252,39,491,80"/>
+<area shape="rect" id="node2" href="$classlinearham_1_1Germline.html#a1cfc99f0f2f7f391b3d7f975f7107a7e" title="Constructor for Germline starting from a partis YAML file." alt="" coords="17,5,192,47"/>
+<area shape="rect" id="node3" href="$classlinearham_1_1NTInsertion.html#aa3175eee956825a70be73318b50254f4" title="Constructor for NTInsertion starting from a partis YAML file." alt="" coords="5,71,204,112"/>
 </map>

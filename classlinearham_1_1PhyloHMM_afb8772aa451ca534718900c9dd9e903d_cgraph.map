@@ -1,3 +1,4 @@
 <map id="linearham::PhyloHMM::BuildXmsa" name="linearham::PhyloHMM::BuildXmsa">
-<area shape="rect" id="node2" href="$namespacelinearham.html#a17b0b2ee5c53aaa4f311208ee3f64785" title="Converts an integer sequence to a string sequence according to the alphabet. " alt="" coords="204,13,396,39"/>
+<area shape="rect" id="node1" title="Builds the xMSA and the vector of xMSA sequence strings." alt="" coords="5,5,180,47"/>
+<area shape="rect" id="node2" href="$namespacelinearham.html#a17b0b2ee5c53aaa4f311208ee3f64785" title="Converts an integer sequence to a string sequence according to the alphabet." alt="" coords="228,13,467,39"/>
 </map>

@@ -1,7 +1,8 @@
 <map id="linearham::HMM::LogLikelihood" name="linearham::HMM::LogLikelihood">
-<area shape="rect" id="node2" href="$classlinearham_1_1HMM.html#a54934813b16e03bad12d6d3e50df20d8" title="Runs the forward algorithm and caches the forward probabilities needed for log&#45;likelihood computation..." alt="" coords="259,71,456,112"/>
-<area shape="rect" id="node3" href="$classlinearham_1_1HMM.html#a5e4e1aae04f62fe2b21c43a3e477a197" title="Computes the forward probabilities in the V &quot;germline&quot; region. " alt="" coords="504,5,715,47"/>
-<area shape="rect" id="node5" href="$namespacelinearham.html#a2623aeec56750f16cc8ff0550fd9ab8b" title="Computes the forward probabilities in the &quot;junction&quot; region. " alt="" coords="515,71,703,112"/>
-<area shape="rect" id="node6" href="$namespacelinearham.html#ac79c7f5732a7431aa515e895f66c5231" title="Computes the forward probabilities in the &quot;germline&quot; region. " alt="" coords="514,136,705,177"/>
-<area shape="rect" id="node4" href="$namespacelinearham.html#a56af488fc596ebb21cfa851f01469e5e" title="Scales a matrix by SCALE_FACTOR as many times as needed to bring all non&#45;zero matrix entries above SC..." alt="" coords="763,78,917,105"/>
+<area shape="rect" id="node1" title="Computes the HMM log&#45;likelihood." alt="" coords="5,78,260,105"/>
+<area shape="rect" id="node2" href="$classlinearham_1_1HMM.html#a54934813b16e03bad12d6d3e50df20d8" title="Runs the forward algorithm and caches the forward probabilities needed for log&#45;likelihood computation..." alt="" coords="308,71,539,112"/>
+<area shape="rect" id="node3" href="$namespacelinearham.html#ac79c7f5732a7431aa515e895f66c5231" title="Computes the forward probabilities in the &quot;germline&quot; region." alt="" coords="603,5,833,47"/>
+<area shape="rect" id="node5" href="$classlinearham_1_1HMM.html#a5e4e1aae04f62fe2b21c43a3e477a197" title="Computes the forward probabilities in the V &quot;germline&quot; region." alt="" coords="587,71,849,112"/>
+<area shape="rect" id="node6" href="$namespacelinearham.html#a2623aeec56750f16cc8ff0550fd9ab8b" title="Computes the forward probabilities in the &quot;junction&quot; region." alt="" coords="603,136,833,177"/>
+<area shape="rect" id="node4" href="$namespacelinearham.html#a56af488fc596ebb21cfa851f01469e5e" title="Scales a matrix by SCALE_FACTOR as many times as needed to bring all non&#45;zero matrix entries above SC..." alt="" coords="897,78,1096,105"/>
 </map>

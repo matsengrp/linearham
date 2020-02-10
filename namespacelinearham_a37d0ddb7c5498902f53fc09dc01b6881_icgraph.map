@@ -1,8 +1,9 @@
 <map id="linearham::RowVecMatCwise" name="linearham::RowVecMatCwise">
-<area shape="rect" id="node2" href="$namespacelinearham.html#accc0fbf43e83f08d11f10da4f9209901" title="Fills a block of the transition probability matrix with transition probabilities between two germline..." alt="" coords="248,78,408,105"/>
-<area shape="rect" id="node3" href="$namespacelinearham.html#afbe1dc288e9458bbd30705446bc4c744" title="Computes the &quot;germline&quot;&#45;to&#45;&quot;junction&quot; transition probability matrix. " alt="" coords="456,5,647,47"/>
-<area shape="rect" id="node6" href="$namespacelinearham.html#aae399f884d59e67e2aed0aa2a8af5006" title="Computes the &quot;junction&quot;&#45;to&#45;&quot;germline&quot; transition probability matrix. " alt="" coords="457,71,645,112"/>
-<area shape="rect" id="node7" href="$namespacelinearham.html#a247725f68653d3560a790223f1309407" title="Computes the &quot;junction&quot; transition probability matrix. " alt="" coords="457,136,645,177"/>
-<area shape="rect" id="node4" href="$classlinearham_1_1HMM.html#aa74087c48070ad17afdefa2053298f5c" title="Initializes the transition probability matrices between adjacent HMM regions. " alt="" coords="695,71,869,112"/>
-<area shape="rect" id="node5" href="$classlinearham_1_1HMM.html#ab858d691af8a9cc7fea4f84e8e4a0f13" title="Constructor for HMM that is called from the (Simple|Phylo)HMM constructor. " alt="" coords="917,78,1076,105"/>
+<area shape="rect" id="node1" title="This function takes the coefficient&#45;wise product of b and every row of A." alt="" coords="1056,78,1279,105"/>
+<area shape="rect" id="node2" href="$namespacelinearham.html#accc0fbf43e83f08d11f10da4f9209901" title="Fills a block of the transition probability matrix with transition probabilities between two germline..." alt="" coords="785,78,1008,105"/>
+<area shape="rect" id="node3" href="$namespacelinearham.html#afbe1dc288e9458bbd30705446bc4c744" title="Computes the &quot;germline&quot;&#45;to&#45;&quot;junction&quot; transition probability matrix." alt="" coords="507,5,737,47"/>
+<area shape="rect" id="node6" href="$namespacelinearham.html#aae399f884d59e67e2aed0aa2a8af5006" title="Computes the &quot;junction&quot;&#45;to&#45;&quot;germline&quot; transition probability matrix." alt="" coords="507,71,737,112"/>
+<area shape="rect" id="node7" href="$namespacelinearham.html#a247725f68653d3560a790223f1309407" title="Computes the &quot;junction&quot; transition probability matrix." alt="" coords="507,136,737,177"/>
+<area shape="rect" id="node4" href="$classlinearham_1_1HMM.html#aa74087c48070ad17afdefa2053298f5c" title="Initializes the transition probability matrices between adjacent HMM regions." alt="" coords="228,71,459,112"/>
+<area shape="rect" id="node5" href="$classlinearham_1_1HMM.html#ab858d691af8a9cc7fea4f84e8e4a0f13" title="Constructor for HMM that is called from the (Simple|Phylo)HMM constructor." alt="" coords="5,78,180,105"/>
 </map>

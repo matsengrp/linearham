@@ -1,3 +1,4 @@
 <map id="linearham::CreateGermlineGeneMap" name="linearham::CreateGermlineGeneMap">
-<area shape="rect" id="node2" href="$classlinearham_1_1HMM.html#ab858d691af8a9cc7fea4f84e8e4a0f13" title="Constructor for HMM that is called from the (Simple|Phylo)HMM constructor. " alt="" coords="231,13,389,39"/>
+<area shape="rect" id="node1" title="Constructs a GermlineGene map from partis HMM germline parameter files." alt="" coords="228,5,451,47"/>
+<area shape="rect" id="node2" href="$classlinearham_1_1HMM.html#ab858d691af8a9cc7fea4f84e8e4a0f13" title="Constructor for HMM that is called from the (Simple|Phylo)HMM constructor." alt="" coords="5,13,180,39"/>
 </map>

@@ -1,4 +1,5 @@
 <map id="linearham::StoreGermlinePaddingXmsaIndices" name="linearham::StoreGermlinePaddingXmsaIndices">
-<area shape="rect" id="node2" href="$classlinearham_1_1PhyloHMM.html#a5ae40749e7653ebf59c1d0f7dff1d1e3" title="Initializes the xMSA data structures. " alt="" coords="223,5,377,47"/>
-<area shape="rect" id="node3" href="$classlinearham_1_1PhyloHMM.html#ac4b9fe8413efebfd467b320375bfa4c8" title="PhyloHMM constructor. " alt="" coords="425,5,576,47"/>
+<area shape="rect" id="node1" title="Stores the xMSA site indices in the [&quot;germline&quot;|&quot;padding&quot;] region." alt="" coords="483,5,697,47"/>
+<area shape="rect" id="node2" href="$classlinearham_1_1PhyloHMM.html#a5ae40749e7653ebf59c1d0f7dff1d1e3" title="Initializes the xMSA data structures." alt="" coords="228,5,435,47"/>
+<area shape="rect" id="node3" href="$classlinearham_1_1PhyloHMM.html#ac4b9fe8413efebfd467b320375bfa4c8" title="PhyloHMM constructor." alt="" coords="5,5,180,47"/>
 </map>

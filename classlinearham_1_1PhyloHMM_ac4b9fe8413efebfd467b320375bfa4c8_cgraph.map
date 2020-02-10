@@ -1,8 +1,9 @@
 <map id="linearham::PhyloHMM::PhyloHMM" name="linearham::PhyloHMM::PhyloHMM">
-<area shape="rect" id="node2" href="$classlinearham_1_1PhyloHMM.html#a5ae40749e7653ebf59c1d0f7dff1d1e3" title="Initializes the xMSA data structures. " alt="" coords="204,71,359,112"/>
-<area shape="rect" id="node3" href="$namespacelinearham.html#ac61ba41c6f9cbe2181d869bd21693c36" title="Stores the xMSA site indices in the [&quot;germline&quot;|&quot;padding&quot;] region. " alt="" coords="407,5,576,47"/>
-<area shape="rect" id="node5" href="$namespacelinearham.html#a48979fa402231d9e378e112b56cc02da" title="Stores the xMSA site indices in the &quot;junction&quot; region. " alt="" coords="408,71,575,112"/>
-<area shape="rect" id="node6" href="$classlinearham_1_1PhyloHMM.html#afb8772aa451ca534718900c9dd9e903d" title="Builds the xMSA and the vector of xMSA sequence strings. " alt="" coords="416,136,567,177"/>
-<area shape="rect" id="node4" href="$namespacelinearham.html#a13107de61847084e74e2b2678791b373" title="Stores a xMSA site index. " alt="" coords="629,46,811,73"/>
-<area shape="rect" id="node7" href="$namespacelinearham.html#a17b0b2ee5c53aaa4f311208ee3f64785" title="Converts an integer sequence to a string sequence according to the alphabet. " alt="" coords="624,143,816,170"/>
+<area shape="rect" id="node1" title="PhyloHMM constructor." alt="" coords="5,71,180,112"/>
+<area shape="rect" id="node2" href="$classlinearham_1_1PhyloHMM.html#a5ae40749e7653ebf59c1d0f7dff1d1e3" title="Initializes the xMSA data structures." alt="" coords="228,71,435,112"/>
+<area shape="rect" id="node3" href="$classlinearham_1_1PhyloHMM.html#afb8772aa451ca534718900c9dd9e903d" title="Builds the xMSA and the vector of xMSA sequence strings." alt="" coords="503,5,677,47"/>
+<area shape="rect" id="node5" href="$namespacelinearham.html#ac61ba41c6f9cbe2181d869bd21693c36" title="Stores the xMSA site indices in the [&quot;germline&quot;|&quot;padding&quot;] region." alt="" coords="483,71,697,112"/>
+<area shape="rect" id="node7" href="$namespacelinearham.html#a48979fa402231d9e378e112b56cc02da" title="Stores the xMSA site indices in the &quot;junction&quot; region." alt="" coords="483,136,697,177"/>
+<area shape="rect" id="node4" href="$namespacelinearham.html#a17b0b2ee5c53aaa4f311208ee3f64785" title="Converts an integer sequence to a string sequence according to the alphabet." alt="" coords="745,13,984,39"/>
+<area shape="rect" id="node6" href="$namespacelinearham.html#a13107de61847084e74e2b2678791b373" title="Stores a xMSA site index." alt="" coords="753,110,976,137"/>
 </map>

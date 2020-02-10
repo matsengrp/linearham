@@ -1,4 +1,5 @@
 <map id="linearham::ConvertSeqToInts" name="linearham::ConvertSeqToInts">
-<area shape="rect" id="node2" href="$classlinearham_1_1HMM.html#a265dacc524f095e5fd345f7c2ef4c490" title="Initializes the clonal family sequence alignment from the partis output YAML file. " alt="" coords="245,5,444,32"/>
-<area shape="rect" id="node3" href="$classlinearham_1_1HMM.html#ab858d691af8a9cc7fea4f84e8e4a0f13" title="Constructor for HMM that is called from the (Simple|Phylo)HMM constructor. " alt="" coords="492,5,651,32"/>
+<area shape="rect" id="node1" title="Converts a string sequence to an integer sequence according to the alphabet." alt="" coords="531,5,769,32"/>
+<area shape="rect" id="node2" href="$classlinearham_1_1HMM.html#a265dacc524f095e5fd345f7c2ef4c490" title="Initializes the clonal family sequence alignment from the partis output YAML file." alt="" coords="228,5,483,32"/>
+<area shape="rect" id="node3" href="$classlinearham_1_1HMM.html#ab858d691af8a9cc7fea4f84e8e4a0f13" title="Constructor for HMM that is called from the (Simple|Phylo)HMM constructor." alt="" coords="5,5,180,32"/>
 </map>

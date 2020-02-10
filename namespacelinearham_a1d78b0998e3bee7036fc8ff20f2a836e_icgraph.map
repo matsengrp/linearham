@@ -1,4 +1,5 @@
 <map id="linearham::CachePaddingStates" name="linearham::CachePaddingStates">
-<area shape="rect" id="node2" href="$classlinearham_1_1HMM.html#a1d9afc9acb982d20209e0779e7fe358b" title="Initializes the HMM state space for this clonal family. " alt="" coords="263,5,437,47"/>
-<area shape="rect" id="node3" href="$classlinearham_1_1HMM.html#ab858d691af8a9cc7fea4f84e8e4a0f13" title="Constructor for HMM that is called from the (Simple|Phylo)HMM constructor. " alt="" coords="485,13,644,39"/>
+<area shape="rect" id="node1" title="Caches the &quot;padding&quot; state information for a given germline gene." alt="" coords="507,13,761,39"/>
+<area shape="rect" id="node2" href="$classlinearham_1_1HMM.html#a1d9afc9acb982d20209e0779e7fe358b" title="Initializes the HMM state space for this clonal family." alt="" coords="228,5,459,47"/>
+<area shape="rect" id="node3" href="$classlinearham_1_1HMM.html#ab858d691af8a9cc7fea4f84e8e4a0f13" title="Constructor for HMM that is called from the (Simple|Phylo)HMM constructor." alt="" coords="5,13,180,39"/>
 </map>

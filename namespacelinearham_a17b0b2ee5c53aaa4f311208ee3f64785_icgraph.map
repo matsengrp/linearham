@@ -1,5 +1,6 @@
 <map id="linearham::ConvertIntsToSeq" name="linearham::ConvertIntsToSeq">
-<area shape="rect" id="node2" href="$classlinearham_1_1PhyloHMM.html#afb8772aa451ca534718900c9dd9e903d" title="Builds the xMSA and the vector of xMSA sequence strings. " alt="" coords="245,5,396,47"/>
-<area shape="rect" id="node3" href="$classlinearham_1_1PhyloHMM.html#a5ae40749e7653ebf59c1d0f7dff1d1e3" title="Initializes the xMSA data structures. " alt="" coords="444,5,599,47"/>
-<area shape="rect" id="node4" href="$classlinearham_1_1PhyloHMM.html#ac4b9fe8413efebfd467b320375bfa4c8" title="PhyloHMM constructor. " alt="" coords="647,5,797,47"/>
+<area shape="rect" id="node1" title="Converts an integer sequence to a string sequence according to the alphabet." alt="" coords="705,13,944,39"/>
+<area shape="rect" id="node2" href="$classlinearham_1_1PhyloHMM.html#afb8772aa451ca534718900c9dd9e903d" title="Builds the xMSA and the vector of xMSA sequence strings." alt="" coords="483,5,657,47"/>
+<area shape="rect" id="node3" href="$classlinearham_1_1PhyloHMM.html#a5ae40749e7653ebf59c1d0f7dff1d1e3" title="Initializes the xMSA data structures." alt="" coords="228,5,435,47"/>
+<area shape="rect" id="node4" href="$classlinearham_1_1PhyloHMM.html#ac4b9fe8413efebfd467b320375bfa4c8" title="PhyloHMM constructor." alt="" coords="5,5,180,47"/>
 </map>
