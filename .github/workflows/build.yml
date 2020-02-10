@@ -1,4 +1,4 @@
-name: Build Test Publish Quay
+name: build
 on: [push]
 jobs:
   build:
