@@ -9,7 +9,7 @@
 	url = https://github.com/matsengrp/libptpll.git
 [submodule "lib/tclap"]
 	path = lib/tclap
-	url = https://git.code.sf.net/p/tclap/code
+	url = https://github.com/mirror/tclap.git
 [submodule "lib/partis"]
 	path = lib/partis
 	url = https://github.com/psathyrella/partis.git

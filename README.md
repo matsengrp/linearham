@@ -8,7 +8,7 @@
 '._.-'-._.-._.-''-..'
 ```
 [![Docker Repository on Quay](https://quay.io/repository/matsengrp/linearham/status "Docker Repository on Quay")](https://quay.io/repository/matsengrp/linearham) &nbsp;
-[![wercker status](https://app.wercker.com/status/284280f33f13e936de0d544a332121af/s/master "wercker status")](https://app.wercker.com/project/byKey/284280f33f13e936de0d544a332121af)
+![](https://github.com/matsengrp/linearham/workflows/build/badge.svg)
 
 ## Installation
 
