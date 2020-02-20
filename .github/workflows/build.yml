@@ -34,6 +34,9 @@ jobs:
         BRANCH: gh-pages
         FOLDER: html
     - name: Slack Notification
-      uses: rtCamp/action-slack-notify@v2.0.0
-      env:
-        SLACK_WEBHOOK: ${{ secrets.SLACK_NOTIFICATION_WEBHOOK }}
+      uses: homoluctus/slatify@master
+      if: always()
+      with:
+        type: ${{ job.status }}
+        job_name: 'Linearham Build'
+        url: ${{ secrets.SLACK_NOTIFICATION_WEBHOOK}}
