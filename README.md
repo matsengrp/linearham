@@ -12,10 +12,38 @@
 
 ## Installation
 
-The `linearham` installation dependencies are specified in the `Dockerfile` and `wercker.yml` files.
-Note that these files specify build instructions for computers running Debian operating systems.
+The `linearham` installation dependencies are specified in the `Dockerfile` file.
+To install the dependencies yourself, you must clone this repository and then run each command in the `Dockerfile` that comes after `RUN`.
+Alternatively, you may use Docker (see below).
+
+Note that the `Dockerfile` specifies build instructions for computers running Debian operating systems.
 The installation steps have been successfully tested on Ubuntu 16.04 and we expect the installation process to work on other UNIX-based platforms as well.
-A Docker image for `linearham` can be found on [quay.io](https://quay.io/repository/matsengrp/linearham).
+
+## Docker
+
+You can run Linearham using [our Docker image on quay.io](https://quay.io/repository/matsengrp/linearham); if you are new to Docker, [read this](http://erick.matsen.org/2018/04/19/docker.html#pulling-and-running-a-docker-image).
+
+Before running with Docker, choose an image tag to use from [those published to quay](https://quay.io/repository/matsengrp/linearham?tab=tags).
+We recommended you use the most recent **version-specific** tag (e.g. `v1.0.0`, not `latest`) in order to allow for reproducibility.
+
+By default, running `docker run quay.io/matsengrp/linearham:tag` will run an example command in the Docker container and then exit.
+To get an interactive session in the container, you must run like this:
+
+`docker run` **`-it`** `quay.io/matsengrp/linearham:tag` **`/bin/bash`**
+
+To run Linearham in the container you can either: 
+- Use an interactive session as above.
+- Create a shell script with your Linearham command(s) and replace `/bin/bash` above with the name of your script.
+
+To access your own data from within the container or to persist your output beyond the container, you must [use volumes by specifying `-v`](http://erick.matsen.org/2018/04/19/docker.html#making-a-directory-available-inside-of-a-container).
+Here is one good way to do this that we have tested for Linearham:
+
+1. Choose a parent directory that contains both your input data directory and your desired output directory.
+2. Mount it as a volume to `/linearham/work` inside the container, e.g. 
+     
+     ```-v /host/input-output/parent/dir:/linearham/work```
+3. All commands inside the container referencing input and output inside that directory should do so via `/linearham/work`. 
+E.g. setting `--outdir=/linearham/work/output` inside the container will persist your output outside the container in `/host/input-output/parent/dir/output`.
 
 ## Example usage
 
