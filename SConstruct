@@ -6,7 +6,6 @@ import os
 from SCons.Script import Environment
 import SCons.Script as Script
 
-
 #### Set up command line arguments/options
 
 # partis arguments
@@ -299,19 +298,23 @@ if options["run_linearham"]:
 
     @nest.add_target()
     def partis_yaml_file(outdir, c):
+        default_outfname = os.path.join(outdir, "partis_run.yaml")
         if options["partis_yaml_file"] is not None:
             assert options["parameter_dir"] is not None, "Specify both --partis-yaml-file and --parameter-dir."
+            if options["partis_yaml_file"] == default_outfname:
+                # scons complains about dependency cycles if source and target have the same name
+                default_outfname = os.path.join(outdir, "partis_run.lh.yaml")
             partis_yaml_file = env.Command(
-                os.path.join(outdir, "partis_run.yaml"),
+                default_outfname,
                 options["partis_yaml_file"],
                 "lib/partis/bin/partis get-linearham-info" \
                     + " --outfname $SOURCE" \
                     + " --parameter-dir " + options["parameter_dir"] \
                     + " --linearham-info-fname $TARGET")
             env.Depends(partis_yaml_file, "lib/partis/packages/ham/bcrham")
+            return str(partis_yaml_file[0])
         else:
-            partis_yaml_file = os.path.join(outdir, "partis_run.yaml")
-        return partis_yaml_file
+            return default_outfname
 
     @nest.add_target()
     def hmm_param_dir(outdir, c):
