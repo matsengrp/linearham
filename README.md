@@ -17,7 +17,8 @@ To install the dependencies yourself, you must clone this repository and then ru
 Alternatively, you may use Docker (see below).
 
 Note that the `Dockerfile` specifies build instructions for computers running Debian operating systems.
-The installation steps have been successfully tested on Ubuntu 16.04 and we expect the installation process to work on other UNIX-based platforms as well.
+The installation steps have been successfully tested using the Docker image, which is based on Debian version 9 AKA "stretch."
+We expect the installation process to work on similar UNIX-based platforms.
 
 ## Docker
 
