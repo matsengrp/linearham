@@ -64,7 +64,7 @@ Script.AddOption("--cluster-seed-unique-id",
 Script.AddOption("--template-path",
         dest="template_path",
         type="str",
-        default=None,
+        default="templates/revbayes_template.rev",
         help="The Rev template path.")
 
 Script.AddOption("--mcmc-iter",
