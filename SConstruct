@@ -214,7 +214,7 @@ def default_label(d):
 
 @nest.add_target()
 def commit_and_tag(outdir, c):
-    log = env.Command(os.path.join(outdir, "git.log"), "", "git rev-parse --verify HEAD >> $TARGET && git describe --dirty >> $TARGET")
+    log = env.Command(os.path.join(outdir, "git.log"), "", "git rev-parse --verify HEAD >> $TARGET && git describe --dirty --always >> $TARGET")
     env.AlwaysBuild(log)
     return log
 
