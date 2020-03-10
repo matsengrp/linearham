@@ -48,7 +48,8 @@ std::unordered_map<std::string, GermlineGene> CreateGermlineGeneMap(
   // Check the directory path and open the stream.
   if (hmm_param_dir.back() != '/') hmm_param_dir += "/";
   DIR* dir = opendir(hmm_param_dir.c_str());
-  assert(dir != nullptr);
+  if(dir == nullptr)
+    throw std::runtime_error("--hmm-param-dir \"" + hmm_param_dir + "\" does not exist");
 
   // Initialize variables for directory parsing.
   struct dirent* dir_entry;
