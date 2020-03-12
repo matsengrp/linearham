@@ -8,6 +8,8 @@ import SCons.Script as Script
 
 #### Set up command line arguments/options
 
+all_actions = ['run_partis', 'run_linearham', 'build_partis_linearham']
+
 # partis arguments
 
 Script.AddOption("--run-partis",
@@ -201,6 +203,8 @@ options = get_options(env)
 if not options["build_partis_linearham"]:
     env.SConsignFile(os.path.join(options["outdir"], ".sconsign"))
 
+if not any(options[a] for a in all_actions):
+    raise Exception('No action specified. Choose from %s' % ', '.join('--' + a.replace('_', '-') for a in all_actions))
 
 #### Set up the nesting structure
 
