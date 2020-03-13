@@ -180,7 +180,6 @@ def get_options(env):
         num_rates = process_multiarg(env.GetOption("num_rates"), int, ","),
         burnin_frac = process_multiarg(env.GetOption("burnin_frac"), float, ","),
         subsamp_frac = process_multiarg(env.GetOption("subsamp_frac"), float, ","),
-        num_cores = env.GetOption("num_cores"),
         rng_seed = process_multiarg(env.GetOption("rng_seed"), int, ","),
         lineage_unique_id = process_multiarg(env.GetOption("lineage_unique_id"), str, ",") if env.GetOption("lineage_unique_id") is not None else None,
         asr_pfilters = process_multiarg(env.GetOption("asr_pfilters"), float, ","),
