@@ -277,6 +277,8 @@ if options["build_partis_linearham"]:
 #### Run partis (if necessary)
 
 if options["run_partis"]:
+    if options["fasta_path"] is None:
+        raise Exception("--fasta-path is required for --run-partis")
 
     @nest.add_target()
     def partis_output(outdir, c):
