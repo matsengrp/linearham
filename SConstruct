@@ -110,12 +110,6 @@ Script.AddOption("--subsamp-frac",
         default="0.05",
         help="What bootstrap sampling fraction should we use?")
 
-Script.AddOption("--num-cores",
-        dest="num_cores",
-        type=int,
-        default=1,
-        help="The number of cores to use for ASR sampling.")
-
 Script.AddOption("--rng-seed",
         dest="rng_seed",
         type="str",
@@ -439,7 +433,7 @@ if options["run_linearham"]:
                 + " $SOURCES" \
                 + " " + str(c["linearham_setting"]["burnin_frac"]) \
                 + " " + str(c["linearham_setting"]["subsamp_frac"]) \
-                + " " + str(options["num_cores"]) \
+                + " " + str(1) \
                 + " " + str(c["revbayes_setting"]["rng_seed"]) \
                 + " $TARGETS")
         env.Depends(linearham_final_output, "scripts/run_bootstrap_asr_ess.R")
