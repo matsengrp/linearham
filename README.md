@@ -74,6 +74,7 @@ By default, linearham looks in the best (most likely) of these partitions, but y
 Within a partition, you can specify a cluster either by (zero-based) index with `--cluster-index`, or with the unique id of a particular sequence in the cluster with `--cluster-seed-unique-id` (see partis [--seed-unique-id](https://github.com/psathyrella/partis/blob/master/docs/subcommands.md#--seed-unique-id-id) for more info).
 
 | Command | Description |
+| ---     | ---         |
 | `--partis-yaml-file`   | Path to the partis output file that is linearham's input. Defaults to the location in `--outdir` to which the linearham `--run-partis` action writes it   |
 | `--outdir`             | The output directory (defaults to `output`).                                                                                                              |
 | `--lineage-unique-ids` | `,`-separated list of sequence ids, each of whose lineages will be analyzed separately, and in somewhat more detail than by default (see below).          |
