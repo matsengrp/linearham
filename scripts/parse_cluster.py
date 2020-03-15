@@ -67,14 +67,14 @@ def parse_cluster_annotation(
             if len(clusters_to_use) > 1:
                 show_available_clusters(cpath, ipartition)
                 raise Exception(
-                    "Multiple clusters with partis seed sequence with uid '%s'. Partis output file may contain intermediate annotations from seed partitioning. Try using --cluster-index to choose one from the list printed above (best viewed without line wrapping)."
+                    "Multiple clusters with partis seed sequence with uid '%s'. Partis output file may contain intermediate annotations from seed partitioning. Try using --cluster-index to choose one from the list printed above (best viewed with less -RS)."
                     % seed_unique_id
                 )
 
     if len(clusters_to_use) != 1:
         show_available_clusters(cpath, ipartition)
         raise Exception(
-            "Options passed must uniquely identify 1 cluster in the partis output file but instead resulted in %d clusters. Try using --cluster-index to choose one from the list printed above (best viewed without line wrapping)."
+            "Options passed must uniquely identify 1 cluster in the partis output file but instead resulted in %d clusters. Try using --cluster-index to choose one from the list printed above (best viewed with less -RS)."
             % len(clusters_to_use)
         )
 
