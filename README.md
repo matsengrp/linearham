@@ -70,19 +70,18 @@ scons --run-linearham --outdir=<dir> [--partis-yaml-file=<file>] [--parameter-di
 If there is one cluster in the partis output file, linearham will run on that.
 If there is more than one, you'll have to select a cluster to run on using the following options.
 Partis clusters sequences hierarchically, so [its output](https://github.com/psathyrella/partis/blob/master/docs/output-formats.md) stores a list of partitions, where each partition divides the sequences in the repertoire into clonal families (clusters).
-By default, linearham looks in the best (most likely) of these partitions, but you can specify the (zero-based) index a different one with `--partition-index`.
+By default, linearham looks in the best (most likely) of these partitions, but you can specify the (zero-based) index of a different one with `--partition-index`.
 Within a partition, you can specify a cluster either by (zero-based) index with `--cluster-index`, or with the unique id of a particular sequence in the cluster with `--cluster-seed-unique-id` (see partis [--seed-unique-id](https://github.com/psathyrella/partis/blob/master/docs/subcommands.md#--seed-unique-id-id) for more info).
+Other options:
 
 | Command | Description |
 | ---     | ---         |
 | `--partis-yaml-file`   | Path to the partis output file that is linearham's input. Defaults to the location in `--outdir` to which the linearham `--run-partis` action writes it   |
 | `--outdir`             | The output directory (defaults to `output`).                                                                                                              |
 | `--lineage-unique-ids` | `,`-separated list of sequence ids, each of whose lineages will be analyzed separately, and in somewhat more detail than by default (see below).          |
-| `--parameter-dir`      | Directory from which linearham reads partis hmm files. If not set, it defaults to the location in `--outdir` used by `--run-partis`.                      |
-|                        | As for `--run-partis` (above), parameters will be much more accurate if you cache them with partis beforehand on the entire repertoire, but if this isn't |
-|                        | possible they'll be inferred automatically on the one family on which you're running linearham, which should be fine.                                     |
+| `--parameter-dir`      | Directory from which linearham reads partis hmm files. If not set, it defaults to the location in `--outdir` used by `--run-partis`. As for `--run-partis` (above), parameters will be much more accurate if you cache them with partis beforehand on the entire repertoire, but if this isn't possible they'll be inferred automatically on the one family on which you're running linearham, which should be fine.                     |
 
-If you don't have a cluster of interest, or are not sure how to indentify it using those options, you can run [scripts/parse_cluster.py](https://github.com/matsengrp/linearham/blob/master/scripts/parse_cluster.py) to work it out.
+If you don't have a cluster of interest, or are not sure how to identify it using these options, you can run [scripts/parse_cluster.py](https://github.com/matsengrp/linearham/blob/master/scripts/parse_cluster.py) to work it out.
 
 For example, running:
 ```
@@ -129,13 +128,13 @@ You'll only need to run this if you've either modified some source code or you'r
 
 A variety of different output files are written to `--outdir`:
 
-- partis [output file](https://github.com/psathyrella/partis/blob/master/docs/output-formats.md) used as input for linearham (e.g. `output/partis_run.yaml`) contains:
+- the partis [output file](https://github.com/psathyrella/partis/blob/master/docs/output-formats.md) used as input for linearham (e.g. `output/partis_run.yaml`) contains:
   - partis-inferred clonal families (clusters) and annotations (including inferred naive sequence)
   - sample-specific inferred germline gene set
-- clonal family fasta fasta (e.g. `output/clusterX/cluster_seqs.fasta`, where `X` is the index of the clonal family of interest):
+- a clonal family fasta (e.g. `output/clusterX/cluster_seqs.fasta`, where `X` is the index of the clonal family of interest):
   - the `partis`-inferred clonal family naive sequence
-  - input sequences with SHM indels "reversed", and non-variable regions (V/J framework) trimmed
-- linearham output dir (e.g. `output/clusterX/mcmciter10000_<stuff>` where `X` is the cluster index and `<stuff>` records the exact options of the run):
+  - input sequences with SHM indels "reversed" (reverted to their state in the naive rearrangement), and non-variable regions (V/J framework) trimmed
+- a linearham output dir (e.g. `output/clusterX/mcmciter10000_<stuff>` where `X` is the cluster index and `<stuff>` records the exact options of the run):
 
 | file | format | description |
 | ---     | ---       | ---         |
