@@ -21,7 +21,7 @@ from clusterpath import ClusterPath
 
 def show_available_clusters(cpath, ipartition):
     available_clusters = [
-        OrderedDict([("index", i), ("size", len(cluster)), ("unique_ids", cluster)])
+        OrderedDict([("index", i), ("size", len(cluster)), ("unique_ids", ' '.join(cluster))])
         for i, cluster in enumerate(cpath.partitions[ipartition])
     ]
     print " available clusters in partition at index {} {}:".format(
