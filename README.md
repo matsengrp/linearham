@@ -14,8 +14,8 @@
 
 Linearham's dependencies are described in the Dockerfile.
 We recommend that you run linearham inside a Docker container, since this will make installation much easier (if you're new to Docker, [read this](http://erick.matsen.org/2018/04/19/docker.html)).
-However, you can also install the dependencies by hand, in which case you should clone this repository and then run each command in the Dockerfile that comes after `RUN` (treat `WORKDIR` as `cd`).
-The closer your system is to that described by the Dockerfile's `FROM` line (at the moment, debian), the easier this will be.
+However, you can also install the dependencies by hand, in which case you should clone the repository and run each command in the [Dockerfile](https://github.com/matsengrp/linearham/blob/edit-readme/Dockerfile) that's on a line starting with `RUN` (treat `WORKDIR` as `cd`).
+The more similar your system is to that described by the Dockerfile's `FROM` line (at the moment, debian), the easier this will be.
 
 ## Using Docker
 
@@ -26,14 +26,14 @@ It's best to start by running an interactive session in the container:
 You can also create a shell script with your linearham commands for docker to run, and put it in place of `/bin/bash` (use `test.sh` as an example).
 If you want your run to be reproducible, choose a tag of the form vX.X.X [from quay.io](https://quay.io/repository/matsengrp/linearham?tab=tags), then specify it like so: `quay.io/matsengrp/linearham:vX.X.X`.
 
-To access your own data from within the container or to persist your output beyond the container, you must [use volumes by specifying `-v`](http://erick.matsen.org/2018/04/19/docker.html#making-a-directory-available-inside-of-a-container).
-We recommend using this convention (other paths likeley won't work):
+To access your own data from within the container, or to persist your output beyond the container, you must [use volumes by specifying `-v`](http://erick.matsen.org/2018/04/19/docker.html#making-a-directory-available-inside-of-a-container).
+We recommend using this convention (other paths may not work):
 
-1. Choose a directory outside of Docker that contains both your input data directory and your desired output directory.
+1. Choose a directory outside of Docker that contains both your input data directory and your desired output directory
 2. Mount it as a volume to `/linearham/work` inside the container: `-v /your/local/path:/linearham/work`
-3. All commands inside the container referencing input and output inside that directory should do so via `/linearham/work`, e.g. setting `--outdir=/linearham/work/output` inside the container will persist your output outside the container in `/your/local/path/output`.
+3. All commands inside the container referencing paths inside that directory should do so via `/linearham/work`, e.g. setting `--outdir=/linearham/work/output` inside the container will persist your output outside the container in `/your/local/path/output`.
 
-Note that because Docker must run as root (no, really), this means that you will be writing to the directory on your host machine *as root*, so a) be very careful and b) don't choose anything anywhere near `/` (something like `/home/user/several/sub/dirs` is good).
+Note that because Docker must run as root, this means that you will be writing to the directory on your host machine _as root_, so a) be very careful and b) don't choose anything anywhere near `/` (something like `/home/user/several/sub/dirs` is good).
 
 ## Running linearham
 
@@ -45,20 +45,20 @@ Linearham uses a partis output file as its input.
 If you've already run partis to create this file, skip to `--run-linearham`; if not, you can have linearham run partis for you with `--run-partis`.
 
 #### `--run-partis`
-This runs partis on an input fasta file:
+This runs partis on an input sequence file:
 ```bash
 scons --run-partis --fasta-path=<file> --locus={igh|igk|igl} --outdir=<dir> [--parameter-dir=<dir>]
 ```
 Although `--fasta-path` can be any file type that partis `--infname` handles (see partis help).
 Partis requires a directory with fitted sample-specific parameters, which if not already present will be automatically inferred based on the sequences in the fasta file.
-These parameters should generally be inferred on the entire repertoire of many clonal families, but because linearham runs on only a single family, it is better if you use parameters cached in a previous run on the entire repertoire, and then pass them to linearham with `--parameter-dir`.
+Because linearham runs on only a single family at a time, but these parameters are more accurate if inferred on the entire repertoire of many clonal families, it is better if you use parameters cached in a previous partis run on the entire repertoire, and then pass them to linearham with `--parameter-dir`.
 However, if you don't, the automatically-inferred parameters will still work fine, they'll just be somewhat less accurate (since they'll only be based on the one family).
 
 Other partis-related arguments:
 | Name | Description |
 | ---     | ---         |
 | `--all-clonal-seqs` | If set, attempts to force all sequences in the fasta file into the same clonal family; otherwise it runs partis partition to infer the clonal families |
-| `--locus` | Which immunoglobulin locus are we doing inference on (defaults to `igh`)? |
+| `--locus` | Which immunoglobulin locus (defaults to `igh`)? |
 | `--outdir` | The output directory (defaults to `output`). |
 
 #### `--run-linearham`
@@ -71,7 +71,7 @@ If there is one cluster in the partis output file, linearham will run on that.
 If there is more than one, you'll have to select a cluster to run on using the following options.
 Partis clusters sequences hierarchically, so [its output](https://github.com/psathyrella/partis/blob/master/docs/output-formats.md) stores a list of partitions, where each partition divides the sequences in the repertoire into clonal families (clusters).
 By default, linearham looks in the best (most likely) of these partitions, but you can specify the (zero-based) index a different one with `--partition-index`.
-Within a partition, you can specify a cluster either by (zero-based) index with `--cluster-index`, or with the unique id of a particular sequence in the cluster with `--cluster-seed-unique-id` (see partis (--seed-unique-id)[(https://github.com/psathyrella/partis/blob/master/docs/subcommands.md#--seed-unique-id-id)] for more info).
+Within a partition, you can specify a cluster either by (zero-based) index with `--cluster-index`, or with the unique id of a particular sequence in the cluster with `--cluster-seed-unique-id` (see partis (--seed-unique-id)[https://github.com/psathyrella/partis/blob/master/docs/subcommands.md#--seed-unique-id-id] for more info).
 
 | Command | Description |
 | `--partis-yaml-file`   | Path to the partis output file that is linearham's input. Defaults to the location in `--outdir` to which the linearham `--run-partis` action writes it   |
@@ -104,7 +104,7 @@ scons --run-linearham --cluster-index=2 <args.. >
 ```
 
 Other linearham-related arguments:
-| Command | `,`-list? | Description |
+| Command | `,`-separated list? | Description |
 | ---     | ---       | ---         |
 | `--template-path` | no | The Rev template path. |
 | `--mcmc-iter` | yes | How many RevBayes MCMC iterations should we use (defaults to 10000)? |
@@ -139,11 +139,11 @@ A variety of different output files are written to `--outdir`:
 | file | format | description |
 | ---     | ---       | ---         |
 | linearham\_run.log     | tsv       | posterior samples of the naive sequence annotation and the phylogenetic substitution model and rate variation parameters |
-| linearham\_run.trees   | newick    | posterior tree samples with ancestral sequence annotations (formatted for use by [dendropy](https://dendropy.org/)) |
+| linearham\_run.trees   | newick    | posterior tree samples with ancestral sequence annotations (formatted for use by dendropy |
 | linearham\_run.ess     | tsv       | approximate effective sample sizes for each field in linearham\_run.log |
 | aa\_naive\_seqs.fasta  | fasta     | each sampled amino acid naive sequence and its associated posterior probability |
-| aa\_naive\_seqs.dnamap | fasta-ish | map from each sampled amino acid naive sequence to its corresponding set of nucleotide naive sequences and posterior probabilities |
-| aa\_naive\_seqs.png    | png       | logo plot of amino acid naive sequence posterior probability using [WebLogo](http://weblogo.threeplusone.com/) to visualize per-site uncertainties |
+| aa\_naive\_seqs.dnamap | fasta (ish) | map from each sampled amino acid naive sequence to its corresponding set of nucleotide naive sequences and posterior probabilities |
+| aa\_naive\_seqs.png    | png       | logo plot of amino acid naive sequence posterior probability using WebLogo to visualize per-site uncertainties |
 
 If `--lineage-unique-id` is specified, there will also be additional lineage-specific output files in subdirectories like `lineage_X/`.
 These include `aa_lineage_seqs.fasta` and `aa_lineage_seqs.dnamap`, which are analagous to the similarly named per-family files above (i.e. `aa_naive_seqs.fasta` and `aa_naive_seqs.dnamap`).
