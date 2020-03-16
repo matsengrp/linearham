@@ -202,6 +202,10 @@ if not options["build_partis_linearham"]:
 if not any(options[a] for a in all_actions) and '--help' not in sys.argv:
     raise Exception('No action specified. Choose from %s' % ', '.join('--' + a.replace('_', '-') for a in all_actions))
 
+lhdir = os.getcwd()  # os.path.dirname(os.path.realpath(__file__))  # would like to do it this way, but __file__ isn't set for scripts, only modules
+if os.path.realpath(options["outdir"]).find(lhdir) != 0:
+    raise Exception("in order to avoid scons getting confused and not doing anything, --outdir has to be a subdir of the main linearham dir (%s), but it was set to %s" % (lhdir, os.path.realpath(options["outdir"])))
+
 #### Set up the nesting structure
 
 nest = nestly_scons.SConsWrap(nestly.Nest(), dest_dir=options["outdir"], alias_environment=env)
