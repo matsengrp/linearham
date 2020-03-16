@@ -150,8 +150,8 @@ If `--lineage-unique-ids` is specified, there will also be additional lineage-sp
 These include:
 | file | format | description |
 | ---     | ---       | ---         |
-| aa_lineage_seqs.fasta | fasta | for **each intermediate ancestor in the lineage of the sequence with the specified id**, the sampled naive amino acid sequence and its associated posterior probability |
-| aa_lineage_seqs.dnamap | fasta(ish) | for **each intermediate ancestor of the lineage of the sequence with the specified id**, map from sampled naive amino acid sequence to its corresponding set of nucleotide sequences and posterior probabilities |
+| aa_lineage_seqs.fasta | fasta | for **each intermediate ancestor in the lineage of the sequence with the specified id**, the sampled amino acid sequence and its associated posterior probability |
+| aa_lineage_seqs.dnamap | fasta(ish) | for **each intermediate ancestor of the lineage of the sequence with the specified id**, map from sampled amino acid sequence to its corresponding set of nucleotide sequences and posterior probabilities |
 | aa_lineage_seqs.pfilterX.png | png | posterior probability lineage graphic made with [Graphviz](https://www.graphviz.org/), where `X` is the posterior probability cutoff for the sampled sequences. |
 
 ## References
