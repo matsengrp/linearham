@@ -24,7 +24,7 @@ It's best to start by running an interactive session in the container:
 `docker run -it quay.io/matsengrp/linearham /bin/bash`.
 
 You can also create a shell script with your linearham commands for docker to run, and put it in place of `/bin/bash` (use `test.sh` as an example).
-If you want your run to be reproducible, choose a tag of the form vX.X.X [from quay.io](https://quay.io/repository/matsengrp/linearham?tab=tags), then specify it like so: `quay.io/matsengrp/linearham:vX.X.X`.
+If you want your run to be reproducible, choose a tag of the form `v<stuff>` [from quay.io](https://quay.io/repository/matsengrp/linearham?tab=tags), then specify it like so: `quay.io/matsengrp/linearham:v<stuff>`.
 
 To access your own data from within the container, or to persist your output beyond the container, you must [use volumes by specifying `-v`](http://erick.matsen.org/2018/04/19/docker.html#making-a-directory-available-inside-of-a-container).
 We recommend using this convention (other paths may not work):
@@ -67,9 +67,9 @@ Once you have a partis output file, whether you made it separately or with linea
 ```bash
 scons --run-linearham --outdir=<dir> [--partis-yaml-file=<file>] [--parameter-dir=<dir>]
 ```
-If there is one cluster in the partis output file, linearham will run on that.
+If there is one clonal family (i.e. cluster) in the partis output file, linearham will run on that.
 If there is more than one, you'll have to select a cluster to run on using the following options.
-Partis clusters sequences hierarchically, so [its output](https://github.com/psathyrella/partis/blob/master/docs/output-formats.md) stores a list of partitions, where each partition divides the sequences in the repertoire into clonal families (clusters).
+Partis performs clustering [hierarchically](https://en.wikipedia.org/wiki/Hierarchical_clustering#Agglomerative_clustering_example}, so [its output](https://github.com/psathyrella/partis/blob/master/docs/output-formats.md) stores a list of partitions, where each partition divides the sequences in the repertoire into clonal families (clusters).
 By default, linearham looks in the best (most likely) of these partitions, but you can specify the (zero-based) index of a different one with `--partition-index`.
 Within a partition, you can specify a cluster either by (zero-based) index with `--cluster-index`, or with the unique id of a particular sequence in the cluster with `--cluster-seed-unique-id` (see partis [--seed-unique-id](https://github.com/psathyrella/partis/blob/master/docs/subcommands.md#--seed-unique-id-id) for more info).
 Other options:
@@ -81,7 +81,7 @@ Other options:
 | `--lineage-unique-ids` | `,`-separated list of sequence ids, each of whose lineages will be analyzed separately, and in somewhat more detail than by default (see below).          |
 | `--parameter-dir`      | Directory from which linearham reads partis hmm files. If not set, it defaults to the location in `--outdir` used by `--run-partis`. As for `--run-partis` (above), parameters will be much more accurate if you cache them with partis beforehand on the entire repertoire, but if this isn't possible they'll be inferred automatically on the one family on which you're running linearham, which should be fine.                     |
 
-If you don't have a cluster of interest, or are not sure how to identify it using these options, you can run [scripts/parse_cluster.py](https://github.com/matsengrp/linearham/blob/master/scripts/parse_cluster.py) to work it out.
+If you don't have a clonal family/cluster of interest, or are not sure how to identify it using these options, you can run [scripts/parse_cluster.py](https://github.com/matsengrp/linearham/blob/master/scripts/parse_cluster.py) to work it out.
 
 For example, running:
 ```
@@ -96,15 +96,15 @@ index   size    unique_ids
 2       262     [...]
 3       4       [...]
 ```
-
 Using the indices from this table, you can specify the corresponding clusters to Linearham. 
 Running on the cluster with 262 sequences from the above table would look like:
 ```
 scons --run-linearham --cluster-index=2 <args.. >
 ```
+You can also figure out which sequences are in which clusters with the [partis `view-output`](https://github.com/psathyrella/partis/blob/dev/docs/subcommands.md#view-output) action piped to `less -RS`.
 
 Other linearham-related arguments:
-| Command | `,`-separated list? | Description |
+| Command | list? | Description |
 | ---     | ---       | ---         |
 | `--template-path` | no | The RevBayes template path (defaults to [templates/revbayes_template.rev](https://github.com/matsengrp/linearham/blob/master/templates/revbayes_template.rev)). |
 | `--mcmc-iter` | yes | How many RevBayes MCMC iterations should we use (defaults to 10000)? |
@@ -117,6 +117,7 @@ Other linearham-related arguments:
 | `--rng-seed` | yes | The random number generator (RNG) seed (defaults to 0). |
 | `--asr-pfilters` | no | The ancestral sequence posterior probability thresholds (defaults to 0.1). |
 
+If some aguments are specified as `,`-separated lists (middle column), linearham will run revbayes separately, writing to separate output directories, for all combinations of all such parameters.
 For more information on these arguments, run `scons --help`.
 
 #### `--build-partis-linearham`
@@ -141,16 +142,16 @@ A variety of different output files are written to `--outdir`:
 | linearham\_run.log     | tsv       | posterior samples of the naive sequence annotation and the phylogenetic substitution model and rate variation parameters |
 | linearham\_run.trees   | newick    | posterior tree samples with ancestral sequence annotations (formatted for use by [Dendropy](https://dendropy.org/) |
 | linearham\_run.ess     | tsv       | approximate effective sample sizes for each field in linearham\_run.log |
-| aa\_naive\_seqs.fasta  | fasta     | each sampled amino acid naive sequence and its associated posterior probability |
-| aa\_naive\_seqs.dnamap | fasta (ish) | map from each sampled amino acid naive sequence to its corresponding set of nucleotide naive sequences and posterior probabilities |
-| aa\_naive\_seqs.png    | png       | logo plot of amino acid naive sequence posterior probability using [WebLogo](http://weblogo.threeplusone.com/) to visualize per-site uncertainties |
+| aa\_naive\_seqs.fasta  | fasta     | each sampled naive amino acid sequence and its associated posterior probability |
+| aa\_naive\_seqs.dnamap | fasta (ish) | map from each sampled naive amino acid sequence to its corresponding set of nucleotide naive sequences and posterior probabilities |
+| aa\_naive\_seqs.png    | png       | logo plot of naive amino acid sequence posterior probability using [WebLogo](http://weblogo.threeplusone.com/) to visualize per-site uncertainties |
 
 If `--lineage-unique-ids` is specified, there will also be additional lineage-specific output files in subdirectories (one for each sequence id specified) like `lineage_<uid>/`.
 These include:
 | file | format | description |
 | ---     | ---       | ---         |
-| aa_lineage_seqs.fasta | fasta | for **each intermediate ancestor in the lineage of the sequence with the specified id**, the sampled amino acid sequence and its associated posterior probability |
-| aa_lineage_seqs.dnamap | fasta(ish) | for **each intermediate ancestor of the lineage of the sequence with the specified id**, map from sampled amino acid naive sequence to its corresponding set of nucleotide sequences and posterior probabilities |
+| aa_lineage_seqs.fasta | fasta | for **each intermediate ancestor in the lineage of the sequence with the specified id**, the sampled naive amino acid sequence and its associated posterior probability |
+| aa_lineage_seqs.dnamap | fasta(ish) | for **each intermediate ancestor of the lineage of the sequence with the specified id**, map from sampled naive amino acid sequence to its corresponding set of nucleotide sequences and posterior probabilities |
 | aa_lineage_seqs.pfilterX.png | png | posterior probability lineage graphic made with [Graphviz](https://www.graphviz.org/), where `X` is the posterior probability cutoff for the sampled sequences. |
 
 ## References
