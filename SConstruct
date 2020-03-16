@@ -5,6 +5,7 @@ from nestly import scons as nestly_scons
 import os
 from SCons.Script import Environment
 import SCons.Script as Script
+import sys
 
 #### Set up command line arguments/options
 
@@ -116,11 +117,11 @@ Script.AddOption("--rng-seed",
         default="0",
         help="The RNG seed.")
 
-Script.AddOption("--lineage-unique-id",
-        dest="lineage_unique_id",
+Script.AddOption("--lineage-unique-ids",
+        dest="lineage_unique_ids",
         type="str",
         default=None,
-        help="The name of the sequence(s) of interest for analyzing lineages. ")
+        help=",-separated list of names of the sequence(s) of interest for analyzing lineages. ")
 
 Script.AddOption("--asr-pfilters",
         dest="asr_pfilters",
@@ -181,12 +182,14 @@ def get_options(env):
         burnin_frac = process_multiarg(env.GetOption("burnin_frac"), float, ","),
         subsamp_frac = process_multiarg(env.GetOption("subsamp_frac"), float, ","),
         rng_seed = process_multiarg(env.GetOption("rng_seed"), int, ","),
-        lineage_unique_id = process_multiarg(env.GetOption("lineage_unique_id"), str, ",") if env.GetOption("lineage_unique_id") is not None else None,
+        lineage_unique_ids = process_multiarg(env.GetOption("lineage_unique_ids"), str, ",") if env.GetOption("lineage_unique_ids") is not None else None,
         asr_pfilters = process_multiarg(env.GetOption("asr_pfilters"), float, ","),
         partis_yaml_file = env.GetOption("partis_yaml_file"),
 
         # partis/linearham arguments
         build_partis_linearham = env.GetOption("build_partis_linearham"),
+
+        # general arguments
         parameter_dir = env.GetOption("parameter_dir"),
         outdir = env.GetOption("outdir")
     )
@@ -196,7 +199,7 @@ options = get_options(env)
 if not options["build_partis_linearham"]:
     env.SConsignFile(os.path.join(options["outdir"], ".sconsign"))
 
-if not any(options[a] for a in all_actions):
+if not any(options[a] for a in all_actions) and '--help' not in sys.argv:
     raise Exception('No action specified. Choose from %s' % ', '.join('--' + a.replace('_', '-') for a in all_actions))
 
 #### Set up the nesting structure
@@ -276,6 +279,7 @@ if options["run_partis"]:
     @nest.add_target()
     def partis_output(outdir, c):
         partis_mode = "annotate --all-seqs-simultaneous" if options["all_clonal_seqs"] else "partition"
+# ----------------------------------------------------------------------------------------
         partis_parameter_dir = options["parameter_dir"].rstrip("/") + " --refuse-to-cache-parameters" if options["parameter_dir"] is not None else os.path.join(outdir, "parameter_dir")
         partis_output = env.Command(
             [os.path.join(outdir, filename) for filename in
@@ -299,6 +303,7 @@ if options["run_linearham"]:
     def partis_yaml_file(outdir, c):
         default_outfname = os.path.join(outdir, "partis_run.yaml")
         if options["partis_yaml_file"] is not None:
+# ----------------------------------------------------------------------------------------
             assert options["parameter_dir"] is not None, "Specify both --partis-yaml-file and --parameter-dir."
             if options["partis_yaml_file"] == default_outfname:
                 # scons complains about dependency cycles if source and target have the same name
@@ -341,6 +346,7 @@ if options["run_linearham"]:
                 + ((" --seed-unique-id " + str(c["cluster"]["cluster_seed_unique_id"])) if c["cluster"]["cluster_seed_unique_id"] is not None else "") \
                 + ((" --cluster-index " + str(c["cluster"]["cluster_index"])) if c["cluster"]["cluster_index"] is not None else "") \
                 + ((" --partition-index " + str(c["cluster"]["partition_index"])) if c["cluster"]["partition_index"] is not None else "") \
+# ----------------------------------------------------------------------------------------
                 + ((" --glfo-dir " + os.path.join(options["parameter_dir"], "/hmm/germline-sets")) if os.path.splitext(c["partis_yaml_file"])[1] == '.csv' else "") \
                 + ((" --locus " + options["locus"]) if os.path.splitext(c["partis_yaml_file"])[1] == '.csv' else "") \
                 + " --fasta-output-file ${TARGETS[0]}" \
@@ -457,12 +463,12 @@ if options["run_linearham"]:
         env.Depends(naive_tabulation, "scripts/tabulate_naive_probs.py")
         return naive_tabulation
 
-    if options["lineage_unique_id"] is not None:
+    if options["lineage_unique_ids"] is not None:
 
         @nest.add_nest(label_func=default_label)
         def lineage(c):
-            return [{"id": "lineage_" + lineage_unique_id, "lineage_seq_unique_id": lineage_unique_id}
-                    for lineage_unique_id in options["lineage_unique_id"]]
+            return [{"id": "lineage_" + lid, "lineage_seq_unique_id": lid}
+                    for lid in options["lineage_unique_ids"]]
 
         @nest.add_target()
         def lineage_tabulation(outdir, c):
