@@ -69,7 +69,7 @@ scons --run-linearham --outdir=<dir> [--partis-yaml-file=<file>] [--parameter-di
 ```
 If there is one clonal family (i.e. cluster) in the partis output file, linearham will run on that.
 If there is more than one, you'll have to select a cluster to run on using the following options.
-Partis performs clustering [hierarchically](https://en.wikipedia.org/wiki/Hierarchical_clustering#Agglomerative_clustering_example}, so [its output](https://github.com/psathyrella/partis/blob/master/docs/output-formats.md) stores a list of partitions, where each partition divides the sequences in the repertoire into clonal families (clusters).
+Partis performs clustering [hierarchically](https://en.wikipedia.org/wiki/Hierarchical_clustering#Agglomerative_clustering_example), so [its output](https://github.com/psathyrella/partis/blob/master/docs/output-formats.md) stores a list of partitions, where each partition divides the sequences in the repertoire into clonal families (clusters).
 By default, linearham looks in the best (most likely) of these partitions, but you can specify the (zero-based) index of a different one with `--partition-index`.
 Within a partition, you can specify a cluster either by (zero-based) index with `--cluster-index`, or with the unique id of a particular sequence in the cluster with `--cluster-seed-unique-id` (see partis [--seed-unique-id](https://github.com/psathyrella/partis/blob/master/docs/subcommands.md#--seed-unique-id-id) for more info).
 Other options:
