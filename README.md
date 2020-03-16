@@ -12,117 +12,82 @@
 
 ## Installation
 
-The `linearham` installation dependencies are specified in the `Dockerfile` file.
-To install the dependencies yourself, you must clone this repository and then run each command in the `Dockerfile` that comes after `RUN`.
-Alternatively, you may use Docker (see below).
+Linearham's dependencies are described in the Dockerfile.
+We recommend that you run linearham inside a Docker container, since this will make installation much easier (if you're new to Docker, [read this](http://erick.matsen.org/2018/04/19/docker.html)).
+However, you can also install the dependencies by hand, in which case you should clone the repository and run each command in the [Dockerfile](https://github.com/matsengrp/linearham/blob/edit-readme/Dockerfile) that's on a line starting with `RUN` (treat `WORKDIR` as `cd`).
+The more similar your system is to that described by the Dockerfile's `FROM` line (at the moment, debian), the easier this will be.
 
-Note that the `Dockerfile` specifies build instructions for computers running Debian operating systems.
-The installation steps have been successfully tested using the Docker image, which is based on Debian version 9 AKA "stretch."
-We expect the installation process to work on similar UNIX-based platforms.
+## Using Docker
 
-## Docker
+It's best to start by running an interactive session in the container:
 
-You can run Linearham using [our Docker image on quay.io](https://quay.io/repository/matsengrp/linearham); if you are new to Docker, [read this](http://erick.matsen.org/2018/04/19/docker.html#pulling-and-running-a-docker-image).
+`docker run -it quay.io/matsengrp/linearham /bin/bash`.
 
-Before running with Docker, choose an image tag to use from [those published to quay](https://quay.io/repository/matsengrp/linearham?tab=tags).
-We recommended you use the most recent **version-specific** tag (e.g. `v1.0.0`, not `latest`) in order to allow for reproducibility.
+You can also create a shell script with your linearham commands for docker to run, and put it in place of `/bin/bash` (use `test.sh` as an example).
+If you want your run to be reproducible, choose a tag of the form vX.X.X [from quay.io](https://quay.io/repository/matsengrp/linearham?tab=tags), then specify it like so: `quay.io/matsengrp/linearham:vX.X.X`.
 
-By default, running `docker run quay.io/matsengrp/linearham:tag` will run an example command in the Docker container and then exit.
-To get an interactive session in the container, you must run like this:
+To access your own data from within the container, or to persist your output beyond the container, you must [use volumes by specifying `-v`](http://erick.matsen.org/2018/04/19/docker.html#making-a-directory-available-inside-of-a-container).
+We recommend using this convention (other paths may not work):
 
-`docker run` **`-it`** `quay.io/matsengrp/linearham:tag` **`/bin/bash`**
+1. Choose a directory outside of Docker that contains both your input data directory and your desired output directory
+2. Mount it as a volume to `/linearham/work` inside the container: `-v /your/local/path:/linearham/work`
+3. All commands inside the container referencing paths inside that directory should do so via `/linearham/work`, e.g. setting `--outdir=/linearham/work/output` inside the container will persist your output outside the container in `/your/local/path/output`.
 
-To run Linearham in the container you can either: 
-- Use an interactive session as above.
-- Create a shell script with your Linearham command(s) and replace `/bin/bash` above with the name of your script.
+Note that because Docker must run as root, this means that you will be writing to the directory on your host machine _as root_, so a) be very careful and b) don't choose anything anywhere near `/` (something like `/home/user/several/sub/dirs` is good).
 
-To access your own data from within the container or to persist your output beyond the container, you must [use volumes by specifying `-v`](http://erick.matsen.org/2018/04/19/docker.html#making-a-directory-available-inside-of-a-container).
-Here is one good way to do this that we have tested for Linearham:
+## Running linearham
 
-1. Choose a parent directory that contains both your input data directory and your desired output directory.
-2. Mount it as a volume to `/linearham/work` inside the container, e.g. 
-     
-     ```-v /host/input-output/parent/dir:/linearham/work```
-3. All commands inside the container referencing input and output inside that directory should do so via `/linearham/work`. 
-E.g. setting `--outdir=/linearham/work/output` inside the container will persist your output outside the container in `/host/input-output/parent/dir/output`.
+All linearham actions are run using scons in the main linearham directory.
+Available actions are `--run-partis`, `--run-linearham`, and `--build-partis-linearham`.
+Note that because of the way scons parses arguments, you must always use an `=` sign: `--arg=val`.
 
-## Example usage
+Linearham uses a partis output file as its input.
+If you've already run partis to create this file, skip to `--run-linearham`; if not, you can have linearham run partis for you with `--run-partis`.
 
-The entire `linearham` pipeline can be executed using `scons`.
-
-To run `partis`:
+#### `--run-partis`
+This runs partis on an input sequence file:
 ```bash
-scons --run-partis --fasta-path=<string> [--all-clonal-seqs] --locus={igh|igk|igl} --parameter-dir=<string> --outdir=<string>
+scons --run-partis --fasta-path=<file> --locus={igh|igk|igl} --outdir=<dir> [--parameter-dir=<dir>]
 ```
-The `partis`-related command line arguments are described in the following table:
+`--fasta-path` can be any file type that partis `--infname` handles (see partis help).
+Partis requires a directory with fitted sample-specific parameters, which if not already present will be automatically inferred based on the sequences in the fasta file.
+Because linearham runs on only a single family at a time, but these parameters are more accurate if inferred on the entire repertoire of many clonal families, it is better if you use parameters cached in a previous partis run on the entire repertoire, and then pass them to linearham with `--parameter-dir`.
+However, if you don't, the automatically-inferred parameters will still work fine, they'll just be somewhat less accurate (since they'll only be based on the one family).
 
-| Command | Description |
+Other partis-related arguments:
+| Name | Description |
 | ---     | ---         |
-| `--fasta-path` | The repertoire FASTA file path. |
-| `--all-clonal-seqs` | Should the repertoire sequences be treated as clonal? |
-| `--locus` | Which immunoglobulin locus are we doing inference on (defaults to `igh`)? |
-| `--parameter-dir` | An optional directory of partis parameter files. |
+| `--all-clonal-seqs` | If set, attempts to force all sequences in the fasta file into the same clonal family; otherwise it runs partis partition to infer the clonal families |
+| `--locus` | Which immunoglobulin locus (defaults to `igh`)? |
 | `--outdir` | The output directory (defaults to `output`). |
 
-To run `linearham`:
+#### `--run-linearham`
+Once you have a partis output file, whether you made it separately or with linearham, you can run linearham itself:
+
 ```bash
-scons --run-linearham --partition-index=<int> --cluster-index=<int> --cluster-seed-unique-id=<str> --template-path=<string> --mcmc-iter=<int> --mcmc-thin=<int> --tune-iter=<int> --tune-thin=<int> --num-rates=<int> --burnin-frac=<double> --subsamp-frac=<double> --num-cores=<int> --rng-seed=<int> --lineage-unique-id=<string> --asr-pfilters=<double> --partis-yaml-file=<string> --parameter-dir=<string> --outdir=<string>
+scons --run-linearham --outdir=<dir> [--partis-yaml-file=<file>] [--parameter-dir=<dir>]
 ```
-The `linearham`-related command line arguments are described in the following table:
+If there is one cluster in the partis output file, linearham will run on that.
+If there is more than one, you'll have to select a cluster to run on using the following options.
+Partis clusters sequences hierarchically, so [its output](https://github.com/psathyrella/partis/blob/master/docs/output-formats.md) stores a list of partitions, where each partition divides the sequences in the repertoire into clonal families (clusters).
+By default, linearham looks in the best (most likely) of these partitions, but you can specify the (zero-based) index of a different one with `--partition-index`.
+Within a partition, you can specify a cluster either by (zero-based) index with `--cluster-index`, or with the unique id of a particular sequence in the cluster with `--cluster-seed-unique-id` (see partis [--seed-unique-id](https://github.com/psathyrella/partis/blob/master/docs/subcommands.md#--seed-unique-id-id) for more info).
+Other options:
 
 | Command | Description |
 | ---     | ---         |
-| `--partition-index`| Zero-based index of partition from which to choose a cluster in the partis list of most likely partitions (default: index of most likely partition). See below for partis cluster specification in Linearham. |
-| `--cluster-index` | Zero-based index of cluster to use in the partition specified by --partition-index (default: 0). See below for partis cluster specification in Linearham. |
-| `--cluster-seed-unique-id` | A string specifying unique id of the partis seed sequence (see partis [--seed-unique-id](https://github.com/psathyrella/partis/blob/master/docs/subcommands.md#--seed-unique-id-id)). Linearham will use the cluster containing this sequence in the partition specified by --partition-index. See below for partis cluster specification in Linearham. |
-| `--template-path` | The Rev template path. |
-| `--mcmc-iter` | How many RevBayes MCMC iterations should we use (defaults to 10000)? |
-| `--mcmc-thin` | What RevBayes MCMC thinning frequency should we use (defaults to 10)? |
-| `--tune-iter` | How many RevBayes tuning iterations should we use (defaults to 5000)? |
-| `--tune-thin` | What RevBayes tuning thinning frequency should we use (defaults to 100)? |
-| `--num-rates` | The number of gamma rate categories (defaults to 4). |
-| `--burnin-frac` | What fraction of MCMC burnin should we use (defaults to 0.1)? |
-| `--subsamp-frac` | What bootstrap sampling fraction should we use (defaults to 0.05)? |
-| `--num-cores` | The number of cores to use for ancestral sequence reconstruction (ASR) sampling (defaults to 1). |
-| `--rng-seed` | The random number generator (RNG) seed (defaults to 0). |
-| `--lineage-unique-id` | The name of the sequence(s) of interest for analyzing lineages. |
-| `--asr-pfilters` | The ancestral sequence posterior probability thresholds (defaults to 0.1). |
-| `--partis-yaml-file` | An optional partis output YAML file. |
-| `--parameter-dir` | An optional directory of partis parameter files. |
-| `--outdir` | The output directory (defaults to `output`). |
+| `--partis-yaml-file`   | Path to the partis output file that is linearham's input. Defaults to the location in `--outdir` to which the linearham `--run-partis` action writes it   |
+| `--outdir`             | The output directory (defaults to `output`).                                                                                                              |
+| `--lineage-unique-ids` | `,`-separated list of sequence ids, each of whose lineages will be analyzed separately, and in somewhat more detail than by default (see below).          |
+| `--parameter-dir`      | Directory from which linearham reads partis hmm files. If not set, it defaults to the location in `--outdir` used by `--run-partis`. As for `--run-partis` (above), parameters will be much more accurate if you cache them with partis beforehand on the entire repertoire, but if this isn't possible they'll be inferred automatically on the one family on which you're running linearham, which should be fine.                     |
 
-All of the above command line arguments (except `--cluster-seed-unique-id`, `--cluster-index`, `--partition-index`, `--fasta-path`, `--all-clonal-seqs`, `--locus`, `--parameter-dir`, `--template-path`, `--num-cores`, `--partis-yaml-file`, and `--outdir`) accept comma-separated values as input.
-Note that `scons --run-partis` and `scons --run-linearham` must specify the same output directory and, if applicable, the same optional directory of partis parameter files.
-For more information on the `scons` arguments, run `scons --help`.
-
-## Partis cluster specification in Linearham
-
-[Partis outputs inferred clusters (clonal families) according to a series of different partitioning steps corresponding to a discrete set of ways to partition the input sequences into clusters.](https://github.com/psathyrella/partis/blob/master/docs/output-formats.md)
-
-If your partis output contains more than one cluster (does not apply if `--all-clonal-seqs` was used), in order to run Linearham for a given partis-inferred cluster, you need to specify the cluster of interest using this subset of options from the above list:
-
-| Command | Description |
-| ---     | ---         |
-| `--partition-index`| Zero-based index of partition from which to choose a cluster in the partis list of most likely partitions (default: index of most likely partition). |
-| `--cluster-index` | Zero-based index of cluster to use in the partition specified by --partition-index (default: 0). |
-| `--cluster-seed-unique-id` | A string specifying unique id of the partis seed sequence (see partis [--seed-unique-id](https://github.com/psathyrella/partis/blob/master/docs/subcommands.md#--seed-unique-id-id)). Linearham will use the cluster containing this sequence in the partition specified by --partition-index. |
-
-If you do not have a cluster of interest or are not sure how to indentify it using those options, you can run [scripts/parse_cluster.py](https://github.com/matsengrp/linearham/blob/master/scripts/parse_cluster.py) to determine the information you need to specify to run Linearham on your desired cluster.
+If you don't have a cluster of interest, or are not sure how to identify it using these options, you can run [scripts/parse_cluster.py](https://github.com/matsengrp/linearham/blob/master/scripts/parse_cluster.py) to work it out.
 
 For example, running:
-
 ```
-scripts/parse_cluster.py \ 
-               partition.yaml \
-               --fasta-output-file parsed_cluster.fa \
-               --yaml-output-file parsed_cluster.yaml
+./scripts/parse_cluster.py lib/partis/test/reference-results/partition-new-simu.yaml --fasta-output-file parsed_cluster.fa --yaml-output-file parsed_cluster.yaml | less -RS
 ```
-, where `partition.yaml` contains more than one cluster annotation, will yield:
-```
-Exception: Options passed must uniquely identify 1 cluster in the partis output file but instead resulted in 4 clusters.
-Try using --cluster-index to choose one from the list printed above (best viewed without line wrapping).
-```
-and will also print out a table of available clusters in the best partition (which is best viewed without line wrapping such as by piping the output like `scripts/parse_cluster.py <args> | less -RS`):
+will print a table of available clusters in the best partition similar to this:
 ```
  available clusters in partition at index 29 (best):
 index   size    unique_ids
@@ -138,29 +103,55 @@ Running on the cluster with 262 sequences from the above table would look like:
 scons --run-linearham --cluster-index=2 <args.. >
 ```
 
+Other linearham-related arguments:
+| Command | `,`-separated list? | Description |
+| ---     | ---       | ---         |
+| `--template-path` | no | The RevBayes template path (defaults to [templates/revbayes_template.rev](https://github.com/matsengrp/linearham/blob/master/templates/revbayes_template.rev)). |
+| `--mcmc-iter` | yes | How many RevBayes MCMC iterations should we use (defaults to 10000)? |
+| `--mcmc-thin` | yes | What RevBayes MCMC thinning frequency should we use (defaults to 10)? |
+| `--tune-iter` | yes | How many RevBayes tuning iterations should we use (defaults to 5000)? |
+| `--tune-thin` | yes | What RevBayes tuning thinning frequency should we use (defaults to 100)? |
+| `--num-rates` | yes | The number of gamma rate categories (defaults to 4). |
+| `--burnin-frac` | yes | What fraction of MCMC burnin should we use (defaults to 0.1)? |
+| `--subsamp-frac` | yes | What bootstrap sampling fraction should we use (defaults to 0.05)? |
+| `--rng-seed` | yes | The random number generator (RNG) seed (defaults to 0). |
+| `--asr-pfilters` | no | The ancestral sequence posterior probability thresholds (defaults to 0.1). |
+
+For more information on these arguments, run `scons --help`.
+
+#### `--build-partis-linearham`
+
+This compiles linearham, partis, and other dependencies.
+You'll only need to run this if you've either modified some source code or you're installing without docker.
+
 ## Output files
 
-- The **`partis` output file** (e.g. `output/partis_run.yaml`) contains:
-  - `partis`-inferred clonal family information
-  - corresponding naive sequence estimates
-  - repertoire-wide germline gene set.
-     - It is important to note that this germline gene set is the gene collection used in the `linearham` inference procedure as well.
-- The **clonal family FASTA file** (e.g. `output/clusterX/cluster_seqs.fasta` where `X` is the clonal family index of interest) contains:
+A variety of different output files are written to `--outdir`:
+
+- the partis [output file](https://github.com/psathyrella/partis/blob/master/docs/output-formats.md) used as input for linearham (e.g. `output/partis_run.yaml`) contains:
+  - partis-inferred clonal families (clusters) and annotations (including inferred naive sequence)
+  - sample-specific inferred germline gene set
+- a clonal family fasta (e.g. `output/clusterX/cluster_seqs.fasta`, where `X` is the index of the clonal family of interest):
   - the `partis`-inferred clonal family naive sequence
-  - input sequences with:
-    - **insertions/deletions reversed**
-    - V/J framework insertions removed 
-- The **`linearham` output files** (located by default in the `output/cluster0/mcmciter10000_mcmcthin10_tuneiter5000_tunethin100_numrates4_rngseed0/burninfrac0.1_subsampfrac0.05` folder) include:
-  - `linearham_run.log` file (TSV format) holds the posterior samples of the naive sequence annotation and of the phylogenetic substitution model and rate variation parameters.
-  - `linearham_run.trees` file (Newick format) consists of the posterior tree samples with ancestral sequence annotations.
-  - `linearham_run.ess` (TSV format) contains the approximate effective sample sizes for each field in `linearham_run.log`.
-    - Note that the `linearham_run.trees` Newick tree annotations are written to be compatible with the Python package [DendroPy](https://dendropy.org/).
-  - `aa_naive_seqs.fasta`, a FASTA file that contains each sampled amino acid naive sequence and its associated posterior probability.
-  - `aa_naive_seqs.dnamap`, a FASTA-like file that maps each sampled amino acid naive sequence to its corresponding set of DNA naive sequences and posterior probabilities.
-  - `aa_naive_seqs.png`, an amino acid naive sequence posterior probability logo using [WebLogo](http://weblogo.threeplusone.com/) to visualize the per-site uncertainties.
-- If `--lineage-unique-id` is specified, the **lineage output files** (located by default in the `output/cluster0/mcmciter10000_mcmcthin10_tuneiter5000_tunethin100_numrates4_rngseed0/burninfrac0.1_subsampfrac0.05/lineage_X` directory, where `X` signifies the unique id of the lineage sequence) include:
-  - `aa_lineage_seqs.fasta` and `aa_lineage_seqs.dnamap`, similar to the files described above (i.e. `aa_naive_seqs.fasta` and `aa_naive_seqs.dnamap`), created by tabulating the posterior probabilities of sampled naive sequences and intermediate ancestral sequences on the lineage.
-  - a posterior probability lineage graphic (`aa_lineage_seqs.pfilterX.png` where `X` denotes the posterior probability cutoff for the sampled sequences) using [Graphviz](https://www.graphviz.org/).
+  - input sequences with SHM indels "reversed" (reverted to their state in the naive rearrangement), and non-variable regions (V/J framework) trimmed
+- a linearham output dir (e.g. `output/clusterX/mcmciter10000_<stuff>` where `X` is the cluster index and `<stuff>` records the exact options of the run):
+
+| file | format | description |
+| ---     | ---       | ---         |
+| linearham\_run.log     | tsv       | posterior samples of the naive sequence annotation and the phylogenetic substitution model and rate variation parameters |
+| linearham\_run.trees   | newick    | posterior tree samples with ancestral sequence annotations (formatted for use by [Dendropy](https://dendropy.org/) |
+| linearham\_run.ess     | tsv       | approximate effective sample sizes for each field in linearham\_run.log |
+| aa\_naive\_seqs.fasta  | fasta     | each sampled amino acid naive sequence and its associated posterior probability |
+| aa\_naive\_seqs.dnamap | fasta (ish) | map from each sampled amino acid naive sequence to its corresponding set of nucleotide naive sequences and posterior probabilities |
+| aa\_naive\_seqs.png    | png       | logo plot of amino acid naive sequence posterior probability using [WebLogo](http://weblogo.threeplusone.com/) to visualize per-site uncertainties |
+
+If `--lineage-unique-ids` is specified, there will also be additional lineage-specific output files in subdirectories (one for each sequence id specified) like `lineage_<uid>/`.
+These include:
+| file | format | description |
+| ---     | ---       | ---         |
+| aa_lineage_seqs.fasta | fasta | for **each intermediate ancestor in the lineage of the sequence with the specified id**, the sampled amino acid sequence and its associated posterior probability |
+| aa_lineage_seqs.dnamap | fasta(ish) | for **each intermediate ancestor of the lineage of the sequence with the specified id**, map from sampled amino acid naive sequence to its corresponding set of nucleotide sequences and posterior probabilities |
+| aa_lineage_seqs.pfilterX.png | png | posterior probability lineage graphic made with [Graphviz](https://www.graphviz.org/), where `X` is the posterior probability cutoff for the sampled sequences. |
 
 ## References
 
