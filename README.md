@@ -49,7 +49,7 @@ This runs partis on an input sequence file:
 ```bash
 scons --run-partis --fasta-path=<file> --locus={igh|igk|igl} --outdir=<dir> [--parameter-dir=<dir>]
 ```
-Although `--fasta-path` can be any file type that partis `--infname` handles (see partis help).
+`--fasta-path` can be any file type that partis `--infname` handles (see partis help).
 Partis requires a directory with fitted sample-specific parameters, which if not already present will be automatically inferred based on the sequences in the fasta file.
 Because linearham runs on only a single family at a time, but these parameters are more accurate if inferred on the entire repertoire of many clonal families, it is better if you use parameters cached in a previous partis run on the entire repertoire, and then pass them to linearham with `--parameter-dir`.
 However, if you don't, the automatically-inferred parameters will still work fine, they'll just be somewhat less accurate (since they'll only be based on the one family).
@@ -106,7 +106,7 @@ scons --run-linearham --cluster-index=2 <args.. >
 Other linearham-related arguments:
 | Command | `,`-separated list? | Description |
 | ---     | ---       | ---         |
-| `--template-path` | no | The Rev template path. |
+| `--template-path` | no | The RevBayes template path (defaults to [templates/revbayes_template.rev](https://github.com/matsengrp/linearham/blob/master/templates/revbayes_template.rev)). |
 | `--mcmc-iter` | yes | How many RevBayes MCMC iterations should we use (defaults to 10000)? |
 | `--mcmc-thin` | yes | What RevBayes MCMC thinning frequency should we use (defaults to 10)? |
 | `--tune-iter` | yes | How many RevBayes tuning iterations should we use (defaults to 5000)? |
@@ -139,16 +139,19 @@ A variety of different output files are written to `--outdir`:
 | file | format | description |
 | ---     | ---       | ---         |
 | linearham\_run.log     | tsv       | posterior samples of the naive sequence annotation and the phylogenetic substitution model and rate variation parameters |
-| linearham\_run.trees   | newick    | posterior tree samples with ancestral sequence annotations (formatted for use by dendropy |
+| linearham\_run.trees   | newick    | posterior tree samples with ancestral sequence annotations (formatted for use by [Dendropy](https://dendropy.org/) |
 | linearham\_run.ess     | tsv       | approximate effective sample sizes for each field in linearham\_run.log |
 | aa\_naive\_seqs.fasta  | fasta     | each sampled amino acid naive sequence and its associated posterior probability |
 | aa\_naive\_seqs.dnamap | fasta (ish) | map from each sampled amino acid naive sequence to its corresponding set of nucleotide naive sequences and posterior probabilities |
-| aa\_naive\_seqs.png    | png       | logo plot of amino acid naive sequence posterior probability using WebLogo to visualize per-site uncertainties |
+| aa\_naive\_seqs.png    | png       | logo plot of amino acid naive sequence posterior probability using [WebLogo](http://weblogo.threeplusone.com/) to visualize per-site uncertainties |
 
-If `--lineage-unique-id` is specified, there will also be additional lineage-specific output files in subdirectories like `lineage_X/`.
-These include `aa_lineage_seqs.fasta` and `aa_lineage_seqs.dnamap`, which are analagous to the similarly named per-family files above (i.e. `aa_naive_seqs.fasta` and `aa_naive_seqs.dnamap`).
-They are created by tabulating the posterior probabilities of sampled naive sequences and intermediate ancestral sequences on the lineage.
-There is also a posterior probability lineage graphic made with [Graphviz](https://www.graphviz.org/) named `aa_lineage_seqs.pfilterX.png`, where `X` is the posterior probability cutoff for the sampled sequences.
+If `--lineage-unique-ids` is specified, there will also be additional lineage-specific output files in subdirectories (one for each sequence id specified) like `lineage_<uid>/`.
+These include:
+| file | format | description |
+| ---     | ---       | ---         |
+| aa_lineage_seqs.fasta | fasta | for **each intermediate ancestor in the lineage of the sequence with the specified id**, the sampled amino acid sequence and its associated posterior probability |
+| aa_lineage_seqs.dnamap | fasta(ish) | for **each intermediate ancestor of the lineage of the sequence with the specified id**, map from sampled amino acid naive sequence to its corresponding set of nucleotide sequences and posterior probabilities |
+| aa_lineage_seqs.pfilterX.png | png | posterior probability lineage graphic made with [Graphviz](https://www.graphviz.org/), where `X` is the posterior probability cutoff for the sampled sequences. |
 
 ## References
 
