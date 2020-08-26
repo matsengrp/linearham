@@ -131,12 +131,17 @@ A variety of output files are written to `--outdir`.
 In the top-level dir are:
  - the partis [output file](https://github.com/psathyrella/partis/blob/master/docs/output-formats.md) that was used as input for linearham (e.g. `partis_run.yaml`), which contains partis-inferred clonal families (clusters) and annotations (including inferred naive sequence)
  - sub dirs for each cluster on which linearham was run, with name of form `cluster-N/` for the cluster index `N`
+
 Within each cluster's subdir `cluster-N/` are:
  - a fasta file `cluster-N/cluster_seqs.fasta` with each of the cluster's input sequences, as well as its `partis`-inferred naive sequence
    - NOTE the input sequences have SHM indels "reversed" (reverted to their state in the naive rearrangement), and non-variable regions (V/J framework) trimmed off
  - a partis yaml output file `cluster.yaml` resulting from pulling just this cluster out of the original partis output file that was used as input
  - the linearham output dir `cluster-N/mcmciter<stuff>` where `<stuff>` records the exact options of the run e.g. `mcmciter10000_mcmcthin10_tuneiter5000_tunethin100_numrates4_rngseed0/`
-#### Within the linearham output dir e.g. `mcmciter10000_mcmcthin10_tuneiter5000_tunethin100_numrates4_rngseed0/`:
+
+XXX why are there two levels of subdir, i.e. mcmcmiterXXX as well as burninfracYYY?
+
+#### Within the linearham output dir `mcmciter<stuff>`
+e.g. `mcmciter10000_mcmcthin10_tuneiter5000_tunethin100_numrates4_rngseed0/`:
 | file | format | description |
 | ---     | ---       | ---         |
 | lh\_revbayes\_run.trees  | XXX         | XXX |
@@ -144,8 +149,9 @@ Within each cluster's subdir `cluster-N/` are:
 | revbayes\_run.rev		   | XXX         | XXX |
 | revbayes\_run.stdout.log | XXX         | XXX |
 | revbayes\_run.trees      | XXX         | XXX |
-| burninfrac0.1\_subsampfrac0.05/
-#### Within `burninfrac0.1_subsampfrac0.05/`
+
+#### Within `burninfrac<stuff>`
+e.g. `burninfrac0.1_subsampfrac0.05/`
 | file | format | description |
 | ---     | ---       | ---         |
 | linearham\_run.log                 | tsv       | posterior samples of the naive sequence annotation and the phylogenetic substitution model and rate variation parameters |
