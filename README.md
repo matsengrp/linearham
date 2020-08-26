@@ -127,24 +127,35 @@ You'll only need to run this if you've either modified some source code or you'r
 
 ## Output files
 
-A variety of different output files are written to `--outdir`:
-
-- the partis [output file](https://github.com/psathyrella/partis/blob/master/docs/output-formats.md) used as input for linearham (e.g. `output/partis_run.yaml`) contains:
-  - partis-inferred clonal families (clusters) and annotations (including inferred naive sequence)
-  - sample-specific inferred germline gene set
-- a clonal family fasta (e.g. `output/clusterX/cluster_seqs.fasta`, where `X` is the index of the clonal family of interest):
-  - the `partis`-inferred clonal family naive sequence
-  - input sequences with SHM indels "reversed" (reverted to their state in the naive rearrangement), and non-variable regions (V/J framework) trimmed
-- a linearham output dir (e.g. `output/clusterX/mcmciter10000_<stuff>` where `X` is the cluster index and `<stuff>` records the exact options of the run):
-
+A variety of output files are written to `--outdir`.
+In the top-level dir are:
+ - the partis [output file](https://github.com/psathyrella/partis/blob/master/docs/output-formats.md) that was used as input for linearham (e.g. `partis_run.yaml`), which contains partis-inferred clonal families (clusters) and annotations (including inferred naive sequence)
+ - sub dirs for each cluster on which linearham was run, with name of form `cluster-N/` for the cluster index `N`
+Within each cluster's subdir `cluster-N/` are:
+ - a fasta file `cluster-N/cluster_seqs.fasta` with each of the cluster's input sequences, as well as its `partis`-inferred naive sequence
+   - NOTE the input sequences have SHM indels "reversed" (reverted to their state in the naive rearrangement), and non-variable regions (V/J framework) trimmed off
+ - a partis yaml output file `cluster.yaml` resulting from pulling just this cluster out of the original partis output file that was used as input
+ - the linearham output dir `cluster-N/mcmciter<stuff>` where `<stuff>` records the exact options of the run e.g. `mcmciter10000_mcmcthin10_tuneiter5000_tunethin100_numrates4_rngseed0/`
+#### Within the linearham output dir e.g. `mcmciter10000_mcmcthin10_tuneiter5000_tunethin100_numrates4_rngseed0/`:
 | file | format | description |
 | ---     | ---       | ---         |
-| linearham\_run.log     | tsv       | posterior samples of the naive sequence annotation and the phylogenetic substitution model and rate variation parameters |
-| linearham\_run.trees   | newick    | posterior tree samples with ancestral sequence annotations (formatted for use by [Dendropy](https://dendropy.org/) |
-| linearham\_run.ess     | tsv       | approximate effective sample sizes for each field in linearham\_run.log |
-| aa\_naive\_seqs.fasta  | fasta     | each sampled naive amino acid sequence and its associated posterior probability |
-| aa\_naive\_seqs.dnamap | fasta (ish) | map from each sampled naive amino acid sequence to its corresponding set of nucleotide naive sequences and posterior probabilities |
-| aa\_naive\_seqs.png    | png       | logo plot of naive amino acid sequence posterior probability using [WebLogo](http://weblogo.threeplusone.com/) to visualize per-site uncertainties |
+| lh\_revbayes\_run.trees  | XXX         | XXX |
+| revbayes\_run.log        | XXX         | XXX |
+| revbayes\_run.rev		   | XXX         | XXX |
+| revbayes\_run.stdout.log | XXX         | XXX |
+| revbayes\_run.trees      | XXX         | XXX |
+| burninfrac0.1\_subsampfrac0.05/
+#### Within `burninfrac0.1_subsampfrac0.05/`
+| file | format | description |
+| ---     | ---       | ---         |
+| linearham\_run.log                 | tsv       | posterior samples of the naive sequence annotation and the phylogenetic substitution model and rate variation parameters |
+| linearham\_run.trees               | newick    | posterior tree samples with ancestral sequence annotations (formatted for use by [Dendropy](https://dendropy.org/) |
+| linearham\_run.ess                 | tsv       | approximate effective sample sizes for each field in linearham\_run.log |
+| aa\_naive\_seqs.fasta              | fasta     | each sampled naive amino acid sequence and its associated posterior probability |
+| aa\_naive\_seqs.dnamap             | fasta (ish) | map from each sampled naive amino acid sequence to its corresponding set of nucleotide naive sequences and posterior probabilities |
+| aa\_naive\_seqs.png                | png       | logo plot of naive amino acid sequence posterior probability using [WebLogo](http://weblogo.threeplusone.com/) to visualize per-site uncertainties |
+| linearham\_annotations\_all.yaml   | yaml      | XXX
+| linearham\_annotations\_best.yaml  | yaml      | XXX
 
 If `--lineage-unique-ids` is specified, there will also be additional lineage-specific output files in subdirectories (one for each sequence id specified) like `lineage_<uid>/`.
 These include:
