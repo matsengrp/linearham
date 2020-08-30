@@ -179,8 +179,8 @@ These include:
 ## Naive sequence comparisons
 One way to visualize the various output naive sequences and their probabilities is with `lib/partis/bin/cf-linearham.py`, which takes as input a linearham output dir and a partis output file (the latter preferably created with the `--calculate-alternative-annotations` option set).
 It then prints an ascii-art comparison of the amino acid and nucleotide naive sequences, as well as (for partis) a rundown of the alternative gene calls and their probabilities (the most likely of which was presumably input to linearham).
+More info [here](https://github.com/psathyrella/partis/blob/dev/docs/subcommands.md#naive-sequence-comparison-with-linearham).
 
-https://github.com/psathyrella/partis/blob/dev/docs/subcommands.md#naive-sequence-comparison-with-linearham
 
 ## References
 
