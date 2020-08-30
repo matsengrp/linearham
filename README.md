@@ -10,6 +10,11 @@
 [![Docker Repository on Quay](https://quay.io/repository/matsengrp/linearham/status "Docker Repository on Quay")](https://quay.io/repository/matsengrp/linearham) &nbsp;
 ![](https://github.com/matsengrp/linearham/workflows/build/badge.svg)
 
+  - [installation](#installation)
+  - [running](#running-linearham)
+  - [output files](#output-files)
+  - [naive sequence comparisons](#naive-sequence-comparisons)
+
 ## Installation
 
 Linearham's dependencies are described in the Dockerfile.
@@ -17,7 +22,7 @@ We recommend that you run linearham inside a Docker container, since this will m
 However, you can also install the dependencies by hand, in which case you should clone the repository and run each command in the [Dockerfile](https://github.com/matsengrp/linearham/blob/edit-readme/Dockerfile) that's on a line starting with `RUN` (treat `WORKDIR` as `cd`).
 The more similar your system is to that described by the Dockerfile's `FROM` line (at the moment, debian), the easier this will be.
 
-## Using Docker
+#### Using Docker
 
 It's best to start by running an interactive session in the container:
 
@@ -170,6 +175,12 @@ These include:
 | aa_lineage_seqs.fasta | fasta | for **each intermediate ancestor in the lineage of the sequence with the specified id**, the sampled amino acid sequence and its associated posterior probability |
 | aa_lineage_seqs.dnamap | fasta(ish) | for **each intermediate ancestor of the lineage of the sequence with the specified id**, map from sampled amino acid sequence to its corresponding set of nucleotide sequences and posterior probabilities |
 | aa_lineage_seqs.pfilterX.png | png | posterior probability lineage graphic made with [Graphviz](https://www.graphviz.org/), where `X` is the posterior probability cutoff for the sampled sequences. |
+
+## Naive sequence comparisons
+One way to visualize the various output naive sequences and their probabilities is with `lib/partis/bin/cf-linearham.py`, which takes as input a linearham output dir and a partis output file (the latter preferably created with the `--calculate-alternative-annotations` option set).
+It then prints an ascii-art comparison of the amino acid and nucleotide naive sequences, as well as (for partis) a rundown of the alternative gene calls and their probabilities (the most likely of which was presumably input to linearham).
+
+https://github.com/psathyrella/partis/blob/dev/docs/subcommands.md#naive-sequence-comparison-with-linearham
 
 ## References
 
