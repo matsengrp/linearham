@@ -10,6 +10,9 @@
 [![Docker Repository on Quay](https://quay.io/repository/matsengrp/linearham/status "Docker Repository on Quay")](https://quay.io/repository/matsengrp/linearham) &nbsp;
 ![](https://github.com/matsengrp/linearham/workflows/build/badge.svg)
 
+## References
+1. Dhar A, Ralph DK, Minin VN, Matsen FA IV (2020) A Bayesian phylogenetic hidden Markov model for B cell receptor sequence analysis. PLoS Comput Biol 16(8): e1008030 (https://doi.org/10.1371/journal.pcbi.1008030).
+
   - [installation](#installation)
   - [running](#running-linearham)
   - [output files](#output-files)
@@ -180,8 +183,3 @@ These include:
 One way to visualize the various output naive sequences and their probabilities is with `lib/partis/bin/cf-linearham.py`, which takes as input a linearham output dir and a partis output file (the latter preferably created with the `--calculate-alternative-annotations` option set).
 It then prints an ascii-art comparison of the amino acid and nucleotide naive sequences, as well as (for partis) a rundown of the alternative gene calls and their probabilities (the most likely of which was presumably input to linearham).
 More info [here](https://github.com/psathyrella/partis/blob/dev/docs/subcommands.md#naive-sequence-comparison-with-linearham).
-
-
-## References
-
-1. Dhar A, Ralph DK, Minin VN, Matsen IV, FA (2019) "A Bayesian Phylogenetic Hidden Markov Model for B Cell Receptor Sequence Analysis", arXiv preprint arXiv:1906.11982 (https://arxiv.org/abs/1906.11982).
