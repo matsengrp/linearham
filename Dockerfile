@@ -1,4 +1,4 @@
-FROM debian:stretch
+FROM quay.io/jitesoft/debian:stretch
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
   autoconf \
