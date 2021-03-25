@@ -16,7 +16,7 @@ pyparsing==2.4.6
 pysam==0.15.3
 python-dateutil==2.8.1
 pytz==2019.3
-PyYAML==5.3
+PyYAML==5.4
 scipy==1.2.2
 six==1.13.0
 subprocess32==3.5.4
