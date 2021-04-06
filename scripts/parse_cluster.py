@@ -33,7 +33,7 @@ def show_available_clusters(cpath, ipartition):
 
 
 def parse_cluster_annotation(
-    annotation_list, cpath, partition_index, cluster_index, seed_unique_id
+    annotation_list, cpath, partition_index, cluster_index, seed_unique_id, lineage_unique_id
 ):
     if len(annotation_list) == 1:
         print " only one annotation in partis output file. Using it."
@@ -77,6 +77,16 @@ def parse_cluster_annotation(
             "Options passed must uniquely identify 1 cluster in the partis output file but instead resulted in %d clusters. Try using --cluster-index to choose one from the list printed above (best viewed with less -RS)."
             % len(clusters_to_use)
         )
+        
+    if lineage_unique_id is not None:
+        clusters_for_lineage_reconstruction = [
+            c for c in clusters_to_use if lineage_unique_id in c
+        ]
+        if len(clusters_for_lineage_reconstruction) < 1:
+            raise Exception(
+                "None of the specified clusters contain the lineage_unique_id with uid '%s'. Use the Partis view-output command to examine which clusters contain the seed sequence of interest. You can also use --cluster-seed-unique-id to choose only the clusters that contain a specified seed sequence."
+                % lineage_unique_id
+            )
 
     annotations = {
         ":".join(adict["unique_ids"]): adict for adict in annotation_list
@@ -156,6 +166,10 @@ if __name__ == "__main__":
         help="if set, take sequences only from the cluster containing this seed sequence, rather than the default of taking all sequences from all clusters",
     )
     parser.add_argument(
+        "--seed-seq",
+        help="if set, checks whether any the selected cluster contains the unique ids specified for lineage reconstruction"
+    )
+    parser.add_argument(
         "--glfo-dir",
         help="Directory with germline info. Only necessary for old-style csv output files. Equivalent to a parameter dir with '/hmm/germline-sets' appended.",
     )
@@ -186,6 +200,7 @@ if __name__ == "__main__":
         args.partition_index,
         args.cluster_index,
         args.seed_unique_id,
+        args.seed_seq
     )
     warn_duplicate_naives(cluster_annotation)
     # write yaml
