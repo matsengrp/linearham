@@ -340,6 +340,12 @@ if options["run_linearham"]:
             cluster_info["id"] = "cluster-0"
         return [cluster_info]
 
+    if options["lineage_unique_ids"] is not None:
+        @nest.add_nest(label_func=default_label)
+        def lineage(c):
+            return [{"id": "lineage_" + lid, "lineage_seq_unique_id": lid}
+                    for lid in options["lineage_unique_ids"]]
+
     @nest.add_target()
     def _parse_cluster(outdir, c):
         cluster_fasta_file, cluster_yaml_file = env.Command(
@@ -350,6 +356,7 @@ if options["run_linearham"]:
                 + ((" --seed-unique-id " + str(c["cluster"]["cluster_seed_unique_id"])) if c["cluster"]["cluster_seed_unique_id"] is not None else "") \
                 + ((" --cluster-index " + str(c["cluster"]["cluster_index"])) if c["cluster"]["cluster_index"] is not None else "") \
                 + ((" --partition-index " + str(c["cluster"]["partition_index"])) if c["cluster"]["partition_index"] is not None else "") \
+                + ((" --seed-seq " + c["lineage"]["lineage_seq_unique_id"]) if options["lineage_unique_ids"] is not None else "") \
 # ----------------------------------------------------------------------------------------
                 + ((" --glfo-dir " + os.path.join(options["parameter_dir"], "/hmm/germline-sets")) if os.path.splitext(c["partis_yaml_file"])[1] == '.csv' else "") \
                 + ((" --locus " + options["locus"]) if os.path.splitext(c["partis_yaml_file"])[1] == '.csv' else "") \
@@ -468,11 +475,6 @@ if options["run_linearham"]:
         return naive_tabulation
 
     if options["lineage_unique_ids"] is not None:
-
-        @nest.add_nest(label_func=default_label)
-        def lineage(c):
-            return [{"id": "lineage_" + lid, "lineage_seq_unique_id": lid}
-                    for lid in options["lineage_unique_ids"]]
 
         @nest.add_target()
         def lineage_tabulation(outdir, c):
