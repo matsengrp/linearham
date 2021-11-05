@@ -315,7 +315,7 @@ if options["run_linearham"]:
             partis_yaml_file = env.Command(
                 default_outfname,
                 options["partis_yaml_file"],
-                "lib/partis/bin/partis get-linearham-info" \
+                "lib/partis/bin/partis get-linearham-info --min-selection-metric-cluster-size 3" \
                     + " --outfname $SOURCE" \
                     + " --parameter-dir " + options["parameter_dir"] \
                     + " --linearham-info-fname $TARGET")
