@@ -37,6 +37,7 @@ RUN Rscript --slave --vanilla -e 'install.packages(c("phylotate", "Rcpp", "RcppA
 COPY . /linearham
 WORKDIR /linearham
 
+RUN pip install wheel
 RUN pip install -r requirements.txt
 RUN Rscript --slave --vanilla -e 'install.packages("lib/phylomd", repos = NULL, type = "source")'
 RUN cd lib/revbayes/projects/cmake && ./build.sh
