@@ -8,6 +8,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
   build-essential \
   cmake \
   flex \
+  gfortran \
   ghostscript \
   graphviz \
   libgsl0-dev \
