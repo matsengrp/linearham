@@ -69,7 +69,7 @@ if __name__ == "__main__":
     full_lh_lines = []
     for lh_line in lh_lines:
         # convert annotation keys to partis style
-        utils.process_input_linearham_line(lh_line)
+        utils.process_input_linearham_line(lh_line, partis_line, glfo)
         # create full partis annotations from the linearham annotations by updating copies of the partis annotation to reflect linearham annotations
         partis_annotation_copy = copy.deepcopy(partis_line)
         update_partis_line_with_lh_annotation(partis_annotation_copy, lh_line, glfo)
