@@ -6,7 +6,7 @@ jobs:
     env:
       ACTIONS_ALLOW_UNSECURE_COMMANDS: true
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v2.3.1
     - name: Checkout tags
       run: git fetch --unshallow origin +refs/tags/*:refs/tags/*
     - name: Set git branch variable
@@ -17,7 +17,6 @@ jobs:
       shell: bash
       run: |
         auth_header="$(git config --local --get http.https://github.com/.extraheader)"
-        echo $auth_header
         git submodule sync --recursive
         git -c "http.extraheader=$auth_header" -c protocol.version=2 submodule update --init --force --recursive --depth=1
     - name: Build the Docker image
