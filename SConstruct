@@ -432,58 +432,58 @@ if options["run_linearham"]:
         env.Depends(linearham_intermediate_output, "_build/linearham/linearham")
         return linearham_intermediate_output
 
-    @nest.add_nest(label_func=default_label)
-    def linearham_setting(c):
-        return [{"id": "burninfrac" + str(burnin_frac) + "_subsampfrac" + str(subsamp_frac),
-                 "burnin_frac": burnin_frac, "subsamp_frac": subsamp_frac}
-                for burnin_frac in options["burnin_frac"]
-                for subsamp_frac in options["subsamp_frac"]]
-
-    @nest.add_target()
-    def linearham_final_output(outdir, c):
-        linearham_final_output = env.Command(
-            [os.path.join(outdir, filename) for filename in
-                ["linearham_run.trees", "linearham_run.log", "linearham_run.ess"]],
-            [c["linearham_intermediate_output"], c["cluster_fasta_file"]],
-            "Rscript --slave --vanilla scripts/run_bootstrap_asr_ess.R" \
-                + " $SOURCES" \
-                + " " + str(c["linearham_setting"]["burnin_frac"]) \
-                + " " + str(c["linearham_setting"]["subsamp_frac"]) \
-                + " " + str(1) \
-                + " " + str(c["revbayes_setting"]["rng_seed"]) \
-                + " $TARGETS")
-        env.Depends(linearham_final_output, "scripts/run_bootstrap_asr_ess.R")
-        return linearham_final_output
-    
-    @nest.add_target()
-    def linearham_annotations(outdir, c):
-        outbase = os.path.join(outdir, "linearham_annotations")
-        linearham_annotations = env.Command(
-                [outbase + sfx for sfx in ("_best.yaml", "_all.yaml")],
-                [c["cluster_yaml_file"], c["linearham_final_output"][1]],
-                "scripts/write_lh_annotations.py $SOURCES --output-base " + outbase)
-        env.Depends(linearham_annotations, "scripts/write_lh_annotations.py")
-        return linearham_annotations
-
-    @nest.add_target()
-    def naive_tabulation(outdir, c):
-        outbase = os.path.join(outdir, "aa_naive_seqs")
-        naive_tabulation = env.Command(
-            outbase + ".fasta", c["linearham_final_output"][0],
-            "scripts/tabulate_naive_probs.py $SOURCE --output-base " + outbase)
-        env.Depends(naive_tabulation, "scripts/tabulate_naive_probs.py")
-        return naive_tabulation
-
-    if options["lineage_unique_ids"] is not None:
-
-        @nest.add_target()
-        def lineage_tabulation(outdir, c):
-            outbase = os.path.join(outdir, "aa_lineage_seqs")
-            lineage_tabulation = env.Command(
-                outbase + ".fasta", [c["linearham_final_output"][0], c["naive_tabulation"]],
-                "scripts/tabulate_lineage_probs.py $SOURCES" \
-                    + " --seed-seq " + c["lineage"]["lineage_seq_unique_id"] \
-                    + " --pfilters " + " ".join(str(pfilter) for pfilter in options["asr_pfilters"]) \
-                    + " --output-base " + outbase)
-            env.Depends(lineage_tabulation, "scripts/tabulate_lineage_probs.py")
-            return lineage_tabulation
+#    @nest.add_nest(label_func=default_label)
+#    def linearham_setting(c):
+#        return [{"id": "burninfrac" + str(burnin_frac) + "_subsampfrac" + str(subsamp_frac),
+#                 "burnin_frac": burnin_frac, "subsamp_frac": subsamp_frac}
+#                for burnin_frac in options["burnin_frac"]
+#                for subsamp_frac in options["subsamp_frac"]]
+#
+#    @nest.add_target()
+#    def linearham_final_output(outdir, c):
+#        linearham_final_output = env.Command(
+#            [os.path.join(outdir, filename) for filename in
+#                ["linearham_run.trees", "linearham_run.log", "linearham_run.ess"]],
+#            [c["linearham_intermediate_output"], c["cluster_fasta_file"]],
+#            "Rscript --slave --vanilla scripts/run_bootstrap_asr_ess.R" \
+#                + " $SOURCES" \
+#                + " " + str(c["linearham_setting"]["burnin_frac"]) \
+#                + " " + str(c["linearham_setting"]["subsamp_frac"]) \
+#                + " " + str(1) \
+#                + " " + str(c["revbayes_setting"]["rng_seed"]) \
+#                + " $TARGETS")
+#        env.Depends(linearham_final_output, "scripts/run_bootstrap_asr_ess.R")
+#        return linearham_final_output
+#    
+#    @nest.add_target()
+#    def linearham_annotations(outdir, c):
+#        outbase = os.path.join(outdir, "linearham_annotations")
+#        linearham_annotations = env.Command(
+#                [outbase + sfx for sfx in ("_best.yaml", "_all.yaml")],
+#                [c["cluster_yaml_file"], c["linearham_final_output"][1]],
+#                "scripts/write_lh_annotations.py $SOURCES --output-base " + outbase)
+#        env.Depends(linearham_annotations, "scripts/write_lh_annotations.py")
+#        return linearham_annotations
+#
+#    @nest.add_target()
+#    def naive_tabulation(outdir, c):
+#        outbase = os.path.join(outdir, "aa_naive_seqs")
+#        naive_tabulation = env.Command(
+#            outbase + ".fasta", c["linearham_final_output"][0],
+#            "scripts/tabulate_naive_probs.py $SOURCE --output-base " + outbase)
+#        env.Depends(naive_tabulation, "scripts/tabulate_naive_probs.py")
+#        return naive_tabulation
+#
+#    if options["lineage_unique_ids"] is not None:
+#
+#        @nest.add_target()
+#        def lineage_tabulation(outdir, c):
+#            outbase = os.path.join(outdir, "aa_lineage_seqs")
+#            lineage_tabulation = env.Command(
+#                outbase + ".fasta", [c["linearham_final_output"][0], c["naive_tabulation"]],
+#                "scripts/tabulate_lineage_probs.py $SOURCES" \
+#                    + " --seed-seq " + c["lineage"]["lineage_seq_unique_id"] \
+#                    + " --pfilters " + " ".join(str(pfilter) for pfilter in options["asr_pfilters"]) \
+#                    + " --output-base " + outbase)
+#            env.Depends(lineage_tabulation, "scripts/tabulate_lineage_probs.py")
+#            return lineage_tabulation
