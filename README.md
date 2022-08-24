@@ -152,24 +152,24 @@ XXX why are there two levels of subdir, i.e. mcmcmiterXXX as well as burninfracY
 e.g. `mcmciter10000_mcmcthin10_tuneiter5000_tunethin100_numrates4_rngseed0/`:
 | file | format | description |
 | ---     | ---       | ---         |
-| lh\_revbayes\_run.trees  | XXX         | XXX |
-| revbayes\_run.log        | XXX         | XXX |
-| revbayes\_run.rev		   | XXX         | XXX |
-| revbayes\_run.stdout.log | XXX         | XXX |
-| revbayes\_run.trees      | XXX         | XXX |
+| revbayes\_run.trees      | tsv         | results from tree sampling iterations, including phylogenetic substitution model and rate variation parameters and Newick trees |
+| revbayes\_run.log        | tsv         | results from tree sampling iterations but branch lengths are listed in tabular form rather than in a Newick tree |
+| revbayes\_run.rev		   | Rev         | generated RevBayes script for tree sampling |
+| revbayes\_run.stdout.log | txt         | stdout log of RevBayes tree sampling run |
+| lh\_revbayes\_run.trees  | tsv         | results from tree sampling iterations plus V(D)J recombination information and contribution of each tree to posterior estimation |
 
 #### Within `burninfrac<stuff>`
 e.g. `burninfrac0.1_subsampfrac0.05/`
 | file | format | description |
 | ---     | ---       | ---         |
 | linearham\_run.log                 | tsv       | posterior samples of the naive sequence annotation and the phylogenetic substitution model and rate variation parameters |
-| linearham\_run.trees               | newick    | posterior tree samples with ancestral sequence annotations (formatted for use by [Dendropy](https://dendropy.org/) |
+| linearham\_run.trees               | newick    | posterior tree samples with ancestral sequence annotations (formatted for use by [Dendropy](https://dendropy.org/)) |
 | linearham\_run.ess                 | tsv       | approximate effective sample sizes for each field in linearham\_run.log |
 | aa\_naive\_seqs.fasta              | fasta     | each sampled naive amino acid sequence and its associated posterior probability |
 | aa\_naive\_seqs.dnamap             | fasta (ish) | map from each sampled naive amino acid sequence to its corresponding set of nucleotide naive sequences and posterior probabilities |
 | aa\_naive\_seqs.png                | png       | logo plot of naive amino acid sequence posterior probability using [WebLogo](http://weblogo.threeplusone.com/) to visualize per-site uncertainties |
-| linearham\_annotations\_all.yaml   | yaml      | XXX
-| linearham\_annotations\_best.yaml  | yaml      | XXX
+| linearham\_annotations\_all.yaml   | yaml      | annotations for posterior tree samples |
+| linearham\_annotations\_best.yaml  | yaml      | annotations for the posterior tree sample with the best log-likelihood |
 
 If `--lineage-unique-ids` is specified, there will also be additional lineage-specific output files in subdirectories (one for each sequence id specified) like `lineage_<uid>/`.
 These include:
