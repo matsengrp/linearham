@@ -169,7 +169,7 @@ e.g. `burninfrac0.1_subsampfrac0.05/`
 | aa\_naive\_seqs.dnamap             | fasta (ish) | map from each sampled naive amino acid sequence to its corresponding set of nucleotide naive sequences and posterior probabilities |
 | aa\_naive\_seqs.png                | png       | logo plot of naive amino acid sequence posterior probability using [WebLogo](http://weblogo.threeplusone.com/) to visualize per-site uncertainties |
 | linearham\_annotations\_all.yaml   | yaml      | annotations for posterior tree samples |
-| linearham\_annotations\_best.yaml  | yaml      | annotations for the posterior tree sample with the best log-likelihood |
+| linearham\_annotations\_best.yaml  | yaml      | annotations for the posterior tree sample with the highest probability |
 
 If `--lineage-unique-ids` is specified, there will also be additional lineage-specific output files in subdirectories (one for each sequence id specified) like `lineage_<uid>/`.
 These include:
