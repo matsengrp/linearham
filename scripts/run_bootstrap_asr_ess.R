@@ -33,6 +33,10 @@ tree.data = tree.data[boot.ind.samps, ]
 
 # Compute the effective sample sizes for all relevant parameters.
 ess.data = log.data[, sapply(log.data, is.numeric)]
+n.before <- nrow(ess.data)
+ess.data <- ess.data[rowSums(sapply(ess.data[-ncol(ess.data)], is.infinite)) == 0, ]  # remove rows with nan/inf values so that lm.fit(), which is called by coda::effectiveSize(), doesn't crash (the one time it happened, it was in LHLogLikelihood)
+if (nrow(ess.data) != n.before)
+  sprintf("WARNING removed %d / %d rows with nan/inf entries when calculating ess values", n.before - nrow(ess.data), n.before)
 ess = round((coda::effectiveSize(ess.data) / nrow(ess.data)) * (1 / sum(boot.probs ^ 2)))
 log.data = log.data[boot.ind.samps, ]
 
