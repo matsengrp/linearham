@@ -411,8 +411,10 @@ if options["run_linearham"]:
             [os.path.join(outdir, filename) for filename in
                 ["revbayes_run.trees", "revbayes_run.log", "revbayes_run.stdout.log"]],
             c["revbayes_rev_file"],
-            "lib/revbayes/projects/cmake/rb $SOURCE > ${TARGETS[2]}")
-        env.Depends(revbayes_output, "lib/revbayes/projects/cmake/rb")
+            "/usr/bin/rb $SOURCE > ${TARGETS[2]}")
+            #"lib/revbayes/projects/cmake/rb $SOURCE > ${TARGETS[2]}")
+        #env.Depends(revbayes_output, "lib/revbayes/projects/cmake/rb")
+        env.Depends(revbayes_output, "/usr/bin/rb")
         return revbayes_output
 
     @nest.add_target()
