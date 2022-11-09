@@ -154,6 +154,11 @@ Script.AddOption("--outdir",
         default="output",
         help="The output directory.")
 
+Script.AddOption("--no-nestly-subdirs",
+        dest="no_nestly_subdirs",
+        action="store_true",
+        help="If set, don\'t create any nested subdirs (using nestly), i.e. all output goes directly in --outdir")
+
 
 #### Process command line arguments/options
 
@@ -191,11 +196,14 @@ def get_options(env):
 
         # general arguments
         parameter_dir = env.GetOption("parameter_dir"),
-        outdir = env.GetOption("outdir")
+        outdir = env.GetOption("outdir"),
+        no_nestly_subdirs = env.GetOption("no_nestly_subdirs"),
     )
 
 env = Environment(ENV = os.environ)
 options = get_options(env)
+if options['lineage_unique_ids'] is not None and len(options['lineage_unique_ids']) > 1:
+    raise Exception('multiple lineage unique ids not yet supported (it breaks at least scripts/tabulate_lineage_probs.py, and probably other things). Note that partis/test/linearham-run.py has infrastructure for calling linearham with (paralellized) multiple lineage uids.')
 if not options["build_partis_linearham"]:
     env.SConsignFile(os.path.join(options["outdir"], ".sconsign"))
 
@@ -211,7 +219,10 @@ if os.path.abspath(options["outdir"]).find(lhdir) != 0:
 nest = nestly_scons.SConsWrap(nestly.Nest(), dest_dir=options["outdir"], alias_environment=env)
 
 def default_label(d):
-    return d.get("id")
+    lid = d.get("id")
+    if options["no_nestly_subdirs"]:
+        lid = ''
+    return lid
 
 #### Record git commit and tag
 
@@ -283,7 +294,6 @@ if options["run_partis"]:
     @nest.add_target()
     def partis_output(outdir, c):
         partis_mode = "annotate --all-seqs-simultaneous" if options["all_clonal_seqs"] else "partition"
-# ----------------------------------------------------------------------------------------
         partis_parameter_dir = options["parameter_dir"].rstrip("/") + " --refuse-to-cache-parameters" if options["parameter_dir"] is not None else os.path.join(outdir, "parameter_dir")
         partis_output = env.Command(
             [os.path.join(outdir, filename) for filename in
@@ -307,7 +317,6 @@ if options["run_linearham"]:
     def partis_yaml_file(outdir, c):
         default_outfname = os.path.join(outdir, "partis_run.yaml")
         if options["partis_yaml_file"] is not None:
-# ----------------------------------------------------------------------------------------
             assert options["parameter_dir"] is not None, "Specify both --partis-yaml-file and --parameter-dir."
             if options["partis_yaml_file"] == default_outfname:
                 # scons complains about dependency cycles if source and target have the same name
@@ -357,7 +366,6 @@ if options["run_linearham"]:
                 + ((" --cluster-index " + str(c["cluster"]["cluster_index"])) if c["cluster"]["cluster_index"] is not None else "") \
                 + ((" --partition-index " + str(c["cluster"]["partition_index"])) if c["cluster"]["partition_index"] is not None else "") \
                 + ((" --seed-seq " + c["lineage"]["lineage_seq_unique_id"]) if options["lineage_unique_ids"] is not None else "") \
-# ----------------------------------------------------------------------------------------
                 + ((" --glfo-dir " + os.path.join(options["parameter_dir"], "/hmm/germline-sets")) if os.path.splitext(c["partis_yaml_file"])[1] == '.csv' else "") \
                 + ((" --locus " + options["locus"]) if os.path.splitext(c["partis_yaml_file"])[1] == '.csv' else "") \
                 + " --fasta-output-file ${TARGETS[0]}" \

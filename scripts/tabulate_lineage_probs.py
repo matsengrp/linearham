@@ -31,7 +31,10 @@ def seqs_of_tree(t, seed):
     '''
     Iterate up the tree, getting ancestral sequences.
     '''
-    lineage = [t.find_node_with_taxon_label(seed)]
+    seed_node = t.find_node_with_taxon_label(seed)
+    if seed_node is None:
+         raise Exception('seed node with label \'%s\' not found in tree' % seed)  # this is one place (there may be others) where multiple --lineage-unique-ids causes a crash (all ids get passed in to this script)
+    lineage = [seed_node]
 
     while True:
         node = lineage[-1].parent_node
