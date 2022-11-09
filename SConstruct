@@ -55,13 +55,19 @@ Script.AddOption("--cluster-index",
         dest="cluster_index",
         type="str",
         default=None,
-        help="Zero-based index of cluster to use in the partition specified by --partition-index (default: 0). Anything passed will be interpreted as the index of the cluster to be used as in scripts/parse_cluter.py.")
+        help="Zero-based index of cluster to use in the partition specified by --partition-index (default: 0).")
 
 Script.AddOption("--cluster-seed-unique-id",
         dest="cluster_seed_unique_id",
         type="str",
         default=None,
-        help="A string specifying unique id of the partis seed sequence (see partis --seed-unique-id https://github.com/psathyrella/partis/blob/master/docs/subcommands.md#--seed-unique-id-id). The uid passed will be used to parse the cluster(s) containing this sequence in the partition specified by --partition-index as in scripts/parse_cluter.py.")
+        help="Name of a sequence of interest, to whose family/cluster the analysis will be restricted. I.e. you can specify a cluster with any of --cluster-index, --cluster-seed-unique-id, or --lineage-unique-ids.")
+
+Script.AddOption("--lineage-unique-ids",
+        dest="lineage_unique_ids",
+        type="str",
+        default=None,
+        help=",-separated list of names of the sequence(s) of interest for analyzing lineages (although atm only supports list of length 1). This has the same effect as --cluster-seed-unique-id (restricts analysis to this sequence's cluster), but then we also go on to infer lineage characteristics for it.")
 
 Script.AddOption("--template-path",
         dest="template_path",
@@ -116,12 +122,6 @@ Script.AddOption("--rng-seed",
         type="str",
         default="0",
         help="The RNG seed.")
-
-Script.AddOption("--lineage-unique-ids",
-        dest="lineage_unique_ids",
-        type="str",
-        default=None,
-        help=",-separated list of names of the sequence(s) of interest for analyzing lineages. ")
 
 Script.AddOption("--asr-pfilters",
         dest="asr_pfilters",
@@ -202,10 +202,12 @@ def get_options(env):
 
 env = Environment(ENV = os.environ)
 options = get_options(env)
-if options['lineage_unique_ids'] is not None and len(options['lineage_unique_ids']) > 1:
-    raise Exception('multiple lineage unique ids not yet supported (it breaks at least scripts/tabulate_lineage_probs.py, and probably other things). Note that partis/test/linearham-run.py has infrastructure for calling linearham with (paralellized) multiple lineage uids.')
+if options["lineage_unique_ids"] is not None and len(options["lineage_unique_ids"]) > 1:
+    raise Exception("multiple lineage unique ids not yet supported (it breaks at least scripts/tabulate_lineage_probs.py, and probably other things). Note that partis/test/linearham-run.py has infrastructure for calling linearham with (paralellized) multiple lineage uids.")
 if not options["build_partis_linearham"]:
     env.SConsignFile(os.path.join(options["outdir"], ".sconsign"))
+if options["cluster_seed_unique_id"] is not None and options["lineage_unique_ids"] is not None:
+    raise Exception("can\'t specify both --cluster-seed-unique-id and --lineage-unique-ids")  # i mean, it wouldn't break anything, but it doesn't make sense since it'd do the same thing as only setting --lineage-unique-ids
 
 if not any(options[a] for a in all_actions) and '--help' not in sys.argv:
     raise Exception('No action specified. Choose from %s' % ', '.join('--' + a.replace('_', '-') for a in all_actions))
@@ -352,20 +354,20 @@ if options["run_linearham"]:
     if options["lineage_unique_ids"] is not None:
         @nest.add_nest(label_func=default_label)
         def lineage(c):
-            return [{"id": "lineage_" + lid, "lineage_seq_unique_id": lid}
+            return [{"id": "lineage_" + lid, "lineage_seq_unique_id": lid}  # "lineage_seq_unique_id" key in <c> keeps track of the individual lids (of which atm we can have only one) whereas "lineage_unique_ids" is the key in the original options (or something like that? I didn't write it)
                     for lid in options["lineage_unique_ids"]]
 
     @nest.add_target()
-    def _parse_cluster(outdir, c):
+    def _parse_cluster(outdir, c):  # select the cluster that we're going to run on (from the partis output file), and write it (its seqs) to yaml (fasta) output files
         cluster_fasta_file, cluster_yaml_file = env.Command(
             [os.path.join(outdir, outfile) for outfile in ["cluster_seqs.fasta", "cluster.yaml"]],
             c["partis_yaml_file"],
             "scripts/parse_cluster.py $SOURCE" \
                 + " --indel-reversed-seqs" \
                 + ((" --seed-unique-id " + str(c["cluster"]["cluster_seed_unique_id"])) if c["cluster"]["cluster_seed_unique_id"] is not None else "") \
+                + ((" --seed-unique-id " + str(c["lineage"]["lineage_seq_unique_id"])) if options["lineage_unique_ids"] is not None else "") \
                 + ((" --cluster-index " + str(c["cluster"]["cluster_index"])) if c["cluster"]["cluster_index"] is not None else "") \
                 + ((" --partition-index " + str(c["cluster"]["partition_index"])) if c["cluster"]["partition_index"] is not None else "") \
-                + ((" --seed-seq " + c["lineage"]["lineage_seq_unique_id"]) if options["lineage_unique_ids"] is not None else "") \
                 + ((" --glfo-dir " + os.path.join(options["parameter_dir"], "/hmm/germline-sets")) if os.path.splitext(c["partis_yaml_file"])[1] == '.csv' else "") \
                 + ((" --locus " + options["locus"]) if os.path.splitext(c["partis_yaml_file"])[1] == '.csv' else "") \
                 + " --fasta-output-file ${TARGETS[0]}" \

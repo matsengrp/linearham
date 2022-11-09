@@ -19,10 +19,10 @@ import glutils
 from clusterpath import ClusterPath
 
 
-def show_available_clusters(cpath, ipartition):
+def show_available_clusters(cpath, ipartition, ptn):
     available_clusters = [
         OrderedDict([("index", i), ("size", len(cluster)), ("unique_ids", ' '.join(cluster))])
-        for i, cluster in enumerate(cpath.partitions[ipartition])
+        for i, cluster in enumerate(ptn)
     ]
     print " available clusters in partition at index {} {}:".format(
         ipartition, ("(best)" if ipartition == cpath.i_best else "")
@@ -31,62 +31,37 @@ def show_available_clusters(cpath, ipartition):
     for clust in available_clusters:
         print "\t".join([str(val) for val in clust.values()])
 
-
-def parse_cluster_annotation(
-    annotation_list, cpath, partition_index, cluster_index, seed_unique_id, lineage_unique_id
-):
+def parse_cluster_annotation(annotation_list, cpath, args):
     if len(annotation_list) == 1:
         print " only one annotation in partis output file. Using it."
         return annotation_list[0]
+
     if cpath is None or len(cpath.partitions) == 0:
-        raise Exception(
-            "Partis output file missing cluster path or missing partitions. Need cluster path, partition information to use arguments to parse the desired cluster from the partis output file."
-        )
-    else:
-        ipartition = cpath.i_best if partition_index is None else partition_index
-        print "  found %d clusters in %s" % (
-            len(cpath.partitions[ipartition]),
-            "best partition"
-            if partition_index is None
-            else "partition at index %d (of %d)" % (ipartition, len(cpath.partitions)),
-        )
-        if cluster_index is None:
-            clusters_to_use = cpath.partitions[ipartition]
-            print "    taking all %d clusters" % len(clusters_to_use)
-        else:
-            clusters_to_use = [cpath.partitions[ipartition][cluster_index]]
-            print "    taking cluster at index %d" % cluster_index
-        if seed_unique_id is not None:
-            clusters_to_use = [
-                c for c in clusters_to_use if seed_unique_id in c
-            ]  # NOTE can result in more than one cluster with the seed sequence (e.g. if this file contains intermediate annotations from seed partitioning))
-            print "    removing clusters not containing sequence '%s' (leaving %d)" % (
-                seed_unique_id,
-                len(clusters_to_use),
+        raise Exception('partis output file has no partitions: %s' % args.partis_yaml_file)
+
+    ipartition = cpath.i_best if args.partition_index is None else args.partition_index
+    ptn = cpath.partitions[ipartition]
+    print "  found %d clusters in %s" % (len(ptn), "best partition" if args.partition_index is None else "partition at index %d (of %d)" % (ipartition, len(cpath.partitions)))
+
+    clusters_to_use = ptn if args.cluster_index is None else [ptn[args.cluster_index]]
+    print "    taking %s" % (("all %d clusters"%len(clusters_to_use)) if args.cluster_index is None else "cluster at index %d" % args.cluster_index)
+
+    if args.seed_unique_id is not None:
+        clusters_to_use = [c for c in clusters_to_use if args.seed_unique_id in c]  # NOTE can result in more than one cluster with the seed sequence (e.g. if this file contains intermediate annotations from seed partitioning))
+        print "    removing clusters not containing sequence '%s' (leaving %d)" % (args.seed_unique_id, len(clusters_to_use))
+        if len(clusters_to_use) > 1:
+            show_available_clusters(cpath, ipartition, ptn)
+            raise Exception(
+                "Multiple clusters with partis seed sequence with uid '%s'. Partis output file may contain intermediate annotations from seed partitioning. Try using --cluster-index to choose one from the list printed above (best viewed with less -RS)."
+                % args.seed_unique_id
             )
-            if len(clusters_to_use) > 1:
-                show_available_clusters(cpath, ipartition)
-                raise Exception(
-                    "Multiple clusters with partis seed sequence with uid '%s'. Partis output file may contain intermediate annotations from seed partitioning. Try using --cluster-index to choose one from the list printed above (best viewed with less -RS)."
-                    % seed_unique_id
-                )
 
     if len(clusters_to_use) != 1:
-        show_available_clusters(cpath, ipartition)
+        show_available_clusters(cpath, ipartition, ptn)
         raise Exception(
             "Options passed must uniquely identify 1 cluster in the partis output file but instead resulted in %d clusters. Try using --cluster-index to choose one from the list printed above (best viewed with less -RS)."
             % len(clusters_to_use)
         )
-        
-    if lineage_unique_id is not None:
-        clusters_for_lineage_reconstruction = [
-            c for c in clusters_to_use if lineage_unique_id in c
-        ]
-        if len(clusters_for_lineage_reconstruction) < 1:
-            raise Exception(
-                "None of the specified clusters contain the lineage_unique_id with uid '%s'. Use the Partis view-output command to examine which clusters contain the seed sequence of interest. You can also use --cluster-seed-unique-id to choose only the clusters that contain a specified seed sequence."
-                % lineage_unique_id
-            )
 
     annotations = {
         ":".join(adict["unique_ids"]): adict for adict in annotation_list
@@ -132,7 +107,7 @@ def cluster_sequences(annotation, use_indel_reversed_sequences=False):
 def write_cluster_fasta(fname, seqfos):
     if not os.path.exists(os.path.dirname(os.path.abspath(fname))):
         os.makedirs(os.path.dirname(os.path.abspath(fname)))
-    print "  writing %d sequences to %s" % (len(seqfos), fname)
+    print "  writing %d sequences (including naive) to %s" % (len(seqfos), fname)
     write_to_fasta(
         OrderedDict([(seqfo["name"], seqfo["seq"]) for seqfo in seqfos]), fname
     )
@@ -166,10 +141,6 @@ if __name__ == "__main__":
         help="if set, take sequences only from the cluster containing this seed sequence, rather than the default of taking all sequences from all clusters",
     )
     parser.add_argument(
-        "--seed-seq",
-        help="if set, checks whether any the selected cluster contains the unique ids specified for lineage reconstruction"
-    )
-    parser.add_argument(
         "--glfo-dir",
         help="Directory with germline info. Only necessary for old-style csv output files. Equivalent to a parameter dir with '/hmm/germline-sets' appended.",
     )
@@ -197,10 +168,7 @@ if __name__ == "__main__":
     cluster_annotation = parse_cluster_annotation(
         annotation_list,
         cpath,
-        args.partition_index,
-        args.cluster_index,
-        args.seed_unique_id,
-        args.seed_seq
+        args
     )
     warn_duplicate_naives(cluster_annotation)
     # write yaml
