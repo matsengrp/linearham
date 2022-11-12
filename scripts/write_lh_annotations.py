@@ -29,8 +29,13 @@ if __name__ == "__main__":
 
     def read_linearham_lines(lh_annotation_tsv):
         with open(lh_annotation_tsv) as tsvfile:
-            return [l for l in csv.DictReader(tsvfile, dialect='excel-tab')]
-            
+            lhlines = [l for l in csv.DictReader(tsvfile, dialect='excel-tab')]
+        with open(lh_annotation_tsv.replace('.log', '.trees')) as tfile:
+            treestrs = tfile.readlines()
+        if len(lhlines) != len(treestrs):
+            raise Exception('different number of lines in linearham log file %d vs tree file %d' % (len(lhlines), len(treestrs)))
+        return lhlines, treestrs
+
     def match(d1, d2, keys_to_match):
         return all(d1[k] == d2[k] for k in keys_to_match)
 
@@ -38,6 +43,7 @@ if __name__ == "__main__":
         for entry in uniq_dicts:
             if match(entry, query, keys_to_match): #compare query and entry 
                 entry['count'] += 1
+                entry['tree-info']['linearham']['trees'].append(utils.get_single_entry(query['tree-info']['linearham']['trees']))
                 return
         query['count'] = 1
         uniq_dicts.append(query) # is adding the same reference here going to create issues?
@@ -50,29 +56,32 @@ if __name__ == "__main__":
             tally_dict(line, uniq_lh_lines, keys_to_match)
         for line in uniq_lh_lines:
             line['logprob'] = math.log(line['count']/float(len(lh_lines)))
+            assert line['count'] == len(line['tree-info']['linearham']['trees'])  # don't really need this, but it makes me feel better
             del line['count']
         return uniq_lh_lines
 
-    def update_partis_line_with_lh_annotation(partis_line, lh_line, glfo, debug=False):
+    def update_partis_line_with_lh_annotation(partis_line, lh_line, glfo, treestr, debug=False):
         utils.remove_all_implicit_info(partis_line)
         partis_line.update(lh_line)
         utils.add_implicit_info(glfo, partis_line, check_line_keys=debug)
+        partis_line['tree-info'] = {'linearham' : {'trees' : [treestr]}}
 
     args = parser.parse_args()
 
     # read partis annotation of linearham input cluster
     glfo, annotation_list, _ = utils.read_output(args.partis_yaml_file)
+    assert len(annotation_list) == 1  # see note at top
     partis_line = annotation_list[CLUSTER_INDEX]
     
-    # read linearham annotationS of linearham input cluster
-    lh_lines = read_linearham_lines(args.linearham_log_file)
+    # read linearham annotations of linearham input cluster
+    lh_lines, lh_trees = read_linearham_lines(args.linearham_log_file)
     full_lh_lines = []
-    for lh_line in lh_lines:
+    for lh_line, treestr in zip(lh_lines, lh_trees):
         # convert annotation keys to partis style
         utils.process_input_linearham_line(lh_line, partis_line, glfo)
         # create full partis annotations from the linearham annotations by updating copies of the partis annotation to reflect linearham annotations
         partis_annotation_copy = copy.deepcopy(partis_line)
-        update_partis_line_with_lh_annotation(partis_annotation_copy, lh_line, glfo)
+        update_partis_line_with_lh_annotation(partis_annotation_copy, lh_line, glfo, treestr)
         full_lh_lines.append(partis_annotation_copy)
     # tabulate annotations (collapse duplicate annotations and assign probabilities according to number of occurrences)
     uniq_lh_lines = tabulate_linearham_annotations(full_lh_lines)
