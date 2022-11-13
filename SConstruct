@@ -67,7 +67,7 @@ Script.AddOption("--lineage-unique-ids",
         dest="lineage_unique_ids",
         type="str",
         default=None,
-        help=",-separated list of names of the sequence(s) of interest for analyzing lineages (although atm only supports list of length 1). This has the same effect as --cluster-seed-unique-id (restricts analysis to this sequence's cluster), but then we also go on to infer lineage characteristics for it.")
+        help=",-separated list of names of the sequence(s) of interest for analyzing lineages (although atm only supports list of length 1). This has the same effect as --cluster-seed-unique-id (restricts analysis to this sequence's cluster), but then we also go on to infer lineage characteristics for it. Note that (other than cluster selection) the only difference if this arg is set to default linearham operation is running scripts/tabulate_lineage_probs.py at the end, i.e. if running several different lineage ids you can link everything else (e.g. revbayes output) from a previous run.")
 
 Script.AddOption("--template-path",
         dest="template_path",

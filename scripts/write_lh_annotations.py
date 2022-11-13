@@ -9,6 +9,9 @@ default_partis_path = os.path.join(os.getcwd(), 'lib/partis')
 sys.path.append(os.path.join(default_partis_path, 'python'))
 import utils
 
+# reads sampled trees/annotation pairs, collapses duplicate annotations while keeping tracking of all the trees that contributed, then writes all [best] unique annotations to linearham_run_all[best].yaml
+#  This does not add the inferred ancestral sequences to the annotations (atm this is done in partis/test/linearham-run.py, although maybe it'd make sense to do it here)
+
 #Hardcoding this because we should only ever have one annotation in the yaml file passed to this script. If used outside of this context, this will need to happen using proper cluster indexing as in scripts/parse_cluster.py or in partis.
 CLUSTER_INDEX = 0
 
