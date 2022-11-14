@@ -166,11 +166,37 @@ See also [below](#output-files) for more detail on the various inputs and output
 
 ## Output files
 
-A variety of files are written to `--outdir`, some of which are intermediate files passed between linearham steps.
+Most of the output files you're likely to need are by default in the `mcmc*/burninfrac*/` subdir of `--outdir`:
+e.g. `burninfrac0.1_subsampfrac0.05/`
+| file | format | description |
+| ---     | ---       | ---         |
+| linearham\_run.log                 | tsv       | posterior samples of annotations/naive sequences and parameters for the phylogenetic substitution and rate variation models |
+| linearham\_run.trees               | newick    | posterior tree samples with ancestral sequence annotations (formatted for use by [Dendropy](https://dendropy.org/)) |
+| linearham\_run.ess                 | tsv       | approximate effective sample sizes for each field in linearham\_run.log |
+| aa\_naive\_seqs.fasta              | fasta     | each sampled naive amino acid sequence and its associated posterior probability |
+| aa\_naive\_seqs.dnamap             | fasta (ish) | map from each sampled naive amino acid sequence to its corresponding set of nucleotide naive sequences and posterior probabilities |
+| aa\_naive\_seqs.png                | png       | logo plot of naive amino acid sequence posterior probability using [WebLogo](http://weblogo.threeplusone.com/) to visualize per-site uncertainties |
+| linearham\_annotations\_all.yaml   | yaml      | annotations corresponding to the posterior tree samples (collapsing unique annotations, and with posterior probabilites set in 'logprob' key) |
+| linearham\_annotations\_best.yaml  | yaml      | most likely annotation, i.e. the one that corresponded to the largest number of posterior tree samples |
+
+If `--no-nestly-subdirs` is set, instead of the `cluster-*/mcmc*/burninfrac*/lineage_*` subdirs, all files are written to the top-level dir (i.e. the calling program must specify a different dir in order to run with different parameters).
+
+Every posterior tree sample corresponds to one sampled annotation; however before writing to `linearham_annotations_all.yaml`, duplicate annotations are collapsed.
+Each resulting unique annotation is assigned a probability proportional to the number of times it was sampled.
+These unique annotations are sorted by the resulting new 'logprob' key (in descending order) and written to `linearham_annotations_all.yaml`.
+Every sampled tree that contributed to each unique annotation is also added to that annotation (as a list in `annotation['tree-info']['linearham']['trees']`).
+
+If `--lineage-unique-ids` is specified, there will also be additional lineage-specific output files, by default in subdirectories like `lineage_<uid>/`:
+| file | format | description |
+| ---     | ---       | ---         |
+| aa_lineage_seqs.fasta | fasta | for **each intermediate ancestor in the lineage of the sequence with the specified id**, the sampled amino acid sequence and its associated posterior probability |
+| aa_lineage_seqs.dnamap | fasta(ish) | for **each intermediate ancestor of the lineage of the sequence with the specified id**, map from sampled amino acid sequence to its corresponding set of nucleotide sequences and posterior probabilities |
+| aa_lineage_seqs.pfilterX.png | png | posterior probability lineage graphic made with [Graphviz](https://www.graphviz.org/), where `X` is the posterior probability cutoff for the sampled sequences. |
+
+Most of the rest of the files in `--outdir` are just used to pass information among various linearham steps.
 By default, in the top-level dir are:
  - the partis [output file](https://github.com/psathyrella/partis/blob/master/docs/output-formats.md) that was used as input for linearham (e.g. `partis_run.yaml`), which contains partis-inferred clonal families (clusters) and annotations (including inferred naive sequence)
  - sub dirs for each cluster on which linearham was run, with name of form `cluster-N/` for the cluster index `N`
-If `--no-nestly-subdirs` is set, all files are written to the top-level dir (i.e. the calling program must specify a different dir in order to run with different parameters).
 
 Within each cluster's subdir `cluster-N/` are:
  - a fasta file `cluster-N/cluster_seqs.fasta` with each of the cluster's input sequences, as well as its `partis`-inferred naive sequence
@@ -178,8 +204,6 @@ Within each cluster's subdir `cluster-N/` are:
    - This is equivalent to assuming that all shm indels occured at the tips of the tree, which is often not a good assumption, but standard phylogenetic approaches do not handle indels, so if you care about indels you'll need to handle them separately/by hand. 
  - a partis yaml output file `cluster.yaml` resulting from pulling just this cluster out of the original partis output file that was used as input
  - the linearham output dir `cluster-N/mcmciter<stuff>` where `<stuff>` records the exact options of the revbayes run e.g. `mcmciter10000_mcmcthin10_tuneiter5000_tunethin100_numrates4_rngseed0/`
-
-<!-- # TODO separate at top the list of useful/minimal output files -->
 
 #### Within the linearham output dir `mcmciter<stuff>`
 e.g. `mcmciter10000_mcmcthin10_tuneiter5000_tunethin100_numrates4_rngseed0/`:
@@ -191,32 +215,6 @@ e.g. `mcmciter10000_mcmcthin10_tuneiter5000_tunethin100_numrates4_rngseed0/`:
 | revbayes\_run.stdout.log | txt         | stdout log of RevBayes tree sampling run |
 | lh\_revbayes\_run.trees  | tsv         | results from tree sampling iterations plus V(D)J recombination information and contribution of each tree to posterior estimation |
 | `burninfrac<stuff>`      | dir         | subdirectory for results from the `run_bootstrap_asr_ess.R` step onwards, i.e. final results |
-
-#### Within `burninfrac<stuff>`
-e.g. `burninfrac0.1_subsampfrac0.05/`
-| file | format | description |
-| ---     | ---       | ---         |
-| linearham\_run.log                 | tsv       | posterior samples of the naive sequence annotation and the phylogenetic substitution model and rate variation parameters |
-| linearham\_run.trees               | newick    | posterior tree samples with ancestral sequence annotations (formatted for use by [Dendropy](https://dendropy.org/)) |
-| linearham\_run.ess                 | tsv       | approximate effective sample sizes for each field in linearham\_run.log |
-| aa\_naive\_seqs.fasta              | fasta     | each sampled naive amino acid sequence and its associated posterior probability |
-| aa\_naive\_seqs.dnamap             | fasta (ish) | map from each sampled naive amino acid sequence to its corresponding set of nucleotide naive sequences and posterior probabilities |
-| aa\_naive\_seqs.png                | png       | logo plot of naive amino acid sequence posterior probability using [WebLogo](http://weblogo.threeplusone.com/) to visualize per-site uncertainties |
-| linearham\_annotations\_all.yaml   | yaml      | annotations corresponding to the posterior tree samples |
-| linearham\_annotations\_best.yaml  | yaml      | most likely annotation, i.e. the one that corresponded to the largest number of posterior tree samples |
-
-Every posterior tree sample corresponds to one sampled annotation; however before writing to `linearham_annotations_all.yaml`, duplicate annotations are collapsed.
-Each resulting unique annotation is assigned a probability proportional to the number of times it was observed.
-These unique annotations are sorted by the resulting new 'logrpob' key (in descending order) and written to `linearham_annotations_all.yaml`.
-Every sampled tree that contributed to each unique annotation is also added as a list in `annotation['tree-info']['linearham']['trees']`.
-
-If `--lineage-unique-ids` is specified, there will also be additional lineage-specific output files in subdirectories (one for each sequence id specified) like `lineage_<uid>/`.
-These include:
-| file | format | description |
-| ---     | ---       | ---         |
-| aa_lineage_seqs.fasta | fasta | for **each intermediate ancestor in the lineage of the sequence with the specified id**, the sampled amino acid sequence and its associated posterior probability |
-| aa_lineage_seqs.dnamap | fasta(ish) | for **each intermediate ancestor of the lineage of the sequence with the specified id**, map from sampled amino acid sequence to its corresponding set of nucleotide sequences and posterior probabilities |
-| aa_lineage_seqs.pfilterX.png | png | posterior probability lineage graphic made with [Graphviz](https://www.graphviz.org/), where `X` is the posterior probability cutoff for the sampled sequences. |
 
 ## Naive sequence comparisons
 One way to visualize the various output naive sequences and their probabilities is with `lib/partis/bin/cf-linearham.py`, which takes as input a linearham output dir and a partis output file (the latter preferably created with the `--calculate-alternative-annotations` option set).
