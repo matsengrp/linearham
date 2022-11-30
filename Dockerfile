@@ -1,4 +1,4 @@
-FROM quay.io/matsengrp/linearham/2022-11-29-base-image
+FROM quay.io/matsengrp/linearham:2022-11-29-base-image
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
   autoconf \
