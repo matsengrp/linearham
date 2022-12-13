@@ -191,7 +191,13 @@ If `--lineage-unique-ids` is specified, there will also be additional lineage-sp
 | ---     | ---       | ---         |
 | aa_lineage_seqs.fasta | fasta | for **each intermediate ancestor in the lineage of the sequence with the specified id**, the sampled amino acid sequence and its associated posterior probability |
 | aa_lineage_seqs.dnamap | fasta(ish) | for **each intermediate ancestor of the lineage of the sequence with the specified id**, map from sampled amino acid sequence to its corresponding set of nucleotide sequences and posterior probabilities |
-| aa_lineage_seqs.pfilterX.png | png | posterior probability lineage graphic made with [Graphviz](https://www.graphviz.org/), where `X` is the posterior probability cutoff for the sampled sequences. |
+| aa_lineage_seqs.pfilterX.svg | svg | posterior probability lineage graphic made with [Graphviz](https://www.graphviz.org/), where `X` is the posterior probability cutoff for the sampled sequences (see details below). |
+
+The posterior probability lineage plot (`lineage aa_lineage_seqs.pfilterX.svg`) summarizes all the inferred ancestral sequences (and transitions among them) that were observed in the sampled trees.
+Each node represents an amino acid sequence: either inferred ("naive" if it was a naive sequence in any tree, otherwise "inter") or the seed sequence.
+The node's percent label (which also determines the color weight) is the fraction of trees in which it was observed, whether as naive or intermediate (so note that this can be larger than the probability in a naive sequence's name in the fasta file above, since in this plot we include also instances where it was an intermediate).
+Edges are labelled with the mutations separating their two nodes, and with the percent of transitions (in all trees) from the parent node that connect to the child node (which also determines the color weight).
+Edges with probability below <pfilter> are not plotted, so if you want to see more detail you should decrease this (note that this means plotted numbers generally don't add exactly to 100).
 
 Most of the rest of the files in `--outdir` are just used to pass information among various linearham steps.
 By default, in the top-level dir are:
