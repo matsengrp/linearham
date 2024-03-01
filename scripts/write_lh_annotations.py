@@ -1,13 +1,16 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
+from __future__ import absolute_import
 import math
 import copy
 import argparse
 import csv
 import os
 import sys
+from io import open
+from six.moves import zip
 default_partis_path = os.path.join(os.getcwd(), 'lib/partis')
-sys.path.append(os.path.join(default_partis_path, 'python'))
-import utils
+sys.path.append(default_partis_path)
+import python.utils as utils
 
 # reads sampled trees/annotation pairs, collapses duplicate annotations while keeping tracking of all the trees that contributed, then writes all [best] unique annotations to linearham_run_all[best].yaml
 #  This does not add the inferred ancestral sequences to the annotations (atm this is done in partis/test/linearham-run.py, although maybe it'd make sense to do it here)

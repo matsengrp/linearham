@@ -1,5 +1,7 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
+from __future__ import absolute_import
+from __future__ import print_function
 import argparse
 import copy
 from collections import Counter, OrderedDict
@@ -10,6 +12,8 @@ import numpy as np
 import sys
 
 from util_functions import read_from_fasta, translate, write_to_fasta
+import six
+from six.moves import zip
 
 
 # ----------------------------------------------------------------------------------------
@@ -139,7 +143,7 @@ if __name__ == '__main__':
     write_to_fasta(aa_dna_map, args.output_base + ".dnamap")  # sort of a fasta, but with name for the aa seq, and multiple seq lines for each name, with each seq line a (prob, nuc seq) pair for all the nuc seqs contributing to the aa seq
 
     # Flip the dictionary.
-    seqs_out = {v:k for k,v in out_seqs.iteritems()}
+    seqs_out = {v:k for k,v in six.iteritems(out_seqs)}
 
     # make empty node/edge plot
     dot = graphviz.Digraph(comment=" ".join(sys.argv), format='svg',
@@ -169,7 +173,7 @@ if __name__ == '__main__':
                     continue
                 node_conf = int(10 + (100-10) * float(node_c[ab]) / num_trees)  # note that the numbers in the naive seq names are *not* the same as the ones we calculate here (since here we include *all* times that they occur, not as the naive seq, whereas the number in their name is the fraction of times they were the naive sequence)
                 if debug:
-                    print '%3d  %6.3f  %s' % (node_c[ab], float(node_c[ab]) / num_trees, seqs_out[ab])
+                    print('%3d  %6.3f  %s' % (node_c[ab], float(node_c[ab]) / num_trees, seqs_out[ab]))
                 dot_copy.node(nlabels[seqs_out[ab]], style="filled", fillcolor="#ff0000" + (str(node_conf) if node_conf < 100 else ""))  # can also add xlabel= to get text outside bubble
 
         dot_copy.save(args.output_base + ".pfilter" + str(pfilter) + ".dot")

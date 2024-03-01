@@ -1,5 +1,7 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
+from __future__ import absolute_import
+from __future__ import print_function
 import argparse
 from collections import OrderedDict
 import yaml
@@ -13,10 +15,10 @@ import colored_traceback.always
 from util_functions import write_to_fasta
 
 default_partis_path = os.path.join(os.getcwd(), "lib/partis")
-sys.path.append(os.path.join(default_partis_path, "python"))
-import utils
-import glutils
-from clusterpath import ClusterPath
+sys.path.append(default_partis_path)
+import python.utils as utils
+import python.glutils as glutils
+from python.clusterpath import ClusterPath
 
 
 def show_available_clusters(cpath, ipartition, ptn):
@@ -24,16 +26,16 @@ def show_available_clusters(cpath, ipartition, ptn):
         OrderedDict([("index", i), ("size", len(cluster)), ("unique_ids", ' '.join(cluster))])
         for i, cluster in enumerate(ptn)
     ]
-    print " available clusters in partition at index {} {}:".format(
+    print(" available clusters in partition at index {} {}:".format(
         ipartition, ("(best)" if ipartition == cpath.i_best else "")
-    )
-    print "\t".join(available_clusters[0].keys())
+    ))
+    print("\t".join(list(available_clusters[0].keys())))
     for clust in available_clusters:
-        print "\t".join([str(val) for val in clust.values()])
+        print("\t".join([str(val) for val in clust.values()]))
 
 def parse_cluster_annotation(annotation_list, cpath, args):
     if len(annotation_list) == 1:
-        print " only one annotation in partis output file. Using it."
+        print(" only one annotation in partis output file. Using it.")
         return annotation_list[0]
 
     if cpath is None or len(cpath.partitions) == 0:
@@ -41,14 +43,14 @@ def parse_cluster_annotation(annotation_list, cpath, args):
 
     ipartition = cpath.i_best if args.partition_index is None else args.partition_index
     ptn = cpath.partitions[ipartition]
-    print "  found %d clusters in %s" % (len(ptn), "best partition" if args.partition_index is None else "partition at index %d (of %d)" % (ipartition, len(cpath.partitions)))
+    print("  found %d clusters in %s" % (len(ptn), "best partition" if args.partition_index is None else "partition at index %d (of %d)" % (ipartition, len(cpath.partitions))))
 
     clusters_to_use = ptn if args.cluster_index is None else [ptn[args.cluster_index]]
-    print "    taking %s" % (("all %d clusters"%len(clusters_to_use)) if args.cluster_index is None else "cluster at index %d" % args.cluster_index)
+    print("    taking %s" % (("all %d clusters"%len(clusters_to_use)) if args.cluster_index is None else "cluster at index %d" % args.cluster_index))
 
     if args.seed_unique_id is not None:
         clusters_to_use = [c for c in clusters_to_use if args.seed_unique_id in c]  # NOTE can result in more than one cluster with the seed sequence (e.g. if this file contains intermediate annotations from seed partitioning))
-        print "    removing clusters not containing sequence '%s' (leaving %d)" % (args.seed_unique_id, len(clusters_to_use))
+        print("    removing clusters not containing sequence '%s' (leaving %d)" % (args.seed_unique_id, len(clusters_to_use)))
         if len(clusters_to_use) > 1:
             show_available_clusters(cpath, ipartition, ptn)
             raise Exception(
@@ -107,7 +109,7 @@ def cluster_sequences(annotation, use_indel_reversed_sequences=False):
 def write_cluster_fasta(fname, seqfos):
     if not os.path.exists(os.path.dirname(os.path.abspath(fname))):
         os.makedirs(os.path.dirname(os.path.abspath(fname)))
-    print "  writing %d sequences (including naive) to %s" % (len(seqfos), fname)
+    print("  writing %d sequences (including naive) to %s" % (len(seqfos), fname))
     write_to_fasta(
         OrderedDict([(seqfo["name"], seqfo["seq"]) for seqfo in seqfos]), fname
     )
@@ -159,7 +161,7 @@ if __name__ == "__main__":
     if utils.getsuffix(args.partis_yaml_file) == ".csv":
         default_glfo_dir = default_partis_path + "/data/germlines/human"
         if args.glfo_dir is None:
-            print "  note: reading deprecated csv format, so need to get germline info from a separate directory; --glfo-dir was not set, so using default %s. If it doesn't crash, it's probably ok." % default_glfo_dir
+            print("  note: reading deprecated csv format, so need to get germline info from a separate directory; --glfo-dir was not set, so using default %s. If it doesn't crash, it's probably ok." % default_glfo_dir)
             args.glfo_dir = default_glfo_dir
         glfo = glutils.read_glfo(args.glfo_dir, locus=args.locus)
 

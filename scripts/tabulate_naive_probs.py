@@ -1,13 +1,16 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
+from __future__ import absolute_import
 import argparse
 from collections import Counter, OrderedDict
 import dendropy
 from itertools import groupby
 import subprocess
-import weblogolib as w
+import weblogo as w
 
 from util_functions import translate, write_to_fasta
+from io import open
+import six
 
 
 if __name__ == '__main__':
@@ -47,7 +50,7 @@ if __name__ == '__main__':
 
     format = w.LogoFormat(data, options)
     with open(args.output_base + ".png", 'w') as f:
-        f.write(w.png_print_formatter(data, format))
+        f.write(str(w.png_print_formatter(data, format)))
 
     aa_naive_seqs_c = Counter(aa_naive_seqs)
     num_trees = len(aa_naive_seqs)
@@ -67,6 +70,6 @@ if __name__ == '__main__':
     aa_dna_naive_seqs_map = OrderedDict(
         (k, "\n".join(str(float(count) / num_trees) + "," + dna_seq
                       for dna_seq, count in aa_dna_naive_seqs_d[v].most_common(None)))
-        for k, v in aa_naive_seqs_d.iteritems()
+        for k, v in six.iteritems(aa_naive_seqs_d)
     )
     write_to_fasta(aa_dna_naive_seqs_map, args.output_base + ".dnamap")
