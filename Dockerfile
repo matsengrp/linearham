@@ -4,6 +4,9 @@
 ARG TARGETPLATFORM=linux/amd64
 FROM --platform=${TARGETPLATFORM} debian:latest
 
+# Set TERM to enable colored-traceback to work in non-TTY environments (e.g., CI)
+ENV TERM=xterm
+
 RUN apt-get update && apt-get install -y --no-install-recommends \
   autoconf \
   automake \
@@ -19,6 +22,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
   liblapack-dev \
   libncurses-dev \
   ncurses-base \
+  ncurses-term \
   python3-dev \
   python3-pip \
   python3-setuptools \
