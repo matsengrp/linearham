@@ -3,35 +3,51 @@ on: [push]
 jobs:
   build:
     runs-on: ubuntu-latest
-    env:
-      ACTIONS_ALLOW_UNSECURE_COMMANDS: true
     steps:
-    - uses: actions/checkout@v2
-    - name: Checkout tags
-      run: git fetch --unshallow origin +refs/tags/*:refs/tags/*
-    - name: Set git branch variable
-      run: echo ::set-env name=BRANCH::$(git branch --show-current)
-    - name: Set git tag variable
-      run: if [ $BRANCH == "main" ];then echo ::set-env name=TAG::$(git describe --tags);else echo ::set-env name=TAG::$BRANCH;fi
-    - name: Checkout submodules
-      shell: bash
+    - uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+        submodules: recursive
+
+    - name: Set git branch and tag variables
       run: |
-        auth_header="$(git config --local --get http.https://github.com/.extraheader)"
-        git submodule sync --recursive
-        git -c "http.extraheader=$auth_header" -c protocol.version=2 submodule update --init --force --recursive --depth=1
+        echo "BRANCH=$(git branch --show-current)" >> $GITHUB_ENV
+        if [ "$(git branch --show-current)" == "main" ]; then
+          echo "TAG=$(git describe --tags)" >> $GITHUB_ENV
+        else
+          echo "TAG=$(git branch --show-current)" >> $GITHUB_ENV
+        fi
+
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v3
+
     - name: Login to Registry
       run: docker login quay.io -u ${{ secrets.QUAY_USERNAME }} --password ${{ secrets.QUAY_PASSWORD }}
+
     - name: Build the Docker image
-      run: docker build . -t quay.io/matsengrp/linearham:$TAG
+      uses: docker/build-push-action@v5
+      with:
+        context: .
+        push: false
+        load: true
+        tags: quay.io/matsengrp/linearham:${{ env.TAG }}
+        cache-from: type=gha
+        cache-to: type=gha,mode=max
     - name: Run tests in the Docker image
-      run: docker run quay.io/matsengrp/linearham:$TAG sh -c "/linearham/_build/test/test"
+      run: docker run quay.io/matsengrp/linearham:${{ env.TAG }} sh -c "/linearham/_build/test/test"
+
     - name: Run example in the Docker image
-      run: docker run --rm quay.io/matsengrp/linearham:$TAG sh -c "/linearham/test.sh && /linearham/clean.sh"
+      run: docker run --rm quay.io/matsengrp/linearham:${{ env.TAG }} sh -c "/linearham/test.sh && /linearham/clean.sh"
+
       #- name: publish to Registry
-      #  run: docker push quay.io/matsengrp/linearham:$TAG
+      #  run: docker push quay.io/matsengrp/linearham:${{ env.TAG }}
+
     - name: Build documentation
+      if: github.ref == 'refs/heads/main'
       run: docker run --rm -v $(pwd):/data nakatt/doxygen:1.8.17 Doxyfile
+
     - name: Deploy to GitHub Pages
+      if: github.ref == 'refs/heads/main'
       uses: JamesIves/github-pages-deploy-action@3.2.1
       with:
         ACCESS_TOKEN: ${{ secrets.GH_PAGES_PERSONAL_ACCESS_TOKEN }}
