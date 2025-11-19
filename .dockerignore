@@ -1,0 +1,41 @@
+# Git directories (including submodules) - can be hundreds of MB
+.git
+.gitignore
+.gitmodules
+
+# Build artifacts
+_build/
+output/
+*.o
+*.a
+*.so
+*.dylib
+
+# Python cache
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+.pytest_cache/
+
+# Documentation
+html/
+latex/
+Doxyfile
+
+# IDE and editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# CI/CD
+.github/
+
+# Docker files
+Dockerfile.base
+.dockerignore
+
+# Test outputs
+*.log
