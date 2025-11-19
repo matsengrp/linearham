@@ -18,6 +18,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
   libgsl0-dev \
   liblapack-dev \
   libncurses-dev \
+  ncurses-base \
   python3-dev \
   python3-pip \
   python3-setuptools \
