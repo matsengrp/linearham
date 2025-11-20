@@ -36,8 +36,8 @@ jobs:
     - name: Run tests in the Docker image
       run: docker run quay.io/matsengrp/linearham:${{ env.TAG }} sh -c "/linearham/_build/test/test"
 
-    - name: Run example in the Docker image
-      run: docker run --rm quay.io/matsengrp/linearham:${{ env.TAG }} sh -c "/linearham/test.sh && /linearham/clean.sh"
+    - name: Run fast integration test in the Docker image
+      run: docker run --rm quay.io/matsengrp/linearham:${{ env.TAG }} sh -c "/linearham/test-fast.sh && /linearham/clean.sh"
 
       #- name: publish to Registry
       #  run: docker push quay.io/matsengrp/linearham:${{ env.TAG }}

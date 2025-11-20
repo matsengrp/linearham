@@ -38,5 +38,9 @@ Dockerfile.base
 .dockerignore
 test-docker-build.sh
 
-# Test outputs
+# Test outputs (but keep test scripts and data)
+output/
 *.log
+!test.sh
+!test-fast.sh
+!data/
