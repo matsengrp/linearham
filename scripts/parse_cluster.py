@@ -175,7 +175,8 @@ if __name__ == "__main__":
     warn_duplicate_naives(cluster_annotation)
     # write yaml
     utils.write_annotations(
-        args.yaml_output_file, glfo, [cluster_annotation], set(cluster_annotation)
+        args.yaml_output_file, glfo, [cluster_annotation], set(cluster_annotation),
+        dont_write_git_info=True
     )
     # write fasta
     seqfos = cluster_sequences(
