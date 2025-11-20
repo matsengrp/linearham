@@ -36,6 +36,7 @@ Doxyfile
 # Docker files
 Dockerfile.base
 .dockerignore
+test-docker-build.sh
 
 # Test outputs
 *.log
