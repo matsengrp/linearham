@@ -9,6 +9,20 @@ jobs:
         fetch-depth: 0
         submodules: recursive
 
+    - name: Free up disk space
+      run: |
+        echo "Disk space before cleanup:"
+        df -h
+        # Remove unnecessary tools and packages
+        sudo rm -rf /usr/share/dotnet
+        sudo rm -rf /opt/ghc
+        sudo rm -rf "/usr/local/share/boost"
+        sudo rm -rf "$AGENT_TOOLSDIRECTORY"
+        # Clean Docker system
+        docker system prune -af --volumes
+        echo "Disk space after cleanup:"
+        df -h
+
     - name: Set git branch and tag variables
       run: |
         echo "BRANCH=$(git branch --show-current)" >> $GITHUB_ENV

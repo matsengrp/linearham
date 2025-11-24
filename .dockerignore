@@ -2,6 +2,7 @@
 .git
 .gitignore
 .gitmodules
+lib/revbayes/  # Obsolete submodule - using pre-built RevBayes image instead
 
 # macOS metadata
 .DS_Store
