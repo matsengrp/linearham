@@ -3,6 +3,11 @@
 .gitignore
 .gitmodules
 
+# macOS metadata
+.DS_Store
+.AppleDouble
+.LSOverride
+
 # Build artifacts
 _build/
 output/
@@ -37,6 +42,7 @@ Doxyfile
 Dockerfile.base
 .dockerignore
 test-docker-build.sh
+build-base-image.sh
 
 # Test outputs (but keep test scripts and data)
 output/
@@ -44,3 +50,9 @@ output/
 !test.sh
 !test-fast.sh
 !data/
+
+# Documentation source files (keep generated docs out)
+*.md
+!README.md
+LICENSE
+COPYING

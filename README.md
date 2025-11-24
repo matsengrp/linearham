@@ -17,7 +17,7 @@
   - [how to run](#running-linearham)
     - [run partis](#--run-partis)
     - [run linearham](#--run-linearham)
-    - [compile](#--build-partis-linearham)
+    - [compile](#--build)
   - [run steps](#run-steps)
   - [output files](#output-files)
   - [naive sequence comparisons](#naive-sequence-comparisons)
@@ -50,7 +50,7 @@ Note that because Docker must run as root, this means that you will be writing t
 ## Running linearham
 
 All linearham actions are run using scons in the main linearham directory.
-Available actions are `--run-partis`, `--run-linearham`, and `--build-partis-linearham`.
+Available actions are `--run-partis`, `--run-linearham`, and `--build`.
 Note that because of the way scons parses arguments, you must always use an `=` sign in all args: `--arg=val`.
 For the same reason, you also have to spell args exactly right, e.g. writing `--arg-nam` instead of `--arg-name` will silently ignore it.
 
@@ -142,9 +142,9 @@ Other linearham-related arguments:
 For the arguments that can be specified as a (`,`-separated) list (see middle column), linearham will run revbayes separately, writing to separate nested output directories, for all combinations of all such parameters.
 For more information on these arguments, run `scons --help`.
 
-#### `--build-partis-linearham`
+#### `--build`
 
-This compiles linearham, partis, and other dependencies.
+This compiles linearham and other dependencies.
 You'll only need to run this if you've either modified some source code or you're installing without docker.
 
 ## Run steps
@@ -156,7 +156,7 @@ See also [below](#output-files) for more detail on the various inputs and output
 | get linearham info | `lib/partis/bin/partis get-linearham-info` | reformat the information in all annotations in the partis output file for use by subsequent linearham steps, writes to `partis_run.yaml` |
 | select single cluster | `scripts/parse_cluster.py` | pull annotation for single specified cluster out of `partis_run.yaml`, and write it to `cluster.yaml` and its sequences to `cluster_seqs.fasta` |
 | make revbayes input | `scripts/generate_revbayes_rev_file.py` | use seqs in `cluster_seqs.fasta` and template revbayes config `templates/revbayes_template.rev` to write revbayes config for this run to `revbayes_run.rev` |
-| run revbayes | `lib/revbayes/projects/cmake/rb` | run revbayes with config file `revbayes_run.rev`, writing output to `revbayes_run.stdout.log`. This step is usually by far the slowest; you can adjust e.g. the mcmc options above to trade off speed for confidence/accuracy. |
+| run revbayes | `rb` | run revbayes with config file `revbayes_run.rev`, writing output to `revbayes_run.stdout.log`. This step is usually by far the slowest; you can adjust e.g. the mcmc options above to trade off speed for confidence/accuracy. |
 | run phylo hmm | `_build/linearham/linearham --pipeline` | run actual linearham phylo hmm, using `cluster.yaml`, `<--parameter-dir>`, and `revbayes_run.trees` to write `lh_revbayes_run.trees` |
 | collect run statistics | `scripts/run_bootstrap_asr_ess.R` | collects info from `lh_revbayes_run.trees` and `cluster_seqs.fasta` to write three output files: `linearham_run.{trees,log,ess}` |
 | calculate naive seq stats | `scripts/tabulate_naive_probs.py` | collect info from `linearham_run.trees` to write `aa_naive_seqs.{png,fasta,dnamap}` |
