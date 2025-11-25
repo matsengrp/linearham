@@ -13,11 +13,16 @@ jobs:
       run: |
         echo "Disk space before cleanup:"
         df -h
-        # Remove unnecessary tools and packages
+        # Remove unnecessary tools and packages (frees ~15-20GB)
         sudo rm -rf /usr/share/dotnet
         sudo rm -rf /opt/ghc
         sudo rm -rf "/usr/local/share/boost"
         sudo rm -rf "$AGENT_TOOLSDIRECTORY"
+        sudo rm -rf /usr/local/lib/android
+        sudo rm -rf /usr/local/.ghcup
+        sudo rm -rf /usr/share/swift
+        # Clean apt cache
+        sudo apt-get clean
         # Clean Docker system
         docker system prune -af --volumes
         echo "Disk space after cleanup:"
@@ -45,8 +50,7 @@ jobs:
         push: false
         load: true
         tags: quay.io/matsengrp/linearham:${{ env.TAG }}
-        cache-from: type=gha
-        cache-to: type=gha,mode=max
+        no-cache: true
     - name: Run tests in the Docker image
       run: docker run quay.io/matsengrp/linearham:${{ env.TAG }} sh -c "/linearham/_build/test/test"
 
