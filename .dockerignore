@@ -2,7 +2,7 @@
 .git
 .gitignore
 .gitmodules
-lib/revbayes/  # Obsolete submodule - using pre-built RevBayes image instead
+# Note: lib/revbayes/ is needed for building the base image (Dockerfile.base)
 
 # macOS metadata
 .DS_Store

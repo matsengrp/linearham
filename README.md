@@ -26,7 +26,7 @@
 
 Linearham's dependencies are described in the Dockerfile.
 We recommend that you run linearham inside a Docker container, since this will make installation much easier (if you're new to Docker, [read this](http://erick.matsen.org/2018/04/19/docker.html)).
-However, you can also install the dependencies by hand, in which case you should clone the repository and run each command in the [Dockerfile](https://github.com/matsengrp/linearham/blob/edit-readme/Dockerfile) that's on a line starting with `RUN` (treat `WORKDIR` as `cd`).
+However, you can also install the dependencies by hand, in which case you should clone the repository and run each command in the [Dockerfile](https://github.com/matsengrp/linearham/blob/main/Dockerfile) that's on a line starting with `RUN` (treat `WORKDIR` as `cd`).
 The more similar your system is to that described by the Dockerfile's `FROM` line (at the moment, debian), the easier this will be.
 
 #### Using Docker

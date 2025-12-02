@@ -1,6 +1,7 @@
 biopython
 colored-traceback
 cycler
+Cython==0.29.24
 DendroPy
 graphviz
 Jinja2
