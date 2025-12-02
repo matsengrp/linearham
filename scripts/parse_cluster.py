@@ -14,11 +14,9 @@ csv.field_size_limit(sys.maxsize)  # make sure we can write very large csv field
 import colored_traceback.always
 from util_functions import write_to_fasta
 
-default_partis_path = os.path.join(os.getcwd(), "lib/partis")
-sys.path.append(default_partis_path)
-import python.utils as utils
-import python.glutils as glutils
-from python.clusterpath import ClusterPath
+import partis.utils as utils
+import partis.glutils as glutils
+from partis.clusterpath import ClusterPath
 
 
 def show_available_clusters(cpath, ipartition, ptn):
