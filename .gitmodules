@@ -10,10 +10,6 @@
 [submodule "lib/tclap"]
 	path = lib/tclap
 	url = https://github.com/mirror/tclap.git
-[submodule "lib/partis"]
-	path = lib/partis
-	url = https://github.com/psathyrella/partis.git
-	branch = dev
 [submodule "lib/phylomd"]
 	path = lib/phylomd
 	url = https://github.com/dunleavy005/phylomd.git
