@@ -4,12 +4,13 @@
 #
 # Platform is set to linux/amd64 because partis-bcr contains x86-specific code (SSE2 intrinsics)
 # RevBayes with bundled Boost gives ~180x faster MCMC performance than v1.3.0+ without Boost
+ARG TARGETPLATFORM=linux/amd64
 
 # Stage 1: Get pre-compiled RevBayes with bundled Boost from Buster base image
-FROM --platform=linux/amd64 quay.io/matsengrp/linearham:2025-12-01-base-image AS revbayes-builder
+FROM quay.io/matsengrp/linearham:2025-12-01-base-image AS revbayes-builder
 
 # Stage 2: Modern Debian Bookworm for Python packages
-FROM --platform=linux/amd64 debian:bookworm-slim
+FROM debian:bookworm-slim
 
 # Metadata labels
 LABEL org.opencontainers.image.source="https://github.com/matsengrp/linearham"

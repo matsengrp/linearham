@@ -7,7 +7,7 @@
 
 ARG TARGETPLATFORM=linux/amd64
 # Use Debian Buster (oldoldstable) for g++ 8.3 compatibility with older RevBayes
-FROM --platform=${TARGETPLATFORM} debian:buster-slim
+FROM debian:buster-slim
 
 # Set TERM to enable colored-traceback to work in non-TTY environments
 ENV TERM=xterm
@@ -19,8 +19,8 @@ LABEL org.opencontainers.image.licenses="GPL-3.0"
 
 # Configure apt to use archive repositories (Buster is now archived)
 RUN echo "deb http://archive.debian.org/debian/ buster main contrib non-free" > /etc/apt/sources.list && \
-    echo "deb http://archive.debian.org/debian-security buster/updates main contrib non-free" >> /etc/apt/sources.list && \
-    echo 'Acquire::Check-Valid-Until "false";' > /etc/apt/apt.conf.d/99no-check-valid-until
+  echo "deb http://archive.debian.org/debian-security buster/updates main contrib non-free" >> /etc/apt/sources.list && \
+  echo 'Acquire::Check-Valid-Until "false";' > /etc/apt/apt.conf.d/99no-check-valid-until
 
 # Install all dependencies needed for building RevBayes and linearham
 RUN apt-get update && apt-get install -y --no-install-recommends \
@@ -77,8 +77,8 @@ RUN ./build.sh
 
 # Install RevBayes to standard location
 RUN mkdir -p /usr/local/bin && \
-    cp /tmp/revbayes/projects/cmake/rb /usr/local/bin/rb && \
-    chmod +x /usr/local/bin/rb
+  cp /tmp/revbayes/projects/cmake/rb /usr/local/bin/rb && \
+  chmod +x /usr/local/bin/rb
 
 # Clean up build artifacts to reduce image size
 RUN rm -rf /tmp/revbayes
