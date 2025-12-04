@@ -92,7 +92,7 @@ monitors[mni++] = mnFile(pi, er, alpha, tree,
                          filename="{{ output_base }}.trees",
                          printgen=file_printgen, separator="\t",
                          posterior=false)
-monitors[mni++] = mnScreen(TL, printgen=screen_printgen)
+# monitors[mni++] = mnScreen(TL, printgen=screen_printgen)
 
 # run the MCMC sampler
 mymcmc = mcmc(mymodel, monitors, moves, nruns=1)

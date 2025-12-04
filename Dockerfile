@@ -34,6 +34,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
   flex \
   gfortran \
   ghostscript \
+  graphviz \
   libblas-dev \
   libbz2-dev \
   libgsl-dev \
