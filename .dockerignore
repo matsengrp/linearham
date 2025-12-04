@@ -1,0 +1,59 @@
+# Git directories (including submodules) - can be hundreds of MB
+.git
+.gitignore
+.gitmodules
+# Note: lib/revbayes/ is needed for building the base image (Dockerfile.base)
+
+# macOS metadata
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Build artifacts
+_build/
+output/
+*.o
+*.a
+*.so
+*.dylib
+
+# Python cache
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+.pytest_cache/
+
+# Documentation
+html/
+latex/
+Doxyfile
+
+# IDE and editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# CI/CD
+.github/
+
+# Docker files
+Dockerfile.base
+.dockerignore
+test-docker-build.sh
+build-base-image.sh
+
+# Test outputs (but keep test scripts and data)
+output/
+*.log
+!test.sh
+!test-fast.sh
+!data/
+
+# Documentation source files (keep generated docs out)
+*.md
+!README.md
+LICENSE
+COPYING

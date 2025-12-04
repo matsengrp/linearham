@@ -35,7 +35,7 @@ if __name__ == '__main__':
     aa_naive_seqs_d = {("naive" + str(i)): seq for i, seq in enumerate(aa_naive_seqs)}
     write_to_fasta(aa_naive_seqs_d, args.output_base + ".fasta")
 
-    with open(args.output_base + ".fasta", "rU") as f:
+    with open(args.output_base + ".fasta", "r") as f:
         seqs = w.read_seq_data(f)
     data = w.LogoData.from_seqs(seqs)
     subprocess.check_call(("rm " + args.output_base + ".fasta").split())

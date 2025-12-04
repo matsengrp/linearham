@@ -9,7 +9,7 @@ import sys
 
 #### Set up command line arguments/options
 
-all_actions = ['run_partis', 'run_linearham', 'build_partis_linearham']
+all_actions = ['run_partis', 'run_linearham', 'build']
 
 # partis arguments
 
@@ -135,13 +135,13 @@ Script.AddOption("--partis-yaml-file",
         default=None,
         help="An optional partis output YAML file.")
 
-# partis/linearham arguments
+# linearham build arguments
 
-Script.AddOption("--build-partis-linearham",
-        dest="build_partis_linearham",
+Script.AddOption("--build",
+        dest="build",
         action="store_true",
         default=False,
-        help="Should we build partis and linearham?")
+        help="Should we build linearham?")
 
 Script.AddOption("--parameter-dir",
         dest="parameter_dir",
@@ -191,8 +191,8 @@ def get_options(env):
         asr_pfilters = process_multiarg(env.GetOption("asr_pfilters"), float, ","),
         partis_yaml_file = env.GetOption("partis_yaml_file"),
 
-        # partis/linearham arguments
-        build_partis_linearham = env.GetOption("build_partis_linearham"),
+        # linearham build arguments
+        build = env.GetOption("build"),
 
         # general arguments
         parameter_dir = env.GetOption("parameter_dir"),
@@ -204,7 +204,7 @@ env = Environment(ENV = os.environ)
 options = get_options(env)
 if options["lineage_unique_ids"] is not None and len(options["lineage_unique_ids"]) > 1:
     raise Exception("multiple lineage unique ids not yet supported (it breaks at least scripts/tabulate_lineage_probs.py, and probably other things). Note that partis/test/linearham-run.py has infrastructure for calling linearham with (paralellized) multiple lineage uids.")
-if not options["build_partis_linearham"]:
+if not options["build"]:
     env.SConsignFile(os.path.join(options["outdir"], ".sconsign"))
 if options["cluster_seed_unique_id"] is not None and options["lineage_unique_ids"] is not None:
     raise Exception("can\'t specify both --cluster-seed-unique-id and --lineage-unique-ids")  # i mean, it wouldn't break anything, but it doesn't make sense since it'd do the same thing as only setting --lineage-unique-ids
@@ -230,20 +230,15 @@ def default_label(d):
 
 @nest.add_target()
 def commit_and_tag(outdir, c):
-    log = env.Command(os.path.join(outdir, "git.log"), "", "git rev-parse --verify HEAD >> $TARGET && git describe --dirty --always >> $TARGET")
+    log = env.Command(os.path.join(outdir, "git.log"), "",
+                      "git rev-parse --verify HEAD >> $TARGET 2>/dev/null || echo 'no-git-info' >> $TARGET; " +
+                      "git describe --dirty --always >> $TARGET 2>/dev/null || echo 'no-git-tag' >> $TARGET")
     env.AlwaysBuild(log)
     return log
 
-#### Install partis and linearham (if necessary)
+#### Build linearham (if necessary)
 
-if options["build_partis_linearham"]:
-
-    @nest.add_target()
-    def partis_build(outdir, c):
-        partisbuild = env.Command("lib/partis/packages/ham/bcrham", "",
-                           "cd lib/partis && ./bin/build.sh")
-        env.AlwaysBuild(partisbuild)
-        return partisbuild
+if options["build"]:
 
     @nest.add_target()
     def linearham_build(outdir, c):
@@ -301,13 +296,12 @@ if options["run_partis"]:
             [os.path.join(outdir, filename) for filename in
                 ["partis_run.yaml", "partis_run.stdout.log"]],
             options["fasta_path"],
-            "lib/partis/bin/partis " + partis_mode \
+            "partis " + partis_mode \
                 + " --infname $SOURCE" \
                 + " --parameter-dir " + partis_parameter_dir \
                 + " --locus " + options["locus"] \
                 + " --extra-annotation-columns linearham-info" \
                 + " --outfname ${TARGETS[0]} > ${TARGETS[1]}")
-        env.Depends(partis_output, "lib/partis/packages/ham/bcrham")
         return partis_output
 
 
@@ -326,11 +320,10 @@ if options["run_linearham"]:
             partis_yaml_file = env.Command(
                 default_outfname,
                 options["partis_yaml_file"],
-                "lib/partis/bin/partis get-linearham-info" \
+                "partis get-linearham-info" \
                     + " --outfname $SOURCE" \
                     + " --parameter-dir " + options["parameter_dir"] \
                     + " --linearham-info-fname $TARGET")
-            env.Depends(partis_yaml_file, "lib/partis/packages/ham/bcrham")
             return str(partis_yaml_file[0])
         else:
             return default_outfname
@@ -421,8 +414,7 @@ if options["run_linearham"]:
             [os.path.join(outdir, filename) for filename in
                 ["revbayes_run.trees", "revbayes_run.log", "revbayes_run.stdout.log"]],
             c["revbayes_rev_file"],
-            "lib/revbayes/projects/cmake/rb $SOURCE > ${TARGETS[2]}")
-        env.Depends(revbayes_output, "lib/revbayes/projects/cmake/rb")
+            "rb $SOURCE > ${TARGETS[2]}")
         return revbayes_output
 
     @nest.add_target()
